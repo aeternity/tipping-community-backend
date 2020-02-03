@@ -1,0 +1,26 @@
+{
+  "name": "tipping-community-backend",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aeternity/tipping-community-backend.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/aeternity/tipping-community-backend/issues"
+  },
+  "homepage": "https://github.com/aeternity/tipping-community-backend#readme",
+  "dependencies": {
+    "@aeternity/aepp-sdk": "^7.0.0",
+    "express": "^4.17.1",
+    "express-handlebars": "^3.1.0",
+    "sequelize": "^5.21.3",
+    "sqlite3": "^4.1.1"
+  }
+}

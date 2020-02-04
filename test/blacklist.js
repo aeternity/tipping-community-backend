@@ -78,13 +78,4 @@ describe('Blacklist', () => {
     });
   });
 
-  describe('Blacklist Admin Interface', () => {
-    it('it should load the admin interface', (done) => {
-      chai.request(server).get('/blacklist/').end((err, res) => {
-        expect(document.querySelector('h1').should.have.text('Admin Panel'));
-        done();
-      });
-    });
-  })
-
 });

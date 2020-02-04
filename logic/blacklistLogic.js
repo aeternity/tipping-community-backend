@@ -42,7 +42,8 @@ module.exports = class Blacklist {
   }
 
   static async getSingleItem (req, res) {
-    res.send(await BlacklistEntry.findOne({ where: { tipId: req.params.id }, raw: true }));
+    const result = await BlacklistEntry.findOne({ where: { tipId: req.params.id }, raw: true });
+    return result ? res.send(result) : res.sendStatus(404);
   };
 
 };

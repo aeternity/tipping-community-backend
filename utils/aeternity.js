@@ -1,4 +1,4 @@
-const { Universal, Node, Crypto } = require('@aeternity/aepp-sdk');
+const { Universal, Node } = require('@aeternity/aepp-sdk');
 const fs = require('fs');
 const contractSource = fs.readFileSync(__dirname + '/Tipping.aes', 'utf-8');
 
@@ -26,13 +26,6 @@ class Aeternity {
     if (!this.client) throw new Error('Init sdk first');
     const tips = await this.contract.methods.get_state();
     return tips.decodedResult.tips;
-    if (tips.decodedResult && tips.decodedResult.length > 0) {
-      if (tips.decodedResult.every(tip => tip.repaid)) throw new Error('All tips are claimed');
-      const result = await this.contract.methods.claim(url, address);
-      return result.decodedResult;
-    } else {
-      throw new Error('No tips for url');
-    }
   };
 }
 

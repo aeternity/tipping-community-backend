@@ -1,49 +1,20 @@
 <style>
+  html, body {
+    margin: 0;
+    padding: 0;
+  }
+
   button {
     display: inline-block;
   }
-  table.paleBlueRows {
-    font-family: "Times New Roman", Times, serif;
-    border: 1px solid #FFFFFF;
-    width: 100%;
-    height: 200px;
-    text-align: left;
-    border-collapse: collapse;
-  }
-  table.paleBlueRows td, table.paleBlueRows th {
-    border: 1px solid #FFFFFF;
-    padding: 5px 8px;
-  }
-  table.paleBlueRows tbody td {
-    font-size: 13px;
-  }
-  table.paleBlueRows tr:nth-child(even) {
-    background: #D0E4F5;
-  }
-  table.paleBlueRows thead {
-    background: #0B6FA4;
-    border-bottom: 5px solid #FFFFFF;
-  }
-  table.paleBlueRows thead th {
-    font-size: 17px;
-    font-weight: bold;
-    color: #FFFFFF;
-    text-align: center;
-    border-left: 2px solid #FFFFFF;
-  }
-  table.paleBlueRows thead th:first-child {
-    border-left: none;
-  }
 
-  table.paleBlueRows tfoot {
-    font-size: 14px;
-    font-weight: bold;
-    color: #333333;
-    background: #D0E4F5;
-    border-top: 3px solid #444444;
-  }
-  table.paleBlueRows tfoot td {
-    font-size: 14px;
+  .card {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    width: calc(100% - 10px);
+    margin: 5px;
+    box-sizing: border-box;
   }
 
   .blocked {
@@ -54,56 +25,61 @@
     color: green;
   }
 
+  .action {
+    margin: 10px 0;
+  }
+
+  .address {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  hr {
+    border: none;
+    height: 1px;
+    background-color: #ccc;
+  }
+
 </style>
 
 <h1>Admin Panel</h1>
-<table class="paleBlueRows">
-  <thead>
-  <tr>
-    <th>Action</th>
-    <th>Status</th>
-    <th>URL,Nonce</th>
-    <th>Note</th>
-    <th>Sender</th>
-  </tr>
-  </thead>
-  <tbody>
-  {{#each allItems}}
-    <tr>
+{{#each allItems}}
+  <div class="card">
+    <div class="action">
       {{#if this.blocked}}
-        <td>
-          <button onclick="removeFromBlacklist('{{this.[0]}}')">SHOW</button>
-        </td>
-        <td class="blocked">BLACKLISTED</td>
+        <button onclick="removeFromBlacklist('{{this.[0]}}')">SHOW</button>
+        <span class="blocked">BLACKLISTED</span>
       {{else}}
-        <td>
-          <button onclick="addToBlacklist('{{this.[0]}}')">BLOCK</button>
-        </td>
-        <td class="visible">VISIBLE</td>
+        <button onclick="addToBlacklist('{{this.[0]}}')">BLOCK</button>
+        <span class="visible">VISIBLE</span>
       {{/if}}
-      <td>{{this.[0]}}</td>
-      <td>{{this.[1].note}}</td>
-      <td>{{this.[1].sender}}</td>
-    </tr>
-  {{/each}}
-  </tbody>
-</table>
+    </div>
+    <hr>
+    <div class="address">
+      <a href="{{this.[0].[0]}}" target="_blank">{{this.[0].[0]}}</a>
+    </div>
+    <hr>
+    <div>{{this.[1].note}}</div>
+    <hr>
+    <div class="address">{{this.[1].sender}}</div>
+  </div>
+{{/each}}
 
 <script type="text/javascript">
-  function addToBlacklist(id) {
+  function addToBlacklist (id) {
     fetch('/blacklist/api', {
       method: 'POST',
       headers: {
         'Accept': 'application/json',
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ id: id })
+      body: JSON.stringify({ id: id }),
     }).finally(() => window.location.reload());
   }
 
-  function removeFromBlacklist(id) {
+  function removeFromBlacklist (id) {
     fetch('/blacklist/api/' + window.encodeURIComponent(id), {
-      method: 'DELETE'
+      method: 'DELETE',
     }).finally(() => window.location.reload());
   }
 </script>

@@ -19,7 +19,6 @@ module.exports = class Blacklist {
     try {
       const { id } = req.body;
       if (!id) throw new Error('Missing required field id');
-      //TODO DO SOME CHECKS
       const entry = await BlacklistEntry.create({ tipId: id });
       res.send(entry);
     } catch (e) {

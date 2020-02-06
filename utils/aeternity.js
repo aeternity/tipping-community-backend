@@ -1,4 +1,4 @@
-const { Universal, Node } = require('@aeternity/aepp-sdk');
+const {Universal, Node} = require('@aeternity/aepp-sdk');
 const fs = require('fs');
 const contractSource = fs.readFileSync(__dirname + '/Tipping.aes', 'utf-8');
 
@@ -17,12 +17,12 @@ class Aeternity {
         networkId: 'ae_mainnet',
         compilerUrl: process.env.COMPILER_URL,
       });
-      this.contract = await this.client.getContractInstance(contractSource, { contractAddress: process.env.CONTRACT_ADDRESS });
+      this.contract = await this.client.getContractInstance(contractSource, {contractAddress: process.env.CONTRACT_ADDRESS});
       console.log('initialized aeternity sdk');
     }
   };
 
-  callContract = async (address, url) => {
+  callContract = async () => {
     if (!this.client) throw new Error('Init sdk first');
     const tips = await this.contract.methods.get_state();
     return tips.decodedResult.tips;

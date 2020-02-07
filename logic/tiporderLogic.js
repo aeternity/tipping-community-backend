@@ -24,7 +24,7 @@ module.exports = class Tiporder {
       //remove some dates that are older than .9995%
       const datesToConsiderScore = Math.max(((data.received_at / new Date().getTime()) - 0.9995) * 1000, 0);
       //decay older dates more than newer ones
-      const dateAgeScore = 1 + Math.log10(datesToConsiderScore);
+      const dateAgeScore = datesToConsiderScore === 0 ? 0 : Math.max(1 + Math.log10(datesToConsiderScore), 0);
 
       //score tip amount by percentage of highest amount, no decay
       const tipAmountScore = new BigNumber(data.amount).dividedBy(maxTipAmount).toNumber();

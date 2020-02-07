@@ -6,7 +6,7 @@ module.exports = class CommentLogic {
 
     try {
       const { tipId, text, author, signature } = req.body;
-      if (!tipId || !text || !author || !signature) throw new Error('Missing required field');
+      if (!tipId || !text || !author || !signature) return res.status(400).send('Missing required field');
       const entry = await Comment.create( { tipId, text, author, signature });
       res.send(entry);
     } catch (e) {

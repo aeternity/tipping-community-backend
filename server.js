@@ -1,11 +1,18 @@
 const express = require('express');
 const app = express();
 const exphbs  = require('express-handlebars');
+const cors = require('cors');
 
 // VIEWS
 app.engine('handlebars', exphbs());
 app.set('view engine', 'handlebars');
 app.use(express.json()); // for parsing application/json
+
+app.use(cors({
+  origin: '*',
+  optionsSuccessStatus: 200,
+  methods: ['GET', 'POST', 'OPTIONS']
+}));
 
 // ROUTES
 app.use('/blacklist', require('./routes/blacklistRoutes.js'));

@@ -9,6 +9,7 @@ app.use(express.json()); // for parsing application/json
 
 // ROUTES
 app.use('/blacklist', require('./routes/blacklistRoutes.js'));
+app.use('/comment', require('./routes/commentRoutes.js'));
 
 app.use((req, res) => {
   res.status(404);

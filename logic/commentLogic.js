@@ -7,7 +7,7 @@ module.exports = class CommentLogic {
     try {
       const { tipId, text, author, signature } = req.body;
       if (!tipId || !text || !author || !signature) return res.status(400).send('Missing required field');
-      const entry = await Comment.create( { tipId, text, author, signature });
+      const entry = await Comment.create({ tipId, text, author, signature });
       res.send(entry);
     } catch (e) {
       console.error(e);
@@ -16,16 +16,20 @@ module.exports = class CommentLogic {
   }
 
   static async removeItem (req, res) {
-    await Comment.destroy({
+    const result = await Comment.destroy({
       where: {
-        tipId: req.params.id,
+        id: req.params.id,
       },
     });
-    res.sendStatus(200);
+    return result === 1 ? res.sendStatus(200) : res.sendStatus(404);
   }
 
   static async getAllItems (req, res) {
     res.send(await Comment.findAll({ raw: true }));
+  }
+
+  static async getAllItemsForThread (req, res) {
+    res.send(await Comment.findAll({ where: { tipId: req.params.tipId }, raw: true }));
   }
 
   static async getSingleItem (req, res) {
@@ -33,8 +37,17 @@ module.exports = class CommentLogic {
     return result ? res.send(result) : res.sendStatus(404);
   };
 
-  static async changeVisibility (req, res) {
-
+  static async updateItem (req, res) {
+    const { tipId, text, author, signature, hidden } = req.body;
+    if (!tipId && !text && !author && !signature && !hidden) return res.status(400).send('Missing at least one updatable field');
+    await Comment.update({
+      ...tipId && { tipId },
+      ...text && { text },
+      ...author && { author },
+      ...signature && { signature },
+      ...hidden && { hidden },
+    }, { where: { id: req.params.id }, raw: true });
+    const result = await Comment.findOne({ where: { id: req.params.id }, raw: true });
+    return result ? res.send(result) : res.sendStatus(404);
   }
-
 };

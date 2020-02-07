@@ -1,4 +1,4 @@
-const { Universal, Node } = require('@aeternity/aepp-sdk');
+const {Universal, Node} = require('@aeternity/aepp-sdk');
 const fs = require('fs');
 
 class Aeternity {
@@ -21,7 +21,7 @@ class Aeternity {
     }
   };
 
-  callContract = async (address, url) => {
+  callContract = async () => {
     if (!this.client) throw new Error('Init sdk first');
     const tips = await this.contract.methods.get_state();
     return tips.decodedResult.tips;

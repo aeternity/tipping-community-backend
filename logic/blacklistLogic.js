@@ -29,12 +29,12 @@ module.exports = class Blacklist {
   }
 
   static async removeItem (req, res) {
-    await BlacklistEntry.destroy({
+    const result = await BlacklistEntry.destroy({
       where: {
         tipId: req.params.id,
       },
     });
-    res.sendStatus(200);
+    return result === 1 ? res.sendStatus(200) : res.sendStatus(404);
   }
 
   static async getAllItems (req, res) {

@@ -1,0 +1,12 @@
+dist: xenial
+sudo: false
+
+language: node_js
+node_js: '12'
+
+jobs:
+  include:
+    - stage: community
+      script:
+        - npm install
+        - npm run test

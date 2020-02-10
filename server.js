@@ -18,9 +18,10 @@ app.use(cors({
 app.use('/blacklist', require('./routes/blacklistRoutes.js'));
 app.use('/comment', require('./routes/commentRoutes.js'));
 app.use('/tiporder', require('./routes/tiporderRoutes.js'));
+app.use('/linkpreview', require('./routes/linkPreviewRoutes.js'));
 
 app.use((req, res) => {
-  res.status(404);
+  res.sendStatus(404);
 });
 
 console.log('Server listening at port', 3000);

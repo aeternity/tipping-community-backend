@@ -1,5 +1,4 @@
 const { BlacklistEntry } = require('../utils/database.js');
-const { Crypto } = require('@aeternity/aepp-sdk');
 
 module.exports = class Blacklist {
 

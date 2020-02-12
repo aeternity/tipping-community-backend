@@ -12,7 +12,7 @@ module.exports = class LinkPreviewLogic {
   static async forceRequery (req, res) {
     if (!req.body.url) return res.sendStatus(400);
     const result = await LinkPreview.destroy({ where: { requestUrl: req.body.url }, raw: true });
-    if(result !== 1) return res.sendStatus(404);
+    if (result !== 1) return res.sendStatus(404);
     res.send(await LinkPreviewLogic.getPreview(req.body.url, !!req.body.custom));
   }
 
@@ -20,17 +20,19 @@ module.exports = class LinkPreviewLogic {
   static async getPreview (url, forceCustomQuery = false) {
     const result = await LinkPreview.findOne({ where: { requestUrl: url }, raw: true });
     // Check for previous previews
-    if (forceCustomQuery) {
-      return await LinkPreviewLogic.createPreviewForUrl(url, LinkPreviewLogic.queryCustomCrawler);
+    // DISABLED FOR NOW
+    if (false && forceCustomQuery) {
+      return LinkPreviewLogic.createPreviewForUrl(url, LinkPreviewLogic.queryCustomCrawler);
     }
 
     if (result) {
       // Check for previous result
-      if (!result.querySucceeded)
-        return await LinkPreviewLogic.createPreviewForUrl(url, LinkPreviewLogic.queryCustomCrawler);
+      // DISABLED FOR NOW
+      if (false && !result.querySucceeded)
+        return LinkPreviewLogic.createPreviewForUrl(url, LinkPreviewLogic.queryCustomCrawler);
       return result;
     } else {
-      return await LinkPreviewLogic.createPreviewForUrl(url, LinkPreviewLogic.queryLinkPreview);
+      return LinkPreviewLogic.createPreviewForUrl(url, LinkPreviewLogic.queryLinkPreview);
     }
   }
 
@@ -69,5 +71,6 @@ module.exports = class LinkPreviewLogic {
 
   static async queryCustomCrawler (url) {
     // TODO implement
+    throw new Error('custom crawler not implemented');
   }
 };

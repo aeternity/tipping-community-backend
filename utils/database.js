@@ -15,11 +15,15 @@ Comment.hasMany(Comment, { as: 'Children', foreignKey: '_parentCommentId', useJu
 const LinkPreview = require('../models/linkPreview.js');
 LinkPreview.init(sequelize, Sequelize);
 
+const Tip = require('../models/tip.js');
+Tip.init(sequelize, Sequelize);
+
 sequelize.sync();
 
 module.exports = {
   sequelize,
   BlacklistEntry,
   Comment,
-  LinkPreview
+  LinkPreview,
+  Tip
 };

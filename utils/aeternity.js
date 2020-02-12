@@ -3,7 +3,7 @@ const fs = require('fs');
 
 class Aeternity {
   init = async () => {
-    if (!this.client) {
+    if (!this.client || !this.contract) {
       this.client = await Universal({
         nodes: [
           {

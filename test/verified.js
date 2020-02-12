@@ -26,13 +26,13 @@ describe('Verified', () => {
         res.body.should.be.a('array');
         done();
       });
-    });
+    }).timeout(10000);
     it('it should GET all the verified entries quickly the second time', (done) => {
       chai.request(server).get('/verified/').end((err, res) => {
         res.should.have.status(200);
         res.body.should.be.a('array');
         done();
       });
-    }, {timeout: 1000});
+    }).timeout(10000);
   });
 });

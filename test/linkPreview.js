@@ -5,7 +5,8 @@ process.env = {
   COMPILER_URL: 'https://compiler.aepps.com',
   CONTRACT_ADDRESS: 'ct_YpQpntd6fi6r3VXnGW7vJiwPYtiKvutUDY35L4PiqkbKEVRqj',
   AUTHENTICATION_USER: 'admin',
-  AUTHENTICATION_PASSWORD: 'pass'
+  AUTHENTICATION_PASSWORD: 'pass',
+  CONTRACT_FILE: 'TippingCorona'
 };
 
 //Require the dev-dependencies
@@ -36,10 +37,9 @@ describe('LinkPreview', () => {
       });
     });
 
-    it('it should CREATE a new linkpreview entry via linkpreview.net', (done) => {
-      chai.request(server).post('/linkpreview/force').auth(process.env.AUTHENTICATION_USER, process.env.AUTHENTICATION_PASSWORD).send({
-        url: requestUrl,
-      }).end((err, res) => {
+    it('it should CREATE a new linkpreview entry via linkpreview.net', function (done) {
+      this.timeout(10000);
+      chai.request(server).get('/linkpreview?url=' + encodeURIComponent(requestUrl)).end((err, res) => {
         res.should.have.status(200);
         res.body.should.be.a('object');
         res.body.should.have.property('id');
@@ -58,7 +58,7 @@ describe('LinkPreview', () => {
     it.skip('it should CREATE a new linkpreview entry via custom crawler', (done) => {
       chai.request(server).post('/linkpreview/force').auth(process.env.AUTHENTICATION_USER, process.env.AUTHENTICATION_PASSWORD).send({
         url: requestUrl,
-        custom: true
+        custom: true,
       }).end((err, res) => {
         res.should.have.status(200);
         res.body.should.be.a('object');

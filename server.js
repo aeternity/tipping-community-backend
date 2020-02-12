@@ -19,6 +19,7 @@ app.use('/blacklist', require('./routes/blacklistRoutes.js'));
 app.use('/comment', require('./routes/commentRoutes.js'));
 app.use('/tiporder', require('./routes/tiporderRoutes.js'));
 app.use('/linkpreview', require('./routes/linkPreviewRoutes.js'));
+app.use('/verified', require('./routes/verifiedRoutes.js'));
 
 app.use((req, res) => {
   res.sendStatus(404);

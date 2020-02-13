@@ -24,6 +24,10 @@ class LinkPreview extends Sequelize.Model {
         type: DataTypes.STRING,
         allowNull: true,
       },
+      lang: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
       querySucceeded: {
         type: DataTypes.BOOLEAN,
         allowNull: false,

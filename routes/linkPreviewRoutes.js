@@ -5,8 +5,6 @@ const { basicAuth } = require('../utils/auth.js');
 const router = new Router();
 
 // Open api routes
-router.get('/', Logic.getAllLinkPreviews);
-
-router.post('/force/', basicAuth, Logic.forceRequery);
+router.get('/', Logic.getLinkPreview);
 
 module.exports = router;

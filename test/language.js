@@ -43,7 +43,7 @@ describe('Language', () => {
         res.body.should.be.a('array');
         res.body.should.have.length(1);
         const firstResult = res.body[0];
-        firstResult.should.have.property('requestUrl', 'zh');
+        firstResult.should.eql('zh');
         done();
       });
     });
@@ -54,7 +54,7 @@ describe('Language', () => {
         res.body.should.be.a('array');
         res.body.should.have.length(1);
         const firstResult = res.body[0];
-        firstResult.should.have.property('requestUrl', 'en');
+        firstResult.should.eql('en');
         done();
       });
     });

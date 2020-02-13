@@ -4,6 +4,7 @@ const ae = require('../utils/aeternity.js');
 const {BlacklistEntry} = require('../utils/database.js');
 const dateAgeScoreWeight = 1.5;
 const tipAmountScoreWeight = 1;
+const tipTitleScoreWeight = 0.7;
 
 module.exports = class Tiporder {
 
@@ -25,13 +26,17 @@ module.exports = class Tiporder {
       const datesToConsiderScore = Math.max(((data.received_at / new Date().getTime()) - 0.9995) * 1000, 0);
       //decay older dates more than newer ones
       const dateAgeScore = datesToConsiderScore === 0 ? 0 : Math.max(1 + Math.log10(datesToConsiderScore), 0);
+      //score if title is set
+      const tipTitleScore = data.note ? 1 : 0;
 
       //score tip amount by percentage of highest amount, no decay
       const tipAmountScore = new BigNumber(data.amount).dividedBy(maxTipAmount).toNumber();
 
       data.dateAgeScore = dateAgeScore;
       data.tipAmountScore = tipAmountScore;
-      data.score = data.dateAgeScore * dateAgeScoreWeight + data.tipAmountScore * tipAmountScoreWeight;
+      data.tipTitleScore = tipTitleScore;
+      data.score = data.dateAgeScore * dateAgeScoreWeight + data.tipAmountScore * tipAmountScoreWeight + data.tipTitleScore * tipTitleScoreWeight;
+
       return data;
     });
 

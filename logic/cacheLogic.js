@@ -1,8 +1,8 @@
 const ae = require('../utils/aeternity.js');
 const { Tip } = require('../utils/database.js');
+const LinkPreviewLogic = require('./linkPreviewLogic.js');
 
 module.exports = class CacheLogic {
-
   interval = null;
 
   constructor () {
@@ -10,8 +10,10 @@ module.exports = class CacheLogic {
   }
 
   async init () {
+    // Run once so the db is synced initially without getting triggered every 5 seconds
     await ae.init();
     await CacheLogic.updateTipsInDatabase();
+    // Then continue to update every 5 seconds
     this.interval = setInterval(async () => {
       try {
         await CacheLogic.updateTipsInDatabase();
@@ -41,12 +43,24 @@ module.exports = class CacheLogic {
     return ae.callContract();
   }
 
+  static async updateOnNewUrl (url) {
+    return Promise.all([
+      LinkPreviewLogic.generatePreview(url),
+    ]);
+  }
+
   static async updateTipsInDatabase () {
     const tips = await CacheLogic.getAllTips();
     const dbEntries = await CacheLogic.getAllItems();
     const peparedTips = tips.filter(tip => !dbEntries.some(entry => entry.tipId === tip[0].join(',')))
       .map(tip => ({ ...tip[1], url: tip[0][0], nonce: tip[0][1], tipId: tip[0].join(',') }));
-    await Tip.bulkCreate(peparedTips, { ignoreDuplicates: true });
+    if (peparedTips.length > 0) {
+      await Tip.bulkCreate(peparedTips, { ignoreDuplicates: true });
+      // UPDATE STORAGE SYNC TO AVOID DDOS BLOCKING
+      for (const { url } of peparedTips) {
+        await CacheLogic.updateOnNewUrl(url);
+      }
+    }
   }
 
   static async getTipByUrl (url, nonce = null) {

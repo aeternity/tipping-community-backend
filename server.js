@@ -21,6 +21,7 @@ app.use('/tiporder', require('./routes/tiporderRoutes.js'));
 app.use('/linkpreview', require('./routes/linkPreviewRoutes.js'));
 app.use('/verified', require('./routes/verifiedRoutes.js'));
 app.use('/cache', require('./routes/cacheRoutes.js'));
+app.use('/language', require('./routes/languageRoutes.js'));
 
 app.use((req, res) => {
   res.sendStatus(404);

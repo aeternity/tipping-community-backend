@@ -21,7 +21,7 @@ module.exports = class CacheLogic {
       } catch (err) {
         console.error(err);
         this.error = err;
-        clearInterval(this.interval);
+        this.lastError = new Date().toISOString();
       }
     }, 5000);
   }
@@ -31,6 +31,7 @@ module.exports = class CacheLogic {
       interval: this.interval ? !this.interval._destroyed : false,
       lastRun: this.lastRun,
       error: this.error ? this.error.message : null,
+      lastError: this.lastError,
       totalRows: await Tip.count(),
     };
   }

@@ -44,7 +44,7 @@ module.exports = class LinkPreviewLogic {
       };
       if (data.querySucceeded && data.lang === null) {
         const probability = data.description ? lngDetector.detect(data.description, 1) : lngDetector.detect(data.title, 1);
-        if (probability && probability[0][1] > 0.1) data.lang = probability[0][0];
+        if (probability && probability.length > 0 && probability[0][1] > 0.1) data.lang = probability[0][0];
       }
 
       const existingEntry = await LinkPreview.findOne({ where: { requestUrl: url } });

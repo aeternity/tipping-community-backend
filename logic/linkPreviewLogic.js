@@ -65,10 +65,6 @@ module.exports = class LinkPreviewLogic {
     }
   }
 
-  static async queryLinkPreview (url) {
-    return (await axios.get(`http://api.linkpreview.net/?key=${process.env.LINKPREVIEWNET_KEY}&q=${url}`)).data;
-  }
-
   static async querySimpleCustomCrawler (url) {
     return (await axios.get(url)).data;
   };

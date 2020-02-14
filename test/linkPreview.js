@@ -6,7 +6,7 @@ process.env = {
   CONTRACT_ADDRESS: 'ct_YpQpntd6fi6r3VXnGW7vJiwPYtiKvutUDY35L4PiqkbKEVRqj',
   AUTHENTICATION_USER: 'admin',
   AUTHENTICATION_PASSWORD: 'pass',
-  CONTRACT_FILE: 'TippingCorona'
+  CONTRACT_FILE: 'TippingCorona',
 };
 
 //Require the dev-dependencies
@@ -15,22 +15,21 @@ let chaiHttp = require('chai-http');
 let server = require('../server');
 
 const { LinkPreview } = require('../utils/database.js');
+const LinkPreviewLogic = require('../logic/linkPreviewLogic.js');
 
 chai.use(chaiHttp);
 //Our parent block
 describe('LinkPreview', () => {
+
+  const requestUrl = 'https://aeternity.com/';
+
   before(async () => { //Before each test we empty the database
     await LinkPreview.destroy({
       where: {},
       truncate: true,
     });
-    await LinkPreview.create({
-      requestUrl,
-      querySucceeded: true
-    });
+    await LinkPreviewLogic.generatePreview(requestUrl);
   });
-
-  const requestUrl = 'https://coronanews.org/';
 
   describe('LinkPreview API', () => {
     it('it should GET all the linkpreview entries (empty)', (done) => {
@@ -41,10 +40,10 @@ describe('LinkPreview', () => {
       });
     });
 
-    it('it get a single linkpreview entry', function (done) {
-      this.timeout(10000);
+    it('it get link preview for aeternity.com', (done) => {
       chai.request(server).get('/linkpreview?url=' + encodeURIComponent(requestUrl)).end((err, res) => {
         res.should.have.status(200);
+        console.log(res.body);
         res.body.should.be.a('object');
         res.body.should.have.property('id');
         res.body.should.have.property('requestUrl', requestUrl);
@@ -56,7 +55,7 @@ describe('LinkPreview', () => {
         res.body.should.have.property('createdAt');
         res.body.should.have.property('updatedAt');
         done();
-      });
+      }).timeout(10000);
     });
   });
 });

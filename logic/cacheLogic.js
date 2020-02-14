@@ -53,8 +53,8 @@ module.exports = class CacheLogic {
   static async updateTipsInDatabase () {
     const tips = await CacheLogic.getAllTips();
     const dbEntries = await CacheLogic.getAllItems();
-    const peparedTips = tips.filter(tip => !dbEntries.some(entry => entry.tipId === tip[0].join(',')))
-      .map(tip => ({ ...tip[1], url: tip[0][0], nonce: tip[0][1], tipId: tip[0].join(',') }));
+    const peparedTips = tips.filter(([id, _]) => !dbEntries.some(entry => entry.tipId === id.join(',')))
+      .map(([[url, nonce], data]) => ({ ...data, url, nonce, tipId: [url, nonce].join(',') }));
     if (peparedTips.length > 0) {
       await Tip.bulkCreate(peparedTips, { ignoreDuplicates: true });
       // UPDATE STORAGE SYNC TO AVOID DDOS BLOCKING

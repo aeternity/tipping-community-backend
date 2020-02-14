@@ -17,7 +17,7 @@ module.exports = class Tiporder {
     const maxTipAmount = BigNumber.max(...state.map(([_, data]) => data.amount), '1');
     const tips = state.map(([tip, data]) => {
       // compute tip id
-      data.tipId = tip[0] + "," + tip[1];
+      data.tipId = tip.join(',');
 
       // scoring
 

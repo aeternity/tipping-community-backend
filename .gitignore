@@ -6,3 +6,4 @@ package-lock.json
 .idea
 database.sqlite
 .env
+/logs/*.log

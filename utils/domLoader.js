@@ -11,13 +11,13 @@ module.exports = class DomLoader {
     try {
       const page = await browser.newPage();
       await page.goto(url, {
-        waitUntil: 'networkidle0',
+        waitUntil: 'networkidle2',
       });
       if (
         (new URL(url)).hostname === 'www.weibo.com' &&
         (new URL(page.url())).hostname === 'passport.weibo.com'
       ) {
-        await page.waitForNavigation({ waitUntil: 'networkidle0', timeout: 40000 });
+        await page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 40000 });
       }
 
       const html = await page.content();

@@ -25,6 +25,7 @@ app.use('/cache', require('./routes/cacheRoutes.js'));
 app.use('/language', require('./routes/languageRoutes.js'));
 app.use('/claim', require('./routes/payForTxRoutes.js'));
 app.use('/logs', require('./routes/loggerRoutes.js'));
+app.use('/performance', require('./routes/performaceRoutes.js'));
 
 app.use((req, res) => {
   res.sendStatus(404);

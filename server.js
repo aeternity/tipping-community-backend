@@ -23,7 +23,7 @@ app.use('/linkpreview', require('./routes/linkPreviewRoutes.js'));
 app.use('/verified', require('./routes/verifiedRoutes.js'));
 app.use('/cache', require('./routes/cacheRoutes.js'));
 app.use('/language', require('./routes/languageRoutes.js'));
-app.use('/payfortx', require('./routes/payForTxRoutes.js'));
+app.use('/claim', require('./routes/payForTxRoutes.js'));
 app.use('/logs', require('./routes/loggerRoutes.js'));
 
 app.use((req, res) => {

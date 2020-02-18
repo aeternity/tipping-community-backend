@@ -7,9 +7,9 @@ class PerformanceLogic {
     {
       url: 'https://www.weibo.com/ttarticle/p/show?id=2309404390785649869050',
       address: 'ak_7ULGBPWTPe9Hq3dkzcyffVdbHhuChfgtWzX1CemRTrmhx38Lk',
-      repetitions: 20,
+      repetitions: 10,
       timeout: 120 * 1000,
-      batchSize: 1,
+      batchSize: 5,
     },
   ];
 

@@ -26,6 +26,12 @@ module.exports = class DomLoader {
         await page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 45 * 1000 });
       }
 
+      if(
+        (new URL(url)).hostname === 'www.weibo.com' &&
+        page.url().includes('login.php')
+      ) {
+        throw new Error('Got caught on login.php')
+      }
       const html = await page.content();
       await browser.close();
       return { html, url: page.url() };

@@ -13,7 +13,7 @@ module.exports = class PayForTxLogic {
     if (!ae || !ae.client) return PayForTxLogic.sendError(req, res, 500, 'sdk not initialized yet');
 
     try {
-      const html = await DomLoader.getHTMLfromURL(req.body.url);
+      const { html } = await DomLoader.getHTMLfromURL(req.body.url);
       if (!html) return PayForTxLogic.sendError(req, res, 500, 'could not retrieve html for url');
       let address = html.match(/(ak\_[A-Za-z0-9]{49,50})/g) || [];
       const chainNames = html.match(/[A-Za-z0-9]+\.chain/g);

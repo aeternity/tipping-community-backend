@@ -51,7 +51,7 @@ describe('Pay for TX', () => {
     });
   });
 
-  describe('Dynamic website tests', () => {
+  describe('Dynamic website', () => {
 
     before(async function () {
       this.timeout(25000);
@@ -65,12 +65,12 @@ describe('Pay for TX', () => {
         url: 'https://github.com',
       }).end((err, res) => {
         res.should.have.status(401);
-        res.body.should.have.property('error', 'Could not find address in website');
+        res.body.should.have.property('error', 'Could not find any address in website');
         done();
       });
     }).timeout(10000);
 
-    it('it should reject on website with no (unclaimed) tip', (done) => {
+    it('it should reject on website with no tips', (done) => {
       chai.request(server).post('/claim/submit').send({
         address: 'ak_fUq2NesPXcYZ1CcqBcGC3StpdnQw3iVxMA3YSeCNAwfN4myQk',
         url: 'https://pastebin.com/raw/LKB1peSL', // ak_fUq2NesPXcYZ1CcqBcGC3StpdnQw3iVxMA3YSeCNAwfN4myQk
@@ -128,6 +128,58 @@ describe('Pay for TX', () => {
     // TODO add test for successful tip claims
   });
 
+  describe('Address retrieval', () => {
+
+    before(async function () {
+      this.timeout(25000);
+      const ae = require('../utils/aeternity.js');
+      await ae.init();
+    });
+
+    it('it should reject on website with no key', (done) => {
+      chai.request(server).post('/claim/addresses').send({
+        url: 'https://github.com',
+      }).end((err, res) => {
+        res.should.have.status(401);
+        res.body.should.have.property('error', 'Could not find any addresses in website');
+        done();
+      });
+    }).timeout(10000);
+
+    it('it get address from website', (done) => {
+      chai.request(server).post('/claim/addresses').send({
+        url: 'https://pastebin.com/raw/LKB1peSL', // ak_fUq2NesPXcYZ1CcqBcGC3StpdnQw3iVxMA3YSeCNAwfN4myQk
+      }).end((err, res) => {
+        res.should.have.status(200);
+        res.body.should.be.an('object');
+        res.body.should.have.property('addresses');
+        const address = res.body.addresses;
+        address.should.be.an('array');
+        address.should.have.length(1);
+        const firstResult = address[0];
+        firstResult.should.eql('ak_fUq2NesPXcYZ1CcqBcGC3StpdnQw3iVxMA3YSeCNAwfN4myQk');
+        done();
+      });
+    }).timeout(10000);
+
+    it('it should work with .chain names', (done) => {
+      chai.request(server).post('/claim/addresses').send({
+        url: 'https://pastebin.com/raw/5ze13WAf', // reallylongtestname.chain
+      }).end((err, res) => {
+        res.should.have.status(200);
+        res.body.should.be.an('object');
+        res.body.should.have.property('addresses');
+        const address = res.body.addresses;
+        address.should.be.an('array');
+        address.should.have.length(1);
+        const firstResult = address[0];
+        firstResult.should.eql('ak_fUq2NesPXcYZ1CcqBcGC3StpdnQw3iVxMA3YSeCNAwfN4myQk');
+        done();
+      });
+    }).timeout(10000);
+
+  });
+
   describe('Logger tests', () => {
     it('should return json parsable logs on endpoint', (done) => {
       chai.request(server).get('/logs/all')
@@ -139,4 +191,5 @@ describe('Pay for TX', () => {
         });
     });
   });
+
 });

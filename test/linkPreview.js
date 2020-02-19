@@ -43,7 +43,6 @@ describe('LinkPreview', () => {
     it('it get link preview for aeternity.com', (done) => {
       chai.request(server).get('/linkpreview?url=' + encodeURIComponent(requestUrl)).end((err, res) => {
         res.should.have.status(200);
-        console.log(res.body);
         res.body.should.be.a('object');
         res.body.should.have.property('id');
         res.body.should.have.property('requestUrl', requestUrl);

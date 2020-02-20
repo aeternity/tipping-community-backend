@@ -103,6 +103,18 @@ describe('Pay for TX', () => {
       });
     }).timeout(10000);
 
+    it('it should give appropriate errors with not claimed .chain names', (done) => {
+      chai.request(server).post('/claim/submit').send({
+        address: 'ak_fUq2NesPXcYZ1CcqBcGC3StpdnQw3iVxMA3YSeCNAwfN4myQk',
+        url: 'https://pastebin.com/raw/izZDAzFi', // reallylongtestname.chain
+      }).end((err, res) => {
+        res.should.have.status(401);
+        res.body.should.have.property('error', 'Could not find any address in website');
+        done();
+      });
+    }).timeout(10000);
+
+
     it('weibo should work', (done) => {
       chai.request(server).post('/claim/submit').send({
         address: 'ak_fUq2NesPXcYZ1CcqBcGC3StpdnQw3iVxMA3YSeCNAwfN4myQk',

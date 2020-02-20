@@ -51,10 +51,17 @@ class Aeternity {
   };
 
   getAddressFromChainName = async (names) => {
-    return Promise.all(names.map(async n => {
-      const queryResult = await this.client.aensQuery(n);
-      return queryResult.pointers.length > 0 ? queryResult.pointers[0].id : null;
-    }));
+    return (await Promise.all(names.map(async n => {
+      try {
+        const queryResult = await this.client.aensQuery(n);
+        return queryResult.pointers.length > 0 ? queryResult.pointers[0].id : null;
+      } catch (err) {
+        if (err.message.includes('failed with 404: Name not found')) {
+          return null;
+        } else throw new Error(err);
+      }
+
+    }))).filter(value => !!value);
   };
 
 }

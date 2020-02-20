@@ -27,6 +27,7 @@ module.exports = class PayForTxLogic {
         return PayForTxLogic.sendError(req, res, 401, 'Could not find any address in website');
       }
     } catch (e) {
+      console.error(e);
       return PayForTxLogic.sendError(req, res, 500, e.message);
     }
   }

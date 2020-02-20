@@ -125,6 +125,17 @@ describe('Pay for TX', () => {
       });
     }).timeout(60 * 1000);
 
+    it('forum.aeternity.com should work', (done) => {
+      chai.request(server).post('/claim/submit').send({
+        address: 'ak_fUq2NesPXcYZ1CcqBcGC3StpdnQw3iVxMA3YSeCNAwfN4myQk',
+        url: 'https://forum.aeternity.com/t/corona-wallet-test/6152',
+      }).end((err, res) => {
+        res.should.have.status(401);
+        res.body.should.have.property('error', 'found address does not match requested address');
+        done();
+      });
+    }).timeout(60 * 1000);
+
     // TODO add test for successful tip claims
   });
 

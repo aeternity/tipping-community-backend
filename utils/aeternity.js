@@ -51,7 +51,10 @@ class Aeternity {
   };
 
   getAddressFromChainName = async (names) => {
-    return Promise.all(names.map(async n => (await this.client.aensQuery(n)).pointers[0].id));
+    return Promise.all(names.map(async n => {
+      const queryResult = await this.client.aensQuery(n);
+      return queryResult.pointers.length > 0 ? queryResult.pointers[0].id : null;
+    }));
   };
 
 }

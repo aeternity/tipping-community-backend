@@ -7,7 +7,7 @@ const router = new Router();
 const cache = new CacheLogic();
 
 // Open api routes
-router.get('/', CacheLogic.getAllItems);
+router.get('/', CacheLogic.deliverAllItems);
 
 // View routes
 router.get('/status', basicAuth, async (req, res) => res.render('cache', {

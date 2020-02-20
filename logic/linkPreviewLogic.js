@@ -16,7 +16,11 @@ module.exports = class LinkPreviewLogic {
 
   // API Functions
   static async getLinkPreview (req, res) {
-    if (req.query.url) return res.send(await LinkPreview.findOne({ where: { requestUrl: req.query.url }, raw: true }));
+    const url = req.params.url ? req.params.url : (req.query.url ? req.query.url : null);
+    if (url) {
+      const result = await LinkPreview.findOne({ where: { requestUrl: url }, raw: true });
+      return result ? res.send(result) : res.sendStatus(404);
+    }
     res.send(await LinkPreview.findAll({ raw: true }));
   }
 

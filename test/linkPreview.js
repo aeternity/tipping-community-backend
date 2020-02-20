@@ -54,7 +54,13 @@ describe('LinkPreview', () => {
         res.body.should.have.property('createdAt');
         res.body.should.have.property('updatedAt');
         done();
-      }).timeout(10000);
+      });
+    });
+    it('it should fail on none cached urls', (done) => {
+      chai.request(server).get('/linkpreview?url=' + encodeURIComponent('https://domain.test')).end((err, res) => {
+        res.should.have.status(404);
+        done();
+      });
     });
   });
 });

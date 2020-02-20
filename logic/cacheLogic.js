@@ -36,6 +36,10 @@ module.exports = class CacheLogic {
     };
   }
 
+  static async deliverAllItems (req, res) {
+    res.send(await CacheLogic.getAllItems());
+  }
+
   static async getAllItems () {
     return Tip.findAll({ raw: true });
   }

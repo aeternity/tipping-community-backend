@@ -12,27 +12,45 @@ process.env = {
 let chai = require('chai');
 let chaiHttp = require('chai-http');
 let server = require('../server');
+let should = chai.should();
 
 const { Comment } = require('../utils/database.js');
+const { hash, signPersonalMessage, generateKeyPair } = require('@aeternity/aepp-sdk').Crypto;
+const { deterministicStringify } = require('../utils/auth.js');
 
 chai.use(chaiHttp);
 //Our parent block
 describe('Comments', () => {
-  before((done) => { //Before each test we empty the database
+
+  const { publicKey, secretKey } = generateKeyPair();
+
+  const testData = {
+    tipId: 'https://aeternity.com,1',
+    text: 'What an awesome website',
+    author: publicKey,
+    requestTimestamp: Date.now()
+  };
+
+  let commentId = null;
+
+  const signRequest = (body) => {
+    const message = hash(deterministicStringify(body));
+    const signatureBuffer = signPersonalMessage(
+      message,
+      Buffer.from(secretKey, 'hex'),
+    );
+    body.signature = Buffer.from(signatureBuffer).toString('hex');
+    return body;
+  };
+
+  const signedBody = signRequest(testData);
+
+  before((done) => { //Before all tests we empty the database once
     Comment.destroy({
       where: {},
       truncate: true,
     }).then(() => done());
   });
-
-  const testData = {
-    tipId: 'https://aeternity.com,1',
-    text: 'What an awesome website',
-    author: 'ak_rWHahs7yKku8tFfpPU67ALmmwvD89SAcXYGDM4imzCHSGqhBS',
-    signature: 'supersecrethash',
-  };
-
-  let commentId = null;
 
   describe('Comment API', () => {
     it('it should GET all the comment entries (empty)', (done) => {
@@ -44,8 +62,38 @@ describe('Comments', () => {
       });
     });
 
+    it('it should fail with non valid signature', (done) => {
+      const modifiedBody = Object.assign({}, signedBody, {signature: '34784373478384'});
+      chai.request(server).post('/comment/api').send(modifiedBody).end((err, res) => {
+        res.should.have.status(401);
+        res.body.should.be.a('object');
+        res.body.should.have.property('err', 'bad signature size');        done();
+      });
+    });
+
+    it('it should fail with valid signature but different data', (done) => {
+      const modifiedBody = Object.assign({}, signedBody, {text: 'new text'});
+      chai.request(server).post('/comment/api').send(modifiedBody).end((err, res) => {
+        res.should.have.status(401);
+        res.body.should.be.a('object');
+        res.body.should.have.property('err', 'Invalid signature');
+        done();
+      });
+    });
+
+    it('it should fail with old but valid signature', (done) => {
+      const modifiedBody = Object.assign({}, signedBody, {requestTimestamp: Date.now() - 11 * 1000});
+      chai.request(server).post('/comment/api').send(modifiedBody).end((err, res) => {
+        res.should.have.status(401);
+        res.body.should.be.a('object');
+        res.body.should.have.property('err', 'Request older than 10 seconds');
+        done();
+      });
+    });
+
+
     it('it should CREATE a new comment entry', (done) => {
-      chai.request(server).post('/comment/api').send(testData).end((err, res) => {
+      chai.request(server).post('/comment/api').send(signedBody).end((err, res) => {
         res.should.have.status(200);
         res.body.should.be.a('object');
         res.body.should.have.property('id');

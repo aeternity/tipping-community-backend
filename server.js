@@ -12,7 +12,7 @@ app.use(express.json()); // for parsing application/json
 app.use(cors({
   origin: '*',
   optionsSuccessStatus: 200,
-  methods: ['GET', 'POST', 'OPTIONS'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
 }));
 
 // ROUTES

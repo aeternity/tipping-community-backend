@@ -12,6 +12,47 @@ The API is on a code basis divided into several route files. This structure will
 - [Static](#Static)
 - [Tip ordering](#Tip-ordering)
 
+## Signature Authentication
+
+The basic steps by the backend to verify a reequest with a singature are as follows:
+1. Get the whole body and verify the existence of the signature, the public key and the request timestamp.
+1. Alphabetically sort the request body object by keys
+1. Remove the signature from the request body
+1. Hash the remaining request body using the `256bits Blake2b hash` provided by the aepp-sdk-js
+1. Verifies the hash against the signature and the public key
+
+Here is a code sample of how to sign a request using the aepp-sdk-js:
+```javascript
+// Import dependencies
+const { hash, signPersonalMessage, generateKeyPair } = require('@aeternity/aepp-sdk').Crypto;
+// Create object sorting function
+const deterministicStringify = obj => JSON.stringify(obj, Object.keys(obj).sort()); 
+
+
+// Obtain random keypair
+const { publicKey, secretKey } = generateKeyPair(); 
+// Define minimal test object
+const testData = {
+    author: publicKey,
+    requestTimestamp: Date.now()
+};
+
+// Sort and hash the object
+const message = hash(deterministicStringify(testData));
+
+// Sign the message
+const signatureBuffer = signPersonalMessage(
+  message,
+  Buffer.from(secretKey, 'hex'),
+);
+
+// Append the signature (in hex) to the body
+testData.signature = Buffer.from(signatureBuffer).toString('hex');
+
+// Return the signed body
+return testData;
+```
+
 ## Blacklist
 
 #### Get all blacklist entries
@@ -138,7 +179,7 @@ Returns:
     "hidden": Boolean, // false
     "id": Integer, // 1
     "tipId": String(url,nonce), // "https://aeternity.com,1"
-    "note": String, // "hello world"
+    "text": String, // "hello world"
     "sender": String(address), // ak_a4eg....
     "signature": String(hash), // "af3eg..."
     "createdAt": String(Date.toISOString), // "2020-02-14 16:13:43.264 +00:00"
@@ -159,7 +200,7 @@ Returns:
   "hidden": Boolean, // false
   "id": Integer, // 1
   "tipId": String(url,nonce), // "https://aeternity.com,1"
-  "note": String, // "hello world"
+  "text": String, // "hello world"
   "author": String(address), // ak_a4eg....
   "signature": String(hash), // "af3eg..."
   "createdAt": String(Date.toISOString), // "2020-02-14 16:13:43.264 +00:00"
@@ -180,7 +221,7 @@ Returns:
     "hidden": Boolean, // false
     "id": Integer, // 1
     "tipId": String(url,nonce), // "https://aeternity.com,1"
-    "note": String, // "hello world"
+    "text": String, // "hello world"
     "author": String(address), // ak_a4eg....
     "signature": String(hash), // "af3eg..."
     "createdAt": String(Date.toISOString), // "2020-02-14 16:13:43.264 +00:00"
@@ -194,14 +235,14 @@ Returns:
 ```
 PUT /comment/api/:Int(id)
 
-Authorization: HTTP Basic Authorization
+Authorization: Signature Authentication
 
 Request Body:
 {
   "hidden": Boolean, // false
   "id": Integer, // 1
   "tipId": String(url,nonce), // "https://aeternity.com,1"
-  "note": String, // "hello world"
+  "text": String, // "hello world"
   "author": String(address), // ak_a4eg....
   "signature": String(hash), // "af3eg..."
   "createdAt": String(Date.toISOString), // "2020-02-14 16:13:43.264 +00:00"
@@ -213,7 +254,7 @@ Returns:
   "hidden": Boolean, // false
   "id": Integer, // 1
   "tipId": String(url,nonce), // "https://aeternity.com,1"
-  "note": String, // "hello world"
+  "text": String, // "hello world"
   "author": String(address), // ak_a4eg....
   "signature": String(hash), // "af3eg..."
   "createdAt": String(Date.toISOString), // "2020-02-14 16:13:43.264 +00:00"
@@ -226,14 +267,14 @@ Returns:
 ```
 POST /comment/api/
 
-Authorization: Signature in body
+Authorization: Signature Authentication
 
 Request Body:
 {
   "hidden": Boolean, // false
   "id": Integer, // 1
   "tipId": String(url,nonce), // "https://aeternity.com,1"
-  "note": String, // "hello world"
+  "text": String, // "hello world"
   "author": String(address), // ak_a4eg....
   "signature": String(hash), // "af3eg..."
 }
@@ -243,7 +284,7 @@ Returns:
   "hidden": Boolean, // false
   "id": Integer, // 1
   "tipId": String(url,nonce), // "https://aeternity.com,1"
-  "note": String, // "hello world"
+  "text": String, // "hello world"
   "author": String(address), // ak_a4eg....
   "signature": String(hash), // "af3eg..."
   "createdAt": String(Date.toISOString), // "2020-02-14 16:13:43.264 +00:00"
@@ -256,7 +297,13 @@ Returns:
 ```
 POST /comment/api/:Int(id)
 
-Authorization: HTTP Basic Authorization
+Authorization: Signature Authentication
+
+Request Body:
+{
+  "author": String(address), // ak_a4eg....
+  "signature": String(hash), // "af3eg..."
+}
 
 Returns: 
 200 OK
@@ -278,7 +325,7 @@ Returns:
 ]
 ```
 
-#### Get all Ehinese posts
+#### Get all English posts
 
 ```
 GET /language/en

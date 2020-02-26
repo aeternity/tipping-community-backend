@@ -28,22 +28,17 @@ describe('Comments', () => {
     tipId: 'https://aeternity.com,1',
     text: 'What an awesome website',
     author: publicKey,
-    requestTimestamp: Date.now()
   };
 
   let commentId = null;
 
-  const signRequest = (body) => {
-    const message = hash(deterministicStringify(body));
+  const signChallenge = (challenge) => {
     const signatureBuffer = signPersonalMessage(
-      message,
+      challenge,
       Buffer.from(secretKey, 'hex'),
     );
-    body.signature = Buffer.from(signatureBuffer).toString('hex');
-    return body;
+    return Buffer.from(signatureBuffer).toString('hex');
   };
-
-  const signedBody = signRequest(testData);
 
   before((done) => { //Before all tests we empty the database once
     Comment.destroy({
@@ -62,50 +57,67 @@ describe('Comments', () => {
       });
     });
 
-    it('it should fail with non valid signature', (done) => {
-      const modifiedBody = Object.assign({}, signedBody, {signature: '34784373478384'});
-      chai.request(server).post('/comment/api').send(modifiedBody).end((err, res) => {
-        res.should.have.status(401);
-        res.body.should.be.a('object');
-        res.body.should.have.property('err', 'bad signature size');        done();
-      });
-    });
-
-    it('it should fail with valid signature but different data', (done) => {
-      const modifiedBody = Object.assign({}, signedBody, {text: 'new text'});
-      chai.request(server).post('/comment/api').send(modifiedBody).end((err, res) => {
-        res.should.have.status(401);
-        res.body.should.be.a('object');
-        res.body.should.have.property('err', 'Invalid signature');
-        done();
-      });
-    });
-
-    it('it should fail with old but valid signature', (done) => {
-      const modifiedBody = Object.assign({}, signedBody, {requestTimestamp: Date.now() - 11 * 1000});
-      chai.request(server).post('/comment/api').send(modifiedBody).end((err, res) => {
-        res.should.have.status(401);
-        res.body.should.be.a('object');
-        res.body.should.have.property('err', 'Request older than 10 seconds');
-        done();
-      });
-    });
-
-
-    it('it should CREATE a new comment entry', (done) => {
-      chai.request(server).post('/comment/api').send(signedBody).end((err, res) => {
+    it('it should return a signature challenge', (done) => {
+      chai.request(server).post('/comment/api').send(testData).end((err, res) => {
         res.should.have.status(200);
         res.body.should.be.a('object');
-        res.body.should.have.property('id');
-        res.body.should.have.property('tipId', testData.tipId);
-        res.body.should.have.property('text', testData.text);
-        res.body.should.have.property('author', testData.author);
-        res.body.should.have.property('signature', testData.signature);
-        res.body.should.have.property('hidden', false);
-        res.body.should.have.property('createdAt');
-        res.body.should.have.property('updatedAt');
-        commentId = res.body.id;
+        res.body.should.have.property('challenge');
         done();
+      });
+    });
+
+    it('it should fail with invalid signature', (done) => {
+      chai.request(server).post('/comment/api').send(testData).end((err, res) => {
+        res.should.have.status(200);
+        res.body.should.be.a('object');
+        res.body.should.have.property('challenge');
+        const challenge = res.body.challenge;
+        chai.request(server).post('/comment/api').send({ challenge, signature: 'wrong' }).end((err, res) => {
+          res.should.have.status(401);
+          res.body.should.be.a('object');
+          res.body.should.have.property('err', 'bad signature size');
+          done();
+        });
+      });
+    });
+
+    it('it should fail on invalid challenge', (done) => {
+      chai.request(server).post('/comment/api').send(testData).end((err, res) => {
+        res.should.have.status(200);
+        res.body.should.be.a('object');
+        res.body.should.have.property('challenge');
+        const challenge = res.body.challenge;
+        const signature = signChallenge(challenge);
+        chai.request(server).post('/comment/api').send({ challenge: challenge.substring(2), signature }).end((err, res) => {
+          res.should.have.status(401);
+          res.body.should.be.a('object');
+          res.body.should.have.property('err', 'Could not find challenge');
+          done();
+        });
+      });
+    });
+
+    it('it should CREATE a new comment entry', (done) => {
+      chai.request(server).post('/comment/api').send(testData).end((err, res) => {
+        res.should.have.status(200);
+        res.body.should.be.a('object');
+        res.body.should.have.property('challenge');
+        const challenge = res.body.challenge;
+        const signature = signChallenge(challenge);
+        chai.request(server).post('/comment/api').send({ challenge: challenge, signature }).end((err, res) => {
+          res.should.have.status(400);
+          res.body.should.be.a('object');
+          res.body.should.have.property('id');
+          res.body.should.have.property('tipId', testData.tipId);
+          res.body.should.have.property('text', testData.text);
+          res.body.should.have.property('author', testData.author);
+          res.body.should.have.property('signature', testData.signature);
+          res.body.should.have.property('hidden', false);
+          res.body.should.have.property('createdAt');
+          res.body.should.have.property('updatedAt');
+          commentId = res.body.id;
+          done();
+        });
       });
     });
 

@@ -1,36 +1,13 @@
-const Sequelize = require('sequelize');
-
-class Comment extends Sequelize.Model {
-  static init (sequelize, DataTypes) {
-    super.init({
-      // attributes
-      tipId: {
-        type: DataTypes.STRING,
-        allowNull: false,
-      },
-      text: {
-        type: DataTypes.STRING,
-        allowNull: false,
-      },
-      author: {
-        type: DataTypes.STRING,
-        allowNull: false,
-      },
-      signature: {
-        type: DataTypes.STRING,
-        allowNull: false,
-      },
-      hidden: {
-        type: DataTypes.BOOLEAN,
-        defaultValue: false,
-      },
-    }, {
-      sequelize,
-      modelName: 'Comment',
-      timestamps: true,
-    });
-  }
-}
-
-
-module.exports = Comment;
+'use strict';
+module.exports = (sequelize, DataTypes) => {
+  const Comment = sequelize.define('Comment', {
+    tipId: DataTypes.STRING,
+    text: DataTypes.STRING,
+    author: DataTypes.STRING,
+    hidden: DataTypes.BOOLEAN
+  }, {});
+  Comment.associate = function(models) {
+    // associations can be defined here
+  };
+  return Comment;
+};

@@ -26,6 +26,7 @@ app.use('/language', require('./routes/languageRoutes.js'));
 app.use('/claim', require('./routes/payForTxRoutes.js'));
 app.use('/logs', require('./routes/loggerRoutes.js'));
 app.use('/static', require('./routes/staticRoutes.js'));
+app.use('/profile', require('./routes/profileRoutes.js'));
 
 app.use((req, res) => {
   res.sendStatus(404);

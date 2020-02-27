@@ -16,10 +16,6 @@ class Comment extends Sequelize.Model {
         type: DataTypes.STRING,
         allowNull: false,
       },
-      signature: {
-        type: DataTypes.STRING,
-        allowNull: false,
-      },
       hidden: {
         type: DataTypes.BOOLEAN,
         defaultValue: false,

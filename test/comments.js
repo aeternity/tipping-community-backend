@@ -15,8 +15,7 @@ let server = require('../server');
 let should = chai.should();
 
 const { Comment } = require('../utils/database.js');
-const { hash, signPersonalMessage, generateKeyPair } = require('@aeternity/aepp-sdk').Crypto;
-const { deterministicStringify } = require('../utils/auth.js');
+const { signPersonalMessage, generateKeyPair } = require('@aeternity/aepp-sdk').Crypto;
 
 chai.use(chaiHttp);
 //Our parent block
@@ -88,10 +87,13 @@ describe('Comments', () => {
         res.body.should.have.property('challenge');
         const challenge = res.body.challenge;
         const signature = signChallenge(challenge);
-        chai.request(server).post('/comment/api').send({ challenge: challenge.substring(2), signature }).end((err, res) => {
+        chai.request(server).post('/comment/api').send({
+          challenge: challenge.substring(2),
+          signature
+        }).end((err, res) => {
           res.should.have.status(401);
           res.body.should.be.a('object');
-          res.body.should.have.property('err', 'Could not find challenge');
+          res.body.should.have.property('err', 'Could not find challenge (maybe it already expired?)');
           done();
         });
       });
@@ -105,13 +107,12 @@ describe('Comments', () => {
         const challenge = res.body.challenge;
         const signature = signChallenge(challenge);
         chai.request(server).post('/comment/api').send({ challenge: challenge, signature }).end((err, res) => {
-          res.should.have.status(400);
+          res.should.have.status(200);
           res.body.should.be.a('object');
           res.body.should.have.property('id');
           res.body.should.have.property('tipId', testData.tipId);
           res.body.should.have.property('text', testData.text);
           res.body.should.have.property('author', testData.author);
-          res.body.should.have.property('signature', testData.signature);
           res.body.should.have.property('hidden', false);
           res.body.should.have.property('createdAt');
           res.body.should.have.property('updatedAt');
@@ -129,7 +130,6 @@ describe('Comments', () => {
         res.body.should.have.property('tipId', testData.tipId);
         res.body.should.have.property('text', testData.text);
         res.body.should.have.property('author', testData.author);
-        res.body.should.have.property('signature', testData.signature);
         res.body.should.have.property('hidden', 0);
         res.body.should.have.property('createdAt');
         res.body.should.have.property('updatedAt');
@@ -148,26 +148,47 @@ describe('Comments', () => {
 
     // PUT
     it('it should update a comment entry', (done) => {
-      chai.request(server).put('/comment/api/' + commentId).auth(process.env.AUTHENTICATION_USER, process.env.AUTHENTICATION_PASSWORD)
+      chai.request(server).put('/comment/api/' + commentId)
         .send({
           hidden: true,
+          author: testData.author
         }).end((err, res) => {
         res.should.have.status(200);
         res.body.should.be.a('object');
-        res.body.should.have.property('id', commentId);
-        res.body.should.have.property('hidden', 1);
-        done();
+        res.body.should.have.property('challenge');
+        const challenge = res.body.challenge;
+        const signature = signChallenge(challenge);
+        chai.request(server).put('/comment/api/' + commentId).send({
+          challenge: challenge,
+          signature
+        }).end((err, res) => {
+          res.should.have.status(200);
+          res.body.should.be.a('object');
+          res.body.should.have.property('id', commentId);
+          res.body.should.have.property('hidden', 1);
+          done();
+        });
       });
     });
 
     it('it should DELETE a single comment entry', (done) => {
       chai.request(server)
         .delete('/comment/api/' + commentId)
-        .auth(process.env.AUTHENTICATION_USER, process.env.AUTHENTICATION_PASSWORD)
+        .send({ author: testData.author })
         .end((err, res) => {
           res.should.have.status(200);
           res.body.should.be.a('object');
-          done();
+          res.body.should.have.property('challenge');
+          const challenge = res.body.challenge;
+          const signature = signChallenge(challenge);
+          chai.request(server).delete('/comment/api/' + commentId).send({
+            challenge: challenge,
+            signature
+          }).end((err, res) => {
+            res.should.have.status(200);
+            res.body.should.be.a('object');
+            done();
+          });
         });
     });
 
@@ -178,5 +199,4 @@ describe('Comments', () => {
       });
     });
   });
-
 });

@@ -5,7 +5,7 @@ module.exports = class CommentLogic {
   static async addItem (req, res) {
     try {
       const { tipId, text, author } = req.body;
-      if (!tipId || !text || !author ) return res.status(400).send('Missing required field');
+      if (!tipId || !text || !author) return res.status(400).send('Missing required field');
       const entry = await Comment.create({ tipId, text, author });
       res.send(entry);
     } catch (e) {
@@ -37,16 +37,20 @@ module.exports = class CommentLogic {
   };
 
   static async updateItem (req, res) {
-    const { tipId, text, author, signature, hidden } = req.body;
-    if (!tipId && !text && !author && !signature && !hidden) return res.status(400).send('Missing at least one updatable field');
+    const { text, author, hidden } = req.body;
+    if (!author) return res.status(400).send({ err: 'Author required' });
+    if (!text && !hidden) return res.status(400).send({ err: 'Missing at least one updatable field' });
     await Comment.update({
-      ...tipId && { tipId },
       ...text && { text },
-      ...author && { author },
-      ...signature && { signature },
       ...hidden && { hidden },
     }, { where: { id: req.params.id }, raw: true });
     const result = await Comment.findOne({ where: { id: req.params.id }, raw: true });
     return result ? res.send(result) : res.sendStatus(404);
+  }
+
+  static async verifyAuthor (req, res, next) {
+    if (!req.body.author) return res.status(400).send({ err: 'Author required' });
+    const result = await Comment.findOne({ where: { id: req.params.id, author: req.body.author }, raw: true });
+    return result ? next() : res.status(404).send({ err: `Could not find comment with id ${req.params.id} and ${req.body.author} as author` })
   }
 };

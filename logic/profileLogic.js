@@ -6,9 +6,9 @@ module.exports = class ProfileLogic {
 
   static async createProfile (req, res) {
     try {
-      const { address, biography } = req.body;
-      if (!address) return res.status(400).send('Missing required field address');
-      const entry = await Profile.create({ address, biography });
+      const { author, biography } = req.body;
+      if (!author) return res.status(400).send('Missing required field author');
+      const entry = await Profile.create({ author, biography });
       res.send(entry);
     } catch (e) {
       console.error(e);
@@ -19,50 +19,60 @@ module.exports = class ProfileLogic {
   static async removeItem (req, res) {
     const result = await Profile.destroy({
       where: {
-        address: req.params.address,
+        author: req.params.author,
       },
     });
     return result === 1 ? res.sendStatus(200) : res.sendStatus(404);
   }
 
   static async getSingleItem (req, res) {
-    const result = await Profile.findOne({ where: { id: req.params.address }, raw: true });
-    if (!result) res.sendStatus(404);
+    const result = await Profile.findOne({ where: { author: req.params.author }, raw: true });
+    if (!result) return res.sendStatus(404);
     result.image = !!result.image;
-    res.send(result);
+    return res.send(result);
   };
 
   static async updateItem (req, res) {
     const { biography } = req.body;
     if (!biography) return res.status(400).send('Missing required field biography');
     await Profile.update({
-      ...biography && { biography }
-    }, { where: { address: req.params.address }, raw: true });
+      ...biography && { biography },
+    }, { where: { author: req.params.author }, raw: true });
     return ProfileLogic.getSingleItem(req, res)
   }
 
   static async getImage (req, res) {
-    const result = await Profile.findOne({ where: { address: req.params.address }, raw: true });
+    const result = await Profile.findOne({ where: { author: req.params.author }, raw: true });
     if (!result || !result.image) return res.sendStatus(404);
-    res.sendFile(path.resolve(__dirname, 'image', result.image));
+    res.sendFile(path.resolve(__dirname, '../images', result.image));
   }
 
   static async updateImage (req, res) {
-    const result = await Profile.findOne({ where: { address: req.params.address }, raw: true });
+    const result = await Profile.findOne({ where: { author: req.params.author }, raw: true });
     if (!result) res.sendStatus(404);
+    // Delete existing image
+    if(result.image && result.image !== req.file.filename) fs.unlinkSync('images/' + result.image);
     await Profile.update({
-      image: `${req.file.image.filename}`,
-    }, { where: { address: req.params.address }, raw: true });
-    res.send(200);
+      image: `${req.file.filename}`,
+    }, { where: { author: req.params.author }, raw: true });
+    res.sendStatus(200);
   }
 
   static async deleteImage (req, res) {
-    const result = await Profile.findOne({ where: { address: req.params.address }, raw: true });
+    const result = await Profile.findOne({ where: { author: req.params.author }, raw: true });
     if (!result || !result.image) return res.sendStatus(404);
-    fs.unlinkSync(result.image);
+    fs.unlinkSync('images/' + result.image);
     await Profile.update({
       image: null,
-    }, { where: { address: req.params.address }, raw: true });
-    res.send(200);
+    }, { where: { author: req.params.author }, raw: true });
+    res.sendStatus(200);
+  }
+
+  static async verifyRequest (req, res, next) {
+    const authorInParams = req.params.author;
+    const authorInBody = req.body.author;
+    if (authorInBody && authorInParams) {
+      return authorInBody === authorInParams ? next() : res.status(401).send({ err: 'Author in url is not equal to author in body.' })
+    } else return next();
   }
 };

@@ -18,6 +18,8 @@ LinkPreview.init(sequelize, Sequelize);
 const Tip = require('../models/tip.js');
 Tip.init(sequelize, Sequelize);
 
+const Profile = require('../models/profile.js');
+Profile.init(sequelize, Sequelize);
 sequelize.sync();
 
 module.exports = {
@@ -25,5 +27,6 @@ module.exports = {
   BlacklistEntry,
   Comment,
   LinkPreview,
-  Tip
+  Tip,
+  Profile
 };

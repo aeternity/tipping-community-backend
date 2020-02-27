@@ -113,6 +113,8 @@ describe('Comments', () => {
           res.body.should.have.property('tipId', testData.tipId);
           res.body.should.have.property('text', testData.text);
           res.body.should.have.property('author', testData.author);
+          res.body.should.have.property('challenge', challenge);
+          res.body.should.have.property('signature', signature);
           res.body.should.have.property('hidden', false);
           res.body.should.have.property('createdAt');
           res.body.should.have.property('updatedAt');
@@ -130,6 +132,8 @@ describe('Comments', () => {
         res.body.should.have.property('tipId', testData.tipId);
         res.body.should.have.property('text', testData.text);
         res.body.should.have.property('author', testData.author);
+        res.body.should.have.property('challenge');
+        res.body.should.have.property('signature');
         res.body.should.have.property('hidden', 0);
         res.body.should.have.property('createdAt');
         res.body.should.have.property('updatedAt');
@@ -143,31 +147,6 @@ describe('Comments', () => {
         res.body.should.be.a('array');
         res.body.length.should.be.eql(1);
         done();
-      });
-    });
-
-    // PUT
-    it('it should update a comment entry', (done) => {
-      chai.request(server).put('/comment/api/' + commentId)
-        .send({
-          hidden: true,
-          author: testData.author
-        }).end((err, res) => {
-        res.should.have.status(200);
-        res.body.should.be.a('object');
-        res.body.should.have.property('challenge');
-        const challenge = res.body.challenge;
-        const signature = signChallenge(challenge);
-        chai.request(server).put('/comment/api/' + commentId).send({
-          challenge: challenge,
-          signature
-        }).end((err, res) => {
-          res.should.have.status(200);
-          res.body.should.be.a('object');
-          res.body.should.have.property('id', commentId);
-          res.body.should.have.property('hidden', 1);
-          done();
-        });
       });
     });
 

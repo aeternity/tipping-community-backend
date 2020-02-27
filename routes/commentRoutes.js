@@ -10,7 +10,6 @@ router.get('/api/:id', CommentLogic.getSingleItem);
 router.get('/api/tip/:tipId', CommentLogic.getAllItemsForThread);
 
 // Restricted api routes
-router.put('/api/:id', signatureAuth, CommentLogic.verifyAuthor, CommentLogic.updateItem);
 router.post('/api', signatureAuth, CommentLogic.addItem);
 router.delete('/api/:id', signatureAuth, CommentLogic.verifyAuthor, CommentLogic.removeItem);
 

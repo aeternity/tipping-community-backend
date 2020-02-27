@@ -26,7 +26,7 @@ describe('Profile', () => {
 
   const testData = {
     biography: 'What an awesome bio',
-    author: publicKey,
+    author: publicKey
   };
 
   const signChallenge = (challenge) => {
@@ -102,12 +102,14 @@ describe('Profile', () => {
         res.body.should.have.property('challenge');
         const challenge = res.body.challenge;
         const signature = signChallenge(challenge);
-        chai.request(server).post('/profile/').send({ challenge: challenge, signature }).end((err, res) => {
+        chai.request(server).post('/profile/').send({ challenge, signature }).end((err, res) => {
           res.should.have.status(200);
           res.body.should.be.a('object');
           res.body.should.have.property('id');
           res.body.should.have.property('biography', testData.biography);
           res.body.should.have.property('author', testData.author);
+          res.body.should.have.property('signature', signature);
+          res.body.should.have.property('challenge', challenge);
           res.body.should.have.property('createdAt');
           res.body.should.have.property('updatedAt');
           done();
@@ -122,54 +124,32 @@ describe('Profile', () => {
         res.body.should.have.property('id');
         res.body.should.have.property('biography', testData.biography);
         res.body.should.have.property('author', testData.author);
+        res.body.should.have.property('signature');
+        res.body.should.have.property('challenge');
         res.body.should.have.property('createdAt');
         res.body.should.have.property('updatedAt');
         done();
       });
     });
 
-    // PUT
-    it('it should update a profile', (done) => {
-      chai.request(server).put('/profile/' + publicKey)
+    it('it should reject creation for another profile', (done) => {
+      chai.request(server).post('/profile/')
         .send({
           biography: 'new bio',
+          author: 'ak_fUq2NesPXcYZ1CcqBcGC3StpdnQw3iVxMA3YSeCNAwfN4myQk'
         }).end((err, res) => {
         res.should.have.status(200);
         res.body.should.be.a('object');
         res.body.should.have.property('challenge');
         const challenge = res.body.challenge;
         const signature = signChallenge(challenge);
-        chai.request(server).put('/profile/' + publicKey).send({
-          challenge: challenge,
-          signature,
-        }).end((err, res) => {
-          res.should.have.status(200);
-          res.body.should.be.a('object');
-          res.body.should.have.property('author', publicKey);
-          res.body.should.have.property('biography', 'new bio');
-          done();
-        });
-      });
-    });
-
-    it('it should reject on update for another profile', (done) => {
-      chai.request(server).put('/profile/' + publicKey)
-        .send({
-          biography: 'new bio',
-          author: 'ak_fUq2NesPXcYZ1CcqBcGC3StpdnQw3iVxMA3YSeCNAwfN4myQk',
-        }).end((err, res) => {
-        res.should.have.status(200);
-        res.body.should.be.a('object');
-        res.body.should.have.property('challenge');
-        const challenge = res.body.challenge;
-        const signature = signChallenge(challenge);
-        chai.request(server).put('/profile/' + publicKey).send({
+        chai.request(server).post('/profile/').send({
           challenge: challenge,
           signature,
         }).end((err, res) => {
           res.should.have.status(401);
           res.body.should.be.a('object');
-          res.body.should.have.property('err', 'Author in url is not equal to author in body.');
+          res.body.should.have.property('err', 'Invalid signature');
           done();
         });
       });
@@ -214,7 +194,11 @@ describe('Profile', () => {
         where: {},
         truncate: true,
       }).then(() =>
-        Profile.create(testData).then(() => done()));
+        Profile.create({
+          ...testData,
+          signature: 'signature',
+          challenge: 'challenge'
+        }).then(() => done()));
     });
 
     const binaryParser = function (res, cb) {
@@ -252,11 +236,16 @@ describe('Profile', () => {
       chai.request(server).get('/profile/' + publicKey)
         .end((err, res) => {
           res.should.have.status(200);
+          console.log(res.body);
           res.body.should.be.a('object');
           res.body.should.have.property('id');
           res.body.should.have.property('biography', testData.biography);
           res.body.should.have.property('author', testData.author);
           res.body.should.have.property('image', true);
+          res.body.should.have.property('signature');
+          res.body.should.have.property('challenge');
+          res.body.should.have.property('imageSignature').not.null;
+          res.body.should.have.property('imageChallenge').not.null;
           res.body.should.have.property('createdAt');
           res.body.should.have.property('updatedAt');
           done();

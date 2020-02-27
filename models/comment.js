@@ -20,6 +20,14 @@ class Comment extends Sequelize.Model {
         type: DataTypes.BOOLEAN,
         defaultValue: false,
       },
+      signature: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
+      challenge: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
     }, {
       sequelize,
       modelName: 'Comment',

@@ -4,9 +4,9 @@ module.exports = class CommentLogic {
 
   static async addItem (req, res) {
     try {
-      const { tipId, text, author } = req.body;
-      if (!tipId || !text || !author) return res.status(400).send('Missing required field');
-      const entry = await Comment.create({ tipId, text, author });
+      const { tipId, text, author, signature, challenge } = req.body;
+      if (!tipId || !text || !author || !signature || !challenge) return res.status(400).send('Missing required field');
+      const entry = await Comment.create({ tipId, text, author, signature, challenge });
       res.send(entry);
     } catch (e) {
       console.error(e);

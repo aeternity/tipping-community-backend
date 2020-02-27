@@ -6,9 +6,9 @@ module.exports = class ProfileLogic {
 
   static async createProfile (req, res) {
     try {
-      const { author, biography } = req.body;
+      const { author, biography, signature, challenge } = req.body;
       if (!author) return res.status(400).send('Missing required field author');
-      const entry = await Profile.create({ author, biography });
+      const entry = await Profile.create({ author, biography, signature, challenge });
       res.send(entry);
     } catch (e) {
       console.error(e);
@@ -54,6 +54,8 @@ module.exports = class ProfileLogic {
     if(result.image && result.image !== req.file.filename) fs.unlinkSync('images/' + result.image);
     await Profile.update({
       image: `${req.file.filename}`,
+      imageSignature: req.body.signature,
+      imageChallenge: req.body.challenge
     }, { where: { author: req.params.author }, raw: true });
     res.sendStatus(200);
   }
@@ -64,6 +66,8 @@ module.exports = class ProfileLogic {
     fs.unlinkSync('images/' + result.image);
     await Profile.update({
       image: null,
+      imageSignature: null,
+      imageChallenge: null
     }, { where: { author: req.params.author }, raw: true });
     res.sendStatus(200);
   }

@@ -16,6 +16,22 @@ class Profile extends Sequelize.Model {
         type: DataTypes.STRING,
         allowNull: true,
       },
+      signature: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
+      challenge: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
+      imageSignature: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      imageChallenge: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
     }, {
       sequelize,
       modelName: 'Profile',

@@ -1,7 +1,7 @@
-const { verifyPersonalMessage, decodeBase58Check } = require('@aeternity/aepp-sdk').Crypto;
+const { verifyPersonalMessage, decodeBase58Check, hash } = require('@aeternity/aepp-sdk').Crypto;
 const { v4: uuidv4 } = require('uuid');
-
-const deterministicStringify = obj => JSON.stringify(obj, Object.keys(obj).sort());
+const fs = require('fs');
+const path = require('path');
 
 const basicAuth = (req, res, next) => {
   const auth = { login: process.env.AUTHENTICATION_USER, password: process.env.AUTHENTICATION_PASSWORD };
@@ -18,6 +18,44 @@ const basicAuth = (req, res, next) => {
 };
 
 const MemoryQueue = [];
+const actions = [
+  {
+    method: 'POST',
+    path: '\/comment\/api\/?',
+    actionName: "CREATE_COMMENT",
+    relevantFields: ['text'],
+  },
+  {
+    method: 'POST',
+    path: '\/profile\/?',
+    actionName: "CREATE_PROFILE",
+    relevantFields: ['biography'],
+  },
+  {
+    method: 'POST',
+    path: '\/profile\/image',
+    actionName: "CREATE_PROFILE_IMAGE",
+    relevantFields: [],
+    hasFile: true,
+  },
+  {
+    method: 'DELETE',
+    path: '\/comment\/api\/.*',
+    actionName: "DELETE_COMMENT",
+    relevantFields: [],
+  },
+  {
+    method: 'DELETE',
+    path: '\/profile\/ak_.*',
+    actionName: "DELETE_PROFILE",
+    relevantFields: [],
+  },
+  {
+    method: 'DELETE',
+    path: '\/profile\/image\/ak_.*',
+    actionName: "DELETE_PROFILE_IMAGE",
+    relevantFields: [],
+  }];
 
 const signatureAuth = (req, res, next) => {
   const sendError = message => res.status(401).send({ err: message });
@@ -40,14 +78,14 @@ const signatureAuth = (req, res, next) => {
       const { challenge, body, file, method, url } = queueItem;
 
       // Verify that the challenge was issued for this method + path
-      if(req.method !== method) return sendError('Challenge was issued for a different http method');
-      if(req.originalUrl !== url) return sendError('Challenge was issued for a different path');
+      if (req.method !== method) return sendError('Challenge was issued for a different http method');
+      if (req.originalUrl !== url) return sendError('Challenge was issued for a different path');
 
       // The public key can either be
       // body.author --> Comment route or POST profile
       // params.author --> profile route
       // we have to verify req.params.author first
-      const publicKey = req.params.author ? req.params.author :  body.author;
+      const publicKey = req.params.author ? req.params.author : body.author;
       if (!publicKey) sendError('Could not find associated public key');
       const author = decodeBase58Check(publicKey.substring(3));
 
@@ -59,8 +97,8 @@ const signatureAuth = (req, res, next) => {
         // Remove challenge from active queue
         const queueIndex = MemoryQueue.findIndex(item => (item || {}).challenge === req.body.challenge);
         delete MemoryQueue[queueIndex];
-        // forward request
-        req.body = body;
+        // forward request and merge current body onto existing
+        req.body = Object.assign({}, req.body, body);
         if (file) req.file = file;
         return next();
       } else {
@@ -72,22 +110,38 @@ const signatureAuth = (req, res, next) => {
   } else {
     if (!req.body.author && !req.params.author) return sendError('Missing field author in body or url');
     const uuid = uuidv4();
-    MemoryQueue.push({
-      challenge: uuid,
-      body: req.body,
-      method: req.method,
-      url: req.originalUrl,
-      file: req.file ? req.file : null,
-      timestamp: Date.now(),
-    });
-    return res.send({
-      challenge: uuid,
-    });
+    try {
+      const action = actions
+        .find(({ method, path }) => method === req.method && req.originalUrl.match(path));
+      if(!action) return sendError('Could not find valid action related to this request');
+      const { actionName, relevantFields, hasFile } = action;
+
+      let payload;
+      if (!hasFile) {
+        payload = relevantFields.reduce((acc, fieldIndex) => acc + req.body[fieldIndex], '');
+        // UUID-RelevantFieldHash-Action-Timestamp
+      } else {
+        payload = fs.readFileSync(path.resolve('../images/', req.file.fileName));
+      }
+      // UUID-RelevantFieldHash-Action-Timestamp
+      const challenge = `${uuid}-${actionName.indexOf('DELETE') === 0 ? '' : hash(payload).toString('hex')}-${actionName}-${Date.now()}`;
+      MemoryQueue.push({
+        challenge,
+        body: req.body,
+        method: req.method,
+        url: req.originalUrl,
+        file: req.file ? req.file : null,
+        timestamp: Date.now(),
+      });
+      return res.send({ challenge });
+    } catch (e) {
+      console.error(e);
+      return sendError(e.message)
+    }
   }
 };
 
 module.exports = {
   basicAuth,
   signatureAuth,
-  deterministicStringify,
 };

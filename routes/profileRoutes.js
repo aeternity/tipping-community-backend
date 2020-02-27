@@ -19,7 +19,6 @@ const upload = multer({ storage: storage });
 // Open api routes
 router.get('/:author', ProfileLogic.getSingleItem);
 router.post('/', signatureAuth, ProfileLogic.createProfile);
-router.put('/:author', signatureAuth, ProfileLogic.verifyRequest, ProfileLogic.updateItem);
 router.delete('/:author', signatureAuth, ProfileLogic.verifyRequest, ProfileLogic.removeItem);
 
 // Image Routes

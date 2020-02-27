@@ -15,49 +15,57 @@ The API is on a code basis divided into several route files. This structure will
 ## Signature Authentication
 
 The basic steps by the backend to verify a request with a signature are as follows:
-1. Get the whole body and verify the existence of 
-    1. signature (in hex)
-    1. address (public key)
-    1. requestTimestamp (if older than 10 seconds --> rejected)
-    1. method (http-method)
-    1. path (everything from the root domain on including query parameters)
-1. Alphabetically sort the request body object by keys
-1. Remove the signature from the request body
-1. Hash the remaining request body using the `256bits Blake2b hash` provided by the aepp-sdk-js
-1. Verifies the hash against the signature and the public key
+1. Get the whole body and verify the existence of the field author
+    - not required for most /profile routes as the public key is already in the url
+1. Store the request in memory for 5 minutes and issue a challenge
+1. The requester has to sign the challenge with the private key attributed to the public key in the request
+1. The signature gets verified and the request is then forwarded to the server
 
 Here is a code sample of how to sign a request using the aepp-sdk-js:
 ```javascript
 // Import dependencies
-const { hash, signPersonalMessage, generateKeyPair } = require('@aeternity/aepp-sdk').Crypto;
-// Create object sorting function
-const deterministicStringify = obj => JSON.stringify(obj, Object.keys(obj).sort()); 
-
+const { signPersonalMessage, generateKeyPair } = require('@aeternity/aepp-sdk').Crypto;
 
 // Obtain random keypair
 const { publicKey, secretKey } = generateKeyPair(); 
 // Define minimal test object
 const testData = {
-    author: publicKey,
-    requestTimestamp: Date.now(),
-    method: 'GET',
-    path: '/comment/'
+  author: publicKey,
+  text: 'new comment',
+  tipId: 'https://aeternity.com,1'
 };
 
-// Sort and hash the object
-const message = hash(deterministicStringify(testData));
-
-// Sign the message
-const signatureBuffer = signPersonalMessage(
-  message,
-  Buffer.from(secretKey, 'hex'),
-);
-
-// Append the signature (in hex) to the body
-testData.signature = Buffer.from(signatureBuffer).toString('hex');
-
-// Return the signed body
-return testData;
+fetch(
+  '/comment/api', // url
+  {
+    headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      },
+      method: "POST",
+      body: JSON.stringify(testData)
+  })
+  .then(result => {
+    const data = result.json();
+    // sign challenge
+    const signatureBuffer = signPersonalMessage(
+      data.challenge,
+      Buffer.from(secretKey, 'hex'),
+    );
+    fetch(
+      '/comment/api', // url
+      {
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+          },
+          method: "POST",
+          body: JSON.stringify({
+            signature: Buffer.from(signatureBuffer).toString('hex'),
+            challenge: data.challenge
+          })
+      })
+  });
 ```
 
 ## Blacklist
@@ -188,7 +196,6 @@ Returns:
     "tipId": String(url,nonce), // "https://aeternity.com,1"
     "text": String, // "hello world"
     "sender": String(address), // ak_a4eg....
-    "signature": String(hash), // "af3eg..."
     "createdAt": String(Date.toISOString), // "2020-02-14 16:13:43.264 +00:00"
     "updatedAt": String(Date.toISOString) // "2020-02-14 16:13:43.264 +00:00"
   },
@@ -209,7 +216,6 @@ Returns:
   "tipId": String(url,nonce), // "https://aeternity.com,1"
   "text": String, // "hello world"
   "author": String(address), // ak_a4eg....
-  "signature": String(hash), // "af3eg..."
   "createdAt": String(Date.toISOString), // "2020-02-14 16:13:43.264 +00:00"
   "updatedAt": String(Date.toISOString) // "2020-02-14 16:13:43.264 +00:00"
 }
@@ -230,7 +236,6 @@ Returns:
     "tipId": String(url,nonce), // "https://aeternity.com,1"
     "text": String, // "hello world"
     "author": String(address), // ak_a4eg....
-    "signature": String(hash), // "af3eg..."
     "createdAt": String(Date.toISOString), // "2020-02-14 16:13:43.264 +00:00"
     "updatedAt": String(Date.toISOString) // "2020-02-14 16:13:43.264 +00:00"
   },
@@ -251,10 +256,6 @@ Request Body:
   "tipId": String(url,nonce), // "https://aeternity.com,1"
   "text": String, // "hello world"
   "author": String(address), // ak_a4eg....
-  "signature": String(hash), // "af3eg..."
-  "requestTimestamp": Date.now(), // 15346767434834
-  "method": String(method), // "PUT"
-  "path": String(path), // "/comment/api/1"
   "createdAt": String(Date.toISOString), // "2020-02-14 16:13:43.264 +00:00"
   "updatedAt": String(Date.toISOString) // "2020-02-14 16:13:43.264 +00:00"
 }
@@ -266,7 +267,6 @@ Returns:
   "tipId": String(url,nonce), // "https://aeternity.com,1"
   "text": String, // "hello world"
   "author": String(address), // ak_a4eg....
-  "signature": String(hash), // "af3eg..."
   "createdAt": String(Date.toISOString), // "2020-02-14 16:13:43.264 +00:00"
   "updatedAt": String(Date.toISOString) // "2020-02-14 16:13:43.264 +00:00"
 }
@@ -285,11 +285,7 @@ Request Body:
   "id": Integer, // 1
   "tipId": String(url,nonce), // "https://aeternity.com,1"
   "text": String, // "hello world"
-  "requestTimestamp": Date.now(), // 15346767434834
-  "method": String(method), // "POST"
-  "path": String(path), // "/comment/api/"
   "author": String(address), // ak_a4eg....
-  "signature": String(hash), // "af3eg..."
 }
 
 Returns: 
@@ -299,7 +295,6 @@ Returns:
   "tipId": String(url,nonce), // "https://aeternity.com,1"
   "text": String, // "hello world"
   "author": String(address), // ak_a4eg....
-  "signature": String(hash), // "af3eg..."
   "createdAt": String(Date.toISOString), // "2020-02-14 16:13:43.264 +00:00"
   "updatedAt": String(Date.toISOString) // "2020-02-14 16:13:43.264 +00:00"
 }
@@ -315,10 +310,6 @@ Authorization: Signature Authentication
 Request Body:
 {
   "author": String(address), // ak_a4eg....
-  "requestTimestamp": Date.now(), // 15346767434834
-  "method": String(method), // "DELETE"
-  "path": String(path), // "/comment/api/1"
-  "signature": String(hash), // "af3eg..."
 }
 
 Returns: 
@@ -505,7 +496,7 @@ GET /profile/:String(address)
 Returns:
 {
   id: Int,
-  address: String(address),
+  author: String(address),
   image: Boolean, // false
   biography: String
 }
@@ -513,24 +504,20 @@ Returns:
 
 #### Create profile
 ```
-POST /profile/:String(address)
+POST /profile/
 
 Authorization: Signature Authentication
 
 Request Body:
 {
-  address: String(address), // ak_a4eg....
-  requestTimestamp: Date.now() // 15346767434834
-  method: String(method), // "POST"
-  path: String(path), // "/profile/ak_a4eg..."
-  signature: String(hash), // "af3eg..."
+  author: String(address), // ak_a4eg....
   biography: String, // hello world
 }
 
 Returns:
 {
   id: Int, // 1
-  address: String(address), // ak_a4eg....
+  author: String(address), // ak_a4eg....
   image: Boolean, // false
   biography: String // hello world
 }
@@ -544,18 +531,13 @@ Authorization: Signature Authentication
 
 Request Body:
 {
-  address: String(address), // ak_a4eg....
-  requestTimestamp: Date.now() // 15346767434834
-  method: String(method), // "PUT"
-  path: String(path), // "/profile/ak_a4eg..."
-  signature: String(hash), // "af3eg..."
   biography: String, // hello world
 }
 
 Returns:
 {
   id: Int, // 1
-  address: String(address), // ak_a4eg....
+  author: String(address), // ak_a4eg....
   image: Boolean, // false
   biography: String // hello world
 }
@@ -566,15 +548,6 @@ Returns:
 DELETE /profile/:String(address)
 
 Authorization: Signature Authentication
-
-Request Body:
-{
-  address: String(address), // ak_a4eg....
-  requestTimestamp: Date.now(), // 15346767434834
-  method: String(method), // "DELETE"
-  path: String(path), // "/profile/ak_a4eg..."
-  signature: String(hash), // "af3eg..."
-}
 
 Returns: 
 200 OK
@@ -596,14 +569,8 @@ POST /profile/image/:String(address)
 Authorization: Signature Authentication
 
 Request Body:
-{
-  imageHash: String(hash), // "78325efd..."
-  address: String(address), // ak_a4eg....
-  requestTimestamp: Date.now(), // 15346767434834
-  method: String(method), // "POST"
-  path: String(path), // "/profile/image/ak_a4eg..."
-  signature: String(hash), // "af3eg..."
-}
+multipart/form-data
+image: Blob(image)
 
 Returns: 
 200 OK
@@ -616,13 +583,6 @@ DELETE /profile/image/:String(address)
 Authorization: Signature Authentication
 
 Request Body:
-{
-  address: String(address), // ak_a4eg....
-  requestTimestamp: Date.now(), // 15346767434834
-  method: String(method), // "DELETE"
-  path: String(path), // "/profile/image/ak_a4eg..."
-  signature: String(hash), // "af3eg..."
-}
 
 Returns: 
 200 OK

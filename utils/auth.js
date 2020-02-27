@@ -1,5 +1,5 @@
 const { verifyPersonalMessage, decodeBase58Check } = require('@aeternity/aepp-sdk').Crypto;
-const uuidv4 = require('uuid/v4');
+const { v4: uuidv4 } = require('uuid');
 
 const deterministicStringify = obj => JSON.stringify(obj, Object.keys(obj).sort());
 
@@ -17,7 +17,7 @@ const basicAuth = (req, res, next) => {
   res.status(401).send('Authentication required.'); // custom message
 };
 
-let MemoryQueue = [];
+const MemoryQueue = [];
 
 const signatureAuth = (req, res, next) => {
   const sendError = message => res.status(401).send({ err: message });
@@ -28,14 +28,27 @@ const signatureAuth = (req, res, next) => {
       if (!req.body.challenge) return sendError('Missing field challenge');
 
       // Filter expired items (10 mins timer)
-      MemoryQueue = MemoryQueue.filter(({timestamp}) => timestamp > Date.now() - 5 * 60 * 1000);
+      // use delete to avoid race condition while overwriting
+      MemoryQueue.map(({ timestamp }, index) => {
+        if (timestamp < Date.now() - 5 * 60 * 1000) delete MemoryQueue[index]
+      });
 
       // Find item
-      const queueItem = MemoryQueue.find(item => item.challenge === req.body.challenge);
+      // MemoryQueue probably has a significant list deleted items
+      const queueItem = MemoryQueue.find(item => (item || {}).challenge === req.body.challenge);
       if (!queueItem) return sendError('Could not find challenge (maybe it already expired?)');
-      const { challenge, body, file } = queueItem;
+      const { challenge, body, file, method, url } = queueItem;
 
-      const publicKey = body.author ? body.author : (body.sender ? body.sender : body.address);
+      // Verify that the challenge was issued for this method + path
+      if(req.method !== method) return sendError('Challenge was issued for a different http method');
+      if(req.originalUrl !== url) return sendError('Challenge was issued for a different path');
+
+      // The public key can either be
+      // body.author --> Comment route or POST profile
+      // params.author --> profile route
+      // we have to verify req.params.author first
+      const publicKey = req.params.author ? req.params.author :  body.author;
+      if (!publicKey) sendError('Could not find associated public key');
       const author = decodeBase58Check(publicKey.substring(3));
 
       const authString = Buffer.from(challenge);
@@ -43,8 +56,12 @@ const signatureAuth = (req, res, next) => {
 
       const validRequest = verifyPersonalMessage(authString, signatureArray, author);
       if (validRequest) {
+        // Remove challenge from active queue
+        const queueIndex = MemoryQueue.findIndex(item => (item || {}).challenge === req.body.challenge);
+        delete MemoryQueue[queueIndex];
+        // forward request
         req.body = body;
-        if(file) req.file = file;
+        if (file) req.file = file;
         return next();
       } else {
         return sendError('Invalid signature');
@@ -53,13 +70,15 @@ const signatureAuth = (req, res, next) => {
       return sendError(err.message);
     }
   } else {
-    if (!req.body.author && !req.body.sender && !req.body.address) return sendError('Missing field author or sender or address');
+    if (!req.body.author && !req.params.author) return sendError('Missing field author in body or url');
     const uuid = uuidv4();
     MemoryQueue.push({
       challenge: uuid,
       body: req.body,
+      method: req.method,
+      url: req.originalUrl,
       file: req.file ? req.file : null,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     });
     return res.send({
       challenge: uuid,

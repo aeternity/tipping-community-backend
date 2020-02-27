@@ -196,6 +196,8 @@ Returns:
     "tipId": String(url,nonce), // "https://aeternity.com,1"
     "text": String, // "hello world"
     "sender": String(address), // ak_a4eg....
+    "signature": String // 762ff32...
+    "challenge": String // 762f-f32...
     "createdAt": String(Date.toISOString), // "2020-02-14 16:13:43.264 +00:00"
     "updatedAt": String(Date.toISOString) // "2020-02-14 16:13:43.264 +00:00"
   },
@@ -216,6 +218,8 @@ Returns:
   "tipId": String(url,nonce), // "https://aeternity.com,1"
   "text": String, // "hello world"
   "author": String(address), // ak_a4eg....
+  "signature": String // 762ff32...
+  "challenge": String // 762f-f32...
   "createdAt": String(Date.toISOString), // "2020-02-14 16:13:43.264 +00:00"
   "updatedAt": String(Date.toISOString) // "2020-02-14 16:13:43.264 +00:00"
 }
@@ -236,41 +240,13 @@ Returns:
     "tipId": String(url,nonce), // "https://aeternity.com,1"
     "text": String, // "hello world"
     "author": String(address), // ak_a4eg....
+    "signature": String // 762ff32...
+    "challenge": String // 762f-f32...
     "createdAt": String(Date.toISOString), // "2020-02-14 16:13:43.264 +00:00"
     "updatedAt": String(Date.toISOString) // "2020-02-14 16:13:43.264 +00:00"
   },
   ...
 ]
-```
-
-#### Update comment
-```
-PUT /comment/api/:Int(id)
-
-Authorization: Signature Authentication
-
-Request Body:
-{
-  "hidden": Boolean, // false
-  "id": Integer, // 1
-  "tipId": String(url,nonce), // "https://aeternity.com,1"
-  "text": String, // "hello world"
-  "author": String(address), // ak_a4eg....
-  "createdAt": String(Date.toISOString), // "2020-02-14 16:13:43.264 +00:00"
-  "updatedAt": String(Date.toISOString) // "2020-02-14 16:13:43.264 +00:00"
-}
-
-Returns: 
-{
-  "hidden": Boolean, // false
-  "id": Integer, // 1
-  "tipId": String(url,nonce), // "https://aeternity.com,1"
-  "text": String, // "hello world"
-  "author": String(address), // ak_a4eg....
-  "createdAt": String(Date.toISOString), // "2020-02-14 16:13:43.264 +00:00"
-  "updatedAt": String(Date.toISOString) // "2020-02-14 16:13:43.264 +00:00"
-}
-
 ```
 
 #### Create new comment
@@ -295,6 +271,8 @@ Returns:
   "tipId": String(url,nonce), // "https://aeternity.com,1"
   "text": String, // "hello world"
   "author": String(address), // ak_a4eg....
+  "signature": String // 762ff32...
+  "challenge": String // 762f-f32...
   "createdAt": String(Date.toISOString), // "2020-02-14 16:13:43.264 +00:00"
   "updatedAt": String(Date.toISOString) // "2020-02-14 16:13:43.264 +00:00"
 }
@@ -498,7 +476,11 @@ Returns:
   id: Int,
   author: String(address),
   image: Boolean, // false
-  biography: String
+  biography: String, // "hello world"
+  signature: String // 762ff32...
+  challenge: String // 762f-f32...
+  imageChallenge: String, // 762f-f32...
+  imageSignature: String // 762ff32...
 }
 ```
 
@@ -520,26 +502,10 @@ Returns:
   author: String(address), // ak_a4eg....
   image: Boolean, // false
   biography: String // hello world
-}
-```
-
-#### Update profile
-```
-PUT /profile/:String(address)
-
-Authorization: Signature Authentication
-
-Request Body:
-{
-  biography: String, // hello world
-}
-
-Returns:
-{
-  id: Int, // 1
-  author: String(address), // ak_a4eg....
-  image: Boolean, // false
-  biography: String // hello world
+  signature: String // 762ff32...
+  challenge: String // 762f-f32...
+  imageChallenge: String, // 762f-f32...
+  imageSignature: String // 762ff32...
 }
 ```
 

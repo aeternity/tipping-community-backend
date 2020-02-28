@@ -59,7 +59,7 @@ module.exports = class LinkPreviewLogic {
         return await LinkPreview.create(data, { raw: true });
       }
     } catch (err) {
-      console.error(err);
+      console.error(`Crawling ${url} failed with "${err.message}"`);
 
       return LinkPreview.create({
         requestUrl: url,

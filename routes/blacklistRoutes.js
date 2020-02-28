@@ -12,7 +12,7 @@ router.get('/api/:id', Logic.getSingleItem);
 
 // View routes
 router.get('/', basicAuth, async (req, res) => res.render('admin', {
-  allItems: await Logic.augmentAllItems(await ae.callContract())
+  allItems: await Logic.augmentAllItems(await ae.getTips())
 }));
 
 // Restricted api routes

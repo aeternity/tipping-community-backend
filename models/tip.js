@@ -13,27 +13,19 @@ class Tip extends Sequelize.Model {
         type: DataTypes.STRING,
         allowNull: false,
       },
-      nonce: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-      },
       sender: {
         type: DataTypes.STRING,
         allowNull: false,
       },
-      received_at: {
+      timestamp: {
         type: DataTypes.STRING,
-        allowNull: false,
-      },
-      repaid: {
-        type: DataTypes.BOOLEAN,
         allowNull: false,
       },
       amount: {
         type: DataTypes.STRING,
         allowNull: false,
       },
-      note: {
+      title: {
         type: DataTypes.STRING,
         allowNull: true,
       },

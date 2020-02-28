@@ -8,11 +8,6 @@ const { secretKey, publicKey } = Crypto.generateKeyPair();
 //During the test the env variable is set to test
 process.env = {
   ...process.env,
-  NODE_URL: 'https://mainnet.aeternal.io',
-  COMPILER_URL: 'https://compiler.aepps.com',
-  CONTRACT_ADDRESS: 'ct_YpQpntd6fi6r3VXnGW7vJiwPYtiKvutUDY35L4PiqkbKEVRqj',
-  CONTRACT_FILE: 'TippingCorona',
-  NODE_ENV: 'test',
   PRIVATE_KEY: secretKey,
   PUBLIC_KEY: publicKey,
 };

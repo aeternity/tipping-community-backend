@@ -26,6 +26,7 @@ class Aeternity {
         compilerUrl: process.env.COMPILER_URL,
       });
       this.contract = await this.client.getContractInstance(this.getContractSource(), { contractAddress: process.env.CONTRACT_ADDRESS });
+      this.oracleContract = await this.client.getContractInstance(this.getOracleContractSource(), { contractAddress: "ct_23bfFKQ1vuLeMxyJuCrMHiaGg5wc7bAobKNuDadf8tVZUisKWs" });
     }
   };
 
@@ -40,27 +41,34 @@ class Aeternity {
     return fs.readFileSync(`${__dirname}/${process.env.CONTRACT_FILE}.aes`, 'utf-8');
   };
 
+  getOracleContractSource = () => {
+    return fs.readFileSync(`${__dirname}/OracleServiceInterface.aes`, 'utf-8');
+  };
+
   async preClaim (address, url) {
     return new Promise((resolve, reject) => {
       // Run preclaim
-      this.contract.methods.pre_claim(url, address).then(() => {
-        // check claim every second, 20 times
-        let intervalCounter = 0;
-        const interval = setInterval(async () => {
-          if ((await this.contract.methods.check_claim(url, address).decodedResult)) {
-            clearInterval(interval);
-            return resolve();
-          }
-          if (intervalCounter++ > 20) {
-            clearInterval(interval);
-            reject();
-          }
-        }, 1000);
+      this.oracleContract.methods.estimate_query_fee().then(fee => {
+        this.contract.methods.pre_claim(url, address, {amount: fee.decodedResult}).then(() => {
+          // check claim every second, 20 times
+          let intervalCounter = 0;
+          const interval = setInterval(async () => {
+            if ((await this.contract.methods.check_claim(url, address).decodedResult.success)) {
+              clearInterval(interval);
+              return resolve();
+            }
+            if (intervalCounter++ > 30) {
+              clearInterval(interval);
+              reject();
+            }
+          }, 2000);
+        });
       });
-    }).catch(e => reject(e.message));
+    }).catch(e => console.error(e));
   }
 
   async claimTips (address, url) {
+    await this.preClaim(address, url);
     const result = await this.contract.methods.claim(url, address, false);
     return result.decodedResult;
   };

@@ -20,5 +20,5 @@ contract Tipping =
   payable stateful entrypoint pre_claim : (string, address) => unit
   stateful entrypoint claim : (string, address, bool) => unit
   entrypoint get_state : () => state
-  entrypoint check_claim :  (string, address) => bool
+  entrypoint check_claim :  (string, address) => OracleService.success_claim
   entrypoint unclaimed_for_url : (string) => int

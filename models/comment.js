@@ -5,7 +5,7 @@ class Comment extends Sequelize.Model {
     super.init({
       // attributes
       tipId: {
-        type: DataTypes.STRING,
+        type: DataTypes.INTEGER,
         allowNull: false,
       },
       text: {

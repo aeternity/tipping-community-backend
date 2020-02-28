@@ -1,3 +1,4 @@
+const { BigNumber } = require('bignumber.js');
 const { Universal, Node, MemoryAccount } = require('@aeternity/aepp-sdk');
 const fs = require('fs');
 
@@ -28,10 +29,10 @@ class Aeternity {
     }
   };
 
-  callContract = async () => {
+  getTips = async () => {
     if (!this.client) throw new Error('Init sdk first');
-    const tips = await this.contract.methods.get_state();
-    return tips.decodedResult.tips;
+    const state = await this.contract.methods.get_state();
+    return this.getTipsRetips(state.decodedResult).tips;
   };
 
   getContractSource = () => {
@@ -39,15 +40,29 @@ class Aeternity {
     return fs.readFileSync(`${__dirname}/${process.env.CONTRACT_FILE}.aes`, 'utf-8');
   };
 
+  async preClaim (address, url) {
+    return new Promise((resolve, reject) => {
+      // Run preclaim
+      this.contract.methods.pre_claim(url, address).then(() => {
+        // check claim every second, 20 times
+        let intervalCounter = 0;
+        const interval = setInterval(async () => {
+          if ((await this.contract.methods.check_claim(url, address).decodedResult)) {
+            clearInterval(interval);
+            return resolve();
+          }
+          if (intervalCounter++ > 20) {
+            clearInterval(interval);
+            reject();
+          }
+        }, 1000);
+      });
+    }).catch(e => reject(e.message));
+  }
+
   async claimTips (address, url) {
-    const tips = await this.contract.methods.tips_for_url(url);
-    if (tips.decodedResult && tips.decodedResult.length > 0) {
-      if (tips.decodedResult.every(tip => tip.repaid)) throw new Error('All tips are claimed');
-      const result = await this.contract.methods.claim(url, address);
-      return result.decodedResult;
-    } else {
-      throw new Error('No tips for url');
-    }
+    const result = await this.contract.methods.claim(url, address, false);
+    return result.decodedResult;
   };
 
   getAddressFromChainName = async (names) => {
@@ -60,8 +75,62 @@ class Aeternity {
           return null;
         } else throw new Error(err);
       }
-
     }))).filter(value => !!value);
+  };
+
+  getTipsRetips = (state) => {
+    const findUrl = (urlId) => state.urls.find(([_, id]) => urlId === id)[0];
+
+    const findClaimGen = (tipClaimGen, urlId) => {
+      const [_, data] = state.claims.find(([id, _]) => id === urlId);
+
+      return {
+        unclaimed: tipClaimGen > data[0],
+        claim_gen: data[0],
+        unclaimed_amount: data[1],
+      };
+    };
+
+    const findRetips = (tipId, urlId) => state.retips.filter(([_, data]) => data.tip_id === tipId).map(([id, data]) => {
+      data.id = id;
+      data.claim = findClaimGen(data.claim_gen, urlId);
+      return data;
+    });
+
+    const tips = state.tips.map(([id, data]) => {
+      data.id = id;
+      data.url = findUrl(data.url_id);
+      data.retips = findRetips(id, data.url_id);
+      data.claim = findClaimGen(data.claim_gen, data.url_id);
+
+      data.total_amount = new BigNumber(data.amount).plus(data.retips.reduce((acc, retip) => {
+        return acc.plus(retip.amount);
+      }, new BigNumber('0'))).toFixed();
+
+      data.total_unclaimed_amount = new BigNumber(data.claim.unclaimed ? data.amount : 0).plus(data.retips.reduce((acc, retip) => {
+        return acc.plus(retip.claim.unclaimed ? retip.amount : 0);
+      }, new BigNumber('0'))).toFixed();
+
+      return data;
+    });
+
+    const urls = state.urls.map(([url, id]) => {
+      const urlTips = tips.filter(tip => tip.url_id === id);
+      const claim = state.claims.find(([urlId, _]) => urlId === id)[1];
+
+      return {
+        id: id,
+        url: url,
+        tip_ids: urlTips.map(tip => tip.id),
+        retip_ids: urlTips.flatMap(tip => tip.retips.map(retip => retip.id)),
+        unclaimed_amount: claim[1],
+      };
+    });
+
+    return {
+      urls: urls,
+      tips: tips,
+    };
   };
 
 }

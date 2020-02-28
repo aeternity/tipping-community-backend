@@ -1,14 +1,3 @@
-//During the test the env variable is set to test
-process.env = {
-  ...process.env,
-  NODE_URL: 'https://mainnet.aeternal.io',
-  COMPILER_URL: 'https://compiler.aepps.com',
-  CONTRACT_ADDRESS: 'ct_YpQpntd6fi6r3VXnGW7vJiwPYtiKvutUDY35L4PiqkbKEVRqj',
-  AUTHENTICATION_USER: 'admin',
-  AUTHENTICATION_PASSWORD: 'pass',
-  CONTRACT_FILE: 'TippingCorona'
-};
-
 //Require the dev-dependencies
 let chai = require('chai');
 let chaiHttp = require('chai-http');

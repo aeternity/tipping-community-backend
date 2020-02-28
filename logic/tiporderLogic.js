@@ -14,7 +14,8 @@ module.exports = class Tiporder {
     const blacklist = await BlacklistEntry.findAll({raw: true});
     const blacklistedIds = blacklist.map(b => b.tipId);
 
-    const state = await ae.callContract();
+    // TODO rewrite
+    const state = await ae.getTips();
 
     const maxTipAmount = BigNumber.max(...state.map(([_, data]) => data.amount), '1');
     const tips = state.map(([tip, data]) => {

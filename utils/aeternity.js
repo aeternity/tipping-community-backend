@@ -1,9 +1,9 @@
-const { BigNumber } = require('bignumber.js');
-const { Universal, Node, MemoryAccount } = require('@aeternity/aepp-sdk');
+const {BigNumber} = require('bignumber.js');
+const {Universal, Node, MemoryAccount} = require('@aeternity/aepp-sdk');
 const fs = require('fs');
 
 class Aeternity {
-  constructor () {
+  constructor() {
     this.init();
   }
 
@@ -19,14 +19,14 @@ class Aeternity {
             }),
           }],
         accounts: [
-          MemoryAccount({ keypair: { secretKey: process.env.PRIVATE_KEY, publicKey: process.env.PUBLIC_KEY } }),
+          MemoryAccount({keypair: {secretKey: process.env.PRIVATE_KEY, publicKey: process.env.PUBLIC_KEY}}),
         ],
         address: process.env.PUBLIC_KEY,
         networkId: 'ae_mainnet',
         compilerUrl: process.env.COMPILER_URL,
       });
-      this.contract = await this.client.getContractInstance(this.getContractSource(), { contractAddress: process.env.CONTRACT_ADDRESS });
-      this.oracleContract = await this.client.getContractInstance(this.getOracleContractSource(), { contractAddress: "ct_23bfFKQ1vuLeMxyJuCrMHiaGg5wc7bAobKNuDadf8tVZUisKWs" });
+      this.contract = await this.client.getContractInstance(this.getContractSource(), {contractAddress: process.env.CONTRACT_ADDRESS});
+      this.oracleContract = await this.client.getContractInstance(this.getOracleContractSource(), {contractAddress: "ct_23bfFKQ1vuLeMxyJuCrMHiaGg5wc7bAobKNuDadf8tVZUisKWs"});
     }
   };
 
@@ -45,29 +45,33 @@ class Aeternity {
     return fs.readFileSync(`${__dirname}/OracleServiceInterface.aes`, 'utf-8');
   };
 
-  async preClaim (address, url) {
+  async preClaim(address, url) {
+    const state = await this.contract.methods.get_state();
+    const claimAmount = this.claimableAmount(state, url);
+    if (claimAmount === 0) throw new Error("No zero amount claims");
+
+    const fee = await this.oracleContract.methods.estimate_query_fee();
+
     return new Promise((resolve, reject) => {
       // Run preclaim
-      this.oracleContract.methods.estimate_query_fee().then(fee => {
-        this.contract.methods.pre_claim(url, address, {amount: fee.decodedResult}).then(() => {
-          // check claim every second, 20 times
-          let intervalCounter = 0;
-          const interval = setInterval(async () => {
-            if (((await this.contract.methods.check_claim(url, address)).decodedResult.success)) {
-              clearInterval(interval);
-              return resolve();
-            }
-            if (intervalCounter++ > 30) {
-              clearInterval(interval);
-              reject();
-            }
-          }, 2000);
-        });
+      this.contract.methods.pre_claim(url, address, {amount: fee.decodedResult}).then(() => {
+        // check claim every second, 20 times
+        let intervalCounter = 0;
+        const interval = setInterval(async () => {
+          if (((await this.contract.methods.check_claim(url, address)).decodedResult.success)) {
+            clearInterval(interval);
+            return resolve();
+          }
+          if (intervalCounter++ > 30) {
+            clearInterval(interval);
+            reject();
+          }
+        }, 2000);
       });
     }).catch(e => console.error(e));
   }
 
-  async claimTips (address, url) {
+  async claimTips(address, url) {
     await this.preClaim(address, url);
     const result = await this.contract.methods.claim(url, address, false);
     return result.decodedResult;
@@ -84,6 +88,14 @@ class Aeternity {
         } else throw new Error(err);
       }
     }))).filter(value => !!value);
+  };
+
+  claimableAmount = (state, url) => {
+    const urlIdFind = state.decodedResult.urls.find(([u, _]) => url === u);
+    if (!urlIdFind.length) throw new Error("Url not found");
+    const urlId = urlIdFind[1];
+    const claimFind = state.decodedResult.claims.find(([id, _]) => urlId === id);
+    return claimFind.length ? claimFind[1][1] : 0;
   };
 
   getTipsRetips = (state) => {

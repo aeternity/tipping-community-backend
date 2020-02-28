@@ -18,7 +18,7 @@
   },
   "homepage": "https://github.com/aeternity/tipping-community-backend#readme",
   "dependencies": {
-    "@aeternity/aepp-sdk": "^7.0.0",
+    "@aeternity/aepp-sdk": "^7.1.1",
     "axios": "latest",
     "bignumber.js": "^9.0.0",
     "cors": "^2.8.5",

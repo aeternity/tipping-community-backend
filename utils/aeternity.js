@@ -53,7 +53,7 @@ class Aeternity {
           // check claim every second, 20 times
           let intervalCounter = 0;
           const interval = setInterval(async () => {
-            if ((await this.contract.methods.check_claim(url, address).decodedResult.success)) {
+            if (((await this.contract.methods.check_claim(url, address)).decodedResult.success)) {
               clearInterval(interval);
               return resolve();
             }

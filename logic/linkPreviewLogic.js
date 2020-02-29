@@ -54,7 +54,7 @@ module.exports = class LinkPreviewLogic {
       const existingEntry = await LinkPreview.findOne({ where: { requestUrl: url } });
 
       if (existingEntry) {
-        return await existingEntry.update(data, { raw: true });
+        return await LinkPreview.update({...data, failReason: null}, { where: { requestUrl: url }, raw: true });
       } else {
         return await LinkPreview.create(data, { raw: true });
       }
@@ -74,6 +74,6 @@ module.exports = class LinkPreviewLogic {
   };
 
   static async queryCostlyCustomCrawler (url) {
-    return  (await DomLoader.getHTMLfromURL(url) || {}).html;
+    return (await DomLoader.getHTMLfromURL(url) || {}).html;
   }
 };

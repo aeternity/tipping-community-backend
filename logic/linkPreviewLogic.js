@@ -74,6 +74,6 @@ module.exports = class LinkPreviewLogic {
   };
 
   static async queryCostlyCustomCrawler (url) {
-    return await DomLoader.getHTMLfromURL(url);
+    return  (await DomLoader.getHTMLfromURL(url) || {}).html;
   }
 };

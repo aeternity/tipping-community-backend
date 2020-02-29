@@ -57,7 +57,7 @@ module.exports = class CacheLogic {
   static async updateTipsInDatabase () {
     const tips = await CacheLogic.getAllTips();
     const dbEntries = await CacheLogic.getAllItems();
-    const peparedTips = tips.filter(({id}) => !dbEntries.some(entry => entry.tipId === id))
+    const peparedTips = tips.filter(({id}) => !dbEntries.some(entry => parseInt(entry.tipId) === id))
       .map((data) => ({ ...data, tipId: data.id }));
     if (peparedTips.length > 0) {
       await Tip.bulkCreate(peparedTips, { ignoreDuplicates: true });

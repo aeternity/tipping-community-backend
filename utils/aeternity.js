@@ -68,7 +68,10 @@ class Aeternity {
           }
         }, 2000);
       });
-    }).catch(e => console.error(e));
+    }).catch(e => {
+      console.error(e);
+      reject(e.message)
+    });
   }
 
   async claimTips(address, url) {
@@ -92,7 +95,7 @@ class Aeternity {
 
   claimableAmount = (state, url) => {
     const urlIdFind = state.decodedResult.urls.find(([u, _]) => url === u);
-    if (!urlIdFind || !urlIdFind.length) throw new Error("Url not found");
+    if (!urlIdFind || !urlIdFind.length) throw new Error(`Could not find any tips for url ${url}`);
     const urlId = urlIdFind[1];
     const claimFind = state.decodedResult.claims.find(([id, _]) => urlId === id);
     return claimFind.length ? claimFind[1][1] : 0;

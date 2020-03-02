@@ -47,21 +47,21 @@
   <div class="card">
     <div class="action">
       {{#if this.blocked}}
-        <button onclick="removeFromBlacklist('{{this.[0]}}')">SHOW</button>
+        <button onclick="removeFromBlacklist('{{this.id}}')">SHOW</button>
         <span class="blocked">BLACKLISTED</span>
       {{else}}
-        <button onclick="addToBlacklist('{{this.[0]}}')">BLOCK</button>
+        <button onclick="addToBlacklist('{{this.id}}')">BLOCK</button>
         <span class="visible">VISIBLE</span>
       {{/if}}
     </div>
     <hr>
     <div class="address">
-      <a href="{{this.[0].[0]}}" target="_blank">{{this.[0].[0]}}</a>
+      <a href="{{this.url}}" target="_blank">{{this.url}}</a>
     </div>
     <hr>
-    <div>{{this.[1].note}}</div>
+    <div>{{this.title}}</div>
     <hr>
-    <div class="address">{{this.[1].sender}}</div>
+    <div class="address">{{this.sender}}</div>
   </div>
 {{/each}}
 

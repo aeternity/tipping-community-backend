@@ -68,4 +68,22 @@ describe('Blacklist', () => {
     });
   });
 
+  describe('Blacklist Frontend', () => {
+
+    before(async function () {
+      this.timeout(25000);
+      const ae = require('../utils/aeternity.js');
+      await ae.init();
+    });
+
+    it('it should 200 on getting the frontend', (done) => {
+      chai.request(server).get('/blacklist/').auth(process.env.AUTHENTICATION_USER, process.env.AUTHENTICATION_PASSWORD)
+        .end((err, res) => {
+        res.should.have.status(200);
+        done();
+      });
+    });
+
+  });
+
 });

@@ -9,7 +9,7 @@ module.exports = class Blacklist {
     })).map(entry => entry.tipId);
     return allItems.map(item => ({
       ...item,
-      blocked: blacklist.indexOf(item[0].join(',')) > -1,
+      blocked: blacklist.some(b => b === item.id),
     }));
   }
 

@@ -1,8 +1,10 @@
 const Router = require('express').Router;
+const StaticLogic = require('../logic/staticLogic.js');
 
 const router = new Router();
 
 // Open api routes
-router.get('/contract', (req, res) => res.send({ contractFile: process.env.CONTRACT_FILE, contractAddress: process.env.CONTRACT_ADDRESS }));
+router.get('/contract', StaticLogic.getContract);
+router.get('/stats', StaticLogic.getStats);
 
 module.exports = router;

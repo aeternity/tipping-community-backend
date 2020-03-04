@@ -24,3 +24,8 @@ CONTRACT_FILE=TippingCorona
 PUBLIC_KEY=ak_fUq2NesPXcYZ1CcqBcGC3StpdnQw3iVxMA3YSeCNAwfN4myQk
 PRIVATE_KEY=....
 ```
+
+To create migrations after a model change run:
+```bash
+npm run db:makemigrations
+```

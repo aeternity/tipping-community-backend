@@ -1,5 +1,5 @@
 const ae = require('../utils/aeternity.js');
-const { Tip } = require('../utils/database.js');
+const { Tip } = require('../models');
 const LinkPreviewLogic = require('./linkPreviewLogic.js');
 
 module.exports = class CacheLogic {

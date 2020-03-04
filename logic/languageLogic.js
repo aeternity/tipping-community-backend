@@ -1,4 +1,4 @@
-const { LinkPreview } = require('../utils/database.js');
+const { LinkPreview } = require('../models');
 const { Op } = require('sequelize');
 
 module.exports = class Verified {

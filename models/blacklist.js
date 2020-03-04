@@ -1,19 +1,12 @@
-const Sequelize = require("sequelize");
+module.exports = (sequelize, DataTypes) => {
+  return sequelize.define('BlacklistEntry', {
+    // attributes
+    tipId: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+  }, {
+    timestamps: true,
+  });
+};
 
-class BlacklistEntry extends Sequelize.Model {
-  static init(sequelize, DataTypes) {
-    super.init({
-      // attributes
-      tipId: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-      }
-    }, {
-      sequelize,
-      modelName: 'BlacklistEntry',
-      timestamps: true,
-    })
-  }
-}
-
-module.exports = BlacklistEntry;

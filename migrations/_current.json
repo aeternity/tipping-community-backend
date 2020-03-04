@@ -1,0 +1,263 @@
+{
+    "tables": {
+        "BlacklistEntries": {
+            "tableName": "BlacklistEntries",
+            "schema": {
+                "id": {
+                    "allowNull": false,
+                    "primaryKey": true,
+                    "autoIncrement": true,
+                    "field": "id",
+                    "seqType": "Sequelize.INTEGER"
+                },
+                "tipId": {
+                    "allowNull": false,
+                    "field": "tipId",
+                    "seqType": "Sequelize.INTEGER"
+                },
+                "createdAt": {
+                    "allowNull": false,
+                    "field": "createdAt",
+                    "seqType": "Sequelize.DATE"
+                },
+                "updatedAt": {
+                    "allowNull": false,
+                    "field": "updatedAt",
+                    "seqType": "Sequelize.DATE"
+                }
+            },
+            "indexes": []
+        },
+        "Comments": {
+            "tableName": "Comments",
+            "schema": {
+                "id": {
+                    "allowNull": false,
+                    "primaryKey": true,
+                    "autoIncrement": true,
+                    "field": "id",
+                    "seqType": "Sequelize.INTEGER"
+                },
+                "tipId": {
+                    "allowNull": false,
+                    "field": "tipId",
+                    "seqType": "Sequelize.INTEGER"
+                },
+                "text": {
+                    "allowNull": false,
+                    "field": "text",
+                    "seqType": "Sequelize.STRING"
+                },
+                "author": {
+                    "allowNull": false,
+                    "field": "author",
+                    "seqType": "Sequelize.STRING"
+                },
+                "hidden": {
+                    "defaultValue": {
+                        "value": false
+                    },
+                    "field": "hidden",
+                    "seqType": "Sequelize.BOOLEAN"
+                },
+                "signature": {
+                    "allowNull": false,
+                    "field": "signature",
+                    "seqType": "Sequelize.STRING"
+                },
+                "challenge": {
+                    "allowNull": false,
+                    "field": "challenge",
+                    "seqType": "Sequelize.STRING"
+                },
+                "createdAt": {
+                    "allowNull": false,
+                    "field": "createdAt",
+                    "seqType": "Sequelize.DATE"
+                },
+                "updatedAt": {
+                    "allowNull": false,
+                    "field": "updatedAt",
+                    "seqType": "Sequelize.DATE"
+                }
+            },
+            "indexes": []
+        },
+        "LinkPreviews": {
+            "tableName": "LinkPreviews",
+            "schema": {
+                "id": {
+                    "allowNull": false,
+                    "primaryKey": true,
+                    "autoIncrement": true,
+                    "field": "id",
+                    "seqType": "Sequelize.INTEGER"
+                },
+                "requestUrl": {
+                    "allowNull": false,
+                    "field": "requestUrl",
+                    "seqType": "Sequelize.STRING"
+                },
+                "title": {
+                    "allowNull": true,
+                    "field": "title",
+                    "seqType": "Sequelize.STRING"
+                },
+                "description": {
+                    "allowNull": true,
+                    "field": "description",
+                    "seqType": "Sequelize.STRING"
+                },
+                "image": {
+                    "allowNull": true,
+                    "field": "image",
+                    "seqType": "Sequelize.STRING"
+                },
+                "responseUrl": {
+                    "allowNull": true,
+                    "field": "responseUrl",
+                    "seqType": "Sequelize.STRING"
+                },
+                "lang": {
+                    "allowNull": true,
+                    "field": "lang",
+                    "seqType": "Sequelize.STRING"
+                },
+                "querySucceeded": {
+                    "allowNull": false,
+                    "field": "querySucceeded",
+                    "seqType": "Sequelize.BOOLEAN"
+                },
+                "failReason": {
+                    "allowNull": true,
+                    "field": "failReason",
+                    "seqType": "Sequelize.STRING"
+                },
+                "createdAt": {
+                    "allowNull": false,
+                    "field": "createdAt",
+                    "seqType": "Sequelize.DATE"
+                },
+                "updatedAt": {
+                    "allowNull": false,
+                    "field": "updatedAt",
+                    "seqType": "Sequelize.DATE"
+                }
+            },
+            "indexes": []
+        },
+        "Profiles": {
+            "tableName": "Profiles",
+            "schema": {
+                "id": {
+                    "allowNull": false,
+                    "primaryKey": true,
+                    "autoIncrement": true,
+                    "field": "id",
+                    "seqType": "Sequelize.INTEGER"
+                },
+                "biography": {
+                    "allowNull": true,
+                    "field": "biography",
+                    "seqType": "Sequelize.STRING"
+                },
+                "author": {
+                    "allowNull": false,
+                    "field": "author",
+                    "seqType": "Sequelize.STRING"
+                },
+                "image": {
+                    "allowNull": true,
+                    "field": "image",
+                    "seqType": "Sequelize.STRING"
+                },
+                "signature": {
+                    "allowNull": false,
+                    "field": "signature",
+                    "seqType": "Sequelize.STRING"
+                },
+                "challenge": {
+                    "allowNull": false,
+                    "field": "challenge",
+                    "seqType": "Sequelize.STRING"
+                },
+                "imageSignature": {
+                    "allowNull": true,
+                    "field": "imageSignature",
+                    "seqType": "Sequelize.STRING"
+                },
+                "imageChallenge": {
+                    "allowNull": true,
+                    "field": "imageChallenge",
+                    "seqType": "Sequelize.STRING"
+                },
+                "createdAt": {
+                    "allowNull": false,
+                    "field": "createdAt",
+                    "seqType": "Sequelize.DATE"
+                },
+                "updatedAt": {
+                    "allowNull": false,
+                    "field": "updatedAt",
+                    "seqType": "Sequelize.DATE"
+                }
+            },
+            "indexes": []
+        },
+        "Tips": {
+            "tableName": "Tips",
+            "schema": {
+                "id": {
+                    "allowNull": false,
+                    "primaryKey": true,
+                    "autoIncrement": true,
+                    "field": "id",
+                    "seqType": "Sequelize.INTEGER"
+                },
+                "tipId": {
+                    "allowNull": false,
+                    "unique": true,
+                    "field": "tipId",
+                    "seqType": "Sequelize.STRING"
+                },
+                "url": {
+                    "allowNull": false,
+                    "field": "url",
+                    "seqType": "Sequelize.STRING"
+                },
+                "sender": {
+                    "allowNull": false,
+                    "field": "sender",
+                    "seqType": "Sequelize.STRING"
+                },
+                "timestamp": {
+                    "allowNull": false,
+                    "field": "timestamp",
+                    "seqType": "Sequelize.STRING"
+                },
+                "amount": {
+                    "allowNull": false,
+                    "field": "amount",
+                    "seqType": "Sequelize.STRING"
+                },
+                "title": {
+                    "allowNull": true,
+                    "field": "title",
+                    "seqType": "Sequelize.STRING"
+                },
+                "createdAt": {
+                    "allowNull": false,
+                    "field": "createdAt",
+                    "seqType": "Sequelize.DATE"
+                },
+                "updatedAt": {
+                    "allowNull": false,
+                    "field": "updatedAt",
+                    "seqType": "Sequelize.DATE"
+                }
+            },
+            "indexes": []
+        }
+    },
+    "revision": 1
+}

@@ -1,5 +1,4 @@
 const Router = require('express').Router;
-const { BlacklistEntry } = require('../utils/database.js');
 const Logic = require('../logic/blacklistLogic.js');
 const ae = require('../utils/aeternity.js');
 const { basicAuth } = require('../utils/auth.js');

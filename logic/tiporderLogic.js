@@ -1,7 +1,7 @@
 const BigNumber = require('bignumber.js');
 
 const aeternity = require('../utils/aeternity.js');
-const {BlacklistEntry} = require('../utils/database.js');
+const {BlacklistEntry} = require('../models');
 const dateAgeScoreWeight = 1.5;
 const tipAmountScoreWeight = 1;
 const tipTitleScoreWeight = 0.7;

@@ -1,4 +1,4 @@
-const { BlacklistEntry } = require('../utils/database.js');
+const { BlacklistEntry } = require('../models');
 
 module.exports = class Blacklist {
 

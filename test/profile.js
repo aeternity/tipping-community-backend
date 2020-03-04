@@ -4,7 +4,7 @@ let chaiHttp = require('chai-http');
 let server = require('../server');
 let should = chai.should();
 const expect = chai.expect;
-const { Profile } = require('../utils/database.js');
+const { Profile } = require('../models');
 const { signPersonalMessage, generateKeyPair, hash } = require('@aeternity/aepp-sdk').Crypto;
 const fs = require('fs');
 

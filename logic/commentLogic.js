@@ -1,4 +1,4 @@
-const { Comment } = require('../utils/database.js');
+const { Comment } = require('../models');
 
 module.exports = class CommentLogic {
 

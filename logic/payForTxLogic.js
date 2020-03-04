@@ -1,5 +1,4 @@
 const Logger = require('../utils/logger.js');
-const DomLoader = require('../utils/domLoader.js');
 const ae = require('../utils/aeternity.js');
 
 const logger = new Logger('payForTx');

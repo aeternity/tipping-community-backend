@@ -3,7 +3,7 @@ let chai = require('chai');
 let chaiHttp = require('chai-http');
 let server = require('../server');
 
-const { LinkPreview } = require('../utils/database.js');
+const { LinkPreview } = require('../models');
 const LinkPreviewLogic = require('../logic/linkPreviewLogic.js');
 
 chai.use(chaiHttp);

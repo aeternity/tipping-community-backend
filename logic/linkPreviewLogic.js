@@ -1,4 +1,4 @@
-const { LinkPreview } = require('../utils/database.js');
+const { LinkPreview } = require('../models');
 const DomLoader = require('../utils/domLoader.js');
 const axios = require('axios');
 const lngDetector = new (require('languagedetect'));

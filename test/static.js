@@ -3,7 +3,7 @@ let chai = require('chai');
 let chaiHttp = require('chai-http');
 let server = require('../server');
 let should = chai.should();
-const { BlacklistEntry } = require('../utils/database.js');
+const { BlacklistEntry } = require('../models');
 
 chai.use(chaiHttp);
 //Our parent block

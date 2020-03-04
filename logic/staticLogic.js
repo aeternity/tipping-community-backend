@@ -1,4 +1,4 @@
-const { BlacklistEntry, Comment, LinkPreview, Profile, Tip } = require('../utils/database.js');
+const { BlacklistEntry, Comment, LinkPreview, Profile, Tip } = require('../models');
 const Sequelize = require('sequelize');
 
 module.exports = class StaticLogic {

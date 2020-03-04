@@ -8,7 +8,8 @@ RUN apk add --no-cache \
       freetype-dev \
       harfbuzz \
       ca-certificates \
-      ttf-freefont
+      ttf-freefont \
+      git
 
 # Tell Puppeteer to skip installing Chrome. We'll be using the installed package.
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD true
@@ -21,7 +22,7 @@ RUN addgroup -S pptruser && adduser --uid 1001 -S -g pptruser pptruser \
 
 WORKDIR /app
 COPY package.json /app
-RUN npm install
+RUN npm install --only=production
 
 COPY . /app
 

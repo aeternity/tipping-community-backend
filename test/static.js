@@ -53,7 +53,6 @@ describe('Static Routes', () => {
       chai.request(server).get('/static/stats').end((err, res) => {
         res.should.have.status(200);
         res.body.should.be.a('object');
-        console.log(res.body);
         res.body.should.have.property('comments').to.be.an('object');
         res.body.should.have.property('linkPreviews').to.be.an('object');
         res.body.should.have.property('profiles').to.be.an('object');

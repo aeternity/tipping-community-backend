@@ -6,7 +6,6 @@ module.exports = class Verified {
     try {
       await ae.init();
       const tips = await ae.getTips();
-      console.log(tips)
       const allClaimedDomains = tips
         .filter(({claim}) => !claim.unclaimed)
         .map(({url}) => (new URL(url)).hostname)

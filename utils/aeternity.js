@@ -46,9 +46,8 @@ class Aeternity {
   };
 
   async preClaim(address, url) {
-    const state = await this.contract.methods.get_state();
-    const claimAmount = this.claimableAmount(state, url);
-    if (claimAmount === 0) throw new Error("No zero amount claims");
+    const claimAmount = await this.contract.methods.unclaimed_for_url(url);
+    if (claimAmount.decodedResult === 0) throw new Error("No zero amount claims");
 
     const fee = await this.oracleContract.methods.estimate_query_fee();
 
@@ -91,14 +90,6 @@ class Aeternity {
         } else throw new Error(err);
       }
     }))).filter(value => !!value);
-  };
-
-  claimableAmount = (state, url) => {
-    const urlIdFind = state.decodedResult.urls.find(([u, _]) => url === u);
-    if (!urlIdFind || !urlIdFind.length) throw new Error(`Could not find any tips for url ${url}`);
-    const urlId = urlIdFind[1];
-    const claimFind = state.decodedResult.claims.find(([id, _]) => urlId === id);
-    return claimFind.length ? claimFind[1][1] : 0;
   };
 
   getTipsRetips = (state) => {

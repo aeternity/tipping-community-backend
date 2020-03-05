@@ -49,7 +49,8 @@ module.exports = class ProfileLogic {
 
   static async updateImage (req, res) {
     const result = await Profile.findOne({ where: { author: req.params.author }, raw: true });
-    if (!result) res.sendStatus(404);
+    if (!result) return res.status(404).send({err: 'Could not find associated profile. Please create one first.'});
+    if (!req.file) return res.status(400).send({err: 'Could not find any image in your request.'});
     // Delete existing image
     if(result.image && result.image !== req.file.filename) fs.unlinkSync('images/' + result.image);
     await Profile.update({

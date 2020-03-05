@@ -13,7 +13,7 @@ const storage = multer.diskStorage({
     cb(null, req.params.author + path.extname(file.originalname)) //Appending extension
   }
 });
-const upload = multer({ storage: storage });
+const upload = multer({ storage });
 
 
 // Open api routes

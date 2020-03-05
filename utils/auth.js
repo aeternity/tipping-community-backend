@@ -27,13 +27,13 @@ const actions = [
   },
   {
     method: 'POST',
-    path: '\/profile\/?',
+    path: '\/profile\/?$',
     actionName: "CREATE_PROFILE",
     relevantFields: ['biography'],
   },
   {
     method: 'POST',
-    path: '\/profile\/image',
+    path: '\/profile\/image\/ak_',
     actionName: "CREATE_PROFILE_IMAGE",
     relevantFields: [],
     hasFile: true,
@@ -121,7 +121,8 @@ const signatureAuth = (req, res, next) => {
         payload = relevantFields.reduce((acc, fieldIndex) => acc + req.body[fieldIndex], '');
         // UUID-RelevantFieldHash-Action-Timestamp
       } else {
-        payload = fs.readFileSync(path.resolve('../images/', req.file.fileName));
+        if (!req.file) return sendError('Could not find any image in your request.');
+        payload = fs.readFileSync(path.resolve(__dirname,'../images/', req.file.filename));
       }
       // UUID-RelevantFieldHash-Action-Timestamp
       const challenge = `${uuid}-${actionName.indexOf('DELETE') === 0 ? '' : hash(payload).toString('hex')}-${actionName}-${Date.now()}`;

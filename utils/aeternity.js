@@ -74,22 +74,14 @@ class Aeternity {
   }
 
   async claimTips(address, url) {
-    await this.preClaim(address, url);
-    const result = await this.contract.methods.claim(url, address, false);
-    return result.decodedResult;
-  };
-
-  getAddressFromChainName = async (names) => {
-    return (await Promise.all(names.map(async n => {
-      try {
-        const queryResult = await this.client.aensQuery(n);
-        return queryResult.pointers.length > 0 ? queryResult.pointers[0].id : null;
-      } catch (err) {
-        if (err.message.includes('failed with 404: Name not found')) {
-          return null;
-        } else throw new Error(err);
-      }
-    }))).filter(value => !!value);
+    try {
+      await this.preClaim(address, url);
+      const result = await this.contract.methods.claim(url, address, false);
+      return result.decodedResult;
+    } catch (e) {
+      if(e.message.includes('URL_NOT_EXISTING')) throw new Error(`Could not find any tips for url ${url}`);
+      else throw new Error(e)
+    }
   };
 
   getTipsRetips = (state) => {

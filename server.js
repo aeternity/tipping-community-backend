@@ -32,7 +32,6 @@ app.use((req, res) => {
   res.sendStatus(404);
 });
 
-console.log('Server listening at port', 3000);
 app.listen(3000, () => {
   logger.log({ message: 'Server started' });
 });

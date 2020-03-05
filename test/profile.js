@@ -226,7 +226,6 @@ describe('Profile', () => {
       chai.request(server).get('/profile/' + publicKey)
         .end((err, res) => {
           res.should.have.status(200);
-          console.log(res.body);
           res.body.should.be.a('object');
           res.body.should.have.property('id');
           res.body.should.have.property('biography', testData.biography);

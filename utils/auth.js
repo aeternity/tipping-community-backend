@@ -22,54 +22,62 @@ const actions = [
   {
     method: 'POST',
     path: '\/comment\/api\/?',
-    actionName: "CREATE_COMMENT",
+    actionName: 'CREATE_COMMENT',
     relevantFields: ['text'],
   },
   {
     method: 'POST',
     path: '\/profile\/?$',
-    actionName: "CREATE_PROFILE",
+    actionName: 'CREATE_PROFILE',
     relevantFields: ['biography'],
   },
   {
     method: 'POST',
     path: '\/profile\/image\/ak_',
-    actionName: "CREATE_PROFILE_IMAGE",
+    actionName: 'CREATE_PROFILE_IMAGE',
     relevantFields: [],
     hasFile: true,
   },
   {
     method: 'DELETE',
     path: '\/comment\/api\/.*',
-    actionName: "DELETE_COMMENT",
+    actionName: 'DELETE_COMMENT',
     relevantFields: [],
   },
   {
     method: 'DELETE',
     path: '\/profile\/ak_.*',
-    actionName: "DELETE_PROFILE",
+    actionName: 'DELETE_PROFILE',
     relevantFields: [],
   },
   {
     method: 'DELETE',
     path: '\/profile\/image\/ak_.*',
-    actionName: "DELETE_PROFILE_IMAGE",
+    actionName: 'DELETE_PROFILE_IMAGE',
     relevantFields: [],
   }];
 
 const signatureAuth = (req, res, next) => {
   const sendError = message => res.status(401).send({ err: message });
 
+  // Filter expired items (10 mins timer)
+  // use delete to avoid race condition while overwriting
+  MemoryQueue.map(({ timestamp, file }, index) => {
+    if (timestamp < Date.now() - 5 * 60 * 1000) {
+      delete MemoryQueue[index];
+      try {
+        if (file) fs.unlinkSync(path.resolve(__dirname, '../images/', file.filename));
+      } catch (e) {
+        console.error('Could not delete file:' + e.message);
+      }
+    }
+  });
+
   if (req.body.signature || req.body.challenge) {
     try {
       if (!req.body.signature) return sendError('Missing field signature');
       if (!req.body.challenge) return sendError('Missing field challenge');
 
-      // Filter expired items (10 mins timer)
-      // use delete to avoid race condition while overwriting
-      MemoryQueue.map(({ timestamp }, index) => {
-        if (timestamp < Date.now() - 5 * 60 * 1000) delete MemoryQueue[index]
-      });
 
       // Find item
       // MemoryQueue probably has a significant list deleted items
@@ -113,7 +121,7 @@ const signatureAuth = (req, res, next) => {
     try {
       const action = actions
         .find(({ method, path }) => method === req.method && req.originalUrl.match(path));
-      if(!action) return sendError('Could not find valid action related to this request');
+      if (!action) return sendError('Could not find valid action related to this request');
       const { actionName, relevantFields, hasFile } = action;
 
       let payload;
@@ -122,7 +130,7 @@ const signatureAuth = (req, res, next) => {
         // UUID-RelevantFieldHash-Action-Timestamp
       } else {
         if (!req.file) return sendError('Could not find any image in your request.');
-        payload = fs.readFileSync(path.resolve(__dirname,'../images/', req.file.filename));
+        payload = fs.readFileSync(path.resolve(__dirname, '../images/', req.file.filename));
       }
       // UUID-RelevantFieldHash-Action-Timestamp
       const challenge = `${uuid}-${actionName.indexOf('DELETE') === 0 ? '' : hash(payload).toString('hex')}-${actionName}-${Date.now()}`;
@@ -137,7 +145,7 @@ const signatureAuth = (req, res, next) => {
       return res.send({ challenge });
     } catch (e) {
       console.error(e);
-      return sendError(e.message)
+      return sendError(e.message);
     }
   }
 };

@@ -295,6 +295,30 @@ Returns:
 
 ```
 
+### Comment counts
+
+#### Get comment count per tip
+```
+GET /comment/count/tips/
+
+Returns: 
+[
+  {
+    tipId: Integer, // 1
+    count: Integer, // 1
+  }
+]
+```
+#### Get comment count per account
+```
+GET /comment/count/author/:String(address)
+
+Returns: 
+{
+  author: String(address), // ak_a4eg....
+  count: Integer, // 1
+}
+```
 ## Language
 
 #### Get all Chinese posts

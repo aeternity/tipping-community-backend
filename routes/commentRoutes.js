@@ -10,7 +10,7 @@ router.get('/api/:id', CommentLogic.getSingleItem);
 router.get('/api/tip/:tipId', CommentLogic.getAllItemsForThread);
 
 // Count routes
-router.get('/count/tip/:tipId', CommentLogic.getCommentCountForTip);
+router.get('/count/tips/', CommentLogic.getCommentCountForTips);
 router.get('/count/author/:author', CommentLogic.getCommentCountForAddress);
 
 // Restricted api routes

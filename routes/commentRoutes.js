@@ -9,6 +9,10 @@ router.get('/api', CommentLogic.getAllItems);
 router.get('/api/:id', CommentLogic.getSingleItem);
 router.get('/api/tip/:tipId', CommentLogic.getAllItemsForThread);
 
+// Count routes
+router.get('/count/tip/:tipId', CommentLogic.getCommentCountForTip);
+router.get('/count/author/:author', CommentLogic.getCommentCountForAddress);
+
 // Restricted api routes
 router.post('/api', signatureAuth, CommentLogic.addItem);
 router.delete('/api/:id', signatureAuth, CommentLogic.verifyAuthor, CommentLogic.removeItem);

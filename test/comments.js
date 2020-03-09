@@ -14,7 +14,7 @@ describe('Comments', () => {
   const { publicKey, secretKey } = generateKeyPair();
 
   const testData = {
-    tipId: 'https://aeternity.com,1',
+    tipId: 1,
     text: 'What an awesome website',
     author: publicKey,
   };
@@ -45,6 +45,27 @@ describe('Comments', () => {
         done();
       });
     });
+
+    it('it should GET a 0 count of comments for tip 1', (done) => {
+      chai.request(server).get('/comment/count/tip/1').end((err, res) => {
+        res.should.have.status(200);
+        res.body.should.be.an('object');
+        res.body.should.have.property('count', 0);
+        res.body.should.have.property('tipId', '1');
+        done();
+      });
+    });
+
+    it('it should GET a 0 count of comments for address ' + publicKey, (done) => {
+      chai.request(server).get('/comment/count/author/' + publicKey).end((err, res) => {
+        res.should.have.status(200);
+        res.body.should.be.an('object');
+        res.body.should.have.property('count', 0);
+        res.body.should.have.property('author', publicKey);
+        done();
+      });
+    });
+
 
     it('it should return a signature challenge', (done) => {
       chai.request(server).post('/comment/api').send(testData).end((err, res) => {
@@ -136,6 +157,26 @@ describe('Comments', () => {
         res.should.have.status(200);
         res.body.should.be.a('array');
         res.body.length.should.be.eql(1);
+        done();
+      });
+    });
+
+    it('it should GET a count of comments for tip ' + testData.tipId, (done) => {
+      chai.request(server).get('/comment/count/tip/' + testData.tipId).end((err, res) => {
+        res.should.have.status(200);
+        res.body.should.be.an('object');
+        res.body.should.have.property('count', 1);
+        res.body.should.have.property('tipId', '1');
+        done();
+      });
+    });
+
+    it('it should GET a count of comments for address' + publicKey, (done) => {
+      chai.request(server).get('/comment/count/author/' + publicKey).end((err, res) => {
+        res.should.have.status(200);
+        res.body.should.be.an('object');
+        res.body.should.have.property('count', 1);
+        res.body.should.have.property('author', publicKey);
         done();
       });
     });

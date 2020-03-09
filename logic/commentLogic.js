@@ -5,7 +5,8 @@ module.exports = class CommentLogic {
   static async addItem (req, res) {
     try {
       const { tipId, text, author, signature, challenge } = req.body;
-      if (tipId === null || tipId === undefined || !text || !author || !signature || !challenge) return res.status(400).send('Missing required field');
+      if (tipId === null || tipId === undefined || !text || !author || !signature || !challenge) return res.status(400)
+        .send('Missing required field');
       const entry = await Comment.create({ tipId, text, author, signature, challenge });
       res.send(entry);
     } catch (e) {
@@ -34,7 +35,17 @@ module.exports = class CommentLogic {
   static async getSingleItem (req, res) {
     const result = await Comment.findOne({ where: { id: req.params.id }, raw: true });
     return result ? res.send(result) : res.sendStatus(404);
-  };
+  }
+
+  static async getCommentCountForAddress (req, res) {
+    const result = await Comment.count({ where: { author: req.params.author }, raw: true });
+    return res.send({count: result !== null ? result : 0, author: req.params.author});
+  }
+
+  static async getCommentCountForTip (req, res) {
+    const result = await Comment.count({ where: { tipId: req.params.tipId }, raw: true });
+    return res.send({count: result !== null ? result : 0, tipId: req.params.tipId});
+  }
 
   static async updateItem (req, res) {
     const { text, author, hidden } = req.body;
@@ -51,6 +62,6 @@ module.exports = class CommentLogic {
   static async verifyAuthor (req, res, next) {
     if (!req.body.author) return res.status(400).send({ err: 'Author required' });
     const result = await Comment.findOne({ where: { id: req.params.id, author: req.body.author }, raw: true });
-    return result ? next() : res.status(404).send({ err: `Could not find comment with id ${req.params.id} and ${req.body.author} as author` })
+    return result ? next() : res.status(404).send({ err: `Could not find comment with id ${req.params.id} and ${req.body.author} as author` });
   }
 };

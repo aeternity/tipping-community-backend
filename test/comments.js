@@ -46,12 +46,11 @@ describe('Comments', () => {
       });
     });
 
-    it('it should GET a 0 count of comments for tip 1', (done) => {
-      chai.request(server).get('/comment/count/tip/1').end((err, res) => {
+    it('it should GET a 0 count of comments for tips', (done) => {
+      chai.request(server).get('/comment/count/tips/').end((err, res) => {
         res.should.have.status(200);
-        res.body.should.be.an('object');
-        res.body.should.have.property('count', 0);
-        res.body.should.have.property('tipId', '1');
+        res.body.should.be.an('array');
+        res.body.length.should.be.eql(0);
         done();
       });
     });
@@ -161,12 +160,13 @@ describe('Comments', () => {
       });
     });
 
-    it('it should GET a count of comments for tip ' + testData.tipId, (done) => {
-      chai.request(server).get('/comment/count/tip/' + testData.tipId).end((err, res) => {
+    it('it should GET a count of comments for tips', (done) => {
+      chai.request(server).get('/comment/count/tips/').end((err, res) => {
         res.should.have.status(200);
-        res.body.should.be.an('object');
-        res.body.should.have.property('count', 1);
-        res.body.should.have.property('tipId', '1');
+        res.body.should.be.an('array');
+        res.body.length.should.be.eql(1);
+        res.body[0].should.have.property('count', 1);
+        res.body[0].should.have.property('tipId', testData.tipId);
         done();
       });
     });

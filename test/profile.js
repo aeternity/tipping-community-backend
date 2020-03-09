@@ -19,10 +19,11 @@ describe('Profile', () => {
     author: publicKey
   };
 
-  const signChallenge = (challenge) => {
+  const signChallenge = (challenge, privateKey = null) => {
+    if(!privateKey) privateKey = secretKey;
     const signatureBuffer = signPersonalMessage(
       challenge,
-      Buffer.from(secretKey, 'hex'),
+      Buffer.from(privateKey, 'hex'),
     );
     return Buffer.from(signatureBuffer).toString('hex');
   };
@@ -202,7 +203,7 @@ describe('Profile', () => {
       });
     };
 
-    it('it should allow an image upload', (done) => {
+    it('it should allow an image upload on existing profile', (done) => {
       chai.request(server).post('/profile/image/' + publicKey)
         .field('Content-Type', 'multipart/form-data')
         .attach('image', "./test/test.png")
@@ -212,6 +213,27 @@ describe('Profile', () => {
           res.body.should.have.property('challenge');
           const challenge = res.body.challenge;
           const signature = signChallenge(challenge);
+          chai.request(server).post('/profile/image/' + publicKey).send({
+            challenge: challenge,
+            signature,
+          }).end((err, res) => {
+            res.should.have.status(200);
+            done();
+          });
+        });
+    });
+
+    it('it should allow an image upload on new profile', (done) => {
+      const { publicKey, secretKey } = generateKeyPair();
+      chai.request(server).post('/profile/image/' + publicKey)
+        .field('Content-Type', 'multipart/form-data')
+        .attach('image', "./test/test.png")
+        .end((err, res) => {
+          res.should.have.status(200);
+          res.body.should.be.a('object');
+          res.body.should.have.property('challenge');
+          const challenge = res.body.challenge;
+          const signature = signChallenge(challenge, secretKey);
           chai.request(server).post('/profile/image/' + publicKey).send({
             challenge: challenge,
             signature,

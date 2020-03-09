@@ -38,7 +38,7 @@ module.exports = class ProfileLogic {
     await Profile.update({
       ...biography && { biography },
     }, { where: { author: req.params.author }, raw: true });
-    return ProfileLogic.getSingleItem(req, res)
+    return ProfileLogic.getSingleItem(req, res);
   }
 
   static async getImage (req, res) {
@@ -48,15 +48,21 @@ module.exports = class ProfileLogic {
   }
 
   static async updateImage (req, res) {
-    const result = await Profile.findOne({ where: { author: req.params.author }, raw: true });
-    if (!result) return res.status(404).send({err: 'Could not find associated profile. Please create one first.'});
-    if (!req.file) return res.status(400).send({err: 'Could not find any image in your request.'});
+    let result = await Profile.findOne({ where: { author: req.params.author }, raw: true });
+    if (!result) {
+      result = await Profile.create({
+        author: req.params.author,
+        signature: req.body.signature,
+        challenge: req.body.challenge,
+      });
+    }
+    if (!req.file) return res.status(400).send({ err: 'Could not find any image in your request.' });
     // Delete existing image
-    if(result.image && result.image !== req.file.filename) fs.unlinkSync('images/' + result.image);
+    if (result.image && result.image !== req.file.filename) fs.unlinkSync('images/' + result.image);
     await Profile.update({
       image: `${req.file.filename}`,
       imageSignature: req.body.signature,
-      imageChallenge: req.body.challenge
+      imageChallenge: req.body.challenge,
     }, { where: { author: req.params.author }, raw: true });
     res.sendStatus(200);
   }
@@ -68,7 +74,7 @@ module.exports = class ProfileLogic {
     await Profile.update({
       image: null,
       imageSignature: null,
-      imageChallenge: null
+      imageChallenge: null,
     }, { where: { author: req.params.author }, raw: true });
     res.sendStatus(200);
   }
@@ -77,7 +83,7 @@ module.exports = class ProfileLogic {
     const authorInParams = req.params.author;
     const authorInBody = req.body.author;
     if (authorInBody && authorInParams) {
-      return authorInBody === authorInParams ? next() : res.status(401).send({ err: 'Author in url is not equal to author in body.' })
+      return authorInBody === authorInParams ? next() : res.status(401).send({ err: 'Author in url is not equal to author in body.' });
     } else return next();
   }
 };

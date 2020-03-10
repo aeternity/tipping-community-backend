@@ -8,8 +8,18 @@ module.exports = class ProfileLogic {
     try {
       const { author, biography, signature, challenge } = req.body;
       if (!author) return res.status(400).send('Missing required field author');
-      const entry = await Profile.create({ author, biography, signature, challenge });
-      res.send(entry);
+      const existing = await Profile.findOne({ where: { author }, raw: true });
+      if (existing) {
+        await Profile.update({
+          biography,
+          signature,
+          challenge,
+        }, { where: { author: req.params.author }, raw: true });
+        return await Profile.findOne({ where: { author }, raw: true });
+      } else {
+        const entry = await Profile.create({ author, biography, signature, challenge });
+        res.send(entry);
+      }
     } catch (e) {
       console.error(e);
       res.status(500).send(e.message);

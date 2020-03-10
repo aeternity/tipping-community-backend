@@ -74,7 +74,7 @@ module.exports = class ProfileLogic {
       imageSignature: req.body.signature,
       imageChallenge: req.body.challenge,
     }, { where: { author: req.params.author }, raw: true });
-    res.sendStatus(200);
+    return ProfileLogic.getSingleItem(req, res);
   }
 
   static async deleteImage (req, res) {

@@ -218,6 +218,50 @@ describe('Profile', () => {
             signature,
           }).end((err, res) => {
             res.should.have.status(200);
+            res.body.should.be.a('object');
+            res.body.should.have.property('id');
+            res.body.should.have.property('biography', testData.biography);
+            res.body.should.have.property('author', testData.author);
+            res.body.should.have.property('image', true);
+            res.body.should.have.property('signature');
+            res.body.should.have.property('challenge');
+            res.body.should.have.property('imageSignature').not.null;
+            res.body.should.have.property('imageChallenge').not.null;
+            res.body.should.have.property('createdAt');
+            res.body.should.have.property('updatedAt');
+            done();
+          });
+        });
+    });
+
+
+    it('it should allow an image upload on new profile', (done) => {
+      const { publicKey, secretKey } = generateKeyPair();
+      chai.request(server).post('/profile/image/' + publicKey)
+        .field('Content-Type', 'multipart/form-data')
+        .attach('image', "./test/test.png")
+        .end((err, res) => {
+          res.should.have.status(200);
+          res.body.should.be.a('object');
+          res.body.should.have.property('challenge');
+          const challenge = res.body.challenge;
+          const signature = signChallenge(challenge, secretKey);
+          chai.request(server).post('/profile/image/' + publicKey).send({
+            challenge: challenge,
+            signature,
+          }).end((err, res) => {
+            res.should.have.status(200);
+            res.body.should.be.a('object');
+            res.body.should.have.property('id');
+            res.body.should.have.property('biography');
+            res.body.should.have.property('author', publicKey);
+            res.body.should.have.property('image', true);
+            res.body.should.have.property('signature');
+            res.body.should.have.property('challenge');
+            res.body.should.have.property('imageSignature').not.null;
+            res.body.should.have.property('imageChallenge').not.null;
+            res.body.should.have.property('createdAt');
+            res.body.should.have.property('updatedAt');
             done();
           });
         });

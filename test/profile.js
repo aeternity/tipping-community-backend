@@ -20,7 +20,7 @@ describe('Profile', () => {
   };
 
   const signChallenge = (challenge, privateKey = null) => {
-    if(!privateKey) privateKey = secretKey;
+    if (!privateKey) privateKey = secretKey;
     const signatureBuffer = signPersonalMessage(
       challenge,
       Buffer.from(privateKey, 'hex'),
@@ -128,24 +128,24 @@ describe('Profile', () => {
       chai.request(server).post('/profile/')
         .send({ author: testData.author, biography: newBio })
         .end((err, res) => {
-        res.should.have.status(200);
-        res.body.should.be.a('object');
-        res.body.should.have.property('challenge');
-        const challenge = res.body.challenge;
-        const signature = signChallenge(challenge);
-        chai.request(server).post('/profile/').send({ challenge, signature }).end((err, res) => {
           res.should.have.status(200);
           res.body.should.be.a('object');
-          res.body.should.have.property('id');
-          res.body.should.have.property('biography', newBio);
-          res.body.should.have.property('author', testData.author);
-          res.body.should.have.property('signature', signature);
-          res.body.should.have.property('challenge', challenge);
-          res.body.should.have.property('createdAt');
-          res.body.should.have.property('updatedAt');
-          done();
+          res.body.should.have.property('challenge');
+          const challenge = res.body.challenge;
+          const signature = signChallenge(challenge);
+          chai.request(server).post('/profile/').send({ challenge, signature }).end((err, res) => {
+            res.should.have.status(200);
+            res.body.should.be.a('object');
+            res.body.should.have.property('id');
+            res.body.should.have.property('biography', newBio);
+            res.body.should.have.property('author', testData.author);
+            res.body.should.have.property('signature', signature);
+            res.body.should.have.property('challenge', challenge);
+            res.body.should.have.property('createdAt');
+            res.body.should.have.property('updatedAt');
+            done();
+          });
         });
-      });
     });
 
     it('it should GET a profile with updated bio', (done) => {
@@ -232,13 +232,13 @@ describe('Profile', () => {
         }).then(() => done()));
     });
 
-    const binaryParser = function(res, cb) {
+    const binaryParser = function (res, cb) {
       res.setEncoding('binary');
       res.data = '';
-      res.on('data', function(chunk) {
+      res.on('data', function (chunk) {
         res.data += chunk;
       });
-      res.on('end', function() {
+      res.on('end', function () {
         cb(null, Buffer.from(res.data, 'binary'));
       });
     };
@@ -350,8 +350,8 @@ describe('Profile', () => {
       chai.request(server).get('/profile/image/' + publicKey)
         .buffer()
         .parse(binaryParser)
-        .end(function(err, res) {
-          if(err) {
+        .end(function (err, res) {
+          if (err) {
             done(err);
           }
           res.should.have.status(200);

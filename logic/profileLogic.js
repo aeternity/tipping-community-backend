@@ -14,8 +14,8 @@ module.exports = class ProfileLogic {
           biography,
           signature,
           challenge,
-        }, { where: { author: req.params.author }, raw: true });
-        return await Profile.findOne({ where: { author }, raw: true });
+        }, { where: { author }, raw: true });
+        res.send(await Profile.findOne({ where: { author }, raw: true }));
       } else {
         const entry = await Profile.create({ author, biography, signature, challenge });
         res.send(entry);

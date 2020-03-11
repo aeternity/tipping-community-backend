@@ -16,7 +16,7 @@ describe('Profile', () => {
 
   const testData = {
     biography: 'What an awesome bio',
-    author: publicKey
+    author: publicKey,
   };
 
   const signChallenge = (challenge, privateKey = null) => {
@@ -123,11 +123,51 @@ describe('Profile', () => {
       });
     });
 
+    const newBio = 'updated bio';
+    it('it should UPDATE a new profile', (done) => {
+      chai.request(server).post('/profile/')
+        .send({ author: testData.author, biography: newBio })
+        .end((err, res) => {
+        res.should.have.status(200);
+        res.body.should.be.a('object');
+        res.body.should.have.property('challenge');
+        const challenge = res.body.challenge;
+        const signature = signChallenge(challenge);
+        chai.request(server).post('/profile/').send({ challenge, signature }).end((err, res) => {
+          res.should.have.status(200);
+          res.body.should.be.a('object');
+          res.body.should.have.property('id');
+          res.body.should.have.property('biography', newBio);
+          res.body.should.have.property('author', testData.author);
+          res.body.should.have.property('signature', signature);
+          res.body.should.have.property('challenge', challenge);
+          res.body.should.have.property('createdAt');
+          res.body.should.have.property('updatedAt');
+          done();
+        });
+      });
+    });
+
+    it('it should GET a profile with updated bio', (done) => {
+      chai.request(server).get('/profile/' + publicKey).end((err, res) => {
+        res.should.have.status(200);
+        res.body.should.be.a('object');
+        res.body.should.have.property('id');
+        res.body.should.have.property('biography', newBio);
+        res.body.should.have.property('author', testData.author);
+        res.body.should.have.property('signature');
+        res.body.should.have.property('challenge');
+        res.body.should.have.property('createdAt');
+        res.body.should.have.property('updatedAt');
+        done();
+      });
+    });
+
     it('it should reject creation for another profile', (done) => {
       chai.request(server).post('/profile/')
         .send({
           biography: 'new bio',
-          author: 'ak_fUq2NesPXcYZ1CcqBcGC3StpdnQw3iVxMA3YSeCNAwfN4myQk'
+          author: 'ak_fUq2NesPXcYZ1CcqBcGC3StpdnQw3iVxMA3YSeCNAwfN4myQk',
         }).end((err, res) => {
         res.should.have.status(200);
         res.body.should.be.a('object');
@@ -146,7 +186,7 @@ describe('Profile', () => {
       });
     });
 
-    it('it should DELETE a single comment entry', (done) => {
+    it('it should DELETE a profile', (done) => {
       chai.request(server)
         .delete('/profile/' + publicKey)
         .end((err, res) => {
@@ -188,17 +228,17 @@ describe('Profile', () => {
         Profile.create({
           ...testData,
           signature: 'signature',
-          challenge: 'challenge'
+          challenge: 'challenge',
         }).then(() => done()));
     });
 
-    const binaryParser = function (res, cb) {
+    const binaryParser = function(res, cb) {
       res.setEncoding('binary');
       res.data = '';
-      res.on("data", function (chunk) {
+      res.on('data', function(chunk) {
         res.data += chunk;
       });
-      res.on('end', function () {
+      res.on('end', function() {
         cb(null, Buffer.from(res.data, 'binary'));
       });
     };
@@ -206,7 +246,7 @@ describe('Profile', () => {
     it('it should allow an image upload on existing profile', (done) => {
       chai.request(server).post('/profile/image/' + publicKey)
         .field('Content-Type', 'multipart/form-data')
-        .attach('image', "./test/test.png")
+        .attach('image', './test/test.png')
         .end((err, res) => {
           res.should.have.status(200);
           res.body.should.be.a('object');
@@ -234,12 +274,11 @@ describe('Profile', () => {
         });
     });
 
-
     it('it should allow an image upload on new profile', (done) => {
       const { publicKey, secretKey } = generateKeyPair();
       chai.request(server).post('/profile/image/' + publicKey)
         .field('Content-Type', 'multipart/form-data')
-        .attach('image', "./test/test.png")
+        .attach('image', './test/test.png')
         .end((err, res) => {
           res.should.have.status(200);
           res.body.should.be.a('object');
@@ -271,7 +310,7 @@ describe('Profile', () => {
       const { publicKey, secretKey } = generateKeyPair();
       chai.request(server).post('/profile/image/' + publicKey)
         .field('Content-Type', 'multipart/form-data')
-        .attach('image', "./test/test.png")
+        .attach('image', './test/test.png')
         .end((err, res) => {
           res.should.have.status(200);
           res.body.should.be.a('object');
@@ -311,8 +350,8 @@ describe('Profile', () => {
       chai.request(server).get('/profile/image/' + publicKey)
         .buffer()
         .parse(binaryParser)
-        .end(function (err, res) {
-          if (err) {
+        .end(function(err, res) {
+          if(err) {
             done(err);
           }
           res.should.have.status(200);
@@ -333,7 +372,7 @@ describe('Profile', () => {
     it('it should allow overwriting an image', (done) => {
       chai.request(server).post('/profile/image/' + publicKey)
         .field('Content-Type', 'multipart/form-data')
-        .attach('image', "./test/test.png")
+        .attach('image', './test/test.png')
         .end((err, res) => {
           res.should.have.status(200);
           res.body.should.be.a('object');

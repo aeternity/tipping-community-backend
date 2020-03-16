@@ -45,12 +45,13 @@ class Aeternity {
   };
 
   async preClaim(address, url) {
-    const claimAmount = await this.contract.methods.unclaimed_for_url(url);
-    if (claimAmount.decodedResult === 0) throw new Error("No zero amount claims");
+    const claimAmount = await this.contract.methods.unclaimed_for_url(url).then(r => r.decodedResult).catch(() => 1);
+    if (claimAmount === 0) throw new Error("No zero amount claims");
 
     // pre-claim if necessary (if not already claimed successfully)
-    const preClaimNecessary = !(await this.contract.methods.check_claim(url, address)).decodedResult.success;
-    if(preClaimNecessary) {
+    const claimSuccess = await this.contract.methods.check_claim(url, address).then(r => r.decodedResult.success).catch(() => false);
+
+    if (!claimSuccess) {
       const fee = await this.oracleContract.methods.estimate_query_fee();
       await this.contract.methods.pre_claim(url, address, {amount: fee.decodedResult});
     }
@@ -63,14 +64,11 @@ class Aeternity {
           clearInterval(interval);
           return resolve();
         }
-        if (intervalCounter++ > 30) {
+        if (intervalCounter++ > 20) {
           clearInterval(interval);
-          reject();
+          return reject({message: "check_claim interval timeout"});
         }
-      }, 2000);
-    }).catch(e => {
-      console.error(e);
-      reject(e.message)
+      }, 5000);
     });
   }
 
@@ -80,8 +78,8 @@ class Aeternity {
       const result = await this.contract.methods.claim(url, address, false);
       return result.decodedResult;
     } catch (e) {
-      if(e.message.includes('URL_NOT_EXISTING')) throw new Error(`Could not find any tips for url ${url}`);
-      else throw new Error(e)
+      if (e.message.includes('URL_NOT_EXISTING')) throw new Error(`Could not find any tips for url ${url}`);
+      else throw new Error(JSON.stringify(e))
     }
   };
 

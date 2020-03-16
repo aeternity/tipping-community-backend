@@ -22,7 +22,6 @@ class Aeternity {
           MemoryAccount({keypair: {secretKey: process.env.PRIVATE_KEY, publicKey: process.env.PUBLIC_KEY}}),
         ],
         address: process.env.PUBLIC_KEY,
-        networkId: 'ae_mainnet',
         compilerUrl: process.env.COMPILER_URL,
       });
       this.contract = await this.client.getContractInstance(this.getContractSource(), {contractAddress: process.env.CONTRACT_ADDRESS});
@@ -49,24 +48,26 @@ class Aeternity {
     const claimAmount = await this.contract.methods.unclaimed_for_url(url);
     if (claimAmount.decodedResult === 0) throw new Error("No zero amount claims");
 
-    const fee = await this.oracleContract.methods.estimate_query_fee();
+    // pre-claim if necessary (if not already claimed successfully)
+    const preClaimNecessary = !(await this.contract.methods.check_claim(url, address)).decodedResult.success;
+    if(preClaimNecessary) {
+      const fee = await this.oracleContract.methods.estimate_query_fee();
+      await this.contract.methods.pre_claim(url, address, {amount: fee.decodedResult});
+    }
 
     return new Promise((resolve, reject) => {
-      // Run preclaim
-      this.contract.methods.pre_claim(url, address, {amount: fee.decodedResult}).then(() => {
-        // check claim every second, 20 times
-        let intervalCounter = 0;
-        const interval = setInterval(async () => {
-          if (((await this.contract.methods.check_claim(url, address)).decodedResult.success)) {
-            clearInterval(interval);
-            return resolve();
-          }
-          if (intervalCounter++ > 30) {
-            clearInterval(interval);
-            reject();
-          }
-        }, 2000);
-      });
+      // check claim every second, 20 times
+      let intervalCounter = 0;
+      const interval = setInterval(async () => {
+        if (((await this.contract.methods.check_claim(url, address)).decodedResult.success)) {
+          clearInterval(interval);
+          return resolve();
+        }
+        if (intervalCounter++ > 30) {
+          clearInterval(interval);
+          reject();
+        }
+      }, 2000);
     }).catch(e => {
       console.error(e);
       reject(e.message)

@@ -2,7 +2,7 @@
 let chai = require('chai');
 let chaiHttp = require('chai-http');
 let server = require('../server');
-
+const fs = require('fs');
 const { LinkPreview } = require('../models');
 const LinkPreviewLogic = require('../logic/linkPreviewLogic.js');
 
@@ -29,6 +29,8 @@ describe('LinkPreview', () => {
       });
     });
 
+    let imageUrl;
+
     it('it get link preview for aeternity.com', (done) => {
       chai.request(server).get('/linkpreview?url=' + encodeURIComponent(requestUrl)).end((err, res) => {
         res.should.have.status(200);
@@ -42,14 +44,31 @@ describe('LinkPreview', () => {
         res.body.should.have.property('querySucceeded', 1);
         res.body.should.have.property('createdAt');
         res.body.should.have.property('updatedAt');
+        imageUrl = res.body.image;
         done();
       });
     });
+
+    it('it get an image for aeternity.com', (done) => {
+      chai.request(server).get(imageUrl).end((err, res) => {
+        res.should.have.status(200);
+        res.should.have.header('content-type');
+        res.should.have.header('content-length');
+        done();
+      });
+    });
+
     it('it should fail on none cached urls', (done) => {
       chai.request(server).get('/linkpreview?url=' + encodeURIComponent('https://domain.test')).end((err, res) => {
         res.should.have.status(404);
         done();
       });
     });
+
+    after(() => {
+      fs.readdirSync('images')
+        .filter(fileName => fileName.includes('-'))
+        .map(file => fs.unlinkSync('images/' + file));
+    })
   });
 });

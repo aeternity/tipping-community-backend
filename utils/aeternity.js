@@ -45,7 +45,7 @@ class Aeternity {
   };
 
   async preClaim(address, url) {
-    const claimAmount = await this.contract.methods.unclaimed_for_url(url).then(r => r.decodedResult).catch(() => 1);
+    const claimAmount = await this.contract.methods.unclaimed_for_url(url).then(r => r.decodedResult).catch(() => 0);
     if (claimAmount === 0) throw new Error("No zero amount claims");
 
     // pre-claim if necessary (if not already claimed successfully)

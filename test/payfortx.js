@@ -60,7 +60,7 @@ describe('Pay for TX', () => {
         url: 'https://complicated.domain.test',
       }).end((err, res) => {
         res.should.have.status(500);
-        res.body.should.have.property('error', 'Could not find any tips for url https://complicated.domain.test');
+        res.body.should.have.property('error', 'Error: No zero amount claims');
         done();
       });
     }).timeout(10000);

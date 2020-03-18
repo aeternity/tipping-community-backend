@@ -78,8 +78,9 @@ class Aeternity {
       const result = await this.contract.methods.claim(url, address, false);
       return result.decodedResult;
     } catch (e) {
+      console.log(e);
       if (e.message.includes('URL_NOT_EXISTING')) throw new Error(`Could not find any tips for url ${url}`);
-      else throw new Error(JSON.stringify(e))
+      else throw new Error(e)
     }
   };
 

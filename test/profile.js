@@ -216,11 +216,11 @@ describe('Profile', () => {
 
   describe('Profile Image API', () => {
 
-    fs.readdirSync('images')
-      .filter(fileName => fileName.includes('ak_'))
-      .map(file => fs.unlinkSync('images/' + file));
-
     before((done) => {
+      fs.readdirSync('images')
+        .filter(fileName => fileName.includes('ak_'))
+        .map(file => fs.unlinkSync('images/' + file));
+
       Profile.destroy({
         where: {},
         truncate: true,

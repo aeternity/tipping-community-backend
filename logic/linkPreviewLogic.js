@@ -44,21 +44,6 @@ module.exports = class LinkPreviewLogic {
     return queryResult;
   }
 
-  static async _downloadImage (url, image_path) {
-    return axios({
-      url,
-      responseType: 'stream',
-    }).then(
-      response =>
-        new Promise((resolve, reject) => {
-          response.data
-            .pipe(fs.createWriteStream(image_path))
-            .on('finish', () => resolve())
-            .on('error', e => reject(e));
-        }),
-    );
-  };
-
   static async createPreviewForUrl (url, crawler) {
     try {
       // VERIFY URL

@@ -42,28 +42,21 @@ module.exports = class CacheLogic {
     };
   }
 
-  static async deliverAllItems(req, res) {
-    res.send(await CacheLogic.getAllItems());
-  }
-
-  static async getAllItems() {
-    return Tip.findAll({raw: true});
-  }
-
   static async getChainNameFromAddress() {
     return wrapTry(async () => {
-      console.log(`${MAINNET_URL}/middleware/names/active`);
       return axios.get(`${MAINNET_URL}/middleware/names/active`).catch(console.error);
     });
   };
 
   static async getAllTips() {
-    let tips = await ae.getTips();
+    const start = new Date().getTime();
 
-    const tipOrdering = await TipOrderLogic.fetchTipOrder();
-    const tipsPreview = await LinkPreviewLogic.fetchLinkPreview();
-    let chainNames = await this.getChainNameFromAddress();
-    const commentCounts = await CommentLogic.fetchCommentCountForTips();
+    let [tips, tipOrdering, tipsPreview, chainNames, commentCounts] = await Promise.all([
+      ae.getTips(), await TipOrderLogic.fetchTipOrder(), LinkPreviewLogic.fetchLinkPreview(),
+      CacheLogic.getChainNameFromAddress(), CommentLogic.fetchCommentCountForTips(),
+    ]);
+
+    console.log(new Date().getTime() - start, "ms");
 
     // add score from backend to tips
     if (tipOrdering) {
@@ -117,9 +110,15 @@ module.exports = class CacheLogic {
       });
     }
 
-    console.log(tips);
-
     return tips;
+  }
+
+  static async deliverAllItems(req, res) {
+    res.send(await CacheLogic.getAllTips());
+  }
+
+  static async getAllItems() {
+    return Tip.findAll({raw: true});
   }
 
   static async updateOnNewUrl(url) {
@@ -129,7 +128,7 @@ module.exports = class CacheLogic {
   }
 
   static async updateTipsInDatabase() {
-    const tips = await CacheLogic.getAllTips();
+    const tips = await ae.getTips();
     const dbEntries = await CacheLogic.getAllItems();
     const peparedTips = tips.filter(({id}) => !dbEntries.some(entry => parseInt(entry.tipId) === id))
       .map((data) => ({...data, tipId: data.id}));

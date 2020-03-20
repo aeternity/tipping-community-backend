@@ -53,7 +53,7 @@ module.exports = class ProfileLogic {
 
   static async getImage (req, res) {
     const result = await Profile.findOne({ where: { author: req.params.author }, raw: true });
-    if (!result || !result.image) return res.sendStatus(404);
+    if (!result || !result.image) return res.sendFile(path.resolve(__dirname, '../assets', 'userAvatar.svg'));
     res.sendFile(path.resolve(__dirname, '../images', result.image));
   }
 

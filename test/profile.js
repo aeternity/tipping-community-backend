@@ -243,6 +243,29 @@ describe('Profile', () => {
       });
     };
 
+    it('it should return the default image when no profile pic', (done) => {
+      chai.request(server).get('/profile/image/' + publicKey)
+        .buffer()
+        .parse(binaryParser)
+        .end(function (err, res) {
+          if (err) {
+            done(err);
+          }
+          res.should.have.status(200);
+
+          // Check the headers for type and size
+          res.should.have.header('content-type');
+          res.header['content-type'].should.be.equal('image/svg+xml');
+          res.should.have.header('content-length');
+          const size = fs.statSync('./assets/userAvatar.svg').size.toString();
+          res.header['content-length'].should.be.equal(size);
+
+          // verify checksum
+          expect(hash(res.body).toString('hex')).to.equal('c1facb1a9b82684293442be592d5cd6342cc0cc82eaf72a8e7c12deb700cc50c');
+          done();
+        });
+    });
+
     it('it should allow an image upload on existing profile', (done) => {
       chai.request(server).post('/profile/image/' + publicKey)
         .field('Content-Type', 'multipart/form-data')

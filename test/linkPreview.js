@@ -51,6 +51,7 @@ describe('LinkPreview', () => {
 
     it('it get an image for aeternity.com', (done) => {
       chai.request(server).get(imageUrl).end((err, res) => {
+        if(err) console.log(err);
         res.should.have.status(200);
         res.should.have.header('content-type');
         res.should.have.header('content-length');

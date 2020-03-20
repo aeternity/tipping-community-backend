@@ -30,7 +30,7 @@ module.exports = class LinkPreviewLogic {
   static async getImage (req, res) {
     if (!req.params.filename) return res.sendStatus(404);
     const filepath = path.resolve(__dirname, '../images', req.params.filename.replace('/linkpreview/image', ''));
-    if(!fs.existsSync(filepath)) return res.sendStatus(404);
+    if (!fs.existsSync(filepath)) return res.sendStatus(404);
     res.sendFile(filepath);
   }
 
@@ -63,17 +63,19 @@ module.exports = class LinkPreviewLogic {
       }
 
       if (data.image) {
-        const filename = `${uuidv4()}${path.extname(data.image)}`;
-        await axios.get(data.image, {responseType:'stream'}).then(
-          response =>
-            new Promise((resolve, reject) => {
-              response.data
-                .pipe(fs.createWriteStream(path.resolve(__dirname, '../images', filename)))
-                .on('finish', () => resolve())
-                .on('error', e => reject(e));
-            }),
-        );
-        data.image = `/linkpreview/image/${filename}`;
+        try {
+          const filename = `${uuidv4()}${path.extname(data.image)}`;
+          const response = await axios.get(data.image, { responseType: 'stream' });
+          const writer = response.data.pipe(fs.createWriteStream(path.resolve(__dirname, '../images', filename)));
+          await new Promise((resolve, reject) => {
+            writer.on('finish', resolve)
+            writer.on('error', reject)
+          });
+          data.image = `/linkpreview/image/${filename}`;
+        } catch (e) {
+          console.error("Could not fetch image");
+          data.image = null;
+        }
       }
 
       const existingEntry = await LinkPreview.findOne({ where: { requestUrl: url } });

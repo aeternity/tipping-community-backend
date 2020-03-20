@@ -42,9 +42,12 @@ module.exports = class CommentLogic {
     return res.send({count: result !== null ? result : 0, author: req.params.author});
   }
 
-  static async getCommentCountForTips (req, res) {
-    const result = await Comment.count({ group: ['tipId'], raw: true });
-    return res.send(result);
+  static fetchCommentCountForTips() {
+    return Comment.count({group: ['tipId'], raw: true});
+  }
+
+  static async getCommentCountForTips(req, res) {
+    return res.send(await this.fetchCommentCountForTips());
   }
 
   static async updateItem (req, res) {

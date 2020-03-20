@@ -17,6 +17,10 @@ const metascraper = require('metascraper')([
 
 module.exports = class LinkPreviewLogic {
 
+  static async fetchLinkPreview() {
+    return LinkPreview.findAll({ raw: true });
+  }
+
   // API Functions
   static async getLinkPreview (req, res) {
     const url = req.params.url ? req.params.url : (req.query.url ? req.query.url : null);
@@ -24,7 +28,7 @@ module.exports = class LinkPreviewLogic {
       const result = await LinkPreview.findOne({ where: { requestUrl: url }, raw: true });
       return result ? res.send(result) : res.sendStatus(404);
     }
-    res.send(await LinkPreview.findAll({ raw: true }));
+    res.send(await this.fetchLinkPreview());
   }
 
   static async getImage (req, res) {

@@ -9,8 +9,7 @@ const featuredScoreWeight = 10;
 
 module.exports = class Tiporder {
 
-  static async getScoredBlacklistedOrder(req, res) {
-
+  static async fetchTipOrder() {
     const blacklist = await BlacklistEntry.findAll({raw: true});
     const blacklistedIds = blacklist.map(b => b.tipId);
 
@@ -41,7 +40,7 @@ module.exports = class Tiporder {
       return tip;
     });
 
-    const blacklistFiltered = tips
+    return tips
       .filter(tip => !blacklistedIds.includes(tip.id))
       .map(tip => {
         return {
@@ -49,7 +48,10 @@ module.exports = class Tiporder {
           score: tip.score
         }
       });
+  }
 
+  static async getScoredBlacklistedOrder(req, res) {
+    const blacklistFiltered = await this.fetchTipOrder();
     return res.send(blacklistFiltered);
   }
 };

@@ -64,16 +64,16 @@ module.exports = class LinkPreviewLogic {
 
       if (data.image) {
         try {
-          const filename = `${uuidv4()}${path.extname(data.image)}`;
+          const filename = `preview-${uuidv4()}${path.extname(data.image.includes('?') ? data.image.split('?')[0] : data.image)}`;
           const response = await axios.get(data.image, { responseType: 'stream' });
           const writer = response.data.pipe(fs.createWriteStream(path.resolve(__dirname, '../images', filename)));
           await new Promise((resolve, reject) => {
-            writer.on('finish', resolve)
-            writer.on('error', reject)
+            writer.on('finish', resolve);
+            writer.on('error', reject);
           });
           data.image = `/linkpreview/image/${filename}`;
         } catch (e) {
-          console.error("Could not fetch image");
+          console.error('Could not fetch image');
           data.image = null;
         }
       }

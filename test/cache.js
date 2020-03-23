@@ -8,7 +8,9 @@ chai.use(chaiHttp);
 //Our parent block
 describe('Cache', () => {
   describe('API', () => {
-    it('it should GET all cache items', (done) => {
+    it('it should GET all cache items', function (done) {
+      this.timeout(25000);
+
       chai.request(server).get('/cache/').end((err, res) => {
         res.should.have.status(200);
         res.body.should.be.a('object');
@@ -17,7 +19,9 @@ describe('Cache', () => {
     });
   });
   describe('Interface', () => {
-    it('it should return ok on status interface', (done) => {
+    it('it should return ok on status interface', function(done) {
+      this.timeout(25000);
+
       chai.request(server).get('/cache/status')
         .auth(process.env.AUTHENTICATION_USER, process.env.AUTHENTICATION_PASSWORD)
         .end((err, res) => {

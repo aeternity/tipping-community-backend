@@ -77,7 +77,9 @@ describe('Blacklist', () => {
       await ae.init();
     });
 
-    it('it should 200 on getting the frontend', (done) => {
+    it('it should 200 on getting the frontend', function (done) {
+      this.timeout(25000);
+
       chai.request(server).get('/blacklist/').auth(process.env.AUTHENTICATION_USER, process.env.AUTHENTICATION_PASSWORD)
         .end((err, res) => {
         res.should.have.status(200);

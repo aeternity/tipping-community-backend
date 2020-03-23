@@ -1,4 +1,4 @@
-const { BlacklistEntry, Comment, LinkPreview, Profile, Tip } = require('../models');
+const { BlacklistEntry, Comment, LinkPreview, Profile } = require('../models');
 const Sequelize = require('sequelize');
 
 module.exports = class StaticLogic {
@@ -36,7 +36,6 @@ module.exports = class StaticLogic {
         comments: await StaticLogic.getStatsPerModel(Comment),
         linkPreviews: await StaticLogic.getStatsPerModel(LinkPreview),
         profiles: await StaticLogic.getStatsPerModel(Profile),
-        tips: await StaticLogic.getStatsPerModel(Tip),
         blacklist: await StaticLogic.getStatsPerModel(BlacklistEntry),
       });
     } catch (err) {

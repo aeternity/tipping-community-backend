@@ -56,7 +56,6 @@ describe('Static Routes', () => {
         res.body.should.have.property('comments').to.be.an('object');
         res.body.should.have.property('linkPreviews').to.be.an('object');
         res.body.should.have.property('profiles').to.be.an('object');
-        res.body.should.have.property('tips').to.be.an('object');
         res.body.should.have.property('blacklist').to.be.an('object');
         res.body.blacklist.should.have.property('today', 1);
         res.body.blacklist.should.have.property('yesterday', 1);

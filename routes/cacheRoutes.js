@@ -9,6 +9,8 @@ const cache = new CacheLogic();
 // Open api routes
 router.get('/', CacheLogic.deliverAllItems);
 
+router.get('/invalidate/tips', CacheLogic.invalidateTips);
+
 // View routes
 router.get('/status', basicAuth, async (req, res) => res.render('cache', {
   status: await cache.getStatus()

@@ -6,7 +6,7 @@ const {wrapTry} = require('../utils/util');
 const axios = require('axios');
 const cache = require('../utils/cache');
 
-const MAINNET_URL = 'https://mainnet.aeternal.io/';
+const MIDDLEWARE_URL = process.env.MIDDLEWARE_URL ||'https://mainnet.aeternal.io/';
 
 module.exports = class CacheLogic {
 
@@ -36,7 +36,7 @@ module.exports = class CacheLogic {
 
   static async getChainNames() {
     return wrapTry(async () => {
-      return axios.get(`${MAINNET_URL}/middleware/names/active`).catch(console.error);
+      return axios.get(`${MIDDLEWARE_URL}/middleware/names/active`).catch(console.error);
     });
   };
 

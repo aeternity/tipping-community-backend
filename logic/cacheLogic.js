@@ -1,15 +1,15 @@
-const ae = require('../utils/aeternity.js');
+const aeternity = require('../utils/aeternity.js');
 const {Tip} = require('../models');
 const LinkPreviewLogic = require('./linkPreviewLogic.js');
 const TipOrderLogic = require('./tiporderLogic');
 const CommentLogic = require('./commentLogic');
 const {wrapTry} = require('../utils/util');
 const axios = require('axios');
+const cache = require('../utils/cache');
 
 const MAINNET_URL = 'https://mainnet.aeternal.io/';
 
 module.exports = class CacheLogic {
-  interval = null;
 
   constructor() {
     this.init();
@@ -17,46 +17,30 @@ module.exports = class CacheLogic {
 
   async init() {
     // Run once so the db is synced initially without getting triggered every 5 seconds
-    await ae.init();
-    await CacheLogic.updateTipsInDatabase();
-    // Then continue to update every 5 seconds
-    this.interval = setInterval(async () => {
-      try {
-        await CacheLogic.updateTipsInDatabase();
-        this.lastRun = new Date().toISOString();
-      } catch (err) {
-        console.error(err);
-        this.error = err;
-        this.lastError = new Date().toISOString();
-      }
-    }, 5000);
-  }
+    await aeternity.init();
 
-  async getStatus() {
-    return {
-      interval: this.interval ? !this.interval._destroyed : false,
-      lastRun: this.lastRun,
-      error: this.error ? this.error.message : null,
-      lastError: this.lastError,
-      totalRows: await Tip.count(),
+    const keepHotFunction = async () => {
+      await CacheLogic.fetchTips();
+      await CacheLogic.fetchChainNames();
     };
+
+    await cache.init(aeternity, keepHotFunction);
   }
 
-  static async getChainNameFromAddress() {
+  static async getChainNames() {
     return wrapTry(async () => {
       return axios.get(`${MAINNET_URL}/middleware/names/active`).catch(console.error);
     });
   };
 
+  static fetchTips() { return cache.getOrSet(["getTips"], () => aeternity.getTips(), cache.shortCacheTime) };
+  static fetchChainNames() { return cache.getOrSet(["getChainNames"], () => CacheLogic.getChainNames(), cache.shortCacheTime) };
+
   static async getAllTips() {
-    const start = new Date().getTime();
-
     let [tips, tipOrdering, tipsPreview, chainNames, commentCounts] = await Promise.all([
-      ae.getTips(), await TipOrderLogic.fetchTipOrder(), LinkPreviewLogic.fetchLinkPreview(),
-      CacheLogic.getChainNameFromAddress(), CommentLogic.fetchCommentCountForTips(),
+      CacheLogic.fetchTips(), TipOrderLogic.fetchTipOrder(CacheLogic.fetchTips), LinkPreviewLogic.fetchLinkPreview(),
+      CacheLogic.fetchChainNames(), CommentLogic.fetchCommentCountForTips(),
     ]);
-
-    console.log(new Date().getTime() - start, "ms");
 
     // add score from backend to tips
     if (tipOrdering) {
@@ -116,33 +100,4 @@ module.exports = class CacheLogic {
   static async deliverAllItems(req, res) {
     res.send(await CacheLogic.getAllTips());
   }
-
-  static async getAllItems() {
-    return Tip.findAll({raw: true});
-  }
-
-  static async updateOnNewUrl(url) {
-    return Promise.all([
-      LinkPreviewLogic.generatePreview(url),
-    ]);
-  }
-
-  static async updateTipsInDatabase() {
-    const tips = await ae.getTips();
-    const dbEntries = await CacheLogic.getAllItems();
-    const peparedTips = tips.filter(({id}) => !dbEntries.some(entry => parseInt(entry.tipId) === id))
-      .map((data) => ({...data, tipId: data.id}));
-    if (peparedTips.length > 0) {
-      await Tip.bulkCreate(peparedTips, {ignoreDuplicates: true});
-      // UPDATE STORAGE SYNC TO AVOID DDOS BLOCKING
-      for (const {url} of peparedTips) {
-        await CacheLogic.updateOnNewUrl(url);
-      }
-    }
-  }
-
-  static async getTipByUrl(url, nonce = null) {
-    return nonce ? Tip.findOne({where: {url, nonce}, raw: true}) : Tip.findAll({where: {url}, raw: true});
-  }
-
 };

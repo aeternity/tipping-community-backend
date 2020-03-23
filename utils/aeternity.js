@@ -29,6 +29,10 @@ class Aeternity {
     }
   };
 
+  networkId = async () => {
+    return (await this.client.getNodeInfo()).nodeNetworkId
+  };
+
   getTips = async () => {
     if (!this.client) throw new Error('Init sdk first');
     const state = await this.contract.methods.get_state();

@@ -37,10 +37,12 @@ module.exports = class CacheLogic {
   static fetchChainNames() { return cache.getOrSet(["getChainNames"], () => CacheLogic.getChainNames(), cache.shortCacheTime) };
 
   static async getAllTips() {
-    let [tips, tipOrdering, tipsPreview, chainNames, commentCounts] = await Promise.all([
+    let [fetchTipsResponse, tipOrdering, tipsPreview, chainNames, commentCounts] = await Promise.all([
       CacheLogic.fetchTips(), TipOrderLogic.fetchTipOrder(CacheLogic.fetchTips), LinkPreviewLogic.fetchLinkPreview(),
       CacheLogic.fetchChainNames(), CommentLogic.fetchCommentCountForTips(),
     ]);
+
+    let { tips } = fetchTipsResponse;
 
     // add score from backend to tips
     if (tipOrdering) {
@@ -94,7 +96,9 @@ module.exports = class CacheLogic {
       });
     }
 
-    return tips;
+    return {
+      stats: fetchTipsResponse.stats, tips, hasOrdering: !!tipOrdering, chainNames,
+    };
   }
 
   static async deliverAllItems(req, res) {

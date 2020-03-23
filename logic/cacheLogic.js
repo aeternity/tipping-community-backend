@@ -107,6 +107,10 @@ module.exports = class CacheLogic {
     };
   }
 
+  static async invalidateTips(req, res) {
+    await cache.del(["getTips"]);
+    res.send({status: "OK"});
+  }
   static async deliverAllItems(req, res) {
     res.send(await CacheLogic.getAllTips());
   }

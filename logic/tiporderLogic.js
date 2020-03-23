@@ -15,8 +15,8 @@ module.exports = class Tiporder {
 
     const state = await fetchTips() || await aeternity.getTips();
 
-    const maxTipAmount = BigNumber.max(...state.map(tip => tip.total_amount), '1');
-    const tips = state.map(tip => {
+    const maxTipAmount = BigNumber.max(...state.tips.map(tip => tip.total_amount), '1');
+    const tips = state.tips.map(tip => {
       //remove some dates that are older than .9995%
       const datesToConsiderScore = Math.max(((tip.timestamp / new Date().getTime()) - 0.9995) * 1000, 0);
       //decay older dates more than newer ones

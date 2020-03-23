@@ -21,6 +21,7 @@
   "homepage": "https://github.com/aeternity/tipping-community-backend#readme",
   "dependencies": {
     "@aeternity/aepp-sdk": "^7.1.1",
+    "async-lock": "^1.2.2",
     "axios": "latest",
     "bignumber.js": "^9.0.0",
     "cors": "^2.8.5",
@@ -35,6 +36,7 @@
     "metascraper-url": "^5.11.1",
     "multer": "^1.4.2",
     "puppeteer": "^2.1.1",
+    "redis": "^3.0.2",
     "sequelize": "^5.21.3",
     "sqlite3": "^4.1.1",
     "uuid": "^7.0.1"

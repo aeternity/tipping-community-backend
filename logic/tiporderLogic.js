@@ -9,11 +9,11 @@ const featuredScoreWeight = 10;
 
 module.exports = class Tiporder {
 
-  static async fetchTipOrder() {
+  static async fetchTipOrder(fetchTips = null) {
     const blacklist = await BlacklistEntry.findAll({raw: true});
     const blacklistedIds = blacklist.map(b => b.tipId);
 
-    const state = await aeternity.getTips();
+    const state = await fetchTips() || await aeternity.getTips();
 
     const maxTipAmount = BigNumber.max(...state.map(tip => tip.total_amount), '1');
     const tips = state.map(tip => {
@@ -51,7 +51,7 @@ module.exports = class Tiporder {
   }
 
   static async getScoredBlacklistedOrder(req, res) {
-    const blacklistFiltered = await this.fetchTipOrder();
+    const blacklistFiltered = await Tiporder.fetchTipOrder();
     return res.send(blacklistFiltered);
   }
 };

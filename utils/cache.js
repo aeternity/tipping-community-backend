@@ -20,6 +20,7 @@ cache.keepHotInterval = process.env.KEEP_HOT_INTERVAL || 20 * 1000;
 cache.networkKey = "";
 
 cache.init = async (aeternity, keepHotFunction) => {
+    aeternity.setCache(cache);
     cache.networkKey = await aeternity.networkId();
     console.log("cache networkKey", cache.networkKey);
     if(!process.env.CI) cache.keepHot(aeternity, keepHotFunction);

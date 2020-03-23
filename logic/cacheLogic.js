@@ -19,7 +19,7 @@ module.exports = class CacheLogic {
     await aeternity.init();
 
     const keepHotFunction = async () => {
-      await CacheLogic.fetchTips();
+      await aeternity.getTips();
       await CacheLogic.fetchChainNames();
     };
 
@@ -40,12 +40,11 @@ module.exports = class CacheLogic {
     });
   };
 
-  static fetchTips() { return cache.getOrSet(["getTips"], () => aeternity.getTips(), cache.shortCacheTime) };
   static fetchChainNames() { return cache.getOrSet(["getChainNames"], () => CacheLogic.getChainNames(), cache.shortCacheTime) };
 
   static async getAllTips() {
     let [fetchTipsResponse, tipOrdering, tipsPreview, chainNames, commentCounts] = await Promise.all([
-      CacheLogic.fetchTips(), TipOrderLogic.fetchTipOrder(CacheLogic.fetchTips), LinkPreviewLogic.fetchLinkPreview(),
+      aeternity.getTips(), TipOrderLogic.fetchTipOrder(CacheLogic.fetchTips), LinkPreviewLogic.fetchLinkPreview(),
       CacheLogic.fetchChainNames(), CommentLogic.fetchCommentCountForTips(),
     ]);
 

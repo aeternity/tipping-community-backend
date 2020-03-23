@@ -72,6 +72,7 @@ describe('Blacklist', () => {
 
     before(async function () {
       this.timeout(25000);
+
       const ae = require('../utils/aeternity.js');
       await ae.init();
     });

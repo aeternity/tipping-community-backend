@@ -28,7 +28,7 @@ module.exports = class LinkPreviewLogic {
       const result = await LinkPreview.findOne({ where: { requestUrl: url }, raw: true });
       return result ? res.send(result) : res.sendStatus(404);
     }
-    res.send(await this.fetchLinkPreview());
+    res.send(await LinkPreviewLogic.fetchLinkPreview());
   }
 
   static async getImage (req, res) {

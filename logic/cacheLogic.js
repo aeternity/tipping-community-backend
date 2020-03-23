@@ -27,6 +27,15 @@ module.exports = class CacheLogic {
     await cache.init(aeternity, keepHotFunction);
   }
 
+  async getStatus() {
+    return {
+      lastRun: this.lastRun,
+      error: this.error ? this.error.message : null,
+      lastError: this.lastError,
+      totalRows: await Tip.count()
+    };
+  }
+
   static async getChainNames() {
     return wrapTry(async () => {
       return axios.get(`${MAINNET_URL}/middleware/names/active`).catch(console.error);

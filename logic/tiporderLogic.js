@@ -13,7 +13,7 @@ module.exports = class Tiporder {
     const blacklist = await BlacklistEntry.findAll({raw: true});
     const blacklistedIds = blacklist.map(b => b.tipId);
 
-    const state = await fetchTips() || await aeternity.getTips();
+    const state = fetchTips ? await fetchTips() : await aeternity.getTips();
 
     const maxTipAmount = BigNumber.max(...state.tips.map(tip => tip.total_amount), '1');
     const tips = state.tips.map(tip => {

@@ -4,7 +4,7 @@
   "description": "",
   "main": "server.js",
   "scripts": {
-    "test": "mocha",
+    "test": "mocha --exit",
     "benchmark": "node benchmark.js",
     "db:create": "npx sequelize-cli db:migrate",
     "db:makemigrations": "./node_modules/sequelize-auto-migrations/bin/makemigration.js"

@@ -47,7 +47,7 @@ module.exports = class CommentLogic {
   }
 
   static async getCommentCountForTips(req, res) {
-    return res.send(await this.fetchCommentCountForTips());
+    return res.send(await CommentLogic.fetchCommentCountForTips());
   }
 
   static async updateItem (req, res) {

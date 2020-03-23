@@ -21,7 +21,9 @@ jobs:
       with:
         node-version: 12.x
     - run: npm i
+    - run: docker run --name server-redis -p 6379:6379 -d redis
     - run: npx sequelize-cli db:migrate
     - run: npm test
       env:
         CI: true
+        REDIS_URL: redis://localhost:6379

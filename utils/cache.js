@@ -22,7 +22,7 @@ cache.networkKey = "";
 cache.init = async (aeternity, keepHotFunction) => {
     cache.networkKey = await aeternity.networkId();
     console.log("cache networkKey", cache.networkKey);
-    cache.keepHot(aeternity, keepHotFunction);
+    if(!process.env.CI) cache.keepHot(aeternity, keepHotFunction);
 };
 
 const buildKey = (keys) => [cache.networkKey, ...keys].join(":");

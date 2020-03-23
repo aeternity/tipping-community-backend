@@ -1,5 +1,4 @@
 const aeternity = require('../utils/aeternity.js');
-const {Tip} = require('../models');
 const LinkPreviewLogic = require('./linkPreviewLogic.js');
 const TipOrderLogic = require('./tiporderLogic');
 const CommentLogic = require('./commentLogic');
@@ -31,8 +30,7 @@ module.exports = class CacheLogic {
     return {
       lastRun: this.lastRun,
       error: this.error ? this.error.message : null,
-      lastError: this.lastError,
-      totalRows: await Tip.count()
+      lastError: this.lastError
     };
   }
 

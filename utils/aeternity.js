@@ -30,14 +30,22 @@ class Aeternity {
     }
   };
 
+  setCache = (cache) => {
+    this.cache = cache;
+  };
+
   networkId = async () => {
     return (await this.client.getNodeInfo()).nodeNetworkId
   };
 
   getTips = async () => {
     if (!this.client) throw new Error('Init sdk first');
-    const state = await this.contract.methods.get_state();
-    return this.getTipsRetips(state.decodedResult);
+    const fetchTips = async () => {
+      const state = await this.contract.methods.get_state();
+      return this.getTipsRetips(state.decodedResult);
+    };
+
+    return this.cache ? this.cache.getOrSet(["getTips"], () => fetchTips(), this.cache.shortCacheTime) : fetchTips();
   };
 
   getContractSource = () => {

@@ -50,6 +50,16 @@ module.exports = class LinkPreviewLogic {
   }
 
   static async createPreviewForUrl (url, crawler) {
+
+    const fetchImage = async (url, filename) => {
+      const response = await axios.get(url, { responseType: 'stream' });
+      const writer = response.data.pipe(fs.createWriteStream(path.resolve(__dirname, '../images', filename)));
+      return new Promise((resolve, reject) => {
+        writer.on('finish', resolve);
+        writer.on('error', reject);
+      });
+    };
+
     try {
       // VERIFY URL
       await metascraper({ url });
@@ -68,18 +78,26 @@ module.exports = class LinkPreviewLogic {
       }
 
       if (data.image) {
+        let extension = path.extname(data.image.includes('?') ? data.image.split('?')[0] : data.image);
+        const filename = `preview-${uuidv4()}${extension ? extension : '.jpg'}`;
         try {
-          const filename = `preview-${uuidv4()}${path.extname(data.image.includes('?') ? data.image.split('?')[0] : data.image)}`;
-          const response = await axios.get(data.image, { responseType: 'stream' });
-          const writer = response.data.pipe(fs.createWriteStream(path.resolve(__dirname, '../images', filename)));
-          await new Promise((resolve, reject) => {
-            writer.on('finish', resolve);
-            writer.on('error', reject);
-          });
+          await fetchImage(data.image, filename);
           data.image = `/linkpreview/image/${filename}`;
         } catch (e) {
           console.error('Could not fetch image');
           data.image = null;
+        }
+      }
+
+      if(!data.image) {
+        try {
+          const filename = `preview-${uuidv4()}.jpg`;
+          await fetchImage(`https://api.apiflash.com/v1/urltoimage?access_key=${process.env.API_FLASH_KEY}&url=${encodeURIComponent(data.requestUrl)}`,
+            filename);
+          data.image = `/linkpreview/image/${filename}`;
+          console.log("Got image snapshot preview for", filename);
+        } catch (e) {
+          console.error("screen shot api failed as well for ", data.requestUrl)
         }
       }
 

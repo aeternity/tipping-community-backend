@@ -5,6 +5,7 @@ const lngDetector = new (require('languagedetect'));
 const { v4: uuidv4 } = require('uuid');
 const fs = require('fs');
 const path = require('path');
+
 lngDetector.setLanguageType('iso2');
 
 const metascraper = require('metascraper')([
@@ -17,7 +18,7 @@ const metascraper = require('metascraper')([
 
 module.exports = class LinkPreviewLogic {
 
-  static async fetchLinkPreview() {
+  static async fetchAllLinkPreviews() {
     return LinkPreview.findAll({ raw: true });
   }
 
@@ -28,7 +29,7 @@ module.exports = class LinkPreviewLogic {
       const result = await LinkPreview.findOne({ where: { requestUrl: url }, raw: true });
       return result ? res.send(result) : res.sendStatus(404);
     }
-    res.send(await LinkPreviewLogic.fetchLinkPreview());
+    res.send(await LinkPreviewLogic.fetchAllLinkPreviews());
   }
 
   static async getImage (req, res) {

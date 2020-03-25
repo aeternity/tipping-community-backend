@@ -24,6 +24,7 @@ module.exports = class CacheLogic {
     const keepHotFunction = async () => {
       await CacheLogic.getTipsCheckPreviews();
       await CacheLogic.fetchChainNames();
+      await aeternity.getOracleState();
     };
 
     await cache.init(aeternity, keepHotFunction);
@@ -134,7 +135,13 @@ module.exports = class CacheLogic {
     await cache.del(["getTips"]);
     res.send({status: "OK"});
   }
+
   static async deliverAllItems(req, res) {
     res.send(await CacheLogic.getAllTips());
   }
+
+  static async deliverOracleState(req, res) {
+    res.send(await aeternity.getOracleState());
+  }
+
 };

@@ -38,6 +38,16 @@ class Aeternity {
     return (await this.client.getNodeInfo()).nodeNetworkId
   };
 
+  getOracleState = async () => {
+    if (!this.client) throw new Error('Init sdk first');
+
+    const fetchOracleState = () => this.oracleContract.methods.get_state().then(res => res.decodedResult);
+
+    return this.cache
+      ? this.cache.getOrSet(["oracleState"], () => fetchOracleState(), this.cache.shortCacheTime)
+      : fetchOracleState();
+  };
+
   getTips = async () => {
     if (!this.client) throw new Error('Init sdk first');
     const fetchTips = async () => {
@@ -45,7 +55,9 @@ class Aeternity {
       return this.getTipsRetips(state.decodedResult);
     };
 
-    return this.cache ? this.cache.getOrSet(["getTips"], () => fetchTips(), this.cache.shortCacheTime) : fetchTips();
+    return this.cache
+      ? this.cache.getOrSet(["getTips"], () => fetchTips(), this.cache.shortCacheTime)
+      : fetchTips();
   };
 
   getContractSource = () => {

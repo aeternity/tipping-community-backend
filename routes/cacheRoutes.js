@@ -9,6 +9,8 @@ const cache = new CacheLogic();
 // Open api routes
 router.get('/', CacheLogic.deliverAllItems);
 
+router.get('/oracle', CacheLogic.deliverOracleState);
+
 router.get('/invalidate/tips', CacheLogic.invalidateTips);
 
 // View routes

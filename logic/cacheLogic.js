@@ -9,7 +9,7 @@ const cache = require('../utils/cache');
 var AsyncLock = require('async-lock');
 var lock = new AsyncLock();
 
-const MIDDLEWARE_URL = process.env.MIDDLEWARE_URL || 'https://mainnet.aeternal.io/';
+const MIDDLEWARE_URL = process.env.MIDDLEWARE_URL || 'https://mainnet.aeternity.io/';
 
 module.exports = class CacheLogic {
 

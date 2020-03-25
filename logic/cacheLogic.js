@@ -6,7 +6,10 @@ const {wrapTry} = require('../utils/util');
 const axios = require('axios');
 const cache = require('../utils/cache');
 
-const MIDDLEWARE_URL = process.env.MIDDLEWARE_URL ||'https://mainnet.aeternal.io/';
+var AsyncLock = require('async-lock');
+var lock = new AsyncLock();
+
+const MIDDLEWARE_URL = process.env.MIDDLEWARE_URL || 'https://mainnet.aeternal.io/';
 
 module.exports = class CacheLogic {
 
@@ -19,7 +22,7 @@ module.exports = class CacheLogic {
     await aeternity.init();
 
     const keepHotFunction = async () => {
-      await aeternity.getTips();
+      await CacheLogic.getTipsCheckPreviews();
       await CacheLogic.fetchChainNames();
     };
 
@@ -38,13 +41,33 @@ module.exports = class CacheLogic {
     return wrapTry(async () => {
       return axios.get(`${MIDDLEWARE_URL}/middleware/names/active`).catch(console.error);
     });
-  };
+  }
+
+  static async getTipsCheckPreviews() {
+    const tips = await aeternity.getTips();
+
+    // not await on purpose, just trigger background preview fetch
+    lock.acquire("LinkPreviewLogic.fetchAllLinkPreviews", async () => {
+      const previews = await LinkPreviewLogic.fetchAllLinkPreviews();
+      const tipUrls = [...new Set(tips.tips.map(tip => tip.url))];
+      const previewUrls = [...new Set(previews.map(preview => preview.requestUrl))];
+
+      const difference = tipUrls.filter(url => !previewUrls.includes(url));
+
+      await difference.asyncMap(async (url) => {
+        console.log(url);
+        await LinkPreviewLogic.generatePreview(url).catch(console.error);
+      })
+    });
+
+    return tips;
+  }
 
   static fetchChainNames() { return cache.getOrSet(["getChainNames"], () => CacheLogic.getChainNames(), cache.shortCacheTime) };
 
   static async getAllTips() {
     let [fetchTipsResponse, tipOrdering, tipsPreview, chainNames, commentCounts] = await Promise.all([
-      aeternity.getTips(), TipOrderLogic.fetchTipOrder(CacheLogic.fetchTips), LinkPreviewLogic.fetchLinkPreview(),
+      CacheLogic.getTipsCheckPreviews(), TipOrderLogic.fetchTipOrder(CacheLogic.fetchTips), LinkPreviewLogic.fetchAllLinkPreviews(),
       CacheLogic.fetchChainNames(), CommentLogic.fetchCommentCountForTips(),
     ]);
 

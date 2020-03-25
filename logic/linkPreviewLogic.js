@@ -91,9 +91,7 @@ module.exports = class LinkPreviewLogic {
 
       if(!data.image) {
         try {
-          const filename = `preview-${uuidv4()}.jpg`;
-          await fetchImage(`https://api.apiflash.com/v1/urltoimage?access_key=${process.env.API_FLASH_KEY}&url=${encodeURIComponent(data.requestUrl)}`,
-            filename);
+          const { screenshot: filename } = await DomLoader.getScreenshot(data.requestUrl);
           data.image = `/linkpreview/image/${filename}`;
           console.log("Got image snapshot preview for", filename);
         } catch (e) {

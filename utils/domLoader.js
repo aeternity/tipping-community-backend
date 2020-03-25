@@ -1,5 +1,7 @@
 // load dom from url
 const puppeteer = require('puppeteer');
+const { v4: uuidv4 } = require('uuid');
+const path = require('path');
 
 module.exports = class DomLoader {
 
@@ -9,7 +11,11 @@ module.exports = class DomLoader {
     return result;
   }
 
-  static async runBrowser (url) {
+  static async getScreenshot (url) {
+    return DomLoader.runBrowser(url, true);
+  }
+
+  static async runBrowser (url, screenshot = false) {
     const browser = await puppeteer.launch(process.env.NODE_ENV === 'test' ? {} : {
       executablePath: '/usr/bin/chromium-browser',
       args: ['--disable-dev-shm-usage'],
@@ -32,9 +38,11 @@ module.exports = class DomLoader {
       ) {
         throw new Error('Got caught on login.php')
       }
+      const filename = `preview-${uuidv4()}.jpg`;
+      if(screenshot) await page.screenshot({path: path.resolve(__dirname, '../images', filename)});
       const html = await page.content();
       await browser.close();
-      return { html, url: page.url() };
+      return { html, url: page.url(), screenshot: screenshot ? filename : null};
     } catch (e) {
       console.error(`Error while crawling ${url}: ${e.message}`);
       await browser.close();

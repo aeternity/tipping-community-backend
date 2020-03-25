@@ -12,7 +12,8 @@ describe('LinkPreview', () => {
 
   const requestUrl = 'https://aeternity.com/';
 
-  before(async () => { //Before each test we empty the database
+  before(async function () {
+    this.timeout(25000);
     await LinkPreview.destroy({
       where: {},
       truncate: true,

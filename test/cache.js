@@ -17,6 +17,26 @@ describe('Cache', () => {
         done();
       });
     });
+
+    it('it should GET all oracle cache items', function (done) {
+      this.timeout(25000);
+
+      chai.request(server).get('/cache/oracle').end((err, res) => {
+        res.should.have.status(200);
+        res.body.should.be.a('object');
+        done();
+      });
+    });
+
+    it('it should invalidate the tips cache', function (done) {
+      this.timeout(25000);
+
+      chai.request(server).get('/cache/invalidate/tips').end((err, res) => {
+        res.should.have.status(200);
+        res.body.should.be.a('object');
+        done();
+      });
+    });
   });
   describe('Interface', () => {
     it('it should return ok on status interface', function(done) {

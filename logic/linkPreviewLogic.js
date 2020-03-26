@@ -5,6 +5,7 @@ const lngDetector = new (require('languagedetect'));
 const { v4: uuidv4 } = require('uuid');
 const fs = require('fs');
 const path = require('path');
+const sharp = require('sharp');
 
 lngDetector.setLanguageType('iso2');
 
@@ -18,7 +19,7 @@ const metascraper = require('metascraper')([
 
 module.exports = class LinkPreviewLogic {
 
-  static async fetchAllLinkPreviews() {
+  static async fetchAllLinkPreviews () {
     return LinkPreview.findAll({ raw: true });
   }
 
@@ -49,16 +50,64 @@ module.exports = class LinkPreviewLogic {
     return queryResult;
   }
 
-  static async createPreviewForUrl (url, crawler) {
+  static async fetchImage (requestUrl, imageUrl) {
 
-    const fetchImage = async (url, filename) => {
-      const response = await axios.get(url, { responseType: 'stream' });
+    let newUrl = null;
+
+    // Get Ext name
+    let extension = path.extname(imageUrl);
+    // Remove any query / hash params
+    extension = extension.match(/(^[a-zA-Z0-9]+)/);
+    let filename = `preview-${uuidv4()}${extension ? extension[1] : '.jpg'}`;
+
+    try {
+      const response = await axios.get(imageUrl, { responseType: 'stream' });
       const writer = response.data.pipe(fs.createWriteStream(path.resolve(__dirname, '../images', filename)));
-      return new Promise((resolve, reject) => {
+      await new Promise((resolve, reject) => {
         writer.on('finish', resolve);
         writer.on('error', reject);
       });
-    };
+
+      newUrl = `/linkpreview/image/${filename}`;
+
+      // Image too small
+      const metaData = await sharp(path.resolve(__dirname, '../images', filename)).metadata();
+      if(metaData.width < 300 && metaData.height < 200) newUrl = null;
+
+    } catch (e) {
+      console.error('Could not appropriate fetch image');
+    }
+
+    // Get Screenshot if needed
+    if (!newUrl) {
+      try {
+        const { screenshot } = await DomLoader.getScreenshot(requestUrl);
+        filename = screenshot;
+        newUrl = `/linkpreview/image/${filename}`;
+        console.log('Got image snapshot preview for', filename);
+      } catch (e) {
+        console.error('screen shot api failed as well for ', requestUrl);
+      }
+    }
+
+    // Reduce image size
+    if(newUrl) {
+      try {
+        const metaData = await sharp(path.resolve(__dirname, '../images', filename)).metadata();
+        if(metaData.width > 500 || metaData.height > 300)  {
+          await sharp(path.resolve(__dirname, '../images', filename))
+            .resize({width: 500, height: 300, fit: 'inside'})
+            .toFile(path.resolve(__dirname, '../images', 'compressed-' + filename))
+        }
+        newUrl = `/linkpreview/image/compressed-${filename}`;
+      } catch (e) {
+        console.error('Could not compress image');
+      }
+    }
+    return newUrl;
+  }
+
+  static async createPreviewForUrl (url, crawler) {
 
     try {
       // VERIFY URL
@@ -77,27 +126,8 @@ module.exports = class LinkPreviewLogic {
         if (probability && probability.length > 0 && probability[0][1] > 0.1) data.lang = probability[0][0];
       }
 
-      if (data.image) {
-        let extension = path.extname(data.image.includes('?') ? data.image.split('?')[0] : data.image);
-        const filename = `preview-${uuidv4()}${extension ? extension : '.jpg'}`;
-        try {
-          await fetchImage(data.image, filename);
-          data.image = `/linkpreview/image/${filename}`;
-        } catch (e) {
-          console.error('Could not fetch image');
-          data.image = null;
-        }
-      }
-
-      if(!data.image) {
-        try {
-          const { screenshot: filename } = await DomLoader.getScreenshot(data.requestUrl);
-          data.image = `/linkpreview/image/${filename}`;
-          console.log("Got image snapshot preview for", filename);
-        } catch (e) {
-          console.error("screen shot api failed as well for ", data.requestUrl)
-        }
-      }
+      // Fetch image
+      if (data.image) data.image = await LinkPreviewLogic.fetchImage(data.requestUrl, data.image);
 
       const existingEntry = await LinkPreview.findOne({ where: { requestUrl: url } });
 

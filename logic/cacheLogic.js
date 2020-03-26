@@ -64,7 +64,9 @@ module.exports = class CacheLogic {
     return tips;
   }
 
-  static fetchChainNames() { return cache.getOrSet(["getChainNames"], () => CacheLogic.getChainNames(), cache.shortCacheTime) };
+  static fetchChainNames() {
+    return cache.getOrSet(["getChainNames"], () => CacheLogic.getChainNames(), cache.shortCacheTime)
+  };
 
   static async getAllTips() {
     let [fetchTipsResponse, tipOrdering, tipsPreview, chainNames, commentCounts] = await Promise.all([
@@ -72,7 +74,7 @@ module.exports = class CacheLogic {
       CacheLogic.fetchChainNames(), CommentLogic.fetchCommentCountForTips(),
     ]);
 
-    let { tips } = fetchTipsResponse;
+    let {tips} = fetchTipsResponse;
 
     // add score from backend to tips
     if (tipOrdering) {
@@ -137,6 +139,7 @@ module.exports = class CacheLogic {
   }
 
   static async deliverAllItems(req, res) {
+    let limit = 50;
     let tips = await CacheLogic.getAllTips();
 
     if (req.query.ordering) {
@@ -152,6 +155,10 @@ module.exports = class CacheLogic {
           break;
         default:
       }
+    }
+
+    if (req.query.page) {
+      tips.tips = tips.tips.slice((req.query.page - 1) * limit, req.query.page * limit);
     }
 
     res.send(tips);

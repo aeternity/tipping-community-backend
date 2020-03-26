@@ -98,8 +98,8 @@ module.exports = class LinkPreviewLogic {
           await sharp(path.resolve(__dirname, '../images', filename))
             .resize({width: 500, height: 300, fit: 'inside'})
             .toFile(path.resolve(__dirname, '../images', 'compressed-' + filename))
+          newUrl = `/linkpreview/image/compressed-${filename}`;
         }
-        newUrl = `/linkpreview/image/compressed-${filename}`;
       } catch (e) {
         console.error('Could not compress image');
       }

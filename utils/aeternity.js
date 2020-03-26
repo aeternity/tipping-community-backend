@@ -132,7 +132,7 @@ class Aeternity {
 
     const topicsRegex = /(#[a-zA-Z]+\b)(?!;)/g;
 
-    const tips = state.tips.map(([id, data]) => {
+    return state.tips.map(([id, data]) => {
       const tipsData = data;
       tipsData.id = id;
       tipsData.url = findUrl(tipsData.url_id);
@@ -153,38 +153,6 @@ class Aeternity {
 
       return tipsData;
     });
-
-
-    const urls = state.urls.map(([url, id]) => {
-      const urlTips = tips.filter((tip) => tip.url_id === id);
-      const claim = state.claims.find(([urlId]) => urlId === id)[1];
-
-      return {
-        url,
-        tip_ids: urlTips.map((tip) => tip.id),
-        retip_ids: urlTips.flatMap((tip) => tip.retips.map((retip) => retip.id)),
-        unclaimed_amount: claim[1],
-      };
-    });
-
-    const senders = [...new Set(tips
-      .reduce((acc, tip) => acc
-        .concat([tip.sender, ...tip.retips.map((retip) => retip.sender)]), []))];
-
-    const stats = {
-      tips_length: state.tips.length,
-      retips_length: state.retips.length,
-      total_tips_length: state.tips.length + state.retips.length,
-      total_amount: tips.reduce((acc, tip) => acc.plus(tip.total_amount), new BigNumber('0')).toFixed(),
-      total_unclaimed_amount: tips.reduce((acc, tip) => acc.plus(tip.total_unclaimed_amount), new BigNumber('0')).toFixed(),
-      senders_length: senders.length,
-    };
-
-    return {
-      stats,
-      urls,
-      tips,
-    };
   };
 
 }

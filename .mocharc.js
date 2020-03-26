@@ -6,5 +6,6 @@ process.env = {
   AUTHENTICATION_USER: 'admin',
   AUTHENTICATION_PASSWORD: 'pass',
   CONTRACT_FILE: 'NewTippingInterface',
-  NODE_ENV: 'test'
+  NODE_ENV: 'test',
+  REDIS_URL: 'redis://localhost:6379'
 };

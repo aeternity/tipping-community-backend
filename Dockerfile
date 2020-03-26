@@ -22,7 +22,7 @@ RUN addgroup -S pptruser && adduser --uid 1001 -S -g pptruser pptruser \
 
 WORKDIR /app
 COPY package.json /app
-RUN npm install --only=production
+RUN npm install --only=production --unsafe-perm
 
 COPY . /app
 

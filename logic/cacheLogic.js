@@ -5,7 +5,7 @@ const CommentLogic = require('./commentLogic');
 const {wrapTry} = require('../utils/util');
 const axios = require('axios');
 const cache = require('../utils/cache');
-
+const BigNumber = require('bignumber.js');
 var AsyncLock = require('async-lock');
 var lock = new AsyncLock();
 
@@ -127,7 +127,7 @@ module.exports = class CacheLogic {
     }
 
     return {
-      stats: fetchTipsResponse.stats, tips, hasOrdering: !!tipOrdering, chainNames,
+      stats: fetchTipsResponse.stats, tips, chainNames,
     };
   }
 
@@ -137,7 +137,24 @@ module.exports = class CacheLogic {
   }
 
   static async deliverAllItems(req, res) {
-    res.send(await CacheLogic.getAllTips());
+    let tips = await CacheLogic.getAllTips();
+
+    if (req.query.ordering) {
+      switch (req.query.ordering) {
+        case 'hot':
+          tips.tips.sort((a, b) => b.score - a.score);
+          break;
+        case 'latest':
+          tips.tips.sort((a, b) => b.timestamp - a.timestamp);
+          break;
+        case 'highest':
+          tips.tips.sort((a, b) => new BigNumber(b.total_amount).minus(a.total_amount).toNumber());
+          break;
+        default:
+      }
+    }
+
+    res.send(tips);
   }
 
   static async deliverOracleState(req, res) {

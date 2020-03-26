@@ -49,9 +49,4 @@ module.exports = class Tiporder {
         }
       });
   }
-
-  static async getScoredBlacklistedOrder(req, res) {
-    const blacklistFiltered = await Tiporder.fetchTipOrder();
-    return res.send(blacklistFiltered);
-  }
 };

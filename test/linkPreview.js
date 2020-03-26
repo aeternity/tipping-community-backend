@@ -69,7 +69,7 @@ describe('LinkPreview', () => {
 
     after(() => {
       fs.readdirSync('images')
-        .filter(fileName => fileName.includes('-'))
+        .filter(fileName => fileName.includes('preview-'))
         .map(file => fs.unlinkSync('images/' + file));
     })
   });

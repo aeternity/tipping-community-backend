@@ -14,8 +14,8 @@ var lock = new AsyncLock();
 const cache = {};
 cache.wsconnection = null;
 
-cache.shortCacheTime = process.env.SHORT_CACHE_TIME || 2 * 60;
-cache.longCacheTime = process.env.LONG_CACHE_TIME || 8 * 60 * 60;
+cache.shortCacheTime = process.env.SHORT_CACHE_TIME || 5 * 60;
+cache.longCacheTime = process.env.LONG_CACHE_TIME || 60 * 60;
 cache.keepHotInterval = process.env.KEEP_HOT_INTERVAL || 20 * 1000;
 cache.networkKey = "";
 

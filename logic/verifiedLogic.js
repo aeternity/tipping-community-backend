@@ -5,7 +5,7 @@ module.exports = class Verified {
   static async getAllClaimedEvents (req, res) {
     try {
       await ae.init();
-      const tips = (await ae.getTips()).tips;
+      const tips = await ae.getTips();
       const allClaimedDomains = tips
         .filter(({claim}) => !claim.unclaimed)
         .map(({url}) => (new URL(url)).hostname)

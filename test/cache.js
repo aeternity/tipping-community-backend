@@ -11,9 +11,9 @@ describe('Cache', () => {
     it('it should GET all cache items', function (done) {
       this.timeout(25000);
 
-      chai.request(server).get('/cache/').end((err, res) => {
+      chai.request(server).get('/cache/tips').end((err, res) => {
         res.should.have.status(200);
-        res.body.should.be.a('object');
+        res.body.should.be.a('array');
         done();
       });
     });
@@ -22,6 +22,36 @@ describe('Cache', () => {
       this.timeout(25000);
 
       chai.request(server).get('/cache/oracle').end((err, res) => {
+        res.should.have.status(200);
+        res.body.should.be.a('object');
+        done();
+      });
+    });
+
+    it('it should GET all stats cache items', function (done) {
+      this.timeout(25000);
+
+      chai.request(server).get('/cache/stats').end((err, res) => {
+        res.should.have.status(200);
+        res.body.should.be.a('object');
+        done();
+      });
+    });
+
+    it('it should GET all chainnames cache items', function (done) {
+      this.timeout(25000);
+
+      chai.request(server).get('/cache/chainnames').end((err, res) => {
+        res.should.have.status(200);
+        res.body.should.be.a('object');
+        done();
+      });
+    });
+
+    it('it should GET all price cache items', function (done) {
+      this.timeout(25000);
+
+      chai.request(server).get('/cache/price').end((err, res) => {
         res.should.have.status(200);
         res.body.should.be.a('object');
         done();

@@ -140,7 +140,7 @@ module.exports = class CacheLogic {
   }
 
   static async deliverTips(req, res) {
-    let limit = 50;
+    let limit = 30;
     let tips = await CacheLogic.getAllTips();
 
     if (req.query.ordering) {

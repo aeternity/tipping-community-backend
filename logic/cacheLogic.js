@@ -168,6 +168,7 @@ module.exports = class CacheLogic {
   static async deliverPrice(req, res) {
     res.send(await CacheLogic.fetchPrice());
   }
+
   static async deliverChainNames(req, res) {
     res.send(await CacheLogic.fetchChainNames());
   }
@@ -191,8 +192,9 @@ module.exports = class CacheLogic {
     };
 
     res.send(stats);
+  }
 
-  }  static async deliverOracleState(req, res) {
+  static async deliverOracleState(req, res) {
     res.send(await aeternity.getOracleState());
   }
 

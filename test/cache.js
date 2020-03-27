@@ -58,6 +58,16 @@ describe('Cache', () => {
       });
     });
 
+    it('it should GET all price cache items', function (done) {
+      this.timeout(25000);
+
+      chai.request(server).get('/cache/topics').end((err, res) => {
+        res.should.have.status(200);
+        res.body.should.be.a('object');
+        done();
+      });
+    });
+
     it('it should invalidate the tips cache', function (done) {
       this.timeout(25000);
 

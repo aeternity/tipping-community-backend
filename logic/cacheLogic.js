@@ -7,6 +7,7 @@ const cache = require('../utils/cache');
 const BigNumber = require('bignumber.js');
 var AsyncLock = require('async-lock');
 var lock = new AsyncLock();
+const {getTipTopics} = require('../utils/tipTopicUtil');
 
 const MIDDLEWARE_URL = process.env.MIDDLEWARE_URL || 'https://mainnet.aeternity.io/';
 
@@ -196,6 +197,11 @@ module.exports = class CacheLogic {
 
   static async deliverOracleState(req, res) {
     res.send(await aeternity.getOracleState());
+  }
+
+  static async deliverTipTopics(req, res) {
+    const tips = await CacheLogic.getAllTips();
+    res.send(getTipTopics(tips));
   }
 
 };

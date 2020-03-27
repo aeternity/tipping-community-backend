@@ -17,6 +17,7 @@ router.get('/price', CacheLogic.deliverPrice);
 
 router.get('/oracle', CacheLogic.deliverOracleState);
 
+router.get('/topics', CacheLogic.deliverTipTopics);
 
 router.get('/invalidate/tips', CacheLogic.invalidateTips);
 

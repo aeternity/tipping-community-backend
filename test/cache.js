@@ -28,6 +28,26 @@ describe('Cache', () => {
       });
     });
 
+    it('it should GET all tip cache items', function (done) {
+      this.timeout(25000);
+
+      chai.request(server).get('/cache/tip?id=1').end((err, res) => {
+        res.should.have.status(200);
+        res.body.should.be.a('object');
+        done();
+      });
+    });
+
+    it('it should GET all user stats cache items', function (done) {
+      this.timeout(25000);
+
+      chai.request(server).get('/cache/userStats?address=ak_fUq2NesPXcYZ1CcqBcGC3StpdnQw3iVxMA3YSeCNAwfN4myQk').end((err, res) => {
+        res.should.have.status(200);
+        res.body.should.be.a('object');
+        done();
+      });
+    });
+
     it('it should GET all stats cache items', function (done) {
       this.timeout(25000);
 
@@ -63,7 +83,7 @@ describe('Cache', () => {
 
       chai.request(server).get('/cache/topics').end((err, res) => {
         res.should.have.status(200);
-        res.body.should.be.a('object');
+        res.body.should.be.a('array');
         done();
       });
     });

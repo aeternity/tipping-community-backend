@@ -141,8 +141,6 @@ module.exports = class CacheLogic {
     res.send({status: "OK"});
   }
 
-
-
   static async deliverTip(req, res) {
     let tips = await CacheLogic.getAllTips();
     res.send(tips.find(tip => tip.id === parseInt(req.query.id)));

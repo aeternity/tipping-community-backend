@@ -43,7 +43,7 @@ module.exports = class CommentLogic {
   }
 
   static async getCommentCountForAddress (req, res) {
-    return res.send({count: CommentLogic.fetchCommentCountForAddress(req.params.author), author: req.params.author});
+    return res.send({count: await CommentLogic.fetchCommentCountForAddress(req.params.author), author: req.params.author});
   }
 
   static fetchCommentCountForTips() {

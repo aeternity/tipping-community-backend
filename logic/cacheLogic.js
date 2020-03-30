@@ -8,6 +8,7 @@ const BigNumber = require('bignumber.js');
 var AsyncLock = require('async-lock');
 var lock = new AsyncLock();
 const {getTipTopics} = require('../utils/tipTopicUtil');
+const Util = require('../utils/util');
 
 const MIDDLEWARE_URL = process.env.MIDDLEWARE_URL || 'https://mainnet.aeternity.io/';
 
@@ -183,6 +184,37 @@ module.exports = class CacheLogic {
 
   static async deliverChainNames(req, res) {
     res.send(await CacheLogic.fetchChainNames());
+  }
+
+  static async deliverUserStats(req, res) {
+    const oracleState = await aeternity.getOracleState();
+    const userTips = (await CacheLogic.getAllTips()).filter((tip) => tip.sender === req.query.address);
+
+    const userReTips = userTips.flatMap((tip) => tip.retips.filter((retip) => retip.sender === req.query.address));
+      const totalTipAmount = Util.atomsToAe(userTips
+        .reduce((acc, tip) => acc.plus(tip.amount), new BigNumber(0))
+        .plus(userReTips.reduce((acc, tip) => acc.plus(tip.amount), new BigNumber(0)))).toFixed(2);
+
+      const claimedUrls = oracleState.success_claimed_urls
+        ? oracleState.success_claimed_urls
+          .filter(([, data]) => data.success && data.account === req.query.address).map(([url]) => url)
+        : [];
+      const unclaimedAmount = userTips
+        .reduce((acc, tip) => (claimedUrls.includes(tip.url)
+          ? acc.plus(tip.total_unclaimed_amount)
+          : acc),
+          new BigNumber(0));
+
+      const stats = {
+        tipsLength: userTips.length,
+        retipsLength: userReTips.length,
+        totalTipAmount,
+        claimedUrlsLength: claimedUrls.length,
+        unclaimedAmount,
+        userComments: await CommentLogic.fetchCommentCountForAddress(req.query.address),
+      };
+
+    res.send(stats);
   }
 
   static async deliverStats(req, res) {

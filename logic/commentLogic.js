@@ -37,9 +37,13 @@ module.exports = class CommentLogic {
     return result ? res.send(result) : res.sendStatus(404);
   }
 
+  static async fetchCommentCountForAddress(address) {
+    const result = await Comment.count({where: {author: address}, raw: true});
+    return result ? result : 0;
+  }
+
   static async getCommentCountForAddress (req, res) {
-    const result = await Comment.count({ where: { author: req.params.author }, raw: true });
-    return res.send({count: result !== null ? result : 0, author: req.params.author});
+    return res.send({count: CommentLogic.fetchCommentCountForAddress(req.params.author), author: req.params.author});
   }
 
   static fetchCommentCountForTips() {

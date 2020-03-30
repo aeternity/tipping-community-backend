@@ -13,6 +13,8 @@ router.get('/tips', CacheLogic.deliverTips);
 
 router.get('/stats', CacheLogic.deliverStats);
 
+router.get('/userStats', CacheLogic.deliverUserStats);
+
 router.get('/chainNames', CacheLogic.deliverChainNames);
 
 router.get('/price', CacheLogic.deliverPrice);

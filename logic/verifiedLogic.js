@@ -4,12 +4,11 @@ module.exports = class Verified {
 
   static async getAllClaimedEvents (req, res) {
     try {
-      await ae.init();
       const tips = await ae.getTips();
-      const allClaimedDomains = tips
-        .filter(({claim}) => !claim.unclaimed)
-        .map(({url}) => (new URL(url)).hostname)
-        .reduce((unique, item) => unique.includes(item) ? unique : [...unique, item], []);
+      const allClaimedDomains = [
+        ...(new Set(tips
+          .filter(({ claim }) => !claim.unclaimed)
+          .map(({ url }) => url)))];
       return res.send(allClaimedDomains);
     } catch (err) {
       console.error(err);

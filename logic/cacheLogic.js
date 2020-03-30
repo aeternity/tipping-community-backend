@@ -156,6 +156,18 @@ module.exports = class CacheLogic {
       tips = tips.filter((tip) => tip.sender === req.query.address);
     }
 
+    if (req.query.search) {
+      const term = req.query.search.toLowerCase();
+
+      const urlSearchResults = tips.filter((tip) => tip.url.toLowerCase().includes(term));
+      const senderSearchResults = tips.filter((tip) => tip.sender.toLowerCase().includes(term));
+      const noteSearchResults = tips.filter((tip) => tip.title.toLowerCase().includes(term));
+
+      // We convert the result array to Set in order to remove duplicate records
+      const convertResultToSet = new Set([...urlSearchResults, ...senderSearchResults, ...noteSearchResults]);
+      tips = [...convertResultToSet];
+    }
+
     if (req.query.ordering) {
       switch (req.query.ordering) {
         case 'hot':

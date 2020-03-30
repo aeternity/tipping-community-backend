@@ -26,7 +26,7 @@ class Aeternity {
         compilerUrl: process.env.COMPILER_URL,
       });
       this.contract = await this.client.getContractInstance(this.getContractSource(), {contractAddress: process.env.CONTRACT_ADDRESS});
-      this.oracleContract = await this.client.getContractInstance(this.getOracleContractSource(), {contractAddress: "ct_2VpQ1QGXy7KA2rsQmC4QraFKwQam3Ksqq3cAK8KHUNwhoiQkL"});
+      this.oracleContract = await this.client.getContractInstance(this.getOracleContractSource(), {contractAddress: process.env.ORACLE_CONTRACT_ADDRESS});
     }
   };
 

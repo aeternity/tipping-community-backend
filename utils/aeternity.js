@@ -78,23 +78,25 @@ class Aeternity {
 
     if (!claimSuccess) {
       const fee = await this.oracleContract.methods.estimate_query_fee();
-      await this.contract.methods.pre_claim(url, address, {amount: fee.decodedResult});
-    }
+      await this.contract.methods.pre_claim(url, address, { amount: fee.decodedResult });
 
-    return new Promise((resolve, reject) => {
-      // check claim every second, 20 times
-      let intervalCounter = 0;
-      const interval = setInterval(async () => {
-        if (((await this.contract.methods.check_claim(url, address)).decodedResult.success)) {
-          clearInterval(interval);
-          return resolve();
-        }
-        if (intervalCounter++ > 20) {
-          clearInterval(interval);
-          return reject({message: "check_claim interval timeout"});
-        }
-      }, 5000);
-    });
+      return new Promise((resolve, reject) => {
+        // check claim every second, 20 times
+        let intervalCounter = 0;
+        const interval = setInterval(async () => {
+          if (((await this.contract.methods.check_claim(url, address)).decodedResult.success)) {
+            clearInterval(interval);
+            return resolve();
+          }
+          if (intervalCounter++ > 20) {
+            clearInterval(interval);
+            return reject({ message: "check_claim interval timeout" });
+          }
+        }, 5000);
+      });
+    } else {
+      return claimSuccess;
+    }
   }
 
   async claimTips(address, url) {

@@ -140,9 +140,20 @@ module.exports = class CacheLogic {
     res.send({status: "OK"});
   }
 
+
+
+  static async deliverTip(req, res) {
+    let tips = await CacheLogic.getAllTips();
+    res.send(tips.find(tip => tip.id === parseInt(req.query.id)));
+  }
+
   static async deliverTips(req, res) {
     let limit = 30;
     let tips = await CacheLogic.getAllTips();
+
+    if (req.query.address) {
+      tips = tips.filter((tip) => tip.sender === req.query.address);
+    }
 
     if (req.query.ordering) {
       switch (req.query.ordering) {

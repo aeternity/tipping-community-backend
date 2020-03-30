@@ -7,6 +7,8 @@ const router = new Router();
 const cache = new CacheLogic();
 
 // Open api routes
+router.get('/tip', CacheLogic.deliverTip);
+
 router.get('/tips', CacheLogic.deliverTips);
 
 router.get('/stats', CacheLogic.deliverStats);

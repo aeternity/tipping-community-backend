@@ -7,6 +7,8 @@ const cache = require('../utils/cache');
 const BigNumber = require('bignumber.js');
 var AsyncLock = require('async-lock');
 var lock = new AsyncLock();
+const {getTipTopics} = require('../utils/tipTopicUtil');
+const Util = require('../utils/util');
 
 const MIDDLEWARE_URL = process.env.MIDDLEWARE_URL || 'https://mainnet.aeternity.io/';
 
@@ -28,14 +30,6 @@ module.exports = class CacheLogic {
     };
 
     await cache.init(aeternity, keepHotFunction);
-  }
-
-  async getStatus() {
-    return {
-      lastRun: this.lastRun,
-      error: this.error ? this.error.message : null,
-      lastError: this.lastError
-    };
   }
 
   static async getChainNames() {
@@ -139,9 +133,30 @@ module.exports = class CacheLogic {
     res.send({status: "OK"});
   }
 
+  static async deliverTip(req, res) {
+    let tips = await CacheLogic.getAllTips();
+    res.send(tips.find(tip => tip.id === parseInt(req.query.id)));
+  }
+
   static async deliverTips(req, res) {
     let limit = 30;
     let tips = await CacheLogic.getAllTips();
+
+    if (req.query.address) {
+      tips = tips.filter((tip) => tip.sender === req.query.address);
+    }
+
+    if (req.query.search) {
+      const term = req.query.search.toLowerCase();
+
+      const urlSearchResults = tips.filter((tip) => tip.url.toLowerCase().includes(term));
+      const senderSearchResults = tips.filter((tip) => tip.sender.toLowerCase().includes(term));
+      const noteSearchResults = tips.filter((tip) => tip.title.toLowerCase().includes(term));
+
+      // We convert the result array to Set in order to remove duplicate records
+      const convertResultToSet = new Set([...urlSearchResults, ...senderSearchResults, ...noteSearchResults]);
+      tips = [...convertResultToSet];
+    }
 
     if (req.query.ordering) {
       switch (req.query.ordering) {
@@ -173,6 +188,37 @@ module.exports = class CacheLogic {
     res.send(await CacheLogic.fetchChainNames());
   }
 
+  static async deliverUserStats(req, res) {
+    const oracleState = await aeternity.getOracleState();
+    const userTips = (await CacheLogic.getAllTips()).filter((tip) => tip.sender === req.query.address);
+
+    const userReTips = userTips.flatMap((tip) => tip.retips.filter((retip) => retip.sender === req.query.address));
+      const totalTipAmount = Util.atomsToAe(userTips
+        .reduce((acc, tip) => acc.plus(tip.amount), new BigNumber(0))
+        .plus(userReTips.reduce((acc, tip) => acc.plus(tip.amount), new BigNumber(0)))).toFixed(2);
+
+      const claimedUrls = oracleState.success_claimed_urls
+        ? oracleState.success_claimed_urls
+          .filter(([, data]) => data.success && data.account === req.query.address).map(([url]) => url)
+        : [];
+      const unclaimedAmount = userTips
+        .reduce((acc, tip) => (claimedUrls.includes(tip.url)
+          ? acc.plus(tip.total_unclaimed_amount)
+          : acc),
+          new BigNumber(0));
+
+      const stats = {
+        tipsLength: userTips.length,
+        retipsLength: userReTips.length,
+        totalTipAmount,
+        claimedUrlsLength: claimedUrls.length,
+        unclaimedAmount,
+        userComments: await CommentLogic.fetchCommentCountForAddress(req.query.address),
+      };
+
+    res.send(stats);
+  }
+
   static async deliverStats(req, res) {
     const tips = await aeternity.getTips();
 
@@ -196,6 +242,11 @@ module.exports = class CacheLogic {
 
   static async deliverOracleState(req, res) {
     res.send(await aeternity.getOracleState());
+  }
+
+  static async deliverTipTopics(req, res) {
+    const tips = await CacheLogic.getAllTips();
+    res.send(getTipTopics(tips));
   }
 
 };

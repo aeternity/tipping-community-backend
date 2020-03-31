@@ -1,5 +1,4 @@
 const CacheLogic = require('../logic/cacheLogic.js');
-const { basicAuth } =require('../utils/auth.js');
 const Router = require('express').Router;
 
 const router = new Router();

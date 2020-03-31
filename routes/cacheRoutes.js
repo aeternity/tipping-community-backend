@@ -25,11 +25,5 @@ router.get('/topics', CacheLogic.deliverTipTopics);
 
 router.get('/invalidate/tips', CacheLogic.invalidateTips);
 
-// View routes
-router.get('/status', basicAuth, async (req, res) => res.render('cache', {
-  status: await cache.getStatus()
-}));
-
-
 module.exports = router;
 

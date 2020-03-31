@@ -98,16 +98,4 @@ describe('Cache', () => {
       });
     });
   });
-  describe('Interface', () => {
-    it('it should return ok on status interface', function(done) {
-      this.timeout(25000);
-
-      chai.request(server).get('/cache/status')
-        .auth(process.env.AUTHENTICATION_USER, process.env.AUTHENTICATION_PASSWORD)
-        .end((err, res) => {
-        res.should.have.status(200);
-        done();
-      });
-    });
-  });
 });

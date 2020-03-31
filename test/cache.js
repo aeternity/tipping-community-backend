@@ -3,14 +3,17 @@ let chai = require('chai');
 let chaiHttp = require('chai-http');
 let server = require('../server');
 let should = chai.should();
-const CacheLogic = require('../logic/cacheLogic');
+const cache = require('../utils/cache');
 chai.use(chaiHttp);
 //Our parent block
 describe('Cache', () => {
 
   before(async function () {
     this.timeout(20000);
-    await CacheLogic.getAllTips();
+    await cache.del(['getTips']);
+    await cache.del(['fetchPrice']);
+    await cache.del(['getChainNames']);
+    await cache.del(['oracleState']);
   });
 
   describe('API', () => {

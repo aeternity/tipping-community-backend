@@ -25,5 +25,4 @@ jobs:
     - run: npx sequelize-cli db:migrate
     - run: npm test
       env:
-        CI: true
         REDIS_URL: redis://localhost:6379

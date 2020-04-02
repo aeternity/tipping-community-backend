@@ -46,6 +46,7 @@
     "chai": "^4.2.0",
     "chai-http": "^4.3.0",
     "mocha": "^7.0.1",
-    "sequelize-auto-migrations": "github:scimonster/sequelize-auto-migrations#a063aa6535a3f580623581bf866cef2d609531ba"
+    "sequelize-auto-migrations": "github:scimonster/sequelize-auto-migrations#a063aa6535a3f580623581bf866cef2d609531ba",
+    "sinon": "^9.0.1"
   }
 }

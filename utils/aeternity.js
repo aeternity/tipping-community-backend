@@ -2,7 +2,6 @@ const {BigNumber} = require('bignumber.js');
 const {Universal, Node, MemoryAccount} = require('@aeternity/aepp-sdk');
 const fs = require('fs');
 const Util = require('../utils/util');
-const CacheLogic = require('../logic/cacheLogic');
 
 class Aeternity {
   constructor() {
@@ -104,7 +103,6 @@ class Aeternity {
     try {
       await this.preClaim(address, url);
       const result = await this.contract.methods.claim(url, address, false);
-      CacheLogic.invalidateTips();
       return result.decodedResult;
     } catch (e) {
       console.log(e);

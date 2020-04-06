@@ -201,9 +201,16 @@ module.exports = class CacheLogic {
         ? oracleState.success_claimed_urls
           .filter(([, data]) => data.success && data.account === req.query.address).map(([url]) => url)
         : [];
+
       const unclaimedAmount = userTips
         .reduce((acc, tip) => (claimedUrls.includes(tip.url)
           ? acc.plus(tip.total_unclaimed_amount)
+          : acc),
+          new BigNumber(0));
+
+      const claimedAmount = userTips
+        .reduce((acc, tip) => (claimedUrls.includes(tip.url)
+          ? acc.plus(tip.total_claimed_amount)
           : acc),
           new BigNumber(0));
 
@@ -213,6 +220,7 @@ module.exports = class CacheLogic {
         totalTipAmount,
         claimedUrlsLength: claimedUrls.length,
         unclaimedAmount,
+        claimedAmount,
         userComments: await CommentLogic.fetchCommentCountForAddress(req.query.address),
       };
 
@@ -234,6 +242,7 @@ module.exports = class CacheLogic {
       total_tips_length: tips.length + retips_length,
       total_amount: tips.reduce((acc, tip) => acc.plus(tip.total_amount), new BigNumber('0')).toFixed(),
       total_unclaimed_amount: tips.reduce((acc, tip) => acc.plus(tip.total_unclaimed_amount), new BigNumber('0')).toFixed(),
+      total_claimed_amount: tips.reduce((acc, tip) => acc.plus(tip.total_claimed_amount), new BigNumber('0')).toFixed(),
       senders_length: senders.length,
     };
 

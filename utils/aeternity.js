@@ -148,10 +148,18 @@ class Aeternity {
 
       tipsData.retip_amount_ae = Util.atomsToAe(retipAmount).toFixed();
 
-      tipsData.total_amount = Util
-        .atomsToAe(new BigNumber(tipsData.amount).plus(retipAmount)).toFixed();
+      tipsData.total_amount = Util.atomsToAe(new BigNumber(tipsData.amount).plus(retipAmount)).toFixed();
+      tipsData.total_unclaimed_amount = Util.atomsToAe(
+        new BigNumber(tipsData.claim.unclaimed ? tipsData.amount : 0)
+          .plus(tipsData.retips
+            .reduce((acc, retip) =>
+              acc.plus(retip.claim.unclaimed ? retip.amount : 0), new BigNumber('0'))).toFixed()).toFixed();
 
-      tipsData.total_unclaimed_amount = Util.atomsToAe(new BigNumber(tipsData.claim.unclaimed ? tipsData.amount : 0).plus(tipsData.retips.reduce((acc, retip) => acc.plus(retip.claim.unclaimed ? retip.amount : 0), new BigNumber('0'))).toFixed()).toFixed();
+      tipsData.total_claimed_amount = Util.atomsToAe(
+        new BigNumber(tipsData.claim.unclaimed ? 0 : tipsData.amount)
+          .plus(tipsData.retips
+            .reduce((acc, retip) =>
+              acc.plus(retip.claim.unclaimed ? 0 : retip.amount), new BigNumber('0'))).toFixed()).toFixed();
 
       return tipsData;
     });

@@ -2,6 +2,8 @@ const { Profile } = require('../models');
 const path = require('path');
 const fs = require('fs');
 
+const BackupLogic = require('./backupLogic');
+
 module.exports = class ProfileLogic {
 
   static async createProfile (req, res) {
@@ -69,6 +71,7 @@ module.exports = class ProfileLogic {
     if (!req.file) return res.status(400).send({ err: 'Could not find any image in your request.' });
     // Delete existing image
     if (result.image && result.image !== req.file.filename) fs.unlinkSync('images/' + result.image);
+    await BackupLogic.backupProfileImageToIPFS('images/' + req.file.filename, result.author);
     await Profile.update({
       image: `${req.file.filename}`,
       imageSignature: req.body.signature,

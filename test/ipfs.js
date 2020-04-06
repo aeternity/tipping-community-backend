@@ -52,6 +52,8 @@ describe('IPFS', () => {
     it('it should check if a file exists', async () => {
       const result = await ipfs.checkFileExists(path);
       result.should.be.true;
+      const negativeResult = await ipfs.checkFileExists('QmeQe5FTgMs8PNspzTQ3LRz1iMhdq9K34TQnsCP2jqt8wV');
+      negativeResult.should.be.false;
     });
 
     it('it should get a file', async () => {

@@ -4,7 +4,6 @@ class IPFS {
 
   node;
 
-
   constructor() {
     if (!process.env.IPFS_URL) throw "IPFS_URL is not set";
     this.node = ipfsClient(process.env.IPFS_URL);
@@ -25,11 +24,10 @@ class IPFS {
       new Promise((resolve) => {
         setTimeout(() => {
           resolve(null);
-        }, 30000);
+        }, 1000);
       })
     ]);
-    console.log(result);
-    if(!result) console.warn(`IPFS ${hash} stats timed out`);
+    if(!result) return false;
     return result.cid.toString() === hash;
   };
 

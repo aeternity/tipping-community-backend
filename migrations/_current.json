@@ -83,6 +83,44 @@
             },
             "indexes": []
         },
+        "IPFSEntries": {
+            "tableName": "IPFSEntries",
+            "schema": {
+                "id": {
+                    "allowNull": false,
+                    "primaryKey": true,
+                    "autoIncrement": true,
+                    "field": "id",
+                    "seqType": "Sequelize.INTEGER"
+                },
+                "hash": {
+                    "allowNull": false,
+                    "field": "hash",
+                    "seqType": "Sequelize.STRING"
+                },
+                "type": {
+                    "allowNull": false,
+                    "field": "type",
+                    "seqType": "Sequelize.STRING"
+                },
+                "reference": {
+                    "allowNull": true,
+                    "field": "reference",
+                    "seqType": "Sequelize.STRING"
+                },
+                "createdAt": {
+                    "allowNull": false,
+                    "field": "createdAt",
+                    "seqType": "Sequelize.DATE"
+                },
+                "updatedAt": {
+                    "allowNull": false,
+                    "field": "updatedAt",
+                    "seqType": "Sequelize.DATE"
+                }
+            },
+            "indexes": []
+        },
         "LinkPreviews": {
             "tableName": "LinkPreviews",
             "schema": {
@@ -203,61 +241,7 @@
                 }
             },
             "indexes": []
-        },
-        "Tips": {
-            "tableName": "Tips",
-            "schema": {
-                "id": {
-                    "allowNull": false,
-                    "primaryKey": true,
-                    "autoIncrement": true,
-                    "field": "id",
-                    "seqType": "Sequelize.INTEGER"
-                },
-                "tipId": {
-                    "allowNull": false,
-                    "unique": true,
-                    "field": "tipId",
-                    "seqType": "Sequelize.STRING"
-                },
-                "url": {
-                    "allowNull": false,
-                    "field": "url",
-                    "seqType": "Sequelize.STRING"
-                },
-                "sender": {
-                    "allowNull": false,
-                    "field": "sender",
-                    "seqType": "Sequelize.STRING"
-                },
-                "timestamp": {
-                    "allowNull": false,
-                    "field": "timestamp",
-                    "seqType": "Sequelize.STRING"
-                },
-                "amount": {
-                    "allowNull": false,
-                    "field": "amount",
-                    "seqType": "Sequelize.STRING"
-                },
-                "title": {
-                    "allowNull": true,
-                    "field": "title",
-                    "seqType": "Sequelize.STRING"
-                },
-                "createdAt": {
-                    "allowNull": false,
-                    "field": "createdAt",
-                    "seqType": "Sequelize.DATE"
-                },
-                "updatedAt": {
-                    "allowNull": false,
-                    "field": "updatedAt",
-                    "seqType": "Sequelize.DATE"
-                }
-            },
-            "indexes": []
         }
     },
-    "revision": 1
+    "revision": 3
 }

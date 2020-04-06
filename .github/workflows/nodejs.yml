@@ -22,7 +22,7 @@ jobs:
         node-version: 12.x
     - run: npm i
     - run: docker run --name server-redis -p 6379:6379 -d redis
-    - run: docker run --name ipfs_host -p 4001:4001 -p 8080:8080 -p 5001:5001 -d ipfs/go-ipfs
+    - run: docker run --name ipfs_host -p 5001:5001 -d ipfs/go-ipfs
     - run: npx sequelize-cli db:migrate
     - run: npm test
       env:

@@ -20,7 +20,13 @@ Array.prototype.asyncMap = async function (asyncF) {
 };
 
 
+
+const groupBy = (xs, key) => xs.reduce((acc, x) => Object.assign({}, acc, {
+  [x[key]]: (acc[x[key]] || []).concat(x)
+}), {});
+
 module.exports = {
   atomsToAe,
-  aeToAtoms
+  aeToAtoms,
+  groupBy
 };

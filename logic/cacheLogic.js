@@ -193,36 +193,36 @@ module.exports = class CacheLogic {
     const userTips = (await CacheLogic.getAllTips()).filter((tip) => tip.sender === req.query.address);
 
     const userReTips = userTips.flatMap((tip) => tip.retips.filter((retip) => retip.sender === req.query.address));
-      const totalTipAmount = Util.atomsToAe(userTips
-        .reduce((acc, tip) => acc.plus(tip.amount), new BigNumber(0))
-        .plus(userReTips.reduce((acc, tip) => acc.plus(tip.amount), new BigNumber(0)))).toFixed(2);
+    const totalTipAmount = Util.atomsToAe(userTips
+      .reduce((acc, tip) => acc.plus(tip.amount), new BigNumber(0))
+      .plus(userReTips.reduce((acc, tip) => acc.plus(tip.amount), new BigNumber(0)))).toFixed(2);
 
-      const claimedUrls = oracleState.success_claimed_urls
-        ? oracleState.success_claimed_urls
-          .filter(([, data]) => data.success && data.account === req.query.address).map(([url]) => url)
-        : [];
+    const claimedUrls = oracleState.success_claimed_urls
+      ? oracleState.success_claimed_urls
+        .filter(([, data]) => data.success && data.account === req.query.address).map(([url]) => url)
+      : [];
 
-      const unclaimedAmount = userTips
-        .reduce((acc, tip) => (claimedUrls.includes(tip.url)
-          ? acc.plus(tip.total_unclaimed_amount)
-          : acc),
-          new BigNumber(0));
+    const unclaimedAmount = userTips
+      .reduce((acc, tip) => (claimedUrls.includes(tip.url)
+        ? acc.plus(tip.total_unclaimed_amount)
+        : acc),
+        new BigNumber(0));
 
-      const claimedAmount = userTips
-        .reduce((acc, tip) => (claimedUrls.includes(tip.url)
-          ? acc.plus(tip.total_claimed_amount)
-          : acc),
-          new BigNumber(0));
+    const claimedAmount = userTips
+      .reduce((acc, tip) => (claimedUrls.includes(tip.url)
+        ? acc.plus(tip.total_claimed_amount)
+        : acc),
+        new BigNumber(0));
 
-      const stats = {
-        tipsLength: userTips.length,
-        retipsLength: userReTips.length,
-        totalTipAmount,
-        claimedUrlsLength: claimedUrls.length,
-        unclaimedAmount,
-        claimedAmount,
-        userComments: await CommentLogic.fetchCommentCountForAddress(req.query.address),
-      };
+    const stats = {
+      tipsLength: userTips.length,
+      retipsLength: userReTips.length,
+      totalTipAmount,
+      claimedUrlsLength: claimedUrls.length,
+      unclaimedAmount,
+      claimedAmount,
+      userComments: await CommentLogic.fetchCommentCountForAddress(req.query.address),
+    };
 
     res.send(stats);
   }
@@ -230,23 +230,39 @@ module.exports = class CacheLogic {
   static async deliverStats(req, res) {
     const tips = await aeternity.getTips();
 
+    const groupedByUrl = Util.groupBy(tips, 'url');
+    const statsByUrl = Object.keys(groupedByUrl).map(url => {
+      return {
+        url: url,
+        ...CacheLogic.statsForTips(groupedByUrl[url])
+      }
+    });
+
+    const stats = {
+      ...CacheLogic.statsForTips(tips),
+      by_url: statsByUrl,
+    };
+
+    res.send(stats);
+  }
+
+  static statsForTips(tips) {
     const senders = [...new Set(tips
       .reduce((acc, tip) => acc
         .concat([tip.sender, ...tip.retips.map((retip) => retip.sender)]), []))];
 
     const retips_length = tips.reduce((acc, tip) => acc + tip.retips.length, 0);
 
-    const stats = {
+    return {
       tips_length: tips.length,
       retips_length: retips_length,
       total_tips_length: tips.length + retips_length,
       total_amount: tips.reduce((acc, tip) => acc.plus(tip.total_amount), new BigNumber('0')).toFixed(),
       total_unclaimed_amount: tips.reduce((acc, tip) => acc.plus(tip.total_unclaimed_amount), new BigNumber('0')).toFixed(),
       total_claimed_amount: tips.reduce((acc, tip) => acc.plus(tip.total_claimed_amount), new BigNumber('0')).toFixed(),
-      senders_length: senders.length,
-    };
-
-    res.send(stats);
+      senders: senders,
+      senders_length: senders.length
+    }
   }
 
   static async deliverOracleState(req, res) {

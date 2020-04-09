@@ -418,6 +418,29 @@ describe('Profile', () => {
         });
     });
 
+    it('it should return no image after deletion ', (done) => {
+      chai.request(server).get('/profile/' + publicKey)
+        .end((err, res) => {
+          res.should.have.status(200);
+          res.body.should.be.a('object');
+          res.body.should.have.property('image', false);
+          res.body.should.have.property('imageSignature').null;
+          res.body.should.have.property('imageChallenge').null;
+          done();
+        });
+    });
+
+    it('it should return 404 after deleting a profile image', (done) => {
+      chai.request(server).get('/profile/image/' + publicKey)
+        .end(function (err, res) {
+          if (err) {
+            done(err);
+          }
+          res.should.have.status(404);
+          done();
+        });
+    });
+
   });
 })
 ;

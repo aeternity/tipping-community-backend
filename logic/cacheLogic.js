@@ -195,9 +195,10 @@ module.exports = class CacheLogic {
 
   static async deliverUserStats(req, res) {
     const oracleState = await aeternity.getOracleState();
-    const userTips = (await CacheLogic.getAllTips()).filter((tip) => tip.sender === req.query.address);
+    const allTips = await CacheLogic.getAllTips();
+    const userTips = allTips.filter((tip) => tip.sender === req.query.address);
 
-    const userReTips = userTips.flatMap((tip) => tip.retips.filter((retip) => retip.sender === req.query.address));
+    const userReTips = allTips.flatMap((tip) => tip.retips.filter((retip) => retip.sender === req.query.address));
     const totalTipAmount = Util.atomsToAe(userTips
       .reduce((acc, tip) => acc.plus(tip.amount), new BigNumber(0))
       .plus(userReTips.reduce((acc, tip) => acc.plus(tip.amount), new BigNumber(0)))).toFixed(2);
@@ -207,13 +208,13 @@ module.exports = class CacheLogic {
         .filter(([, data]) => data.success && data.account === req.query.address).map(([url]) => url)
       : [];
 
-    const unclaimedAmount = userTips
+    const unclaimedAmount = allTips
       .reduce((acc, tip) => (claimedUrls.includes(tip.url)
         ? acc.plus(tip.total_unclaimed_amount)
         : acc),
         new BigNumber(0));
 
-    const claimedAmount = userTips
+    const claimedAmount = allTips
       .reduce((acc, tip) => (claimedUrls.includes(tip.url)
         ? acc.plus(tip.total_claimed_amount)
         : acc),

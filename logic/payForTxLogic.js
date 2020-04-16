@@ -15,6 +15,7 @@ module.exports = class PayForTxLogic {
     try {
       const result = await ae.claimTips(req.body.address, req.body.url);
       CacheLogic.invalidateTips();
+      CacheLogic.invalidateOracle();
       // TODO save tx hash to log
       return PayForTxLogic.sendSuccess(req, res);
     } catch (e) {

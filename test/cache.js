@@ -84,6 +84,10 @@ describe('Cache', () => {
     it('it should invalidate the tips cache', function (done) {
       checkCachedRoute('/cache/invalidate/tips', 'object', done);
     });
+
+    it('it should invalidate the oracle cache', function (done) {
+      checkCachedRoute('/cache/invalidate/oracle', 'object', done);
+    });
   });
 })
 ;

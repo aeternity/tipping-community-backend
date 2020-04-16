@@ -24,5 +24,7 @@ router.get('/topics', CacheLogic.deliverTipTopics);
 
 router.get('/invalidate/tips', CacheLogic.invalidateTips);
 
+router.get('/invalidate/oracle', CacheLogic.invalidateOracle);
+
 module.exports = router;
 

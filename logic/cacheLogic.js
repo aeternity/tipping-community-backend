@@ -32,6 +32,11 @@ module.exports = class CacheLogic {
     await cache.init(aeternity, keepHotFunction);
   }
 
+  static async findWithdrawnTipEvents() {
+    const contractTransactions = await aeternity.middlewareContractTransactions();
+    const contractWithdrawnEvents = await contractTransactions.asyncMap(aeternity.transactionEvent)
+  }
+
   static async getChainNames() {
     return axios.get(`${MIDDLEWARE_URL}/middleware/names/active`).then(res => res.data).catch(console.error);
   }

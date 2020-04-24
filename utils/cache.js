@@ -9,7 +9,7 @@ const set = promisify(client.set).bind(client);
 const del = promisify(client.del).bind(client);
 const keys = promisify(client.keys).bind(client);
 var AsyncLock = require('async-lock');
-var lock = new AsyncLock();
+var lock = new AsyncLock({timeout: 30 * 1000});
 
 const cache = {};
 cache.wsconnection = null;
@@ -47,6 +47,9 @@ cache.getOrSet = async (keys, asyncFetchData, expire = null) => {
         (new Date().getTime() - start > 50) ? console.log("\n   cache", key, new Date().getTime() - start, "ms") : process.stdout.write("'");
 
         return data;
+    }).catch(e => {
+        console.error(e);
+        return asyncFetchData();
     });
 };
 

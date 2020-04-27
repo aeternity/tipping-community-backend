@@ -26,5 +26,7 @@ router.get('/invalidate/tips', CacheLogic.invalidateTips);
 
 router.get('/invalidate/oracle', CacheLogic.invalidateOracle);
 
+router.get('/invalidate/withdrawnTipEvents', CacheLogic.invalidateWithdrawnTipEvents);
+
 module.exports = router;
 

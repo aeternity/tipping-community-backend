@@ -73,6 +73,7 @@ cache.delByPrefix = async (prefixes) => {
 
 cache.del = async (keys) => {
     const key = buildKey(keys);
+    console.log("      cache del", key);
     await del(key);
 };
 

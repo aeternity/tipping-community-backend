@@ -144,13 +144,19 @@ module.exports = class CacheLogic {
   static async invalidateTips(req, res) {
     await cache.del(["getTips"]);
     aeternity.getTips(); //just trigger cache update, so follow up requests may have it cached already
-    res.send({status: "OK"});
+    if(res) res.send({status: "OK"});
   }
 
   static async invalidateOracle(req, res) {
     await cache.del(["oracleState"]);
     aeternity.getOracleState(); //just trigger cache update, so follow up requests may have it cached already
-    res.send({status: "OK"});
+    if(res) res.send({status: "OK"});
+  }
+
+  static async invalidateWithdrawnTipEvents(req, res) {
+    await cache.del(["findWithdrawnTipEvents"]);
+    CacheLogic.findWithdrawnTipEvents(); //just trigger cache update, so follow up requests may have it cached already
+    if(res) res.send({status: "OK"});
   }
 
   static async deliverTip(req, res) {

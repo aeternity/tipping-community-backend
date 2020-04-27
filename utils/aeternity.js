@@ -51,6 +51,7 @@ class Aeternity {
   transactionEvent = async (hash) => {
     const fetchTransactionEvent = async () => {
       const tx = await this.client.tx(hash)
+      const microBlock = await this.client.getMicroBlockHeader(tx.blockHash)
 
       const eventsSchema = [
         {name: 'TipReceived', types: [SOPHIA_TYPES.address, SOPHIA_TYPES.int, SOPHIA_TYPES.string]},
@@ -69,7 +70,8 @@ class Aeternity {
         caller: tx.tx.callerId,
         nonce: tx.tx.nonce,
         height: tx.height,
-        hash: tx.hash
+        hash: tx.hash,
+        time: microBlock.time
       } : null;
     }
 

@@ -65,7 +65,11 @@ class Aeternity {
         event: decodedEvent[0].name,
         address: `ak_${decodedEvent[0].decoded[1]}`,
         amount: decodedEvent[0].decoded[2],
-        url: decodedEvent[0].decoded[0]
+        url: decodedEvent[0].decoded[0],
+        caller: tx.tx.callerId,
+        nonce: tx.tx.nonce,
+        height: tx.height,
+        hash: tx.hash
       } : null;
     }
 

@@ -27,14 +27,22 @@ module.exports = class CacheLogic {
       await CacheLogic.fetchChainNames();
       await CacheLogic.fetchPrice();
       await aeternity.getOracleState();
+      await CacheLogic.findWithdrawnTipEvents();
     };
 
     await cache.init(aeternity, keepHotFunction);
   }
 
   static async findWithdrawnTipEvents() {
-    const contractTransactions = await aeternity.middlewareContractTransactions();
-    const contractWithdrawnEvents = await contractTransactions.asyncMap(aeternity.transactionEvent)
+    const fetchWithdrawnTipEvents = async () => {
+      const contractTransactions = await aeternity.middlewareContractTransactions();
+      const contractEvents = await contractTransactions.asyncMap(aeternity.transactionEvent);
+      return contractEvents.filter(e => e.event === 'TipWithdrawn');
+    }
+
+    return cache.getOrSet(["findWithdrawnTipEvents"], async () => {
+      return fetchWithdrawnTipEvents().catch(console.error);
+    }, cache.shortCacheTime)
   }
 
   static async getChainNames() {

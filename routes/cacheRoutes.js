@@ -22,11 +22,13 @@ router.get('/oracle', CacheLogic.deliverOracleState);
 
 router.get('/topics', CacheLogic.deliverTipTopics);
 
+router.get('/events', CacheLogic.deliverContractEvents);
+
 router.get('/invalidate/tips', CacheLogic.invalidateTips);
 
 router.get('/invalidate/oracle', CacheLogic.invalidateOracle);
 
-router.get('/invalidate/withdrawnTipEvents', CacheLogic.invalidateWithdrawnTipEvents);
+router.get('/invalidate/events', CacheLogic.invalidateContractEvents);
 
 module.exports = router;
 

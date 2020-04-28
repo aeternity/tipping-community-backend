@@ -126,6 +126,10 @@ module.exports = class LinkPreviewLogic {
         if (probability && probability.length > 0 && probability[0][1] > 0.1) data.lang = probability[0][0];
       }
 
+      // Remove HTML Tags from text
+      data.title = data.title.replace(/<(.|\n)*?>/g, '');
+      data.description = data.description.replace(/<(.|\n)*?>/g, '');
+
       // Fetch image
       if (data.image) data.image = await LinkPreviewLogic.fetchImage(data.requestUrl, data.image);
 

@@ -1,5 +1,7 @@
 # tipping-community-backend
 
+This is an old version and not updated anymore. Please switch to the master branch.
+
 For Raendom.com
 ```
 NODE_URL=https://mainnet.aeternal.io

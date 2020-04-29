@@ -25,6 +25,10 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       allowNull: false,
     },
+    parentId: {
+      type: DataTypes.INTEGER,
+      hierarchy: true
+    }
   }, {
     timestamps: true,
   });

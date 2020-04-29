@@ -70,6 +70,18 @@
                     "field": "challenge",
                     "seqType": "Sequelize.STRING"
                 },
+                "parentId": {
+                    "hierarchy": true,
+                    "field": "parentId",
+                    "allowNull": true,
+                    "references": {
+                        "model": "Comments",
+                        "key": "id"
+                    },
+                    "onDelete": "RESTRICT",
+                    "onUpdate": "CASCADE",
+                    "seqType": "Sequelize.INTEGER"
+                },
                 "createdAt": {
                     "allowNull": false,
                     "field": "createdAt",
@@ -79,6 +91,42 @@
                     "allowNull": false,
                     "field": "updatedAt",
                     "seqType": "Sequelize.DATE"
+                },
+                "hierarchyLevel": {
+                    "field": "hierarchyLevel",
+                    "seqType": "Sequelize.INTEGER"
+                }
+            },
+            "indexes": []
+        },
+        "Commentsancestors": {
+            "tableName": "Commentsancestors",
+            "schema": {
+                "CommentId": {
+                    "allowNull": false,
+                    "primaryKey": true,
+                    "field": "CommentId",
+                    "unique": "Commentsancestors_CommentId_ancestorId_unique",
+                    "references": {
+                        "model": "Comments",
+                        "key": "id"
+                    },
+                    "onDelete": "CASCADE",
+                    "onUpdate": "CASCADE",
+                    "seqType": "Sequelize.INTEGER"
+                },
+                "ancestorId": {
+                    "allowNull": false,
+                    "primaryKey": true,
+                    "field": "ancestorId",
+                    "unique": "Commentsancestors_CommentId_ancestorId_unique",
+                    "references": {
+                        "model": "Comments",
+                        "key": "id"
+                    },
+                    "onDelete": "CASCADE",
+                    "onUpdate": "CASCADE",
+                    "seqType": "Sequelize.INTEGER"
                 }
             },
             "indexes": []
@@ -243,5 +291,5 @@
             "indexes": []
         }
     },
-    "revision": 3
+    "revision": 4
 }

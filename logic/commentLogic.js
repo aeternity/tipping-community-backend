@@ -4,10 +4,15 @@ module.exports = class CommentLogic {
 
   static async addItem (req, res) {
     try {
-      const { tipId, text, author, signature, challenge } = req.body;
+      const { tipId, text, author, signature, challenge, parentId } = req.body;
       if (tipId === null || tipId === undefined || !text || !author || !signature || !challenge) return res.status(400)
         .send('Missing required field');
-      const entry = await Comment.create({ tipId, text, author, signature, challenge });
+      if(typeof parentId !== 'undefined') {
+        const result = await Comment.findOne({ where: { id: parentId}}, {raw: true});
+        if(result === null) return res.status(400).send({err: 'Could not find parent comment with id ' + parentId});
+      }
+
+      const entry = await Comment.create({ tipId, text, author, signature, challenge, parentId });
       res.send(entry);
     } catch (e) {
       console.error(e);
@@ -33,23 +38,31 @@ module.exports = class CommentLogic {
   }
 
   static async getSingleItem (req, res) {
-    const result = await Comment.findOne({ where: { id: req.params.id }, raw: true });
-    return result ? res.send(result) : res.sendStatus(404);
+    const result = await Comment.findOne({ where: { id: req.params.id }, include: {
+        model: Comment,
+        as: 'descendents',
+        hierarchy: true
+      } });
+    return result ? res.send(result.toJSON()) : res.sendStatus(404);
   }
 
+  // TODO move to stats
   static async fetchCommentCountForAddress(address) {
     const result = await Comment.count({where: {author: address}, raw: true});
     return result ? result : 0;
   }
 
+  // TODO move to stats
   static async getCommentCountForAddress (req, res) {
     return res.send({count: await CommentLogic.fetchCommentCountForAddress(req.params.author), author: req.params.author});
   }
 
+  // TODO move to stats
   static fetchCommentCountForTips() {
     return Comment.count({group: ['tipId'], raw: true});
   }
 
+  // TODO move to stats
   static async getCommentCountForTips(req, res) {
     return res.send(await CommentLogic.fetchCommentCountForTips());
   }

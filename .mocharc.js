@@ -8,5 +8,6 @@ process.env = {
   AUTHENTICATION_PASSWORD: 'pass',
   CONTRACT_FILE: 'NewTippingInterface',
   NODE_ENV: 'test',
-  REDIS_URL: 'redis://localhost:6379'
+  REDIS_URL: 'redis://localhost:6379',
+  IPFS_URL: 'http://localhost:5001'
 };

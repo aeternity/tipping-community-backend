@@ -27,6 +27,7 @@
     "cors": "^2.8.5",
     "express": "^4.17.1",
     "express-handlebars": "^3.1.0",
+    "ipfs-http-client": "^43.0.0",
     "languagedetect": "^2.0.0",
     "metascraper": "^5.11.1",
     "metascraper-description": "^5.11.1",

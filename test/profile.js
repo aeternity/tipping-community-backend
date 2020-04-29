@@ -4,10 +4,10 @@ let chaiHttp = require('chai-http');
 let server = require('../server');
 let should = chai.should();
 const expect = chai.expect;
-const { Profile } = require('../models');
+const { Profile, IPFSEntry } = require('../models');
 const { signPersonalMessage, generateKeyPair, hash } = require('@aeternity/aepp-sdk').Crypto;
 const fs = require('fs');
-
+const BackupLogic = require('../logic/backupLogic');
 chai.use(chaiHttp);
 //Our parent block
 describe('Profile', () => {
@@ -28,11 +28,15 @@ describe('Profile', () => {
     return Buffer.from(signatureBuffer).toString('hex');
   };
 
-  before((done) => { //Before all tests we empty the database once
-    Profile.destroy({
+  before(async () => { //Before all tests we empty the database once
+    await Profile.destroy({
       where: {},
       truncate: true,
-    }).then(() => done());
+    });
+    await IPFSEntry.destroy({
+      where: {},
+      truncate: true,
+    });
   });
 
   describe('Profile API', () => {
@@ -338,6 +342,26 @@ describe('Profile', () => {
         });
     });
 
+    let ipfsHash = null;
+
+    it('it should create an ipfs entry when uploading a new profile picture', async () => {
+      const entry = await IPFSEntry.findOne({
+        where: {
+          type: BackupLogic.types.PROFILE_IMAGE,
+          reference: publicKey,
+        },
+        raw: true,
+      });
+      entry.should.be.an('object');
+      entry.should.have.property('id');
+      entry.should.have.property('hash');
+      entry.should.have.property('type', BackupLogic.types.PROFILE_IMAGE);
+      entry.should.have.property('reference', publicKey);
+      entry.should.have.property('createdAt');
+      entry.should.have.property('updatedAt');
+      ipfsHash = entry.hash;
+    });
+
     it('it should GET an profile with image', (done) => {
       chai.request(server).get('/profile/' + publicKey)
         .end((err, res) => {
@@ -398,6 +422,19 @@ describe('Profile', () => {
             done();
           });
         });
+    });
+
+    it('it should create a new ipfs entry when uploading a new profile picture', async () => {
+      const entries = await IPFSEntry.findAll({
+        where: {
+          type: BackupLogic.types.PROFILE_IMAGE,
+          reference: publicKey,
+        },
+        raw: true,
+      });
+      entries.should.be.an('array');
+      entries.should.have.length(2);
+      entries[0].hash.should.equal(entries[1].hash);
     });
 
     it('it should delete image', (done) => {

@@ -211,6 +211,7 @@ module.exports = class CacheLogic {
     if (req.query.address) contractEvents = contractEvents.filter(e => e.address === req.query.address);
     if (req.query.event) contractEvents = contractEvents.filter(e => e.event === req.query.event);
     contractEvents.sort((a, b) => b.time - a.time);
+    if (req.query.limit) contractEvents = contractEvents.slice(0, parseInt(req.query.limit));
     res.send(contractEvents);
   }
 

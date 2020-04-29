@@ -25,6 +25,7 @@
     "axios": "latest",
     "bignumber.js": "^9.0.0",
     "cors": "^2.8.5",
+    "esm": "^3.2.25",
     "express": "^4.17.1",
     "express-handlebars": "^3.1.0",
     "ipfs-http-client": "^43.0.0",

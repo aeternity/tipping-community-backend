@@ -27,9 +27,21 @@ module.exports = class CacheLogic {
       await CacheLogic.fetchChainNames();
       await CacheLogic.fetchPrice();
       await aeternity.getOracleState();
+      await CacheLogic.findContractEvents();
     };
 
     await cache.init(aeternity, keepHotFunction);
+  }
+
+  static async findContractEvents() {
+    const fetchContractEvents = async () => {
+      const contractTransactions = await aeternity.middlewareContractTransactions();
+      return contractTransactions.asyncMap(aeternity.transactionEvent);
+    }
+
+    return cache.getOrSet(["contractEvents"], async () => {
+      return fetchContractEvents().catch(console.error);
+    }, cache.shortCacheTime)
   }
 
   static async getChainNames() {
@@ -131,13 +143,19 @@ module.exports = class CacheLogic {
   static async invalidateTips(req, res) {
     await cache.del(["getTips"]);
     aeternity.getTips(); //just trigger cache update, so follow up requests may have it cached already
-    res.send({status: "OK"});
+    if (res) res.send({status: "OK"});
   }
 
   static async invalidateOracle(req, res) {
     await cache.del(["oracleState"]);
     aeternity.getOracleState(); //just trigger cache update, so follow up requests may have it cached already
-    res.send({status: "OK"});
+    if (res) res.send({status: "OK"});
+  }
+
+  static async invalidateContractEvents(req, res) {
+    await cache.del(["contractEvents"]);
+    CacheLogic.findContractEvents(); //just trigger cache update, so follow up requests may have it cached already
+    if (res) res.send({status: "OK"});
   }
 
   static async deliverTip(req, res) {
@@ -185,6 +203,16 @@ module.exports = class CacheLogic {
     }
 
     res.send(tips);
+  }
+
+
+  static async deliverContractEvents(req, res) {
+    let contractEvents = await CacheLogic.findContractEvents();
+    if (req.query.address) contractEvents = contractEvents.filter(e => e.address === req.query.address);
+    if (req.query.event) contractEvents = contractEvents.filter(e => e.event === req.query.event);
+    contractEvents.sort((a, b) => b.time - a.time);
+    if (req.query.limit) contractEvents = contractEvents.slice(0, parseInt(req.query.limit));
+    res.send(contractEvents);
   }
 
   static async deliverPrice(req, res) {

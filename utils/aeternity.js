@@ -2,6 +2,9 @@ const {BigNumber} = require('bignumber.js');
 const {Universal, Node, MemoryAccount} = require('@aeternity/aepp-sdk');
 const fs = require('fs');
 const Util = require('../utils/util');
+const axios = require('axios');
+require = require('esm')(module) //use to handle es6 import/export
+const {decodeEvents, SOPHIA_TYPES} = require('@aeternity/aepp-sdk/es/contract/aci/transformation')
 
 class Aeternity {
   constructor() {
@@ -37,6 +40,45 @@ class Aeternity {
   networkId = async () => {
     return (await this.client.getNodeInfo()).nodeNetworkId
   };
+
+  middlewareContractTransactions = async () => {
+    return axios.get(`${process.env.MIDDLEWARE_URL}/middleware/contracts/transactions/address/${process.env.CONTRACT_ADDRESS}`)
+      .then(res => res.data.transactions
+        .filter(tx => tx.tx.type === "ContractCallTx")
+        .map(tx => tx.hash));
+  };
+
+  transactionEvent = async (hash) => {
+    const fetchTransactionEvent = async () => {
+      const tx = await this.client.tx(hash)
+      const microBlock = await this.client.getMicroBlockHeader(tx.blockHash)
+
+      const eventsSchema = [
+        {name: 'TipReceived', types: [SOPHIA_TYPES.address, SOPHIA_TYPES.int, SOPHIA_TYPES.string]},
+        {name: 'ReTipReceived', types: [SOPHIA_TYPES.address, SOPHIA_TYPES.int, SOPHIA_TYPES.string]},
+        {name: 'TipWithdrawn', types: [SOPHIA_TYPES.address, SOPHIA_TYPES.int, SOPHIA_TYPES.string]}
+      ]
+
+      const decodedEvent = decodeEvents(tx.log, {schema: eventsSchema});
+      process.stdout.write(".");
+
+      return decodedEvent.length ? {
+        event: decodedEvent[0].name,
+        address: `ak_${decodedEvent[0].decoded[1]}`,
+        amount: decodedEvent[0].decoded[2],
+        url: decodedEvent[0].decoded[0],
+        caller: tx.tx.callerId,
+        nonce: tx.tx.nonce,
+        height: tx.height,
+        hash: tx.hash,
+        time: microBlock.time
+      } : null;
+    }
+
+    return this.cache
+      ? this.cache.getOrSet(["transactionEvent", hash], () => fetchTransactionEvent())
+      : fetchTransactionEvent();
+  }
 
   getOracleState = async () => {
     if (!this.client) throw new Error('Init sdk first');

@@ -300,7 +300,6 @@ describe('Comments', () => {
     it('it should GET children with parent', (done) => {
       chai.request(server).get('/comment/api/' + parentComment.id).end((err, res) => {
         res.should.have.status(200);
-        console.log(res.body);
         res.body.should.be.a('object');
         res.body.should.have.property('id', parentComment.id);
         res.body.should.have.property('children');

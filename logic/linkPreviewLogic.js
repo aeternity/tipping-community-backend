@@ -127,8 +127,8 @@ module.exports = class LinkPreviewLogic {
       }
 
       // Remove HTML Tags from text
-      data.title = data.title.replace(/<(.|\n)*?>/g, '');
-      data.description = data.description.replace(/<(.|\n)*?>/g, '');
+      data.title = data.title ? data.title.replace(/<(.|\n)*?>/g, '') : data.title;
+      data.description = data.description ? data.description.replace(/<(.|\n)*?>/g, '') : data.description;
 
       // Fetch image
       if (data.image) data.image = await LinkPreviewLogic.fetchImage(data.requestUrl, data.image);

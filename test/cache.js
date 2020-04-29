@@ -81,6 +81,10 @@ describe('Cache', () => {
       checkCachedRoute('/cache/topics', 'array', done);
     });
 
+    it(`it should GET all cached events`, function (done) {
+      checkCachedRoute('/cache/events', 'array', done);
+    });
+
     it(`it should GET all cached events in less than ${minimalTimeout}ms`, function (done) {
       this.timeout(minimalTimeout);
       checkCachedRoute('/cache/events', 'array', done);
@@ -94,8 +98,8 @@ describe('Cache', () => {
       checkCachedRoute('/cache/invalidate/oracle', 'object', done);
     });
 
-    it('it should invalidate the withdrawnTipEvents cache', function (done) {
-      checkCachedRoute('/cache/invalidate/withdrawnTipEvents', 'object', done);
+    it('it should invalidate the events cache', function (done) {
+      checkCachedRoute('/cache/invalidate/events', 'object', done);
     });
   });
 })

@@ -10,7 +10,7 @@ var lock = new AsyncLock();
 const {getTipTopics} = require('../utils/tipTopicUtil');
 const Util = require('../utils/util');
 
-const MIDDLEWARE_URL = process.env.MIDDLEWARE_URL || 'https://mainnet.aeternity.io/';
+const MIDDLEWARE_URL = process.env.MIDDLEWARE_URL || 'https://mainnet.aeternity.io';
 
 module.exports = class CacheLogic {
 

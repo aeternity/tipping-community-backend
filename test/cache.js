@@ -81,6 +81,11 @@ describe('Cache', () => {
       checkCachedRoute('/cache/topics', 'array', done);
     });
 
+    it(`it should GET all cached events in less than ${minimalTimeout}ms`, function (done) {
+      this.timeout(minimalTimeout);
+      checkCachedRoute('/cache/events', 'array', done);
+    });
+
     it('it should invalidate the tips cache', function (done) {
       checkCachedRoute('/cache/invalidate/tips', 'object', done);
     });

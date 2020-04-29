@@ -315,5 +315,47 @@ describe('Comments', () => {
         done();
       });
     });
+
+    it('it should GET ALL comments with children', (done) => {
+      chai.request(server).get('/comment/api').end((err, res) => {
+        res.should.have.status(200);
+        res.body.should.be.a('array');
+        res.body.should.have.length(4);
+        const firstElement = res.body[0];
+        firstElement.should.have.property('id', parentComment.id);
+        firstElement.should.have.property('children');
+        firstElement.children.should.be.an('array');
+        firstElement.children.should.have.length(2);
+        const child1 = firstElement.children[0];
+        child1.should.have.property('id', parentComment.id + 1);
+        child1.should.have.property('children');
+        const child_nested = child1.children[0];
+        child_nested.should.have.property('id', parentComment.id + 2);
+        const child2 = firstElement.children[1];
+        child2.should.have.property('id', parentComment.id + 3);
+        done();
+      });
+    });
+
+    it('it should GET ALL comments with children for a tipId', (done) => {
+      chai.request(server).get('/comment/api/tip/1').end((err, res) => {
+        res.should.have.status(200);
+        res.body.should.be.a('array');
+        res.body.should.have.length(4);
+        const firstElement = res.body[0];
+        firstElement.should.have.property('id', parentComment.id);
+        firstElement.should.have.property('children');
+        firstElement.children.should.be.an('array');
+        firstElement.children.should.have.length(2);
+        const child1 = firstElement.children[0];
+        child1.should.have.property('id', parentComment.id + 1);
+        child1.should.have.property('children');
+        const child_nested = child1.children[0];
+        child_nested.should.have.property('id', parentComment.id + 2);
+        const child2 = firstElement.children[1];
+        child2.should.have.property('id', parentComment.id + 3);
+        done();
+      });
+    });
   });
 });

@@ -7,9 +7,9 @@ module.exports = class CommentLogic {
       const { tipId, text, author, signature, challenge, parentId } = req.body;
       if (tipId === null || tipId === undefined || !text || !author || !signature || !challenge) return res.status(400)
         .send('Missing required field');
-      if(typeof parentId !== 'undefined') {
-        const result = await Comment.findOne({ where: { id: parentId}}, {raw: true});
-        if(result === null) return res.status(400).send({err: 'Could not find parent comment with id ' + parentId});
+      if (typeof parentId !== 'undefined') {
+        const result = await Comment.findOne({ where: { id: parentId } }, { raw: true });
+        if (result === null) return res.status(400).send({ err: 'Could not find parent comment with id ' + parentId });
       }
 
       const entry = await Comment.create({ tipId, text, author, signature, challenge, parentId });
@@ -30,40 +30,57 @@ module.exports = class CommentLogic {
   }
 
   static async getAllItems (req, res) {
-    res.send(await Comment.findAll({ raw: true }));
+    res.send((await Comment.findAll({
+      include: {
+        model: Comment,
+        as: 'descendents',
+        hierarchy: true,
+      },
+    })).map(comment => comment.toJSON()));
   }
 
   static async getAllItemsForThread (req, res) {
-    res.send(await Comment.findAll({ where: { tipId: req.params.tipId }, raw: true }));
+    res.send((await Comment.findAll({
+      where: { tipId: req.params.tipId }, include: {
+        model: Comment,
+        as: 'descendents',
+        hierarchy: true,
+      },
+    })).map(comment => comment.toJSON()));
   }
 
   static async getSingleItem (req, res) {
-    const result = await Comment.findOne({ where: { id: req.params.id }, include: {
+    const result = await Comment.findOne({
+      where: { id: req.params.id }, include: {
         model: Comment,
         as: 'descendents',
-        hierarchy: true
-      } });
+        hierarchy: true,
+      },
+    });
     return result ? res.send(result.toJSON()) : res.sendStatus(404);
   }
 
   // TODO move to stats
-  static async fetchCommentCountForAddress(address) {
-    const result = await Comment.count({where: {author: address}, raw: true});
+  static async fetchCommentCountForAddress (address) {
+    const result = await Comment.count({ where: { author: address }, raw: true });
     return result ? result : 0;
   }
 
   // TODO move to stats
   static async getCommentCountForAddress (req, res) {
-    return res.send({count: await CommentLogic.fetchCommentCountForAddress(req.params.author), author: req.params.author});
+    return res.send({
+      count: await CommentLogic.fetchCommentCountForAddress(req.params.author),
+      author: req.params.author,
+    });
   }
 
   // TODO move to stats
-  static fetchCommentCountForTips() {
-    return Comment.count({group: ['tipId'], raw: true});
+  static fetchCommentCountForTips () {
+    return Comment.count({ group: ['tipId'], raw: true });
   }
 
   // TODO move to stats
-  static async getCommentCountForTips(req, res) {
+  static async getCommentCountForTips (req, res) {
     return res.send(await CommentLogic.fetchCommentCountForTips());
   }
 

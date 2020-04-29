@@ -49,9 +49,7 @@ class IPFS {
   getFile = async (hash) => {
     if(await this.checkFileExists(hash)) {
       const data = await this._asyncGeneratorToArray(this.node.cat(hash));
-      if(data.length === 1) {
-        return Buffer.from(data[0]);
-      }
+      return Buffer.concat(data);
     }
 
     throw Error(`IPFS: ${hash} not found`);

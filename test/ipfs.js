@@ -13,7 +13,7 @@ describe('IPFS', () => {
     let randomBuffer;
 
     before((done) => {
-      require('crypto').randomBytes(48, function(err, buffer) {
+      require('crypto').randomBytes(1000000, function(err, buffer) {
         randomBuffer = buffer;
         done();
       });
@@ -24,7 +24,8 @@ describe('IPFS', () => {
       done();
     });
 
-    it('it should allow file upload', async () => {
+    it('it should allow file upload', async function () {
+      this.timeout(100000);
       const results = await ipfs.addFile(randomBuffer);
 
       results.should.be.an('array');
@@ -38,8 +39,8 @@ describe('IPFS', () => {
       path = firstResult.path;
 
       const size = randomBuffer.length;
-      // 8 byte difference is expected for some reason
-      firstResult.should.have.property('size', size + 8);
+      // 256 byte difference is expected for some reason
+      firstResult.should.have.property('size', size + 256);
     });
 
     it('it should allow file pinning', async () => {

@@ -3,8 +3,6 @@ const Router = require('express').Router;
 
 const router = new Router();
 
-const cache = new CacheLogic();
-
 // Open api routes
 router.get('/tip', CacheLogic.deliverTip);
 

@@ -81,11 +81,11 @@ describe('Cache', () => {
       checkCachedRoute('/cache/topics', 'array', done);
     });
 
-    it(`it should GET all cached events`, function (done) {
+    it.skip(`it should GET all cached events`, function (done) {
       checkCachedRoute('/cache/events', 'array', done);
     });
 
-    it(`it should GET all cached events in less than ${minimalTimeout}ms`, function (done) {
+    it.skip(`it should GET all cached events in less than ${minimalTimeout}ms`, function (done) {
       this.timeout(minimalTimeout);
       checkCachedRoute('/cache/events', 'array', done);
     });

@@ -30,7 +30,7 @@ RUN chown -R pptruser:pptruser /app
 
 # Run everything after as non-privileged user.
 USER pptruser
-RUN npx sequelize-cli db:migrate
+RUN npm run db:create
 
 EXPOSE 3000
 

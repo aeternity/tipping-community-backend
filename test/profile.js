@@ -3,11 +3,15 @@ let chai = require('chai');
 let chaiHttp = require('chai-http');
 let server = require('../server');
 let should = chai.should();
+
 const expect = chai.expect;
 const { Profile, IPFSEntry, Comment } = require('../models');
 const { signPersonalMessage, generateKeyPair, hash } = require('@aeternity/aepp-sdk').Crypto;
 const fs = require('fs');
 const BackupLogic = require('../logic/backupLogic');
+const ae = require('../utils/aeternity.js');
+const sinon = require('sinon');
+
 chai.use(chaiHttp);
 //Our parent block
 describe('Profile', () => {
@@ -96,6 +100,14 @@ describe('Profile', () => {
     });
 
     it('it should CREATE a new profile', (done) => {
+
+      const stub = sinon.stub(ae, 'getChainNamesByAddress').callsFake(function () {
+        return [{
+            name: testData.preferredChainName
+          },
+        ];
+      });
+
       chai.request(server).post('/profile/').send(testData).end((err, res) => {
         res.should.have.status(200);
         res.body.should.be.a('object');
@@ -103,14 +115,18 @@ describe('Profile', () => {
         const challenge = res.body.challenge;
         const signature = signChallenge(challenge);
         chai.request(server).post('/profile/').send({ challenge, signature }).end((err, res) => {
+          console.log(res.body)
           res.should.have.status(200);
           res.body.should.be.a('object');
           res.body.should.have.property('biography', testData.biography);
           res.body.should.have.property('author', testData.author);
+          res.body.should.have.property('preferredChainName', testData.preferredChainName);
           res.body.should.have.property('signature', signature);
           res.body.should.have.property('challenge', challenge);
           res.body.should.have.property('createdAt');
           res.body.should.have.property('updatedAt');
+          stub.called.should.be.true;
+          stub.restore();
           done();
         });
       });
@@ -128,24 +144,6 @@ describe('Profile', () => {
         res.body.should.have.property('updatedAt');
         done();
       });
-    });
-
-    it('it should reject updates by POST', (done) => {
-      chai.request(server).post('/profile/')
-        .send({ author: testData.author, biography: newBio })
-        .end((err, res) => {
-          res.should.have.status(200);
-          res.body.should.be.a('object');
-          res.body.should.have.property('challenge');
-          const challenge = res.body.challenge;
-          const signature = signChallenge(challenge);
-          chai.request(server).post('/profile/').send({ challenge, signature }).end((err, res) => {
-            res.should.have.status(400);
-            res.body.should.be.a('object');
-            res.body.should.have.property('err', 'author must be unique');
-            done();
-          });
-        });
     });
 
     it('it should reject creation for someone elses public key', (done) => {
@@ -172,8 +170,8 @@ describe('Profile', () => {
     });
 
     const newBio = 'another updated bio'
-    it('it should allow to UPDATE an profile', (done) => {
-      chai.request(server).put('/profile/' + testData.author)
+    it('it should allow to update an profile', (done) => {
+      chai.request(server).post('/profile/')
         .send({ author: testData.author, biography: newBio })
         .end((err, res) => {
         res.should.have.status(200);
@@ -181,13 +179,14 @@ describe('Profile', () => {
         res.body.should.have.property('challenge');
         const challenge = res.body.challenge;
         const signature = signChallenge(challenge);
-        chai.request(server).put('/profile/' + testData.author).send({
+        chai.request(server).post('/profile/').send({
           challenge,
           signature,
         }).end((err, res) => {
+          console.log(res.body)
           res.should.have.status(200);
           res.body.should.be.a('object');
-          res.body.should.have.property('biography', 'another updated bio');
+          res.body.should.have.property('biography', newBio);
           done();
         });
       });

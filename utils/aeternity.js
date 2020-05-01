@@ -6,6 +6,8 @@ const axios = require('axios');
 require = require('esm')(module) //use to handle es6 import/export
 const {decodeEvents, SOPHIA_TYPES} = require('@aeternity/aepp-sdk/es/contract/aci/transformation')
 
+const MIDDLEWARE_URL = process.env.MIDDLEWARE_URL || 'https://mainnet.aeternity.io';
+
 class Aeternity {
   constructor() {
     this.init();
@@ -207,6 +209,13 @@ class Aeternity {
     });
   };
 
+  async getChainNames() {
+    return axios.get(`${MIDDLEWARE_URL}/middleware/names/active`).then(res => res.data).catch(console.error);
+  }
+
+  async getChainNamesByAddress(address) {
+    return axios.get(`${MIDDLEWARE_URL}/middleware/names/reverse/${address}`).then(res => res.data).catch(console.error);
+  }
 }
 
 const ae = new Aeternity();

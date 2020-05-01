@@ -10,8 +10,6 @@ var lock = new AsyncLock();
 const {getTipTopics} = require('../utils/tipTopicUtil');
 const Util = require('../utils/util');
 
-const MIDDLEWARE_URL = process.env.MIDDLEWARE_URL || 'https://mainnet.aeternity.io';
-
 module.exports = class CacheLogic {
 
   constructor() {
@@ -44,10 +42,6 @@ module.exports = class CacheLogic {
     }, cache.shortCacheTime)
   }
 
-  static async getChainNames() {
-    return axios.get(`${MIDDLEWARE_URL}/middleware/names/active`).then(res => res.data).catch(console.error);
-  }
-
   static async fetchPrice() {
     return cache.getOrSet(["fetchPrice"], async () => {
       return axios.get('https://api.coingecko.com/api/v3/simple/price?ids=aeternity&vs_currencies=usd,eur,cny').then(res => res.data).catch(console.error);
@@ -75,7 +69,7 @@ module.exports = class CacheLogic {
 
   static fetchChainNames() {
     return cache.getOrSet(["getChainNames"], async () => {
-      const result = await CacheLogic.getChainNames();
+      const result = await aeternity.getChainNames();
       return result.reduce((acc, chainName) => {
         if (!chainName.pointers) return acc;
 

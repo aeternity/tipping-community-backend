@@ -36,7 +36,7 @@ describe('Comments', () => {
     });
 
     await Promise.all((await Comment.findAll()).map(object => {
-      return Comment.update({ parentId: null }, { where: { id: object.id }});
+      return Comment.update({ parentId: null }, { where: { id: object.id } });
     }));
 
     await Comment.destroy({
@@ -142,6 +142,19 @@ describe('Comments', () => {
       });
     });
 
+    it('it should CREATE a profile with a new comment', (done) => {
+      chai.request(server).get('/profile/' + testData.author).end((err, res) => {
+        res.should.have.status(200);
+        res.body.should.be.a('object');
+        res.body.should.have.property('author', testData.author);
+        res.body.should.have.property('challenge', 'automated-profile');
+        res.body.should.have.property('signature', 'automated-profile');
+        res.body.should.have.property('createdAt');
+        res.body.should.have.property('updatedAt');
+        done();
+      });
+    });
+
     it('it should GET a single item', (done) => {
       chai.request(server).get('/comment/api/' + commentId).end((err, res) => {
         res.should.have.status(200);
@@ -155,6 +168,9 @@ describe('Comments', () => {
         res.body.should.have.property('hidden', false);
         res.body.should.have.property('createdAt');
         res.body.should.have.property('updatedAt');
+        res.body.should.have.property('Profile');
+        const profile = res.body.Profile;
+        profile.should.have.property('author', testData.author);
         done();
       });
     });
@@ -164,6 +180,10 @@ describe('Comments', () => {
         res.should.have.status(200);
         res.body.should.be.a('array');
         res.body.length.should.be.eql(1);
+        res.body[0].should.have.property('id', commentId);
+        res.body[0].should.have.property('Profile');
+        const profile = res.body[0].Profile;
+        profile.should.have.property('author', testData.author);
         done();
       });
     });

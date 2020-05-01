@@ -11,17 +11,10 @@ module.exports = class ProfileLogic {
       const { author, biography, signature, challenge } = req.body;
       if (!author) return res.status(400).send('Missing required field author');
       const existing = await Profile.findOne({ where: { author }, raw: true });
-      if (existing) {
-        await Profile.update({
-          biography,
-          signature,
-          challenge,
-        }, { where: { author }, raw: true });
-        res.send(await Profile.findOne({ where: { author }, raw: true }));
-      } else {
-        const entry = await Profile.create({ author, biography, signature, challenge });
-        res.send(entry);
-      }
+      if (existing) return res.status(400).send({ err: 'author must be unique' });
+      const entry = await Profile.create({ author, biography, signature, challenge });
+      res.send(entry);
+
     } catch (e) {
       console.error(e);
       res.status(500).send(e.message);
@@ -44,11 +37,14 @@ module.exports = class ProfileLogic {
     return res.send(result);
   };
 
-  static async updateItem (req, res) {
-    const { biography } = req.body;
-    if (!biography) return res.status(400).send('Missing required field biography');
+  static async updateProfile (req, res) {
+    const { biography, preferredChainName, signature, challenge } = req.body;
+    if (!biography && !preferredChainName) return res.status(400).send('Missing at least one updateable field');
     await Profile.update({
       ...biography && { biography },
+      ...preferredChainName && { preferredChainName },
+      signature,
+      challenge,
     }, { where: { author: req.params.author }, raw: true });
     return ProfileLogic.getSingleItem(req, res);
   }

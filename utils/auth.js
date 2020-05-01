@@ -2,6 +2,7 @@ const { verifyPersonalMessage, decodeBase58Check, hash } = require('@aeternity/a
 const { v4: uuidv4 } = require('uuid');
 const fs = require('fs');
 const path = require('path');
+const { Profile } = require('../models');
 
 const basicAuth = (req, res, next) => {
   const auth = { login: process.env.AUTHENTICATION_USER, password: process.env.AUTHENTICATION_PASSWORD };
@@ -29,7 +30,7 @@ const actions = [
     method: 'POST',
     path: '\/profile\/?$',
     actionName: 'CREATE_PROFILE',
-    relevantFields: ['biography'],
+    relevantFields: ['biography', 'preferredChainName'],
   },
   {
     method: 'POST',
@@ -37,6 +38,13 @@ const actions = [
     actionName: 'CREATE_PROFILE_IMAGE',
     relevantFields: [],
     hasFile: true,
+  },
+  {
+    method: 'PUT',
+    path: '\/profile\/ak_',
+    actionName: 'UPDATE_PROFILE',
+    relevantFields: ['biography', 'preferredChainName'],
+    getFullEntry: async (req) => Profile.findOne({where: {author: req.params.author}})
   },
   {
     method: 'DELETE',
@@ -57,7 +65,7 @@ const actions = [
     relevantFields: [],
   }];
 
-const signatureAuth = (req, res, next) => {
+const signatureAuth = async (req, res, next) => {
   const sendError = message => res.status(401).send({ err: message });
 
   // Filter expired items (10 mins timer)
@@ -122,13 +130,19 @@ const signatureAuth = (req, res, next) => {
       const action = actions
         .find(({ method, path }) => method === req.method && req.originalUrl.match(path));
       if (!action) return sendError('Could not find valid action related to this request');
-      const { actionName, relevantFields, hasFile } = action;
+      const { actionName, relevantFields, hasFile, getFullEntry } = action;
 
       let payload;
-      if (!hasFile) {
-        payload = relevantFields.reduce((acc, fieldIndex) => acc + req.body[fieldIndex], '');
-        // UUID-RelevantFieldHash-Action-Timestamp
+      if(getFullEntry) {
+        // MERGE EXISTING ENTRY WITH CURRENT (PUT)
+        const fullEntry = await getFullEntry(req);
+        const mergedObject = Object.assign({}, fullEntry, req.body)
+        payload = relevantFields.reduce((acc, fieldIndex) => `${acc};${fieldIndex}=${mergedObject[fieldIndex]}`, '');
+      } else if (!hasFile) {
+        // JUST USE REMOTE ENTRY (POST)
+        payload = relevantFields.reduce((acc, fieldIndex) => `${acc};${fieldIndex}=${req.body[fieldIndex]}`, '');
       } else {
+        // REQUEST HAS A FILE
         if (!req.file) return sendError('Could not find any image in your request.');
         payload = fs.readFileSync(path.resolve(__dirname, '../images/', req.file.filename));
       }
@@ -142,7 +156,10 @@ const signatureAuth = (req, res, next) => {
         file: req.file ? req.file : null,
         timestamp: Date.now(),
       });
-      return res.send({ challenge });
+      return res.send({
+        challenge,
+        payload: hasFile ? 'file' : payload,
+      });
     } catch (e) {
       console.error(e);
       return sendError(e.message);

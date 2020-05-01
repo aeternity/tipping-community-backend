@@ -1,5 +1,7 @@
+const Profile = require('./profile');
+
 module.exports = (sequelize, DataTypes) => {
-  return sequelize.define('Comment', {
+  const Comment = sequelize.define('Comment', {
     // attributes
     tipId: {
       type: DataTypes.INTEGER,
@@ -27,9 +29,20 @@ module.exports = (sequelize, DataTypes) => {
     },
     parentId: {
       type: DataTypes.INTEGER,
-      hierarchy: true
-    }
+      hierarchy: true,
+    },
   }, {
     timestamps: true,
   });
+  Comment.belongsTo(Profile(sequelize, DataTypes), { foreignKey: 'author' });
+  Comment.addHook('beforeCreate', async (comment, options) => {
+    const { Profile } = require('../models');
+    const profile = await Profile.findOne({ where: { author: comment.author }, raw: true });
+    if (!profile) await Profile.create({
+      author: comment.author,
+      signature: 'automated-profile',
+      challenge: 'automated-profile',
+    });
+  });
+  return Comment;
 };

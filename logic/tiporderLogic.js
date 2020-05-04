@@ -26,7 +26,7 @@ module.exports = class Tiporder {
       //order tutorial highest
       const featuredScore = tip.url === "https://medium.com/@coronanewsorg/corona-wallet-beginners-guide-a46e2f845832" ? 1 : 0;
       //score tip amount by percentage of highest amount, no decay
-      const tipAmountScore = new BigNumber(tip.amount).dividedBy(maxTipAmount).toNumber();
+      const tipAmountScore = new BigNumber(tip.amount_ae).dividedBy(maxTipAmount).toNumber();
 
       tip.dateAgeScore = dateAgeScore;
       tip.tipAmountScore = tipAmountScore;

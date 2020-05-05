@@ -9,6 +9,7 @@ var AsyncLock = require('async-lock');
 var lock = new AsyncLock();
 const {getTipTopics} = require('../utils/tipTopicUtil');
 const Util = require('../utils/util');
+const { Profile } = require('../models');
 
 module.exports = class CacheLogic {
 
@@ -70,14 +71,17 @@ module.exports = class CacheLogic {
   static fetchChainNames() {
     return cache.getOrSet(["getChainNames"], async () => {
       const result = await aeternity.getChainNames();
-      return result.reduce((acc, chainName) => {
+      return result.reduce(async (accPromise, chainName) => {
+
+        const acc = await accPromise;
         if (!chainName.pointers) return acc;
 
         const accountPubkeyPointer = chainName.pointers.find(pointer => pointer.key === "account_pubkey");
         const pubkey = accountPubkeyPointer ? accountPubkeyPointer.id : null;
         if (!pubkey) return acc;
 
-        if (acc[pubkey]) {
+        // already found a chain name
+        if (acc.hasOwnProperty(pubkey)) {
           // shorter always replaces
           if (chainName.name.length < acc[pubkey].length) acc[pubkey] = chainName.name;
           // equal length replaces if alphabetically earlier
@@ -86,8 +90,14 @@ module.exports = class CacheLogic {
           acc[pubkey] = chainName.name;
         }
 
+        // Always overwrite with preferred chain name
+        const profile = await Profile.findOne({where: { author: pubkey }, raw: true});
+        if(profile && profile.preferredChainName) {
+          acc[pubkey] = profile.preferredChainName;
+        }
+
         return acc;
-      }, {});
+      }, Promise.resolve({}));
     }, cache.shortCacheTime)
   };
 

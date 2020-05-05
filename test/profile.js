@@ -206,7 +206,8 @@ describe('Profile', () => {
       });
     });
 
-    it('it should DELETE a profile', (done) => {
+    // Disabled for now
+    it.skip('it should DELETE a profile', (done) => {
       chai.request(server)
         .delete('/profile/' + publicKey)
         .end((err, res) => {
@@ -226,7 +227,8 @@ describe('Profile', () => {
         });
     });
 
-    it('it should 404 on getting a deleted item', (done) => {
+    // Disabled for now
+    it.skip('it should 404 on getting a deleted item', (done) => {
       chai.request(server).get('/profile/' + publicKey).end((err, res) => {
         res.should.have.status(404);
         done();

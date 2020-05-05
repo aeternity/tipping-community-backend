@@ -71,9 +71,10 @@ module.exports = class CacheLogic {
   static fetchChainNames() {
     return cache.getOrSet(["getChainNames"], async () => {
       const result = await aeternity.getChainNames();
-      return result.reduce(async (accPromise, chainName) => {
+      const allProfiles = await Profile.findAll({raw: true});
 
-        const acc = await accPromise;
+      return result.reduce((acc, chainName) => {
+
         if (!chainName.pointers) return acc;
 
         const accountPubkeyPointer = chainName.pointers.find(pointer => pointer.key === "account_pubkey");
@@ -90,14 +91,13 @@ module.exports = class CacheLogic {
           acc[pubkey] = chainName.name;
         }
 
-        // Always overwrite with preferred chain name
-        const profile = await Profile.findOne({where: { author: pubkey }, raw: true});
+        const profile = allProfiles.find(profile => profile.author === pubkey);
         if(profile && profile.preferredChainName) {
           acc[pubkey] = profile.preferredChainName;
         }
 
         return acc;
-      }, Promise.resolve({}));
+      }, {});
     }, cache.shortCacheTime)
   };
 

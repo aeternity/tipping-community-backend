@@ -16,9 +16,11 @@ module.exports = class DomLoader {
   }
 
   static async runBrowser (url, screenshot = false) {
+    const args = ['--lang=en-US,en'];
+    if(process.env.NODE_ENV === 'test') args.push('--disable-dev-shm-usage')
     const browser = await puppeteer.launch(process.env.NODE_ENV === 'test' ? {} : {
       executablePath: '/usr/bin/chromium-browser',
-      args: ['--disable-dev-shm-usage'],
+      args
     });
     try {
       const page = await browser.newPage();

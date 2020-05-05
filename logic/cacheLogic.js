@@ -9,8 +9,7 @@ var AsyncLock = require('async-lock');
 var lock = new AsyncLock();
 const {getTipTopics} = require('../utils/tipTopicUtil');
 const Util = require('../utils/util');
-
-const MIDDLEWARE_URL = process.env.MIDDLEWARE_URL || 'https://mainnet.aeternity.io';
+const { Profile } = require('../models');
 
 module.exports = class CacheLogic {
 
@@ -44,10 +43,6 @@ module.exports = class CacheLogic {
     }, cache.shortCacheTime)
   }
 
-  static async getChainNames() {
-    return axios.get(`${MIDDLEWARE_URL}/middleware/names/active`).then(res => res.data).catch(console.error);
-  }
-
   static async fetchPrice() {
     return cache.getOrSet(["fetchPrice"], async () => {
       return axios.get('https://api.coingecko.com/api/v3/simple/price?ids=aeternity&vs_currencies=usd,eur,cny').then(res => res.data).catch(console.error);
@@ -75,21 +70,30 @@ module.exports = class CacheLogic {
 
   static fetchChainNames() {
     return cache.getOrSet(["getChainNames"], async () => {
-      const result = await CacheLogic.getChainNames();
+      const result = await aeternity.getChainNames();
+      const allProfiles = await Profile.findAll({raw: true});
+
       return result.reduce((acc, chainName) => {
+
         if (!chainName.pointers) return acc;
 
         const accountPubkeyPointer = chainName.pointers.find(pointer => pointer.key === "account_pubkey");
         const pubkey = accountPubkeyPointer ? accountPubkeyPointer.id : null;
         if (!pubkey) return acc;
 
-        if (acc[pubkey]) {
+        // already found a chain name
+        if (acc.hasOwnProperty(pubkey)) {
           // shorter always replaces
           if (chainName.name.length < acc[pubkey].length) acc[pubkey] = chainName.name;
           // equal length replaces if alphabetically earlier
           if (chainName.name.length === acc[pubkey].length && chainName.name < acc[pubkey]) acc[pubkey] = chainName.name;
         } else {
           acc[pubkey] = chainName.name;
+        }
+
+        const profile = allProfiles.find(profile => profile.author === pubkey);
+        if(profile && profile.preferredChainName) {
+          acc[pubkey] = profile.preferredChainName;
         }
 
         return acc;

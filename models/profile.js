@@ -8,6 +8,11 @@ module.exports = (sequelize, DataTypes) => {
     author: {
       type: DataTypes.STRING,
       allowNull: false,
+      primaryKey: true
+    },
+    preferredChainName: {
+      type: DataTypes.STRING,
+      allowNull: true,
     },
     image: {
       type: DataTypes.STRING,

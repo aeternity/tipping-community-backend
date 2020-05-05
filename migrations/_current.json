@@ -51,6 +51,12 @@
                 "author": {
                     "allowNull": false,
                     "field": "author",
+                    "references": {
+                        "model": "Profiles",
+                        "key": "author"
+                    },
+                    "onDelete": "NO ACTION",
+                    "onUpdate": "CASCADE",
                     "seqType": "Sequelize.STRING"
                 },
                 "hidden": {
@@ -94,7 +100,7 @@
                 },
                 "hierarchyLevel": {
                     "field": "hierarchyLevel",
-                    "seqType": "Sequelize.INTEGER"
+                    "seqType": "Sequelize.INTEGER.UNSIGNED"
                 }
             },
             "indexes": []
@@ -235,13 +241,6 @@
         "Profiles": {
             "tableName": "Profiles",
             "schema": {
-                "id": {
-                    "allowNull": false,
-                    "primaryKey": true,
-                    "autoIncrement": true,
-                    "field": "id",
-                    "seqType": "Sequelize.INTEGER"
-                },
                 "biography": {
                     "allowNull": true,
                     "field": "biography",
@@ -249,7 +248,13 @@
                 },
                 "author": {
                     "allowNull": false,
+                    "primaryKey": true,
                     "field": "author",
+                    "seqType": "Sequelize.STRING"
+                },
+                "preferredChainName": {
+                    "allowNull": true,
+                    "field": "preferredChainName",
                     "seqType": "Sequelize.STRING"
                 },
                 "image": {
@@ -291,5 +296,5 @@
             "indexes": []
         }
     },
-    "revision": 4
+    "revision": 5
 }

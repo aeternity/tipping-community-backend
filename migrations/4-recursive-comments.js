@@ -84,7 +84,7 @@ var migrationCommands = function(transaction) {
                 "Comments",
                 "hierarchyLevel",
                 {
-                    "type": Sequelize.INTEGER,
+                    "type": Sequelize.INTEGER.UNSIGNED,
                     "field": "hierarchyLevel"
                 },
                 {

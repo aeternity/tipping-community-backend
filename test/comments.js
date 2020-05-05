@@ -36,7 +36,7 @@ describe('Comments', () => {
     });
 
     await Promise.all((await Comment.findAll()).map(object => {
-      return Comment.update({ parentId: null }, { where: { id: object.id }});
+      return Comment.update({ parentId: null }, { where: { id: object.id } });
     }));
 
     await Comment.destroy({
@@ -46,15 +46,6 @@ describe('Comments', () => {
   });
 
   describe('Comment API', () => {
-    it('it should GET all the comment entries (empty)', (done) => {
-      chai.request(server).get('/comment/api').end((err, res) => {
-        res.should.have.status(200);
-        res.body.should.be.a('array');
-        res.body.length.should.be.eql(0);
-        done();
-      });
-    });
-
     it('it should GET a 0 count of comments for tips', (done) => {
       chai.request(server).get('/comment/count/tips/').end((err, res) => {
         res.should.have.status(200);
@@ -142,6 +133,19 @@ describe('Comments', () => {
       });
     });
 
+    it('it should CREATE a profile with a new comment', (done) => {
+      chai.request(server).get('/profile/' + testData.author).end((err, res) => {
+        res.should.have.status(200);
+        res.body.should.be.a('object');
+        res.body.should.have.property('author', testData.author);
+        res.body.should.have.property('challenge', 'automated-profile');
+        res.body.should.have.property('signature', 'automated-profile');
+        res.body.should.have.property('createdAt');
+        res.body.should.have.property('updatedAt');
+        done();
+      });
+    });
+
     it('it should GET a single item', (done) => {
       chai.request(server).get('/comment/api/' + commentId).end((err, res) => {
         res.should.have.status(200);
@@ -155,6 +159,9 @@ describe('Comments', () => {
         res.body.should.have.property('hidden', false);
         res.body.should.have.property('createdAt');
         res.body.should.have.property('updatedAt');
+        res.body.should.have.property('Profile');
+        const profile = res.body.Profile;
+        profile.should.have.property('author', testData.author);
         done();
       });
     });
@@ -164,6 +171,10 @@ describe('Comments', () => {
         res.should.have.status(200);
         res.body.should.be.a('array');
         res.body.length.should.be.eql(1);
+        res.body[0].should.have.property('id', commentId);
+        res.body[0].should.have.property('Profile');
+        const profile = res.body[0].Profile;
+        profile.should.have.property('author', testData.author);
         done();
       });
     });
@@ -311,27 +322,6 @@ describe('Comments', () => {
         const child_nested = child1.children[0];
         child_nested.should.have.property('id', parentComment.id + 2);
         const child2 = res.body.children[1];
-        child2.should.have.property('id', parentComment.id + 3);
-        done();
-      });
-    });
-
-    it('it should GET ALL comments with children', (done) => {
-      chai.request(server).get('/comment/api').end((err, res) => {
-        res.should.have.status(200);
-        res.body.should.be.a('array');
-        res.body.should.have.length(4);
-        const firstElement = res.body[0];
-        firstElement.should.have.property('id', parentComment.id);
-        firstElement.should.have.property('children');
-        firstElement.children.should.be.an('array');
-        firstElement.children.should.have.length(2);
-        const child1 = firstElement.children[0];
-        child1.should.have.property('id', parentComment.id + 1);
-        child1.should.have.property('children');
-        const child_nested = child1.children[0];
-        child_nested.should.have.property('id', parentComment.id + 2);
-        const child2 = firstElement.children[1];
         child2.should.have.property('id', parentComment.id + 3);
         done();
       });

@@ -1,4 +1,4 @@
-const { Comment } = require('../models');
+const { Comment, Profile } = require('../models');
 
 module.exports = class CommentLogic {
 
@@ -29,33 +29,23 @@ module.exports = class CommentLogic {
     return result === 1 ? res.sendStatus(200) : res.sendStatus(404);
   }
 
-  static async getAllItems (req, res) {
-    res.send((await Comment.findAll({
-      include: {
-        model: Comment,
-        as: 'descendents',
-        hierarchy: true,
-      },
-    })).map(comment => comment.toJSON()));
-  }
-
   static async getAllItemsForThread (req, res) {
     res.send((await Comment.findAll({
-      where: { tipId: req.params.tipId }, include: {
+      where: { tipId: req.params.tipId }, include: [{
         model: Comment,
         as: 'descendents',
         hierarchy: true,
-      },
+      }, Profile],
     })).map(comment => comment.toJSON()));
   }
 
   static async getSingleItem (req, res) {
     const result = await Comment.findOne({
-      where: { id: req.params.id }, include: {
+      where: { id: req.params.id }, include: [{
         model: Comment,
         as: 'descendents',
         hierarchy: true,
-      },
+      }, Profile],
     });
     return result ? res.send(result.toJSON()) : res.sendStatus(404);
   }

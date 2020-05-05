@@ -3,11 +3,15 @@ let chai = require('chai');
 let chaiHttp = require('chai-http');
 let server = require('../server');
 let should = chai.should();
+
 const expect = chai.expect;
-const { Profile, IPFSEntry } = require('../models');
+const { Profile, IPFSEntry, Comment } = require('../models');
 const { signPersonalMessage, generateKeyPair, hash } = require('@aeternity/aepp-sdk').Crypto;
 const fs = require('fs');
 const BackupLogic = require('../logic/backupLogic');
+const ae = require('../utils/aeternity.js');
+const sinon = require('sinon');
+
 chai.use(chaiHttp);
 //Our parent block
 describe('Profile', () => {
@@ -16,6 +20,7 @@ describe('Profile', () => {
 
   const testData = {
     biography: 'What an awesome bio',
+    preferredChainName: 'awesomename.chain',
     author: publicKey,
   };
 
@@ -29,6 +34,10 @@ describe('Profile', () => {
   };
 
   before(async () => { //Before all tests we empty the database once
+    await Comment.destroy({
+      where: {},
+      truncate: true,
+    });
     await Profile.destroy({
       where: {},
       truncate: true,
@@ -91,6 +100,14 @@ describe('Profile', () => {
     });
 
     it('it should CREATE a new profile', (done) => {
+
+      const stub = sinon.stub(ae, 'getChainNamesByAddress').callsFake(function () {
+        return [{
+            name: testData.preferredChainName
+          },
+        ];
+      });
+
       chai.request(server).post('/profile/').send(testData).end((err, res) => {
         res.should.have.status(200);
         res.body.should.be.a('object');
@@ -98,15 +115,18 @@ describe('Profile', () => {
         const challenge = res.body.challenge;
         const signature = signChallenge(challenge);
         chai.request(server).post('/profile/').send({ challenge, signature }).end((err, res) => {
+          console.log(res.body)
           res.should.have.status(200);
           res.body.should.be.a('object');
-          res.body.should.have.property('id');
           res.body.should.have.property('biography', testData.biography);
           res.body.should.have.property('author', testData.author);
+          res.body.should.have.property('preferredChainName', testData.preferredChainName);
           res.body.should.have.property('signature', signature);
           res.body.should.have.property('challenge', challenge);
           res.body.should.have.property('createdAt');
           res.body.should.have.property('updatedAt');
+          stub.called.should.be.true;
+          stub.restore();
           done();
         });
       });
@@ -116,7 +136,6 @@ describe('Profile', () => {
       chai.request(server).get('/profile/' + publicKey).end((err, res) => {
         res.should.have.status(200);
         res.body.should.be.a('object');
-        res.body.should.have.property('id');
         res.body.should.have.property('biography', testData.biography);
         res.body.should.have.property('author', testData.author);
         res.body.should.have.property('signature');
@@ -127,47 +146,7 @@ describe('Profile', () => {
       });
     });
 
-    const newBio = 'updated bio';
-    it('it should UPDATE a new profile', (done) => {
-      chai.request(server).post('/profile/')
-        .send({ author: testData.author, biography: newBio })
-        .end((err, res) => {
-          res.should.have.status(200);
-          res.body.should.be.a('object');
-          res.body.should.have.property('challenge');
-          const challenge = res.body.challenge;
-          const signature = signChallenge(challenge);
-          chai.request(server).post('/profile/').send({ challenge, signature }).end((err, res) => {
-            res.should.have.status(200);
-            res.body.should.be.a('object');
-            res.body.should.have.property('id');
-            res.body.should.have.property('biography', newBio);
-            res.body.should.have.property('author', testData.author);
-            res.body.should.have.property('signature', signature);
-            res.body.should.have.property('challenge', challenge);
-            res.body.should.have.property('createdAt');
-            res.body.should.have.property('updatedAt');
-            done();
-          });
-        });
-    });
-
-    it('it should GET a profile with updated bio', (done) => {
-      chai.request(server).get('/profile/' + publicKey).end((err, res) => {
-        res.should.have.status(200);
-        res.body.should.be.a('object');
-        res.body.should.have.property('id');
-        res.body.should.have.property('biography', newBio);
-        res.body.should.have.property('author', testData.author);
-        res.body.should.have.property('signature');
-        res.body.should.have.property('challenge');
-        res.body.should.have.property('createdAt');
-        res.body.should.have.property('updatedAt');
-        done();
-      });
-    });
-
-    it('it should reject creation for another profile', (done) => {
+    it('it should reject creation for someone elses public key', (done) => {
       chai.request(server).post('/profile/')
         .send({
           biography: 'new bio',
@@ -190,7 +169,45 @@ describe('Profile', () => {
       });
     });
 
-    it('it should DELETE a profile', (done) => {
+    const newBio = 'another updated bio'
+    it('it should allow to update an profile', (done) => {
+      chai.request(server).post('/profile/')
+        .send({ author: testData.author, biography: newBio })
+        .end((err, res) => {
+        res.should.have.status(200);
+        res.body.should.be.a('object');
+        res.body.should.have.property('challenge');
+        const challenge = res.body.challenge;
+        const signature = signChallenge(challenge);
+        chai.request(server).post('/profile/').send({
+          challenge,
+          signature,
+        }).end((err, res) => {
+          console.log(res.body)
+          res.should.have.status(200);
+          res.body.should.be.a('object');
+          res.body.should.have.property('biography', newBio);
+          done();
+        });
+      });
+    });
+
+    it('it should GET a profile with updated bio', (done) => {
+      chai.request(server).get('/profile/' + publicKey).end((err, res) => {
+        res.should.have.status(200);
+        res.body.should.be.a('object');
+        res.body.should.have.property('biography', newBio);
+        res.body.should.have.property('author', testData.author);
+        res.body.should.have.property('signature');
+        res.body.should.have.property('challenge');
+        res.body.should.have.property('createdAt');
+        res.body.should.have.property('updatedAt');
+        done();
+      });
+    });
+
+    // Disabled for now
+    it.skip('it should DELETE a profile', (done) => {
       chai.request(server)
         .delete('/profile/' + publicKey)
         .end((err, res) => {
@@ -210,7 +227,8 @@ describe('Profile', () => {
         });
     });
 
-    it('it should 404 on getting a deleted item', (done) => {
+    // Disabled for now
+    it.skip('it should 404 on getting a deleted item', (done) => {
       chai.request(server).get('/profile/' + publicKey).end((err, res) => {
         res.should.have.status(404);
         done();
@@ -274,7 +292,6 @@ describe('Profile', () => {
           }).end((err, res) => {
             res.should.have.status(200);
             res.body.should.be.a('object');
-            res.body.should.have.property('id');
             res.body.should.have.property('biography', testData.biography);
             res.body.should.have.property('author', testData.author);
             res.body.should.have.property('image', true);
@@ -306,7 +323,6 @@ describe('Profile', () => {
           }).end((err, res) => {
             res.should.have.status(200);
             res.body.should.be.a('object');
-            res.body.should.have.property('id');
             res.body.should.have.property('biography');
             res.body.should.have.property('author', publicKey);
             res.body.should.have.property('image', true);
@@ -367,7 +383,6 @@ describe('Profile', () => {
         .end((err, res) => {
           res.should.have.status(200);
           res.body.should.be.a('object');
-          res.body.should.have.property('id');
           res.body.should.have.property('biography', testData.biography);
           res.body.should.have.property('author', testData.author);
           res.body.should.have.property('image', true);
@@ -477,7 +492,6 @@ describe('Profile', () => {
           done();
         });
     });
-
   });
 })
 ;

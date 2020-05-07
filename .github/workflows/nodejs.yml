@@ -20,6 +20,7 @@ jobs:
       uses: actions/setup-node@v1
       with:
         node-version: 12.x
+    - run: rm -rf package-lock.json
     - run: npm i
     - run: docker run --name server-redis -p 6379:6379 -d redis
     - run: docker run --name ipfs_host -p 5001:5001 -d ipfs/go-ipfs

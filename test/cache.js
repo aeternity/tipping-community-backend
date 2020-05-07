@@ -57,8 +57,8 @@ describe('Cache', () => {
       checkCachedRoute('/cache/userStats?address=ak_fUq2NesPXcYZ1CcqBcGC3StpdnQw3iVxMA3YSeCNAwfN4myQk', 'object', done);
     });
 
-    it(`it should GET all cached stats in less than ${minimalTimeout}ms`, function (done) {
-      this.timeout(minimalTimeout);
+    it(`it should GET all cached stats in less than 400ms`, function (done) {
+      this.timeout(400);
       checkCachedRoute('/cache/stats', 'object', done);
     });
 

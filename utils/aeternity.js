@@ -3,6 +3,7 @@ const {Universal, Node, MemoryAccount} = require('@aeternity/aepp-sdk');
 const fs = require('fs');
 const Util = require('../utils/util');
 const axios = require('axios');
+const TracingLogic = require('../logic/tracingLogic')
 require = require('esm')(module) //use to handle es6 import/export
 const {decodeEvents, SOPHIA_TYPES} = require('@aeternity/aepp-sdk/es/contract/aci/transformation')
 const { topicsRegex } = require('./tipTopicUtil')
@@ -116,12 +117,22 @@ class Aeternity {
     return fs.readFileSync(`${__dirname}/OracleServiceInterface.aes`, 'utf-8');
   };
 
-  async preClaim(address, url) {
-    const claimAmount = await this.contract.methods.unclaimed_for_url(url).then(r => r.decodedResult).catch(() => 0);
+  async preClaim(address, url, trace) {
+    trace.update({
+      state: TracingLogic.state.STARTED_PRE_CLAIM
+    })
+    const claimAmount = await this.contract.methods.unclaimed_for_url(url).then(r => r.decodedResult).catch((e) => {
+      trace.update({ state: TracingLogic.state.ERROR, tx: Object.assign({}, e) });
+      return 0
+    });
+
     if (claimAmount === 0) throw new Error("No zero amount claims");
 
     // pre-claim if necessary (if not already claimed successfully)
-    const claimSuccess = await this.contract.methods.check_claim(url, address).then(r => r.decodedResult.success).catch(() => false);
+    const claimSuccess = await this.contract.methods.check_claim(url, address).then(r => r.decodedResult.success).catch((e) => {
+      trace.update({ state: TracingLogic.state.ERROR, tx: Object.assign({}, e) });
+      return false
+    });
 
     if (!claimSuccess) {
       const fee = await this.oracleContract.methods.estimate_query_fee();
@@ -146,9 +157,9 @@ class Aeternity {
     }
   }
 
-  async claimTips(address, url) {
+  async claimTips(address, url, trace) {
     try {
-      await this.preClaim(address, url);
+      await this.preClaim(address, url, trace);
       const result = await this.contract.methods.claim(url, address, false);
       return result.decodedResult;
     } catch (e) {

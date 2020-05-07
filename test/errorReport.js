@@ -23,9 +23,16 @@ describe('Error Reports', () => {
       os: 'Windows 10',
       version: '81.0.4044',
     },
-    error: 'Ooops something went very wrong somehwere',
+    error: {
+      message: 'Ooops something went very wrong somehwere',
+      stack: `
+      Some
+      Multiline
+      Info`,
+      other: 'fields'
+    },
     time: 143489512334,
-    type: 'extension',
+    platform: 'extension',
   };
 
   describe('Error Report API', () => {
@@ -45,9 +52,9 @@ describe('Error Reports', () => {
         res.body.should.have.property('id');
         res.body.should.have.property('appVersion').eql(testData.appVersion);
         res.body.should.have.property('browser').eql(JSON.stringify(testData.browser));
-        res.body.should.have.property('error').eql(testData.error);
+        res.body.should.have.property('error').eql(JSON.stringify(testData.error));
         res.body.should.have.property('time').eql(testData.time);
-        res.body.should.have.property('type').eql(testData.type);
+        res.body.should.have.property('platform').eql(testData.platform);
         res.body.should.have.property('createdAt');
         res.body.should.have.property('updatedAt');
         reportId = res.body.id;

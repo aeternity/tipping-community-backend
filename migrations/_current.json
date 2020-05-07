@@ -162,9 +162,14 @@
                     "field": "error",
                     "seqType": "Sequelize.STRING"
                 },
-                "type": {
+                "platform": {
                     "allowNull": false,
-                    "field": "type",
+                    "field": "platform",
+                    "seqType": "Sequelize.STRING"
+                },
+                "description": {
+                    "allowNull": true,
+                    "field": "description",
                     "seqType": "Sequelize.STRING"
                 },
                 "time": {

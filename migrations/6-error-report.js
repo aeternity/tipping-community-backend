@@ -44,10 +44,15 @@ var migrationCommands = function(transaction) {
                     "field": "error",
                     "allowNull": false
                 },
-                "type": {
+                "platform": {
                     "type": Sequelize.STRING,
-                    "field": "type",
+                    "field": "platform",
                     "allowNull": false
+                },
+                "description": {
+                    "type": Sequelize.STRING,
+                    "field": "description",
+                    "allowNull": true
                 },
                 "time": {
                     "type": Sequelize.STRING,

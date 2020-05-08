@@ -33,6 +33,7 @@ describe('Error Reports', () => {
     },
     time: 143489512334,
     platform: 'extension',
+    description: 'description'
   };
 
   describe('Error Report API', () => {
@@ -50,11 +51,12 @@ describe('Error Reports', () => {
         res.should.have.status(200);
         res.body.should.be.a('object');
         res.body.should.have.property('id');
-        res.body.should.have.property('appVersion').eql(testData.appVersion);
-        res.body.should.have.property('browser').eql(JSON.stringify(testData.browser));
-        res.body.should.have.property('error').eql(JSON.stringify(testData.error));
-        res.body.should.have.property('time').eql(testData.time);
-        res.body.should.have.property('platform').eql(testData.platform);
+        res.body.should.have.property('appVersion', testData.appVersion);
+        res.body.should.have.property('browser', JSON.stringify(testData.browser));
+        res.body.should.have.property('error', JSON.stringify(testData.error));
+        res.body.should.have.property('time', testData.time);
+        res.body.should.have.property('platform', testData.platform);
+        res.body.should.have.property('description', testData.description);
         res.body.should.have.property('createdAt');
         res.body.should.have.property('updatedAt');
         reportId = res.body.id;

@@ -12,6 +12,13 @@ const Util = require('../utils/util');
 const {Profile} = require('../models');
 const Fuse = require('fuse.js');
 
+const searchOptions = {
+  threshold: 0.3,
+  includeScore: true,
+  shouldSort: false,
+  keys: ['title', 'chainName', 'sender', 'preview.description', 'preview.title', 'url', 'topics']
+}
+
 module.exports = class CacheLogic {
 
   constructor() {
@@ -178,16 +185,8 @@ module.exports = class CacheLogic {
 
     if (req.query.search) {
       // TODO consider indexing
-      // TODO extract options globally
       // TODO proper search for multiple topics
-      const options = {
-        threshold: 0.3,
-        includeScore: true,
-        shouldSort: false,
-        keys: ['title', 'chainName', 'sender', 'preview.description', 'preview.title', 'url', 'topics']
-      }
-
-      const fuse = new Fuse(tips, options)
+      const fuse = new Fuse(tips, searchOptions)
       tips = fuse.search(req.query.search).map(res => {
         const tip = res.item;
         tip.searchScore = res.item.score

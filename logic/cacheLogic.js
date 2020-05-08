@@ -9,7 +9,8 @@ var AsyncLock = require('async-lock');
 var lock = new AsyncLock();
 const {getTipTopics} = require('../utils/tipTopicUtil');
 const Util = require('../utils/util');
-const { Profile } = require('../models');
+const {Profile} = require('../models');
+const Fuse = require('fuse.js');
 
 module.exports = class CacheLogic {
 
@@ -92,7 +93,7 @@ module.exports = class CacheLogic {
         }
 
         const profile = allProfiles.find(profile => profile.author === pubkey);
-        if(profile && profile.preferredChainName) {
+        if (profile && profile.preferredChainName) {
           acc[pubkey] = profile.preferredChainName;
         }
 
@@ -176,15 +177,22 @@ module.exports = class CacheLogic {
     }
 
     if (req.query.search) {
-      const term = req.query.search.toLowerCase();
+      // TODO consider indexing
+      // TODO extract options globally
+      // TODO proper search for multiple topics
+      const options = {
+        threshold: 0.3,
+        includeScore: true,
+        shouldSort: false,
+        keys: ['title', 'chainName', 'sender', 'preview.description', 'preview.title', 'url', 'topics']
+      }
 
-      const urlSearchResults = tips.filter((tip) => tip.url.toLowerCase().includes(term));
-      const senderSearchResults = tips.filter((tip) => tip.sender.toLowerCase().includes(term));
-      const noteSearchResults = tips.filter((tip) => tip.title.toLowerCase().includes(term));
-
-      // We convert the result array to Set in order to remove duplicate records
-      const convertResultToSet = new Set([...urlSearchResults, ...senderSearchResults, ...noteSearchResults]);
-      tips = [...convertResultToSet];
+      const fuse = new Fuse(tips, options)
+      tips = fuse.search(req.query.search).map(res => {
+        const tip = res.item;
+        tip.searchScore = res.item.score
+        return tip
+      });
     }
 
     if (req.query.ordering) {

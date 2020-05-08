@@ -46,6 +46,15 @@ describe('Comments', () => {
   });
 
   describe('Comment API', () => {
+    it('it should GET a  count of comments for tips', (done) => {
+      chai.request(server).get('/comment/api/').end((err, res) => {
+        res.should.have.status(200);
+        res.body.should.be.an('array');
+        res.body.length.should.be.eql(0);
+        done();
+      });
+    });
+
     it('it should GET a 0 count of comments for tips', (done) => {
       chai.request(server).get('/comment/count/tips/').end((err, res) => {
         res.should.have.status(200);

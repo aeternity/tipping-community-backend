@@ -39,6 +39,15 @@ module.exports = class CommentLogic {
     })).map(comment => comment.toJSON()));
   }
 
+  static async getAllItems (req, res) {
+    res.send((await Comment.findAll({include: [{
+        model: Comment,
+        as: 'descendents',
+        hierarchy: true,
+      }, Profile],
+    })).map(comment => comment.toJSON()));
+  }
+
   static async getSingleItem (req, res) {
     const result = await Comment.findOne({
       where: { id: req.params.id }, include: [{

@@ -5,6 +5,7 @@ const { signatureAuth } = require('../utils/auth.js');
 const router = new Router();
 
 // Open api routes
+router.get('/api/', CommentLogic.getAllItems);
 router.get('/api/:id', CommentLogic.getSingleItem);
 router.get('/api/tip/:tipId', CommentLogic.getAllItemsForThread);
 

@@ -115,7 +115,6 @@ describe('Profile', () => {
         const challenge = res.body.challenge;
         const signature = signChallenge(challenge);
         chai.request(server).post('/profile/').send({ challenge, signature }).end((err, res) => {
-          console.log(res.body)
           res.should.have.status(200);
           res.body.should.be.a('object');
           res.body.should.have.property('biography', testData.biography);
@@ -183,7 +182,6 @@ describe('Profile', () => {
           challenge,
           signature,
         }).end((err, res) => {
-          console.log(res.body)
           res.should.have.status(200);
           res.body.should.be.a('object');
           res.body.should.have.property('biography', newBio);

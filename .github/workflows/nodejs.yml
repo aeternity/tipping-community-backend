@@ -15,11 +15,13 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
+    - name: Checkout
+      uses: actions/checkout@master
     - name: Use Node.js 12.x
       uses: actions/setup-node@v1
       with:
         node-version: 12.x
+    - run: npm --build-from-source install sqlite3
     - run: npm i
     - run: docker run --name server-redis -p 6379:6379 -d redis
     - run: docker run --name ipfs_host -p 5001:5001 -d ipfs/go-ipfs

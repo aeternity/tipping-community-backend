@@ -1,5 +1,7 @@
 const BigNumber = require('bignumber.js');
 
+const topicsRegex = /(#[a-zA-Z]+\b)(?!;)/g;
+
 const getTipTopics = (tips) => {
   const avgTipScoreWeight = 1.5;
   const countScoreWeight = 0.8;
@@ -42,5 +44,5 @@ const getTipTopics = (tips) => {
 };
 
 module.exports = {
-  getTipTopics
+  getTipTopics, topicsRegex
 };

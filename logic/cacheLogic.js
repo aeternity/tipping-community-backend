@@ -7,7 +7,7 @@ const cache = require('../utils/cache');
 const BigNumber = require('bignumber.js');
 var AsyncLock = require('async-lock');
 var lock = new AsyncLock();
-const {getTipTopics} = require('../utils/tipTopicUtil');
+const {getTipTopics, topicsRegex} = require('../utils/tipTopicUtil');
 const Util = require('../utils/util');
 const {Profile} = require('../models');
 const Fuse = require('fuse.js');
@@ -184,14 +184,25 @@ module.exports = class CacheLogic {
     }
 
     if (req.query.search) {
-      // TODO consider indexing
-      // TODO proper search for multiple topics
-      const fuse = new Fuse(tips, searchOptions)
-      tips = fuse.search(req.query.search).map(res => {
-        const tip = res.item;
-        tip.searchScore = res.item.score
-        return tip
-      });
+      let searchTips = tips;
+
+      // if topics exist, only show topics
+      const searchTopics = req.query.search.match(topicsRegex);
+      if (searchTopics) {
+        searchTips = tips.filter(tip => searchTopics.every(topic => tip.topics.includes(topic)))
+      }
+
+      // otherwise fuzzy search all content
+      if(searchTopics === null || searchTips.length === 0) {
+        // TODO consider indexing
+        searchTips = new Fuse(tips, searchOptions).search(req.query.search).map(res => {
+          const tip = res.item;
+          tip.searchScore = res.item.score
+          return tip
+        });
+      }
+
+      tips = searchTips;
     }
 
     if (req.query.ordering) {

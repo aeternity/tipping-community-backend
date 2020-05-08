@@ -28,7 +28,7 @@ describe('Cache', () => {
   describe('API', () => {
 
     it('it should GET all cache items', function (done) {
-      this.timeout(5000);
+      this.timeout(20000);
       checkCachedRoute('/cache/tips', 'array', done);
     });
 

@@ -137,6 +137,59 @@
             },
             "indexes": []
         },
+        "ErrorReports": {
+            "tableName": "ErrorReports",
+            "schema": {
+                "id": {
+                    "allowNull": false,
+                    "primaryKey": true,
+                    "autoIncrement": true,
+                    "field": "id",
+                    "seqType": "Sequelize.INTEGER"
+                },
+                "appVersion": {
+                    "allowNull": false,
+                    "field": "appVersion",
+                    "seqType": "Sequelize.STRING"
+                },
+                "browser": {
+                    "allowNull": false,
+                    "field": "browser",
+                    "seqType": "Sequelize.STRING"
+                },
+                "error": {
+                    "allowNull": false,
+                    "field": "error",
+                    "seqType": "Sequelize.STRING"
+                },
+                "platform": {
+                    "allowNull": false,
+                    "field": "platform",
+                    "seqType": "Sequelize.STRING"
+                },
+                "description": {
+                    "allowNull": true,
+                    "field": "description",
+                    "seqType": "Sequelize.STRING"
+                },
+                "time": {
+                    "allowNull": false,
+                    "field": "time",
+                    "seqType": "Sequelize.STRING"
+                },
+                "createdAt": {
+                    "allowNull": false,
+                    "field": "createdAt",
+                    "seqType": "Sequelize.DATE"
+                },
+                "updatedAt": {
+                    "allowNull": false,
+                    "field": "updatedAt",
+                    "seqType": "Sequelize.DATE"
+                }
+            },
+            "indexes": []
+        },
         "IPFSEntries": {
             "tableName": "IPFSEntries",
             "schema": {
@@ -296,5 +349,5 @@
             "indexes": []
         }
     },
-    "revision": 5
+    "revision": 6
 }

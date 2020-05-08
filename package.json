@@ -42,7 +42,7 @@
     "sequelize": "^5.21.7",
     "sequelize-hierarchy": "^2.0.4",
     "sharp": "^0.25.2",
-    "sqlite3": "^4.1.0",
+    "sqlite3": "^4.2.0",
     "uuid": "^8.0.0"
   },
   "devDependencies": {

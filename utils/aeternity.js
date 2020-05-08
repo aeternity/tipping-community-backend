@@ -5,6 +5,7 @@ const Util = require('../utils/util');
 const axios = require('axios');
 require = require('esm')(module) //use to handle es6 import/export
 const {decodeEvents, SOPHIA_TYPES} = require('@aeternity/aepp-sdk/es/contract/aci/transformation')
+const { topicsRegex } = require('./tipTopicUtil')
 
 const MIDDLEWARE_URL = process.env.MIDDLEWARE_URL || 'https://mainnet.aeternity.io';
 
@@ -175,8 +176,6 @@ class Aeternity {
         claim: findClaimGen(data.claim_gen, urlId),
         amount_ae: Util.atomsToAe(data.amount).toFixed(),
       }));
-
-    const topicsRegex = /(#[a-zA-Z]+\b)(?!;)/g;
 
     return state.tips.map(([id, data]) => {
       const tipsData = data;

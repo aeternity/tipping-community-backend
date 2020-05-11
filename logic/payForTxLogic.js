@@ -57,6 +57,7 @@ module.exports = class PayForTxLogic {
       CacheLogic.invalidateOracle();
       CacheLogic.invalidateContractEvents();
       // TODO save tx hash to log
+      if(!result) return sendError(400, 'Claim rejected');
       return sendSuccess();
     } catch (e) {
       console.error(e);

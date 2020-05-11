@@ -1,17 +1,17 @@
-const {BigNumber} = require('bignumber.js');
-const {Universal, Node, MemoryAccount} = require('@aeternity/aepp-sdk');
+const { BigNumber } = require('bignumber.js');
+const { Universal, Node, MemoryAccount } = require('@aeternity/aepp-sdk');
 const fs = require('fs');
 const Util = require('../utils/util');
 const axios = require('axios');
-const TracingLogic = require('../logic/tracingLogic')
-require = require('esm')(module) //use to handle es6 import/export
-const {decodeEvents, SOPHIA_TYPES} = require('@aeternity/aepp-sdk/es/contract/aci/transformation')
+const TracingLogic = require('../logic/tracingLogic');
+require = require('esm')(module); //use to handle es6 import/export
+const { decodeEvents, SOPHIA_TYPES } = require('@aeternity/aepp-sdk/es/contract/aci/transformation');
 const { topicsRegex } = require('./tipTopicUtil')
 
 const MIDDLEWARE_URL = process.env.MIDDLEWARE_URL || 'https://mainnet.aeternity.io';
 
 class Aeternity {
-  constructor() {
+  constructor () {
     this.init();
   }
 
@@ -27,13 +27,13 @@ class Aeternity {
             }),
           }],
         accounts: [
-          MemoryAccount({keypair: {secretKey: process.env.PRIVATE_KEY, publicKey: process.env.PUBLIC_KEY}}),
+          MemoryAccount({ keypair: { secretKey: process.env.PRIVATE_KEY, publicKey: process.env.PUBLIC_KEY } }),
         ],
         address: process.env.PUBLIC_KEY,
         compilerUrl: process.env.COMPILER_URL,
       });
-      this.contract = await this.client.getContractInstance(this.getContractSource(), {contractAddress: process.env.CONTRACT_ADDRESS});
-      this.oracleContract = await this.client.getContractInstance(this.getOracleContractSource(), {contractAddress: process.env.ORACLE_CONTRACT_ADDRESS});
+      this.contract = await this.client.getContractInstance(this.getContractSource(), { contractAddress: process.env.CONTRACT_ADDRESS });
+      this.oracleContract = await this.client.getContractInstance(this.getOracleContractSource(), { contractAddress: process.env.ORACLE_CONTRACT_ADDRESS });
     }
   };
 
@@ -42,29 +42,29 @@ class Aeternity {
   };
 
   networkId = async () => {
-    return (await this.client.getNodeInfo()).nodeNetworkId
+    return (await this.client.getNodeInfo()).nodeNetworkId;
   };
 
   middlewareContractTransactions = async () => {
     return axios.get(`${process.env.MIDDLEWARE_URL}/middleware/contracts/transactions/address/${process.env.CONTRACT_ADDRESS}`)
       .then(res => res.data.transactions
-        .filter(tx => tx.tx.type === "ContractCallTx"));
+        .filter(tx => tx.tx.type === 'ContractCallTx'));
   };
 
   transactionEvents = async (hash) => {
     const fetchTransactionEvents = async () => {
-      const tx = await this.client.tx(hash)
-      const microBlock = await this.client.getMicroBlockHeader(tx.blockHash)
+      const tx = await this.client.tx(hash);
+      const microBlock = await this.client.getMicroBlockHeader(tx.blockHash);
 
       const eventsSchema = [
-        {name: 'TipReceived', types: [SOPHIA_TYPES.address, SOPHIA_TYPES.int, SOPHIA_TYPES.string]},
-        {name: 'ReTipReceived', types: [SOPHIA_TYPES.address, SOPHIA_TYPES.int, SOPHIA_TYPES.string]},
-        {name: 'TipWithdrawn', types: [SOPHIA_TYPES.address, SOPHIA_TYPES.int, SOPHIA_TYPES.string]},
+        { name: 'TipReceived', types: [SOPHIA_TYPES.address, SOPHIA_TYPES.int, SOPHIA_TYPES.string] },
+        { name: 'ReTipReceived', types: [SOPHIA_TYPES.address, SOPHIA_TYPES.int, SOPHIA_TYPES.string] },
+        { name: 'TipWithdrawn', types: [SOPHIA_TYPES.address, SOPHIA_TYPES.int, SOPHIA_TYPES.string] },
         {name: 'QueryOracle', types: [SOPHIA_TYPES.string, SOPHIA_TYPES.address]},
         {name: 'CheckPersistClaim', types: [SOPHIA_TYPES.string, SOPHIA_TYPES.address, SOPHIA_TYPES.int]}
-      ]
+      ];
 
-      const decodedEvents = decodeEvents(tx.log, {schema: eventsSchema});
+      const decodedEvents = decodeEvents(tx.log, { schema: eventsSchema });
 
       return decodedEvents.map(decodedEvent => {
         return {
@@ -76,7 +76,7 @@ class Aeternity {
           nonce: tx.tx.nonce,
           height: tx.height,
           hash: tx.hash,
-          time: microBlock.time
+          time: microBlock.time,
         };
       });
     };
@@ -92,7 +92,7 @@ class Aeternity {
     const fetchOracleState = () => this.oracleContract.methods.get_state().then(res => res.decodedResult);
 
     return this.cache
-      ? this.cache.getOrSet(["oracleState"], () => fetchOracleState(), this.cache.shortCacheTime)
+      ? this.cache.getOrSet(['oracleState'], () => fetchOracleState(), this.cache.shortCacheTime)
       : fetchOracleState();
   };
 
@@ -104,7 +104,7 @@ class Aeternity {
     };
 
     return this.cache
-      ? this.cache.getOrSet(["getTips"], () => fetchTips(), this.cache.shortCacheTime)
+      ? this.cache.getOrSet(['getTips'], () => fetchTips(), this.cache.shortCacheTime)
       : fetchTips();
   };
 
@@ -117,26 +117,29 @@ class Aeternity {
     return fs.readFileSync(`${__dirname}/OracleServiceInterface.aes`, 'utf-8');
   };
 
-  async preClaim(address, url, trace) {
+  async preClaim (address, url, trace) {
     trace.update({
-      state: TracingLogic.state.STARTED_PRE_CLAIM
-    })
-    const claimAmount = await this.contract.methods.unclaimed_for_url(url).then(r => r.decodedResult).catch((e) => {
-      trace.update({ state: TracingLogic.state.ERROR, tx: Object.assign({}, e) });
-      return 0
+      state: TracingLogic.state.STARTED_PRE_CLAIM,
+    });
+    const claimAmount = await this.contract.methods.unclaimed_for_url(url).then(r => r.decodedResult).catch(trace.catchError(0));
+
+    trace.update({
+      state: TracingLogic.state.CLAIM_AMOUNT,
+      claimAmount,
     });
 
-    if (claimAmount === 0) throw new Error("No zero amount claims");
+    if (claimAmount === 0) throw new Error('No zero amount claims');
 
     // pre-claim if necessary (if not already claimed successfully)
-    const claimSuccess = await this.contract.methods.check_claim(url, address).then(r => r.decodedResult.success).catch((e) => {
-      trace.update({ state: TracingLogic.state.ERROR, tx: Object.assign({}, e) });
-      return false
-    });
+    const claimSuccess = await this.contract.methods.check_claim(url, address).then(r => r.decodedResult.success).catch(trace.catchError(false));
+
+    trace.update({ state: TracingLogic.state.INITIAL_PRECLAIM_RESULT, claimSuccess });
 
     if (!claimSuccess) {
       const fee = await this.oracleContract.methods.estimate_query_fee();
+      trace.update({ state: TracingLogic.state.ESTIMATED_FEE, fee: fee.decodedResult });
       await this.contract.methods.pre_claim(url, address, { amount: fee.decodedResult });
+      trace.update({ state: TracingLogic.state.PRECLAIM_STARTED });
 
       return new Promise((resolve, reject) => {
         // check claim every second, 20 times
@@ -148,7 +151,7 @@ class Aeternity {
           }
           if (intervalCounter++ > 20) {
             clearInterval(interval);
-            return reject({ message: "check_claim interval timeout" });
+            return reject({ message: 'check_claim interval timeout' });
           }
         }, 5000);
       });
@@ -157,15 +160,15 @@ class Aeternity {
     }
   }
 
-  async claimTips(address, url, trace) {
+  async claimTips (address, url, trace) {
     try {
       await this.preClaim(address, url, trace);
       const result = await this.contract.methods.claim(url, address, false);
       return result.decodedResult;
     } catch (e) {
       console.log(e);
-      if (e.message.includes('URL_NOT_EXISTING')) throw new Error(`Could not find any tips for url ${url}`);
-      else throw new Error(e)
+      if (e.message && e.message.includes('URL_NOT_EXISTING')) throw new Error(`Could not find any tips for url ${url}`);
+      else throw new Error(e);
     }
   };
 
@@ -221,11 +224,11 @@ class Aeternity {
     });
   };
 
-  async getChainNames() {
+  async getChainNames () {
     return axios.get(`${MIDDLEWARE_URL}/middleware/names/active`).then(res => res.data).catch(console.error);
   }
 
-  async getChainNamesByAddress(address) {
+  async getChainNamesByAddress (address) {
     return axios.get(`${MIDDLEWARE_URL}/middleware/names/reverse/${address}`).then(res => res.data).catch(console.error);
   }
 }

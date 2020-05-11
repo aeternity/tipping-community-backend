@@ -38,7 +38,7 @@ describe('Pay for TX', () => {
 
     it('it should fail without url', (done) => {
       chai.request(server).post('/claim/submit').send({
-        address: 'ak_fUq2NesPXcYZ1CcqBcGC3StpdnQw3iVxMA3YSeCNAwfN4myQk',
+        address: publicKey,
       }).end((err, res) => {
         res.should.have.status(400);
         done();
@@ -56,7 +56,7 @@ describe('Pay for TX', () => {
 
     it('it should reject on website not in contract', (done) => {
       chai.request(server).post('/claim/submit').send({
-        address: 'ak_fUq2NesPXcYZ1CcqBcGC3StpdnQw3iVxMA3YSeCNAwfN4myQk',
+        address: publicKey,
         url: 'https://complicated.domain.test',
       }).end((err, res) => {
         res.should.have.status(500);

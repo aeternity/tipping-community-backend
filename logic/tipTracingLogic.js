@@ -4,7 +4,7 @@ const cache = require("../utils/cache");
 module.exports = class TipTracing {
 
   static async fetchBlockchainTrace(req, res) {
-    // TODD optimize query passing
+    // TODO optimize query passing
     if (!req.query.id) throw Error("tip id parameter missing")
     const tipId = parseInt(req.query.id);
 

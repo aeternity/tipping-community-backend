@@ -64,6 +64,7 @@ class Aeternity {
       ]
 
       const decodedEvents = decodeEvents(tx.log, {schema: eventsSchema});
+
       return decodedEvents.map(decodedEvent => {
         return {
           event: decodedEvent.name,

@@ -46,7 +46,7 @@ class Aeternity {
   };
 
   middlewareContractTransactions = async () => {
-    return axios.get(`${process.env.MIDDLEWARE_URL}/middleware/contracts/transactions/address/${process.env.CONTRACT_ADDRESS}`)
+    return axios.get(`${MIDDLEWARE_URL}/middleware/contracts/transactions/address/${process.env.CONTRACT_ADDRESS}`)
       .then(res => res.data.transactions
         .filter(tx => tx.tx.type === 'ContractCallTx'));
   };
@@ -117,7 +117,7 @@ class Aeternity {
     return fs.readFileSync(`${__dirname}/OracleServiceInterface.aes`, 'utf-8');
   };
 
-  async preClaim (address, url, trace) {
+  async checkPreClaim (address, url, trace) {
     trace.update({
       state: TracingLogic.state.STARTED_PRE_CLAIM,
     });
@@ -129,6 +129,12 @@ class Aeternity {
     });
 
     if (claimAmount === 0) throw new Error('No zero amount claims');
+
+    return claimAmount;
+  }
+
+  async preClaim (address, url, trace) {
+    await this.checkPreClaim(address, url, trace);
 
     // pre-claim if necessary (if not already claimed successfully)
     const claimSuccess = await this.contract.methods.check_claim(url, address).then(r => r.decodedResult.success).catch(trace.catchError(false));
@@ -144,16 +150,23 @@ class Aeternity {
       return new Promise((resolve, reject) => {
         // check claim every second, 20 times
         let intervalCounter = 0;
-        const interval = setInterval(async () => {
+
+        const checkPreClaimFinished = async () => {
           if (((await this.contract.methods.check_claim(url, address)).decodedResult.success)) {
             clearInterval(interval);
             return resolve();
           }
           if (intervalCounter++ > 20) {
             clearInterval(interval);
-            return reject({ message: 'check_claim interval timeout' });
+            return reject('check_claim interval timeout');
           }
-        }, 5000);
+        }
+
+        // Run checks
+        checkPreClaimFinished();
+        const interval = setInterval(checkPreClaimFinished, 5000);
+
+
       });
     } else {
       return claimSuccess;
@@ -162,8 +175,10 @@ class Aeternity {
 
   async claimTips (address, url, trace) {
     try {
-      await this.preClaim(address, url, trace);
+      const claimSuccess = await this.preClaim(address, url, trace);
+      trace.update({ state: TracingLogic.state.FINAL_PRECLAIM_RESULT, claimSuccess });
       const result = await this.contract.methods.claim(url, address, false);
+      trace.update({ state: TracingLogic.state.CLAIM_RESULT, tx: result, result: result.decodedResult });
       return result.decodedResult;
     } catch (e) {
       console.log(e);

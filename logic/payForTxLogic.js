@@ -1,7 +1,7 @@
 const Logger = require('../utils/logger.js');
 const ae = require('../utils/aeternity.js');
 const CacheLogic = require('../logic/cacheLogic');
-const TracingLogic = require('../logic/tracingLogic');
+const { Trace } = require('../logic/tracingLogic');
 
 const logger = new Logger('payForTx');
 
@@ -10,16 +10,16 @@ module.exports = class PayForTxLogic {
   static async payForTx (req, res) {
 
     // Create new trace for each claim
-    const trace = new TracingLogic();
+    const trace = new Trace();
     trace.update({
-      state: TracingLogic.state.REQUEST_RECEIVED
+      state: Trace.state.REQUEST_RECEIVED
     })
 
     // Helper functions
     const sendSuccess = () => {
       logger.log({ success: true, url: req.body.url, address: req.body.address, status: 200, message: '' });
       trace.update({
-        state: TracingLogic.state.REQUEST_ANSWERED,
+        state: Trace.state.REQUEST_ANSWERED,
         answer: 'accepted'
       })
       return res.sendStatus(200);
@@ -29,7 +29,7 @@ module.exports = class PayForTxLogic {
       if (!req.body) req.body = {};
       logger.log({ success: false, url: req.body.url, address: req.body.address, status: status, message: message });
       trace.update({
-        state: TracingLogic.state.REQUEST_ANSWERED,
+        state: Trace.state.REQUEST_ANSWERED,
         answer: 'rejected'
       })
       return res.status(status).send({ error: message });
@@ -39,14 +39,14 @@ module.exports = class PayForTxLogic {
     // Basic sanity check
     if (!req.body) return sendError(400, 'no request body found');
     trace.update({
-      state: TracingLogic.state.BODY_RECEIVED,
+      state: Trace.state.BODY_RECEIVED,
       body: req.body,
     })
     if (!req.body.url) return sendError(400, 'url not found in body');
     if (!req.body.address) return sendError( 400, 'address not found in body');
     if (!ae || !ae.client) return sendError(500, 'sdk not initialized yet');
     trace.update({
-      state: TracingLogic.state.DATA_PARSED,
+      state: Trace.state.DATA_PARSED,
       url: req.body.url,
       address: req.body.address
     })
@@ -77,7 +77,7 @@ module.exports = class PayForTxLogic {
         result: 'success'
       })
     } catch (e) {
-      trace.update({ state: TracingLogic.state.CAUGHT_ERROR, error: e.message });
+      trace.update({ state: Trace.state.CAUGHT_ERROR, error: e.message });
       trace.finished({
         result: 'error'
       })

@@ -138,7 +138,7 @@ describe('Cache', () => {
     });
 
     it('it should GET all oracle cache items', function (done) {
-      this.timeout(2000);
+      this.timeout(10000);
       checkCachedRoute('/cache/oracle', 'object', done);
     });
 

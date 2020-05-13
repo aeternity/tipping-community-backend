@@ -1,5 +1,8 @@
 const { v4: uuidv4 } = require('uuid');
 const fs = require('fs');
+const path = require('path');
+const { Trace: TraceModel } = require('../models');
+
 module.exports = {
   Trace: class Trace {
 
@@ -14,6 +17,13 @@ module.exports = {
       console.log('UPDATE TRACE', this.id, update);
       this.data.push(Object.assign(update, { date: new Date() }));
       this.writeToJSON();
+    }
+
+    setUrl (url) {
+      TraceModel.create({
+        url,
+        uuid: this.id,
+      });
     }
 
     writeToJSON () {
@@ -60,6 +70,13 @@ module.exports = {
         .filter(line => !!line)
         .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
       return traces;
+    }
+
+    static async getAllTraces (req, res) {
+      const traceFolder = path.resolve(`./trace/`);
+      const allTracesDB = await TraceModel.findAll({ raw: true });
+      const allTraces = allTracesDB.reduce((acc, trace) => acc.push(JSON.parse(fs.readFileSync(`${traceFolder}/${trace.uuid}.json`, 'utf-8'))), []);
+      res.send(allTraces);
     }
   },
 };

@@ -6,7 +6,7 @@ let should = chai.should();
 const expect = chai.expect;
 const ae = require('../utils/aeternity.js');
 const sinon = require('sinon');
-
+const { Trace } = require('../logic/tracingLogic')
 chai.use(chaiHttp);
 //Our parent block
 describe('Aeternity', () => {
@@ -77,7 +77,7 @@ describe('Aeternity', () => {
     this.timeout(10000);
     let error = null;
     try {
-      await ae.preClaim('not_a_real_account', 'https://probably.not.an.existing.tip');
+      await ae.preClaim('not_a_real_account', 'https://probably.not.an.existing.tip', new Trace());
     } catch (e) {
       error = e;
     }
@@ -91,7 +91,7 @@ describe('Aeternity', () => {
     this.timeout(10000);
     const unclaimdForUrl = sandbox.stub(ae.contract.methods, 'unclaimed_for_url').callsFake(async () => ({decodedResult: 1}));
     const checkClaim = sandbox.stub(ae.contract.methods, 'check_claim').callsFake(async () => ({decodedResult: {success: true}}));
-    await ae.preClaim(address, url);
+    await ae.preClaim(address, url, new Trace());
     unclaimdForUrl.called.should.be.true;
     sinon.assert.alwaysCalledWith(unclaimdForUrl, url);
     checkClaim.called.should.be.true;
@@ -102,7 +102,7 @@ describe('Aeternity', () => {
   it('it should allow to claim if all goes well (with stubs)', async function () {
     this.timeout(10000);
     const claim = sandbox.stub(ae.contract.methods, 'claim').callsFake(async () => ({decodedResult: true}));
-    const result = await ae.claimTips(address, url);
+    const result = await ae.claimTips(address, url, new Trace());
     result.should.be.true;
     claim.called.should.be.true;
     sinon.assert.alwaysCalledWith(claim, url, address);

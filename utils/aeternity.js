@@ -3,7 +3,7 @@ const { Universal, Node, MemoryAccount } = require('@aeternity/aepp-sdk');
 const fs = require('fs');
 const Util = require('../utils/util');
 const axios = require('axios');
-const TracingLogic = require('../logic/tracingLogic');
+const { Trace } = require('../logic/tracingLogic');
 require = require('esm')(module); //use to handle es6 import/export
 const { decodeEvents, SOPHIA_TYPES } = require('@aeternity/aepp-sdk/es/contract/aci/transformation');
 const { topicsRegex } = require('./tipTopicUtil')
@@ -17,6 +17,7 @@ class Aeternity {
 
   init = async () => {
     if (!this.client) {
+
       this.client = await Universal({
         nodes: [
           {
@@ -119,12 +120,12 @@ class Aeternity {
 
   async checkPreClaim (address, url, trace) {
     trace.update({
-      state: TracingLogic.state.STARTED_PRE_CLAIM,
+      state: Trace.state.STARTED_PRE_CLAIM,
     });
     const claimAmount = await this.contract.methods.unclaimed_for_url(url).then(r => r.decodedResult).catch(trace.catchError(0));
 
     trace.update({
-      state: TracingLogic.state.CLAIM_AMOUNT,
+      state: Trace.state.CLAIM_AMOUNT,
       claimAmount,
     });
 
@@ -139,13 +140,13 @@ class Aeternity {
     // pre-claim if necessary (if not already claimed successfully)
     const claimSuccess = await this.contract.methods.check_claim(url, address).then(r => r.decodedResult.success).catch(trace.catchError(false));
 
-    trace.update({ state: TracingLogic.state.INITIAL_PRECLAIM_RESULT, claimSuccess });
+    trace.update({ state: Trace.state.INITIAL_PRECLAIM_RESULT, claimSuccess });
 
     if (!claimSuccess) {
       const fee = await this.oracleContract.methods.estimate_query_fee();
-      trace.update({ state: TracingLogic.state.ESTIMATED_FEE, fee: fee.decodedResult });
+      trace.update({ state: Trace.state.ESTIMATED_FEE, fee: fee.decodedResult });
       await this.contract.methods.pre_claim(url, address, { amount: fee.decodedResult });
-      trace.update({ state: TracingLogic.state.PRECLAIM_STARTED });
+      trace.update({ state: Trace.state.PRECLAIM_STARTED });
 
       return new Promise((resolve, reject) => {
         // check claim every second, 20 times
@@ -176,9 +177,9 @@ class Aeternity {
   async claimTips (address, url, trace) {
     try {
       const claimSuccess = await this.preClaim(address, url, trace);
-      trace.update({ state: TracingLogic.state.FINAL_PRECLAIM_RESULT, claimSuccess });
+      trace.update({ state: Trace.state.FINAL_PRECLAIM_RESULT, claimSuccess });
       const result = await this.contract.methods.claim(url, address, false);
-      trace.update({ state: TracingLogic.state.CLAIM_RESULT, tx: result, result: result.decodedResult });
+      trace.update({ state: Trace.state.CLAIM_RESULT, tx: result, result: result.decodedResult });
       return result.decodedResult;
     } catch (e) {
       console.log(e);

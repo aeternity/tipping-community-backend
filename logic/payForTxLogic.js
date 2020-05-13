@@ -18,8 +18,9 @@ module.exports = class PayForTxLogic {
     // Helper functions
     const sendSuccess = () => {
       logger.log({ success: true, url: req.body.url, address: req.body.address, status: 200, message: '' });
-      trace.finished({
-        result: 'success',
+      trace.update({
+        state: TracingLogic.state.REQUEST_ANSWERED,
+        answer: 'accepted'
       })
       return res.sendStatus(200);
     }
@@ -27,9 +28,9 @@ module.exports = class PayForTxLogic {
     const sendError = (status, message) => {
       if (!req.body) req.body = {};
       logger.log({ success: false, url: req.body.url, address: req.body.address, status: status, message: message });
-      trace.finished({
-        result: 'failed',
-        reason: message
+      trace.update({
+        state: TracingLogic.state.REQUEST_ANSWERED,
+        answer: 'rejected'
       })
       return res.status(status).send({ error: message });
     }
@@ -52,20 +53,35 @@ module.exports = class PayForTxLogic {
 
     // Try to claim
     try {
-      const result = await ae.claimTips(req.body.address, req.body.url, trace);
-      CacheLogic.invalidateTips();
-      CacheLogic.invalidateOracle();
-      CacheLogic.invalidateContractEvents();
-      // TODO save tx hash to log
+      // Check sync if properties are okay
+      const result = await ae.checkPreClaim(req.body.address, req.body.url, trace);
+
+      // run claim async
+      PayForTxLogic.runAsyncClaim(req.body.address, req.body.url, trace)
+
       if(!result) return sendError(400, 'Claim rejected');
       return sendSuccess();
     } catch (e) {
       console.error(e);
       return sendError(500, e.message);
     }
-
-
   }
 
+  static async runAsyncClaim(address, url, trace) {
+    try {
+      await ae.claimTips(address, url, trace)
+      CacheLogic.invalidateTips();
+      CacheLogic.invalidateOracle();
+      CacheLogic.invalidateContractEvents();
+      trace.finished({
+        result: 'success'
+      })
+    } catch (e) {
+      trace.update({ state: TracingLogic.state.CAUGHT_ERROR, error: e.message });
+      trace.finished({
+        result: 'error'
+      })
+    }
+  }
 
 };

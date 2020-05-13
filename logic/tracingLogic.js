@@ -9,6 +9,7 @@ module.exports = class TracingLogic {
   }
 
   update (update) {
+    console.log('UPDATE TRACE', this.id, update)
     this.data.push(Object.assign(update, { date: new Date() }));
   }
 
@@ -35,6 +36,9 @@ module.exports = class TracingLogic {
     PRECLAIM_STARTED: 'PRECLAIM_STARTED',
     STARTED_PRE_CLAIM: 'STARTED_PRE_CLAIM',
     CAUGHT_ERROR: 'CAUGHT_ERROR',
+    REQUEST_ANSWERED: 'REQUEST_ANSWERED',
+    FINAL_PRECLAIM_RESULT: 'FINAL_PRECLAIM_RESULT',
+    CLAIM_RESULT: 'CLAIM_RESULT',
     ERROR: 'ERROR',
     FINISHED: 'FINISHED',
   };

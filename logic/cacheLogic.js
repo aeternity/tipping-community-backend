@@ -43,7 +43,7 @@ module.exports = class CacheLogic {
   static async findContractEvents() {
     const fetchContractEvents = async () => {
       const contractTransactions = await aeternity.middlewareContractTransactions();
-      return contractTransactions.asyncMap(aeternity.transactionEvent);
+      return contractTransactions.map(tx => tx.hash).asyncMap(aeternity.transactionEvents);
     }
 
     return cache.getOrSet(["contractEvents"], async () => {

@@ -30,8 +30,7 @@ RUN chown -R pptruser:pptruser /app
 
 # Run everything after as non-privileged user.
 USER pptruser
-RUN npm run db:create
 
 EXPOSE 3000
 
-CMD ["node", "server.js"]
+CMD  npm run db:create ; node server.js

@@ -8,7 +8,6 @@ module.exports = class TipTracing {
   }
 
   async init() {
-    // TODO optimize client/cache init
     await aeternity.init();
     await cache.init(aeternity,
       () => {
@@ -25,6 +24,7 @@ module.exports = class TipTracing {
 
     const oracle = await aeternity.oracleContract.methods.get_state().then(x => x.decodedResult);
     const oracleClaim = oracle.success_claimed_urls.find(([url, _]) => url === tip.url)[1];
+    // TODO more info regarding oracle claim from new getter function
 
     const contractTransactions = await aeternity.middlewareContractTransactions()
     const events = await contractTransactions.map(tx => tx.hash)

@@ -6,7 +6,7 @@ let should = chai.should();
 const expect = chai.expect;
 const ae = require('../utils/aeternity.js');
 const sinon = require('sinon');
-const { Trace } = require('../logic/tracingLogic')
+const Trace = require('../utils/trace')
 chai.use(chaiHttp);
 //Our parent block
 describe('Aeternity', () => {

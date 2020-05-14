@@ -13,7 +13,7 @@ module.exports = class Trace {
 
   update(update) {
     console.log('UPDATE TRACE', this.id, update);
-    this.data.push(Object.assign(update, {date: new Date()}));
+    this.data.push(Object.assign(update, {date: Date.now()}));
     this.writeToJSON();
   }
 

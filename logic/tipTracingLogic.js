@@ -1,6 +1,16 @@
 const aeternity = require("../utils/aeternity");
+const { Trace: TraceModel } = require('../models');
+const fs = require('fs');
+const path = require('path');
 
 module.exports = class TipTracing {
+
+  static async getAllTraces (req, res) {
+    const traceFolder = path.resolve(`./trace/`);
+    const allTracesDB = await TraceModel.findAll({ raw: true });
+    const allTraces = allTracesDB.reduce((acc, trace) => acc.push(JSON.parse(fs.readFileSync(`${traceFolder}/${trace.uuid}.json`, 'utf-8'))), []);
+    res.send(allTraces);
+  }
 
   static async fetchBlockchainTrace(req, res) {
     if (!req.query.id) throw Error("tip id parameter missing")

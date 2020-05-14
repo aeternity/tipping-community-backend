@@ -26,7 +26,6 @@ app.use('/logs', require('./routes/loggerRoutes.js'));
 app.use('/static', require('./routes/staticRoutes.js'));
 app.use('/profile', require('./routes/profileRoutes.js'));
 app.use('/errorreport', require('./routes/errorReportRoutes.js'));
-app.use('/trace', require('./routes/traceRoutes.js'));
 app.use('/tracing', require('./routes/tipTracingRoutes.js'));
 
 app.use((req, res) => {

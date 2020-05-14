@@ -46,12 +46,17 @@
 {{#each allItems}}
   <div class="card">
     <div class="action">
-      {{#if this.blocked}}
+      {{#if this.hidden}}
         <button onclick="removeFromBlacklist('{{this.id}}')">SHOW</button>
         <span class="blocked">BLACKLISTED</span>
       {{else}}
-        <button onclick="addToBlacklist('{{this.id}}')">BLOCK</button>
-        <span class="visible">VISIBLE</span>
+        {{#if this.flagged}}
+          <button onclick="updateFlaggedToBlocked('{{this.id}}')">BLOCK</button>
+          <span class="blocked">FLAGGED</span>
+        {{else}}
+          <button onclick="addToBlacklist('{{this.id}}')">BLOCK</button>
+          <span class="visible">VISIBLE</span>
+        {{/if}}
       {{/if}}
     </div>
     <hr>
@@ -73,13 +78,24 @@
         'Accept': 'application/json',
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ id: id }),
+      body: JSON.stringify({ tipId: id }),
     }).finally(() => window.location.reload());
   }
 
   function removeFromBlacklist (id) {
     fetch('/blacklist/api/' + window.encodeURIComponent(id), {
       method: 'DELETE',
+    }).finally(() => window.location.reload());
+  }
+
+  function updateFlaggedToBlocked (id) {
+    fetch('/blacklist/api/' + window.encodeURIComponent(id), {
+      method: 'PUT',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({status: 'hidden'})
     }).finally(() => window.location.reload());
   }
 </script>

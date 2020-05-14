@@ -40,6 +40,13 @@ const actions = [
     hasFile: true,
   },
   {
+    method: 'POST',
+    path: '\/blacklist\/api\/wallet',
+    actionName: 'CREATE_FLAGGED_TIP',
+    relevantFields: ['tipId'],
+    hasFile: false,
+  },
+  {
     method: 'PUT',
     path: '\/profile\/ak_',
     actionName: 'UPDATE_PROFILE',

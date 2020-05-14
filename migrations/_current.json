@@ -3,17 +3,24 @@
         "BlacklistEntries": {
             "tableName": "BlacklistEntries",
             "schema": {
-                "id": {
-                    "allowNull": false,
-                    "primaryKey": true,
-                    "autoIncrement": true,
-                    "field": "id",
-                    "seqType": "Sequelize.INTEGER"
-                },
                 "tipId": {
                     "allowNull": false,
+                    "primaryKey": true,
                     "field": "tipId",
                     "seqType": "Sequelize.INTEGER"
+                },
+                "status": {
+                    "defaultValue": {
+                        "value": "hidden"
+                    },
+                    "allowNull": false,
+                    "field": "status",
+                    "seqType": "Sequelize.ENUM('flagged', 'hidden')"
+                },
+                "flagger": {
+                    "allowNull": true,
+                    "field": "flagger",
+                    "seqType": "Sequelize.STRING"
                 },
                 "createdAt": {
                     "allowNull": false,
@@ -349,5 +356,5 @@
             "indexes": []
         }
     },
-    "revision": 6
+    "revision": 7
 }

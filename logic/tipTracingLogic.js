@@ -1,19 +1,6 @@
 const aeternity = require("../utils/aeternity");
-const cache = require("../utils/cache");
 
 module.exports = class TipTracing {
-
-  constructor() {
-    this.init();
-  }
-
-  async init() {
-    await aeternity.init();
-    await cache.init(aeternity,
-      () => {
-      });
-    aeternity.setCache(cache)
-  }
 
   static async fetchBlockchainTrace(req, res) {
     if (!req.query.id) throw Error("tip id parameter missing")

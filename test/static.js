@@ -32,19 +32,19 @@ describe('Static Routes', () => {
         createdAt: new Date().setHours(0, 0, 0, 1),
       });
       await BlacklistEntry.create({
-        tipId: 1,
+        tipId: 2,
         createdAt: new Date(new Date().setDate(new Date().getDate() - 1)).setHours(0, 0, 0, 1),
       });
       await BlacklistEntry.create({
-        tipId: 1,
+        tipId: 3,
         createdAt: new Date(new Date().setDate(new Date().getDate() - 6)).setHours(0, 0, 0, 1),
       });
       await BlacklistEntry.create({
-        tipId: 1,
+        tipId: 4,
         createdAt: new Date(new Date().setDate(new Date().getDate() - 20)).setHours(0, 0, 0, 1),
       });
       await BlacklistEntry.create({
-        tipId: 1,
+        tipId: 5,
         createdAt: new Date(new Date().setDate(new Date().getDate() - 29)).setHours(0, 0, 0, 1),
       });
     });

@@ -375,6 +375,11 @@
                     "field": "uuid",
                     "seqType": "Sequelize.STRING"
                 },
+                "publicKey": {
+                    "allowNull": true,
+                    "field": "publicKey",
+                    "seqType": "Sequelize.STRING"
+                },
                 "createdAt": {
                     "allowNull": false,
                     "field": "createdAt",
@@ -389,5 +394,5 @@
             "indexes": []
         }
     },
-    "revision": 7
+    "revision": 8
 }

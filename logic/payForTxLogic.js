@@ -1,7 +1,7 @@
 const Logger = require('../utils/logger.js');
 const ae = require('../utils/aeternity.js');
 const CacheLogic = require('../logic/cacheLogic');
-const { Trace } = require('../logic/tracingLogic');
+const Trace = require('../utils/trace');
 
 const logger = new Logger('payForTx');
 

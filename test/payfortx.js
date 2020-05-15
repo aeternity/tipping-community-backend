@@ -3,15 +3,6 @@ const chai = require('chai');
 const chaiHttp = require('chai-http');
 let should = chai.should();
 
-const Crypto = require('@aeternity/aepp-sdk').Crypto;
-const { secretKey, publicKey } = Crypto.generateKeyPair();
-//During the test the env variable is set to test
-process.env = {
-  ...process.env,
-  PRIVATE_KEY: secretKey,
-  PUBLIC_KEY: publicKey,
-};
-
 // Imports to load data
 const server = require('../server.js');
 

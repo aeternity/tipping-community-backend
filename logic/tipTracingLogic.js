@@ -6,7 +6,7 @@ const path = require('path');
 module.exports = class TipTracing {
 
   static async getAllTraces (req, res) {
-    if (!req.query.id) throw Error("tip id parameter missing")
+    if (!req.query.id) return res.status(400).send("tip id parameter missing")
     const tipId = parseInt(req.query.id);
     const tip = await aeternity.getTips().then(ts => ts.find(t => t.id === tipId));
 

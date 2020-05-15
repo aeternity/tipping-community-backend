@@ -13,3 +13,12 @@ process.env = {
   //IPFS_URL: 'http://3.124.114.189:5001',
   MIDDLEWARE_URL: 'https://mainnet.aeternity.io'
 };
+
+const Crypto = require('@aeternity/aepp-sdk').Crypto;
+const { secretKey, publicKey } = Crypto.generateKeyPair();
+//During the test the env variable is set to test
+process.env = {
+  ...process.env,
+  PRIVATE_KEY: secretKey,
+  PUBLIC_KEY: publicKey,
+};

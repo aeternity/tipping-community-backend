@@ -22,7 +22,9 @@ module.exports = class PayForTxLogic {
         state: Trace.state.REQUEST_ANSWERED,
         answer: 'accepted',
       });
-      return res.sendStatus(200);
+      return res.send({
+        claimUUID: trace.id
+      })
     };
 
     const sendError = (status, message) => {
@@ -49,7 +51,6 @@ module.exports = class PayForTxLogic {
       url: req.body.url,
       address: req.body.address,
     });
-    trace.setMetaData(req.body.url, req.body.address);
 
     // Try to claim
     try {
@@ -60,6 +61,7 @@ module.exports = class PayForTxLogic {
       PayForTxLogic.runAsyncClaim(req.body.address, req.body.url, trace);
 
       if (!result) return sendError(400, 'Claim rejected');
+      trace.setMetaData(req.body.url, req.body.address);
       return sendSuccess();
     } catch (e) {
       console.error(e);

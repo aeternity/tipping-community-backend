@@ -6,9 +6,17 @@ const path = require('path');
 module.exports = class TipTracing {
 
   static async getAllTraces (req, res) {
-    const traceFolder = path.resolve(`./trace/`);
+    const readFile = (uuid) => {
+      const traceFolder = path.resolve(`./trace/`);
+      try {
+        return JSON.parse(fs.readFileSync(`${traceFolder}/${uuid}.json`, 'utf-8'))
+      } catch(e) {
+        return []
+      }
+    }
+
     const allTracesDB = await TraceModel.findAll({ raw: true });
-    const allTraces = allTracesDB.reduce((acc, trace) => acc.push(JSON.parse(fs.readFileSync(`${traceFolder}/${trace.uuid}.json`, 'utf-8'))), []);
+    const allTraces = allTracesDB.reduce((acc, trace) => acc.push(readFile(trace.uuid)), []);
     res.send(allTraces);
   }
 

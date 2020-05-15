@@ -10,7 +10,7 @@ const tipTitleScoreWeight = 0.7;
 module.exports = class Tiporder {
 
   static async fetchTipOrder(fetchTips = null) {
-    const blacklist = await BlacklistEntry.findAll({raw: true});
+    const blacklist = await BlacklistEntry.findAll({raw: true, where: {status: 'hidden'}});
     const blacklistedIds = blacklist.map(b => b.tipId);
 
     const state = fetchTips ? await fetchTips() : await aeternity.getTips();

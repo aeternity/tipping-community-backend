@@ -49,7 +49,7 @@ module.exports = class PayForTxLogic {
       url: req.body.url,
       address: req.body.address,
     });
-    trace.setUrl(req.body.url);
+    trace.setMetaData(req.body.url, req.body.address);
 
     // Try to claim
     try {

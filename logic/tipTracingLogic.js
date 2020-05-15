@@ -16,7 +16,10 @@ module.exports = class TipTracing {
     }
 
     const allTracesDB = await TraceModel.findAll({ raw: true });
-    const allTraces = allTracesDB.reduce((acc, trace) => acc.push(readFile(trace.uuid)), []);
+    const allTraces = allTracesDB.reduce((acc, trace) => {
+      acc.push(readFile(trace.uuid))
+      return acc;
+    }, []);
     res.send(allTraces);
   }
 

@@ -7,7 +7,7 @@ module.exports = class TipTracing {
 
   static async getAllTraces (req, res) {
     const readFile = (uuid) => {
-      const traceFolder = path.resolve(`./trace/`);
+      const traceFolder = path.resolve(`./traces/`);
       try {
         return JSON.parse(fs.readFileSync(`${traceFolder}/${uuid}.json`, 'utf-8'))
       } catch(e) {

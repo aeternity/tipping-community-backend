@@ -17,9 +17,10 @@ module.exports = class Trace {
     this.writeToJSON();
   }
 
-  setUrl(url) {
+  setMetaData(url, publicKey) {
     TraceModel.create({
       url,
+      publicKey,
       uuid: this.id,
     });
   }

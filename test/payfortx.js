@@ -5,7 +5,7 @@ let should = chai.should();
 
 // Imports to load data
 const server = require('../server.js');
-
+const { publicKey } = require('../utils/testingUtil.js')
 chai.use(chaiHttp);
 //Our parent block
 describe('Pay for TX', () => {

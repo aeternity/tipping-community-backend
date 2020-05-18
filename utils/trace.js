@@ -6,7 +6,6 @@ module.exports = class Trace {
 
   constructor() {
     this.id = uuidv4();
-    // TODO create new entry
     this.data = [];
     this.writeToJSON();
   }
@@ -41,6 +40,10 @@ module.exports = class Trace {
     this.writeToJSON();
     console.log('TRACE', this.id);
     console.log(this.data);
+  }
+
+  removeFile() {
+    fs.unlinkSync(`./traces/${this.id}.json`);
   }
 
   static state = {

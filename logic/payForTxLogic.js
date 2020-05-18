@@ -23,8 +23,8 @@ module.exports = class PayForTxLogic {
         answer: 'accepted',
       });
       return res.send({
-        claimUUID: trace.id
-      })
+        claimUUID: trace.id,
+      });
     };
 
     const sendError = (status, message) => {
@@ -34,6 +34,7 @@ module.exports = class PayForTxLogic {
         state: Trace.state.REQUEST_ANSWERED,
         answer: 'rejected',
       });
+      trace.removeFile();
       return res.status(status).send({ error: message });
     };
 

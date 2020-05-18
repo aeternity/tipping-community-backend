@@ -28,6 +28,17 @@ module.exports = class TipTracing {
     res.send(allTraces);
   }
 
+  static async cleanAllTraces () {
+    const allTracesDB = await TraceModel.findAll({ raw: true });
+    const allTraces = allTracesDB.map(trace => trace.uuid);
+
+    const traceFolder = path.resolve(`./traces/`);
+    const traceFiles = await fs.readdirSync(traceFolder)
+      .map(trace => trace.match(/(.*)\.js/)).map(uuid => uuid ? uuid[1] : false).filter(Boolean);
+    traceFiles.filter(file => !allTraces.includes(file))
+      .map(file => fs.unlinkSync(`${traceFolder}/${file}.json`));
+  }
+
   static async fetchBlockchainTrace(req, res) {
     if (!req.query.id) throw Error("tip id parameter missing")
     const tipId = parseInt(req.query.id);

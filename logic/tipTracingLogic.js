@@ -2,6 +2,7 @@ const aeternity = require("../utils/aeternity");
 const { Trace: TraceModel } = require('../models');
 const fs = require('fs');
 const path = require('path');
+const CacheLogic = require('./cacheLogic');
 
 module.exports = class TipTracing {
 
@@ -33,6 +34,7 @@ module.exports = class TipTracing {
 
     const tip = await aeternity.getTips().then(ts => ts.find(t => t.id === tipId));
     const tips = await aeternity.getTips().then(ts => ts.filter(t => t.url === tip.url));
+    const urlStats = CacheLogic.statsForTips(tips);
 
     const oracle = await aeternity.oracleContract.methods.get_state().then(x => x.decodedResult);
     const oracleClaim = oracle.success_claimed_urls.find(([url, _]) => url === tip.url);
@@ -45,6 +47,7 @@ module.exports = class TipTracing {
 
     const result = {
       tip: tip,
+      url_stats: urlStats,
       url_tips: tips,
       url_oracle_claim: oracleClaim ? oracleClaim[1] : null,
       url_events: events

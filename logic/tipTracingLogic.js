@@ -38,7 +38,7 @@ module.exports = class TipTracing {
 
     const oracle = await aeternity.oracleContract.methods.get_state().then(x => x.decodedResult);
     const oracleClaim = oracle.success_claimed_urls.find(([url, _]) => url === tip.url);
-    // TODO more info regarding oracle claim from new getter function
+    const unsafeCheckOracleAnswers = await aeternity.oracleContract.methods.unsafe_check_oracle_answers(tip.url).then(x => x.decodedResult);
 
     const contractTransactions = await aeternity.middlewareContractTransactions()
     const events = await contractTransactions.map(tx => tx.hash)
@@ -50,7 +50,8 @@ module.exports = class TipTracing {
       url_stats: urlStats,
       url_tips: tips,
       url_oracle_claim: oracleClaim ? oracleClaim[1] : null,
-      url_events: events
+      url_events: events,
+      url_intermediate_oracle_answers: unsafeCheckOracleAnswers
     }
 
     res.send(result);

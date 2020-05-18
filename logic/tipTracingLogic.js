@@ -35,7 +35,7 @@ module.exports = class TipTracing {
     const tips = await aeternity.getTips().then(ts => ts.filter(t => t.url === tip.url));
 
     const oracle = await aeternity.oracleContract.methods.get_state().then(x => x.decodedResult);
-    const oracleClaim = oracle.success_claimed_urls.find(([url, _]) => url === tip.url)[1];
+    const oracleClaim = oracle.success_claimed_urls.find(([url, _]) => url === tip.url);
     // TODO more info regarding oracle claim from new getter function
 
     const contractTransactions = await aeternity.middlewareContractTransactions()
@@ -46,7 +46,7 @@ module.exports = class TipTracing {
     const result = {
       tip: tip,
       url_tips: tips,
-      url_oracle_claim: oracleClaim,
+      url_oracle_claim: oracleClaim ? oracleClaim[1] : null,
       url_events: events
     }
 

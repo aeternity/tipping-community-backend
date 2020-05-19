@@ -152,7 +152,11 @@ module.exports = class LinkPreviewLogic {
   }
 
   static async querySimpleCustomCrawler (url) {
-    return (await axios.get(url)).data;
+    return (await axios.get(url, {
+      headers: {
+        'Accept-Language': 'en-US'
+      }
+    })).data;
   };
 
   static async queryCostlyCustomCrawler (url) {

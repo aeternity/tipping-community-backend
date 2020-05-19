@@ -9,12 +9,13 @@ module.exports = class Trace {
     // TODO create new entry
     this.data = [];
     this.writeToJSON();
+    this.saveToDisk = false;
   }
 
   update(update) {
     console.log('UPDATE TRACE', this.id, update);
     this.data.push(Object.assign(update, {date: Date.now()}));
-    this.writeToJSON();
+    if(this.saveToDisk) this.writeToJSON();
   }
 
   setMetaData(url, publicKey) {
@@ -23,6 +24,7 @@ module.exports = class Trace {
       publicKey,
       uuid: this.id,
     });
+    this.saveToDisk = true;
   }
 
   writeToJSON() {

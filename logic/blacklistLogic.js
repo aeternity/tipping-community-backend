@@ -30,11 +30,11 @@ module.exports = class Blacklist {
       const { tipId, author } = req.body;
       if (!tipId) throw new Error('Missing required field tipId');
       if (!author) throw new Error('Missing required field author');
-      const existingEntry = await BlacklistEntry.findOne({ where: { tipId }, raw: true });
+      let existingEntry = await BlacklistEntry.findOne({ where: { tipId }, raw: true });
       if (!existingEntry) {
-        await BlacklistEntry.create({ tipId, flagger: author, status: 'flagged' });
+        existingEntry = await BlacklistEntry.create({ tipId, flagger: author, status: 'flagged' });
       }
-      res.sendStatus(200);
+      res.send(existingEntry);
     } catch (e) {
       console.error(e);
       res.status(500).send(e.message);

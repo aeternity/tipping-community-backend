@@ -74,6 +74,12 @@ describe('Blacklist', () => {
         const signature = signChallenge(challenge);
         chai.request(server).post('/blacklist/api/wallet/').send({ challenge, signature }).end((err, res) => {
           res.should.have.status(200);
+          res.body.should.be.a('object');
+          res.body.should.have.property('tipId', tipId + 1);
+          res.body.should.have.property('flagger', publicKey);
+          res.body.should.have.property('status', 'flagged');
+          res.body.should.have.property('createdAt');
+          res.body.should.have.property('updatedAt');
           done();
         });
       });

@@ -1,7 +1,5 @@
 const BigNumber = require('bignumber.js');
 
-const aeternity = require('../utils/aeternity.js');
-const {BlacklistEntry} = require('../models');
 const dateAgeScoreWeight = 1.5;
 const tipAmountScoreWeight = 1;
 const tipTitleScoreWeight = 0.7;
@@ -9,14 +7,10 @@ const tipTitleScoreWeight = 0.7;
 
 module.exports = class Tiporder {
 
-  static async fetchTipOrder(fetchTips = null) {
-    const blacklist = await BlacklistEntry.findAll({raw: true, where: {status: 'hidden'}});
-    const blacklistedIds = blacklist.map(b => b.tipId);
+  static applyTipScoring(tips) {
+    const maxTipAmount = BigNumber.max(...tips.map(tip => tip.total_amount), '1');
 
-    const state = fetchTips ? await fetchTips() : await aeternity.getTips();
-
-    const maxTipAmount = BigNumber.max(...state.map(tip => tip.total_amount), '1');
-    const tips = state.map(tip => {
+    return tips.map(tip => {
       //remove some dates that are older than .9995%
       const datesToConsiderScore = Math.max(((tip.timestamp / new Date().getTime()) - 0.9995) * 1000, 0);
       //decay older dates more than newer ones
@@ -28,25 +22,12 @@ module.exports = class Tiporder {
       //score tip amount by percentage of highest amount, no decay
       const tipAmountScore = new BigNumber(tip.amount_ae).dividedBy(maxTipAmount).toNumber();
 
-      tip.dateAgeScore = dateAgeScore;
-      tip.tipAmountScore = tipAmountScore;
-      tip.tipTitleScore = tipTitleScore;
-      //tip.featuredScore = featuredScore;
-      tip.score = tip.dateAgeScore * dateAgeScoreWeight +
-        tip.tipAmountScore * tipAmountScoreWeight +
-        tip.tipTitleScore * tipTitleScoreWeight
-        //tip.featuredScore * featuredScoreWeight;
+      tip.score = dateAgeScore * dateAgeScoreWeight +
+        tipAmountScore * tipAmountScoreWeight +
+        tipTitleScore * tipTitleScoreWeight
+      //+ featuredScore * featuredScoreWeight;
 
       return tip;
     });
-
-    return tips
-      .filter(tip => !blacklistedIds.includes(tip.id))
-      .map(tip => {
-        return {
-          id: tip.id,
-          score: tip.score
-        }
-      });
-  }
+  };
 };

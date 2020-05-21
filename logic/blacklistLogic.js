@@ -73,4 +73,8 @@ module.exports = class Blacklist {
     return result ? res.send(result) : res.sendStatus(404);
   };
 
+  static async getBlacklistedIds() {
+    const blacklist = await BlacklistEntry.findAll({raw: true, where: {status: 'hidden'}});
+    return blacklist.map(b => b.tipId);
+  }
 };

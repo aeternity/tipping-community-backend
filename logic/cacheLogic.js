@@ -2,6 +2,7 @@ const aeternity = require('../utils/aeternity.js');
 const LinkPreviewLogic = require('./linkPreviewLogic.js');
 const TipOrderLogic = require('./tiporderLogic');
 const CommentLogic = require('./commentLogic');
+const BlacklistLogic = require('./blacklistLogic');
 const axios = require('axios');
 const cache = require('../utils/cache');
 const BigNumber = require('bignumber.js');
@@ -109,22 +110,14 @@ module.exports = class CacheLogic {
     }, cache.shortCacheTime)
   };
 
-  static async getAllTips() {
-    let [tips, tipOrdering, tipsPreview, chainNames, commentCounts] = await Promise.all([
-      CacheLogic.getTipsCheckPreviews(), TipOrderLogic.fetchTipOrder(CacheLogic.fetchTips), LinkPreviewLogic.fetchAllLinkPreviews(),
-      CacheLogic.fetchChainNames(), CommentLogic.fetchCommentCountForTips(),
+  static async getAllTips(blacklist = true) {
+    let [tips,  tipsPreview, chainNames, commentCounts, blacklistedIds] = await Promise.all([
+      CacheLogic.getTipsCheckPreviews(), LinkPreviewLogic.fetchAllLinkPreviews(), CacheLogic.fetchChainNames(),
+      CommentLogic.fetchCommentCountForTips(), BlacklistLogic.getBlacklistedIds()
     ]);
 
-    // add score from backend to tips
-    if (tipOrdering) {
-      const blacklistedTipIds = tipOrdering.map(order => order.id);
-      const filteredTips = tips.filter(tip => blacklistedTipIds.includes(tip.id));
-      tips = filteredTips.map(tip => {
-        const orderItem = tipOrdering.find(order => order.id === tip.id);
-        tip.score = orderItem ? orderItem.score : 0;
-        return tip;
-      });
-    }
+    // add score to tips
+    tips = TipOrderLogic.applyTipScoring(tips)
 
     // add preview to tips from backend
     if (tipsPreview) {
@@ -147,6 +140,10 @@ module.exports = class CacheLogic {
         tip.commentCount = commentCount ? commentCount.count : 0;
         return tip;
       });
+    }
+
+    if (blacklist && blacklistedIds) {
+      tips = tips.filter(tip => !blacklistedIds.includes(tip.id));
     }
 
     return tips;
@@ -177,7 +174,7 @@ module.exports = class CacheLogic {
 
   static async deliverTips(req, res) {
     let limit = 30;
-    let tips = await CacheLogic.getAllTips();
+    let tips = await CacheLogic.getAllTips(req.query.blacklist !== "false");
 
     if (req.query.address) {
       tips = tips.filter((tip) => tip.sender === req.query.address);

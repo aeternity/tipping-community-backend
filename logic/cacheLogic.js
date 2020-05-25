@@ -116,6 +116,11 @@ module.exports = class CacheLogic {
       CommentLogic.fetchCommentCountForTips(), BlacklistLogic.getBlacklistedIds()
     ]);
 
+    // filter by blacklisted from backend
+    if (blacklist && blacklistedIds) {
+      tips = tips.filter(tip => !blacklistedIds.includes(tip.id));
+    }
+
     // add preview to tips from backend
     if (tipsPreview) {
       tips = tips.map(tip => {
@@ -124,6 +129,7 @@ module.exports = class CacheLogic {
       });
     }
 
+    // add chain names for each tip sender
     if (chainNames) {
       tips = tips.map(tip => {
         tip.chainName = chainNames[tip.sender];
@@ -131,16 +137,13 @@ module.exports = class CacheLogic {
       });
     }
 
+    // add comment count to each tip
     if (commentCounts) {
       tips = tips.map(tip => {
         const commentCount = commentCounts.find(comment => comment.tipId === tip.id);
         tip.commentCount = commentCount ? commentCount.count : 0;
         return tip;
       });
-    }
-
-    if (blacklist && blacklistedIds) {
-      tips = tips.filter(tip => !blacklistedIds.includes(tip.id));
     }
 
     // add score to tips

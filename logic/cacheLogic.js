@@ -116,9 +116,6 @@ module.exports = class CacheLogic {
       CommentLogic.fetchCommentCountForTips(), BlacklistLogic.getBlacklistedIds()
     ]);
 
-    // add score to tips
-    tips = TipOrderLogic.applyTipScoring(tips)
-
     // add preview to tips from backend
     if (tipsPreview) {
       tips = tips.map(tip => {
@@ -145,6 +142,9 @@ module.exports = class CacheLogic {
     if (blacklist && blacklistedIds) {
       tips = tips.filter(tip => !blacklistedIds.includes(tip.id));
     }
+
+    // add score to tips
+    tips = TipOrderLogic.applyTipScoring(tips)
 
     return tips;
   }

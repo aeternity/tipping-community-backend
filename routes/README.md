@@ -27,7 +27,7 @@ Here is a code sample of how to sign a request using the aepp-sdk-js:
 const { signPersonalMessage, generateKeyPair } = require('@aeternity/aepp-sdk').Crypto;
 
 // Obtain random keypair
-const { publicKey, secretKey } = generateKeyPair(); 
+const { publicKey, secretKey } = generateKeyPair();
 // Define minimal test object
 const testData = {
   author: publicKey,
@@ -74,7 +74,7 @@ fetch(
 ```
 GET /blacklist/api
 
-Returns: 
+Returns:
 [
   {
     "id": Integer, // 1
@@ -87,11 +87,11 @@ Returns:
 ```
 
 #### Get specific blacklist entry
- 
+
 ```
 GET /blacklist/api/:URIEncodedString(url,nonce)
 
-Returns: 
+Returns:
 
 {
   "id": Integer, // 1
@@ -118,12 +118,12 @@ POST /blacklist/api/
 
 Authorization: HTTP Basic Authorization
 
-Request Body: 
+Request Body:
 {
   url: String(url,nonce) // "https://aeternity.com,1"
 }
 
-Returns: 
+Returns:
 
 {
   "id": Integer, // 1
@@ -140,7 +140,7 @@ DELETE /blacklist/api/:URIEncodedString(url,nonce)
 
 Authorization: HTTP Basic Authorization
 
-Returns: 
+Returns:
 200 OK
 
 ```
@@ -151,7 +151,7 @@ Returns:
 ```
 GET /cache/
 
-Returns: 
+Returns:
 [
   {
     "id": Integer, // 1
@@ -187,7 +187,7 @@ Returns:  HTML VIEW
 ```
 GET /comment/api/
 
-Returns: 
+Returns:
 
 [
   {
@@ -210,7 +210,7 @@ Returns:
 ```
 GET /comment/api/:Int(id)
 
-Returns: 
+Returns:
 
 {
   "hidden": Boolean, // false
@@ -231,7 +231,7 @@ Returns:
 ```
 GET /comment/api/tip/:URIEncodedString(url,nonce)
 
-Returns: 
+Returns:
 
 [
   {
@@ -264,7 +264,7 @@ Request Body:
   "author": String(address), // ak_a4eg....
 }
 
-Returns: 
+Returns:
 {
   "hidden": Boolean, // false
   "id": Integer, // 1
@@ -290,7 +290,7 @@ Request Body:
   "author": String(address), // ak_a4eg....
 }
 
-Returns: 
+Returns:
 200 OK
 
 ```
@@ -301,7 +301,7 @@ Returns:
 ```
 GET /comment/count/tips/
 
-Returns: 
+Returns:
 [
   {
     tipId: Integer, // 1
@@ -313,40 +313,12 @@ Returns:
 ```
 GET /comment/count/author/:String(address)
 
-Returns: 
+Returns:
 {
   author: String(address), // ak_a4eg....
   count: Integer, // 1
 }
 ```
-## Language
-
-#### Get all Chinese posts
-
-```
-GET /language/zh
-
-Returns: 
-
-[
-  String(url), // "https://aeternity.com"
-  ...
-]
-```
-
-#### Get all English posts
-
-```
-GET /language/en
-
-Returns: 
-
-[
-  String(url), // "https://aeternity.com"
-  ...
-]
-```
-
 ## Link Preview
 
 #### Get all cached linkpreviews
@@ -539,7 +511,7 @@ DELETE /profile/:String(address)
 
 Authorization: Signature Authentication
 
-Returns: 
+Returns:
 200 OK
 ```
 
@@ -562,7 +534,7 @@ Request Body:
 multipart/form-data
 image: Blob(image)
 
-Returns: 
+Returns:
 200 OK
 ```
 
@@ -574,6 +546,6 @@ Authorization: Signature Authentication
 
 Request Body:
 
-Returns: 
+Returns:
 200 OK
 ```

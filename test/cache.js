@@ -35,9 +35,7 @@ describe('Cache', () => {
       checkCachedRoute('/cache/tips', 'array', done);
     });
 
-    it('it should GET all cache items with search', async () => {
-
-
+    it('it should GET all cache items with filters', async () => {
       const stub = sinon.stub(CacheLogic, 'getAllTips').callsFake(function () {
         return [
           {
@@ -104,7 +102,9 @@ describe('Cache', () => {
             "total_unclaimed_amount": "0",
             "total_claimed_amount": "0.1",
             "score": 0.0000978476453453386,
-            "preview": null,
+            "preview": {
+              "lang": "zh"
+            },
             "commentCount": 0
           },
         ];
@@ -114,13 +114,13 @@ describe('Cache', () => {
       resTest.should.have.status(200);
       resTest.body.should.be.a('array');
       resTest.body.should.have.length(2);
-      stub.called.should.be.true;
+      stub.callCount.should.eql(1);
 
       const resGithub = await chai.request(server).get('/cache/tips?search=github.com')
       resGithub.should.have.status(200);
       resGithub.body.should.be.a('array');
       resGithub.body.should.have.length(2);
-      stub.called.should.be.true;
+      stub.callCount.should.eql(2);
 
       // only find topic with #
       const resTopic = await chai.request(server).get('/cache/tips?search=%23test')
@@ -128,7 +128,32 @@ describe('Cache', () => {
       resTopic.body.should.be.a('array');
       resTopic.body.should.have.length(1);
       resTopic.body[0].id.should.equal(1);
-      stub.called.should.be.true;
+      stub.callCount.should.eql(3);
+
+      // filter by english lang
+      const resLanguageEN = await chai.request(server).get('/cache/tips?language=en')
+      resLanguageEN.should.have.status(200);
+      resLanguageEN.body.should.be.a('array');
+      resLanguageEN.body.should.have.length(1);
+      resLanguageEN.body[0].id.should.equal(1);
+      stub.callCount.should.eql(4);
+
+      // filter by chinese lang
+      const resLanguageZH = await chai.request(server).get('/cache/tips?language=zh')
+      resLanguageZH.should.have.status(200);
+      resLanguageZH.body.should.be.a('array');
+      resLanguageZH.body.should.have.length(1);
+      resLanguageZH.body[0].id.should.equal(2);
+      stub.callCount.should.eql(5);
+
+      // filter by chinese lang
+      const resLanguageZHEN = await chai.request(server).get('/cache/tips?language=zh|en')
+      resLanguageZHEN.should.have.status(200);
+      resLanguageZHEN.body.should.be.a('array');
+      resLanguageZHEN.body.should.have.length(2);
+      resLanguageZHEN.body[0].id.should.equal(1);
+      stub.callCount.should.eql(6);
+
       stub.restore();
     }).timeout(10000);
 

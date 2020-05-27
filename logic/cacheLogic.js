@@ -10,8 +10,11 @@ var AsyncLock = require('async-lock');
 var lock = new AsyncLock();
 const {getTipTopics, topicsRegex} = require('../utils/tipTopicUtil');
 const Util = require('../utils/util');
-const {Profile} = require('../models');
+const {Profile, Tip} = require('../models');
 const Fuse = require('fuse.js');
+const lngDetector = new (require('languagedetect'));
+lngDetector.setLanguageType('iso2');
+const cld = require('cld');
 
 const searchOptions = {
   threshold: 0.3,
@@ -72,6 +75,44 @@ module.exports = class CacheLogic {
       await difference.asyncMap(async (url) => {
         await LinkPreviewLogic.generatePreview(url).catch(console.error);
       })
+    });
+    let result = [];
+
+
+    function getRandom(arr, n) {
+      var result = new Array(n),
+        len = arr.length,
+        taken = new Array(len);
+      if (n > len)
+        throw new RangeError("getRandom: more elements taken than available");
+      while (n--) {
+        var x = Math.floor(Math.random() * len);
+        result[n] = arr[x in taken ? taken[x] : x];
+        taken[x] = --len in taken ? taken[len] : len;
+      }
+      return result;
+    }
+
+    await lock.acquire("CacheLogic.fetchAllLanguages", async () => {
+      const languages = await Tip.findAll({raw: true});
+      const tipIds = [...new Set(tips.map(tip => tip.id))];
+      const languageIds = [...new Set(languages.map(preview => preview.id))];
+
+      const difference = tipIds.filter(url => !languageIds.includes(url));
+
+      result = await difference.asyncMap(async (id) => {
+        let tip = tips.find(tip => tip.id === id)
+        let title = tip.title.replace(/[!0-9#.,?)-:'“@\/\\]/g, '');
+        const probability = lngDetector.detect(title, 1);
+        const probability2 = await cld.detect(title).catch(e => ({}));
+        const lang1 = probability[0] ? probability[0][0] !== null ? probability[0][0] : null : null;
+        const lang2 = probability2.languages ? probability2.languages[0].code : null;
+        return {id, lang1, lang2, title}
+      })
+      await Tip.bulkCreate(result.map(({id, lang2}) => ({
+        id,
+        language: lang2
+      })));
     });
 
     return tips;

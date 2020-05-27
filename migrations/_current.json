@@ -355,6 +355,33 @@
             },
             "indexes": []
         },
+        "Tips": {
+            "tableName": "Tips",
+            "schema": {
+                "id": {
+                    "allowNull": false,
+                    "primaryKey": true,
+                    "field": "id",
+                    "seqType": "Sequelize.INTEGER"
+                },
+                "language": {
+                    "allowNull": true,
+                    "field": "language",
+                    "seqType": "Sequelize.STRING"
+                },
+                "createdAt": {
+                    "allowNull": false,
+                    "field": "createdAt",
+                    "seqType": "Sequelize.DATE"
+                },
+                "updatedAt": {
+                    "allowNull": false,
+                    "field": "updatedAt",
+                    "seqType": "Sequelize.DATE"
+                }
+            },
+            "indexes": []
+        },
         "Traces": {
             "tableName": "Traces",
             "schema": {
@@ -394,5 +421,5 @@
             "indexes": []
         }
     },
-    "revision": 8
+    "revision": 9
 }

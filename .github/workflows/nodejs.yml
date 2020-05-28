@@ -30,3 +30,9 @@ jobs:
       env:
         REDIS_URL: redis://localhost:6379
         IPFS_URL: http://localhost:5001
+
+  build-docker:
+    runs-on: ubuntu-latest
+    - name: Checkout
+    uses: actions/checkout@master
+    - run: docker run build

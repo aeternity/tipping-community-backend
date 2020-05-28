@@ -2,6 +2,7 @@ const aeternity = require('../utils/aeternity.js');
 const LinkPreviewLogic = require('./linkPreviewLogic.js');
 const TipOrderLogic = require('./tiporderLogic');
 const CommentLogic = require('./commentLogic');
+const TipLogic = require('./tipLogic');
 const BlacklistLogic = require('./blacklistLogic');
 const axios = require('axios');
 const cache = require('../utils/cache');
@@ -10,7 +11,7 @@ var AsyncLock = require('async-lock');
 var lock = new AsyncLock();
 const {getTipTopics, topicsRegex} = require('../utils/tipTopicUtil');
 const Util = require('../utils/util');
-const {Profile, Tip} = require('../models');
+const { Profile } = require('../models');
 const Fuse = require('fuse.js');
 const lngDetector = new (require('languagedetect'));
 lngDetector.setLanguageType('iso2');
@@ -78,8 +79,8 @@ module.exports = class CacheLogic {
     });
     let result = [];
 
-    await lock.acquire("CacheLogic.fetchAllLanguages", async () => {
-      const languages = await Tip.findAll({raw: true});
+    await lock.acquire("TipLogic.fetchAllLocalTips", async () => {
+      const languages = await TipLogic.fetchAllLocalTips();
       const tipIds = [...new Set(tips.map(tip => tip.id))];
       const languageIds = [...new Set(languages.map(preview => preview.id))];
 
@@ -88,11 +89,11 @@ module.exports = class CacheLogic {
       result = await difference.asyncMap(async (id) => {
         let tip = tips.find(tip => tip.id === id)
         let title = tip.title.replace(/[!0-9#.,?)-:'“@\/\\]/g, '');
-        const probability = lngDetector.detect(title, 1);
-        const probability2 = await cld.detect(title).catch(e => ({}));
-        const lang1 = probability[0] ? probability[0][0] !== null ? probability[0][0] : null : null;
+        //const probability = lngDetector.detect(title, 1);
+        const probability2 = await cld.detect(title).catch(() => ({}));
+        //const lang1 = probability[0] ? probability[0][0] !== null ? probability[0][0] : null : null;
         const lang2 = probability2.languages ? probability2.languages[0].code : null;
-        return {id, lang1, lang2, title}
+        return {id, lang2, title}
       })
       await Tip.bulkCreate(result.map(({id, lang2}) => ({
         id,
@@ -137,9 +138,9 @@ module.exports = class CacheLogic {
   };
 
   static async getAllTips(blacklist = true) {
-    let [tips,  tipsPreview, chainNames, commentCounts, blacklistedIds] = await Promise.all([
+    let [tips,  tipsPreview, chainNames, commentCounts, blacklistedIds, localTips] = await Promise.all([
       CacheLogic.getTipsAndVerifyLocalInfo(), LinkPreviewLogic.fetchAllLinkPreviews(), CacheLogic.fetchChainNames(),
-      CommentLogic.fetchCommentCountForTips(), BlacklistLogic.getBlacklistedIds()
+      CommentLogic.fetchCommentCountForTips(), BlacklistLogic.getBlacklistedIds(), TipLogic.fetchAllLocalTips()
     ]);
 
     // filter by blacklisted from backend
@@ -151,6 +152,15 @@ module.exports = class CacheLogic {
     if (tipsPreview) {
       tips = tips.map(tip => {
         tip.preview = tipsPreview.find(preview => preview.requestUrl === tip.url);
+        return tip;
+      });
+    }
+
+    // add language to tips from backend
+    if (localTips) {
+      tips = tips.map(tip => {
+        const localTip = localTips.find(localTip => localTip.id === tip.id);
+        tip.contentLanguage = localTip ? localTip.language : null;
         return tip;
       });
     }
@@ -233,7 +243,9 @@ module.exports = class CacheLogic {
 
     if (req.query.language) {
       const requestedLanguages = req.query.language.split('|');
-      tips = tips.filter((tip) => tip.preview && requestedLanguages.includes(tip.preview.lang)); // TODO  && requestedLanguages.includes(tip.preview.tipLanguage)
+      tips = tips.filter((tip) =>
+        tip.preview && requestedLanguages.includes(tip.preview.lang) &&
+        (!tip.contentLanguage || requestedLanguages.includes(tip.contentLanguage)));
     }
 
     if (req.query.ordering) {

@@ -5,12 +5,6 @@ RUN apk add --no-cache \
       build-base \
       python3 \
       chromium \
-      nss \
-      freetype \
-      freetype-dev \
-      harfbuzz \
-      ca-certificates \
-      ttf-freefont \
       git
 
 # Tell Puppeteer to skip installing Chrome. We'll be using the installed package.
@@ -25,6 +19,12 @@ RUN addgroup -S pptruser && adduser --uid 1001 -S -g pptruser pptruser \
 WORKDIR /app
 COPY package.json /app
 RUN npm install --only=production --unsafe-perm
+
+# Do some cleanup
+RUN apk del --no-cache \
+      build-base \
+      python3 \
+      git
 
 COPY . /app
 

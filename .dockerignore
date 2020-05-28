@@ -1,0 +1,11 @@
+node_modules
+.aeproject-store
+.DS_Store
+package-lock.json
+*.iml
+.idea
+database.sqlite
+.env
+/logs/*.log
+images/
+/traces/*.json

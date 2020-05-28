@@ -34,7 +34,7 @@ module.exports = class CacheLogic {
     await aeternity.init();
 
     const keepHotFunction = async () => {
-      await CacheLogic.getTipsCheckPreviews();
+      await CacheLogic.getTipsAndVerifyLocalInfo();
       await CacheLogic.fetchChainNames();
       await CacheLogic.fetchPrice();
       await aeternity.getOracleState();
@@ -61,7 +61,7 @@ module.exports = class CacheLogic {
     }, cache.longCacheTime)
   }
 
-  static async getTipsCheckPreviews() {
+  static async getTipsAndVerifyLocalInfo() {
     const tips = await aeternity.getTips();
 
     // not await on purpose, just trigger background preview fetch
@@ -138,7 +138,7 @@ module.exports = class CacheLogic {
 
   static async getAllTips(blacklist = true) {
     let [tips,  tipsPreview, chainNames, commentCounts, blacklistedIds] = await Promise.all([
-      CacheLogic.getTipsCheckPreviews(), LinkPreviewLogic.fetchAllLinkPreviews(), CacheLogic.fetchChainNames(),
+      CacheLogic.getTipsAndVerifyLocalInfo(), LinkPreviewLogic.fetchAllLinkPreviews(), CacheLogic.fetchChainNames(),
       CommentLogic.fetchCommentCountForTips(), BlacklistLogic.getBlacklistedIds()
     ]);
 

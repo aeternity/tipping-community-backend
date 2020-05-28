@@ -95,7 +95,7 @@ module.exports = class CacheLogic {
         const lang2 = probability2.languages ? probability2.languages[0].code : null;
         return {id, lang2, title}
       })
-      await Tip.bulkCreate(result.map(({id, lang2}) => ({
+      await TipLogic.bulkCreate(result.map(({id, lang2}) => ({
         id,
         language: lang2
       })));

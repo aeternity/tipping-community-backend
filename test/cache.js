@@ -6,6 +6,7 @@ let should = chai.should();
 const cache = require('../utils/cache');
 const sinon = require('sinon');
 const CacheLogic = require('../logic/cacheLogic.js');
+const BlacklistLogic = require('../logic/blacklistLogic.js');
 
 chai.use(chaiHttp);
 //Our parent block
@@ -167,6 +168,47 @@ describe('Cache', () => {
     it(`it should GET a single tip cache item in less than ${minimalTimeout}ms`, function (done) {
       this.timeout(minimalTimeout);
       checkCachedRoute('/cache/tip?id=1', 'object', done);
+    });
+
+    it(`it should 404 on a non existing tip`, function (done) {
+      chai.request(server).get('/cache/tip?id=15687651684785').end((err, res) => {
+        res.should.have.status(404);
+        done();
+      });
+    });
+
+    it(`it should GET a flagged / blacklisted tip`, function (done) {
+      const stub = sinon.stub(BlacklistLogic, 'getBlacklistedIds').callsFake(() => [1]);
+      chai.request(server).get('/cache/tips').end((err, res) => {
+        res.should.have.status(200);
+        stub.callCount.should.eql(1);
+        stub.restore();
+        done();
+      });
+    });
+
+    it(`it should not GET a flagged / blacklisted tip when requesting the full list`, function (done) {
+      const stub = sinon.stub(BlacklistLogic, 'getBlacklistedIds').callsFake(() => [1]);
+      chai.request(server).get('/cache/tips').end((err, res) => {
+        res.should.have.status(200);
+        const tipIds = res.body.map(tip => tip.id);
+        tipIds.should.not.contain(1);
+        stub.callCount.should.eql(1);
+        stub.restore();
+        done();
+      });
+    });
+
+    it(`it should GET a flagged / blacklisted tip when requesting the full list explicitly`, function (done) {
+      const stub = sinon.stub(BlacklistLogic, 'getBlacklistedIds').callsFake(() => [1]);
+      chai.request(server).get('/cache/tips?blacklist=false').end((err, res) => {
+        res.should.have.status(200);
+        const tipIds = res.body.map(tip => tip.id);
+        tipIds.should.contain(1);
+        stub.callCount.should.eql(1);
+        stub.restore();
+        done();
+      });
     });
 
     it(`it should GET all user stats for a single user in less than ${minimalTimeout}ms`, function (done) {

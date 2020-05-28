@@ -1,7 +1,9 @@
 FROM node:12-alpine
 
-# Installs latest Chromium (77) package.
+# Installs latest Chromium package.
 RUN apk add --no-cache \
+      build-base \
+      python3 \
       chromium \
       nss \
       freetype \
@@ -9,8 +11,7 @@ RUN apk add --no-cache \
       harfbuzz \
       ca-certificates \
       ttf-freefont \
-      git \
-      python3
+      git
 
 # Tell Puppeteer to skip installing Chrome. We'll be using the installed package.
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD true

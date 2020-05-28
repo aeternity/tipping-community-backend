@@ -207,8 +207,9 @@ module.exports = class CacheLogic {
   }
 
   static async deliverTip(req, res) {
-    let tips = await CacheLogic.getAllTips();
-    res.send(tips.find(tip => tip.id === parseInt(req.query.id)));
+    const tips = await CacheLogic.getAllTips(false);
+    const tip = tips.find(tip => tip.id === parseInt(req.query.id))
+    return tip ? res.send(tip) : res.sendStatus(404);
   }
 
   static async deliverTips(req, res) {

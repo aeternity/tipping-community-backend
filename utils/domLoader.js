@@ -16,7 +16,7 @@ module.exports = class DomLoader {
   }
 
   static async runBrowser (url, screenshot = false) {
-    const options = {args: ['--lang=en-US,en', '--disable-dev-shm-usage', '--no-sandbox'],   ...process.env.NODE_ENV === 'test' ? {} : {executablePath: '/usr/bin/chromium-browser'}};
+    const options = {args: ['--lang=en-US,en', '--disable-dev-shm-usage'], ...process.env.NODE_ENV === 'test' ? {} : {executablePath: '/usr/bin/chromium-browser'}};
     const browser = await puppeteer.launch(options);
 
     try {

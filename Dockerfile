@@ -1,17 +1,22 @@
 FROM node:12-alpine
 
 # Installs latest Chromium package.
-RUN apk add --no-cache \
+RUN apk update && apk upgrade && apk add --no-cache \
       build-base \
       python3 \
       chromium \
+      nss \
+      freetype \
+      harfbuzz \
+      ca-certificates \
+      ttf-freefont \
       git
 
 # Tell Puppeteer to skip installing Chrome. We'll be using the installed package.
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD true
 
 # Add user so we don't need --no-sandbox.
-RUN addgroup -S pptruser && adduser --uid 1001 -S -g pptruser pptruser \
+RUN addgroup -S pptruser && adduser -S -g pptruser pptruser \
     && mkdir -p /home/pptruser/Downloads /app \
     && chown -R pptruser:pptruser /home/pptruser \
     && chown -R pptruser:pptruser /app
@@ -35,4 +40,4 @@ USER pptruser
 
 EXPOSE 3000
 
-CMD  npm run db:create ; node server.js
+CMD npm run db:create; node server.js

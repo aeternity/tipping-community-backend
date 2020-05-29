@@ -7,5 +7,5 @@ package-lock.json
 database.sqlite
 .env
 /logs/*.log
-images/*.jpg
+images/**
 /traces/*.json

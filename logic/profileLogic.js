@@ -40,7 +40,6 @@ module.exports = class ProfileLogic {
 
   static async updateProfile (req, res) {
     const { author, biography, preferredChainName, signature, challenge } = req.body;
-    if (!biography && !preferredChainName) return res.status(400).send('Missing at least one updateable field');
     await Profile.update({
       ...biography && { biography },
       ...preferredChainName && { preferredChainName },

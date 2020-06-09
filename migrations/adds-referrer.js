@@ -1,0 +1,87 @@
+'use strict';
+
+var Sequelize = require('sequelize');
+
+/**
+ * Actions summary:
+ *
+ * addColumn "referrer" to table "Profiles"
+ *
+ **/
+
+var info = {
+    "revision": 10,
+    "name": "add-referrer",
+    "created": "2020-06-09T16:11:29.568Z",
+    "comment": ""
+};
+
+var migrationCommands = function(transaction) {
+    return [{
+        fn: "addColumn",
+        params: [
+            "Profiles",
+            "referrer",
+            {
+                "type": Sequelize.STRING,
+                "field": "referrer",
+                "allowNull": true
+            },
+            {
+                transaction: transaction
+            }
+        ]
+    }];
+};
+var rollbackCommands = function(transaction) {
+    return [{
+        fn: "removeColumn",
+        params: [
+            "Profiles",
+            "referrer",
+            {
+                transaction: transaction
+            }
+        ]
+    }];
+};
+
+module.exports = {
+    pos: 0,
+    useTransaction: true,
+    execute: function(queryInterface, Sequelize, _commands)
+    {
+        var index = this.pos;
+        function run(transaction) {
+            const commands = _commands(transaction);
+            return new Promise(function(resolve, reject) {
+                function next() {
+                    if (index < commands.length)
+                    {
+                        let command = commands[index];
+                        console.log("[#"+index+"] execute: " + command.fn);
+                        index++;
+                        queryInterface[command.fn].apply(queryInterface, command.params).then(next, reject);
+                    }
+                    else
+                        resolve();
+                }
+                next();
+            });
+        }
+        if (this.useTransaction) {
+            return queryInterface.sequelize.transaction(run);
+        } else {
+            return run(null);
+        }
+    },
+    up: function(queryInterface, Sequelize)
+    {
+        return this.execute(queryInterface, Sequelize, migrationCommands);
+    },
+    down: function(queryInterface, Sequelize)
+    {
+        return this.execute(queryInterface, Sequelize, rollbackCommands);
+    },
+    info: info
+};

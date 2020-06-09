@@ -18,6 +18,10 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       allowNull: true,
     },
+    referrer: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
     signature: {
       type: DataTypes.STRING,
       allowNull: false,

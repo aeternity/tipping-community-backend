@@ -21,6 +21,7 @@ describe('Profile', () => {
   const testData = {
     biography: 'What an awesome bio',
     preferredChainName: 'awesomename.chain',
+    referrer: 'ak_aNTSYaqHmuSfKgBPjBm95eJz82JXKznCZVdchKKKh7jtDAJcW',
     author: publicKey,
   };
 
@@ -120,6 +121,7 @@ describe('Profile', () => {
           res.body.should.have.property('biography', testData.biography);
           res.body.should.have.property('author', testData.author);
           res.body.should.have.property('preferredChainName', testData.preferredChainName);
+          res.body.should.have.property('referrer', testData.referrer);
           res.body.should.have.property('signature', signature);
           res.body.should.have.property('challenge', challenge);
           res.body.should.have.property('createdAt');
@@ -137,6 +139,7 @@ describe('Profile', () => {
         res.body.should.be.a('object');
         res.body.should.have.property('biography', testData.biography);
         res.body.should.have.property('author', testData.author);
+        res.body.should.have.property('referrer', true);
         res.body.should.have.property('signature');
         res.body.should.have.property('challenge');
         res.body.should.have.property('createdAt');
@@ -196,6 +199,7 @@ describe('Profile', () => {
         res.body.should.be.a('object');
         res.body.should.have.property('biography', newBio);
         res.body.should.have.property('author', testData.author);
+        res.body.should.have.property('referrer', true);
         res.body.should.have.property('signature');
         res.body.should.have.property('challenge');
         res.body.should.have.property('createdAt');

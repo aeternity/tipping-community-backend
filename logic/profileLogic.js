@@ -9,11 +9,11 @@ module.exports = class ProfileLogic {
 
   static async createProfile (req, res) {
     try {
-      const { author, biography, preferredChainName, signature, challenge } = req.body;
+      const { author, biography, preferredChainName, referrer, signature, challenge } = req.body;
       if (!author) return res.status(400).send('Missing required field author');
       const existing = await Profile.findOne({ where: { author }, raw: true });
       if (existing) return await ProfileLogic.updateProfile(req, res)
-      const entry = await Profile.create({ author, biography, preferredChainName, signature, challenge });
+      const entry = await Profile.create({ author, biography, preferredChainName, referrer, signature, challenge });
       res.send(entry);
 
     } catch (e) {
@@ -35,14 +35,16 @@ module.exports = class ProfileLogic {
     const result = await Profile.findOne({ where: { author: req.params.author }, raw: true });
     if (!result) return res.sendStatus(404);
     result.image = !!result.image;
+    result.referrer = !!result.referrer;
     return res.send(result);
   };
 
   static async updateProfile (req, res) {
-    const { author, biography, preferredChainName, signature, challenge } = req.body;
+    const { author, biography, preferredChainName, referrer, signature, challenge } = req.body;
     await Profile.update({
-      ...biography && { biography },
-      ...preferredChainName && { preferredChainName },
+      ...(typeof biography !== 'undefined') && { biography },
+      ...(typeof preferredChainName !== 'undefined') && { preferredChainName },
+      ...(typeof referrer !== 'undefined') && { referrer },
       signature,
       challenge,
     }, { where: { author } });

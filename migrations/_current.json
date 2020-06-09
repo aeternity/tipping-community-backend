@@ -322,6 +322,11 @@
                     "field": "image",
                     "seqType": "Sequelize.STRING"
                 },
+                "referrer": {
+                    "allowNull": true,
+                    "field": "referrer",
+                    "seqType": "Sequelize.STRING"
+                },
                 "signature": {
                     "allowNull": false,
                     "field": "signature",
@@ -421,5 +426,5 @@
             "indexes": []
         }
     },
-    "revision": 9
+    "revision": 10
 }

@@ -27,6 +27,7 @@ app.use('/static', require('./routes/staticRoutes.js'));
 app.use('/profile', require('./routes/profileRoutes.js'));
 app.use('/errorreport', require('./routes/errorReportRoutes.js'));
 app.use('/tracing', require('./routes/tipTracingRoutes.js'));
+app.use('/health', require('./routes/healthRoutes.js'));
 
 app.use((req, res) => {
   res.sendStatus(404);

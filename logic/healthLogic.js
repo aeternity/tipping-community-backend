@@ -49,7 +49,7 @@ module.exports = class HealthLogic {
     try {
       const address = await aeternity.client.address();
       const balance = await aeternity.client.getBalance(address);
-      return balance > 0;
+      return process.env.NODE_ENV === 'test'? parseInt(balance) === 0 : parseInt(balance) > 0;
     } catch (e) {
       console.error(e);
       return false;

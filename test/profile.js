@@ -117,6 +117,7 @@ describe('Profile', () => {
         const signature = signChallenge(challenge);
         chai.request(server).post('/profile/').send({ challenge, signature }).end((err, res) => {
           res.should.have.status(200);
+          console.log(res.body);
           res.body.should.be.a('object');
           res.body.should.have.property('biography', testData.biography);
           res.body.should.have.property('author', testData.author);
@@ -125,7 +126,9 @@ describe('Profile', () => {
           res.body.should.have.property('signature', signature);
           res.body.should.have.property('challenge', challenge);
           res.body.should.have.property('createdAt');
+          res.body.createdAt.should.contain('Z');
           res.body.should.have.property('updatedAt');
+          res.body.updatedAt.should.contain('Z');
           stub.called.should.be.true;
           stub.restore();
           done();

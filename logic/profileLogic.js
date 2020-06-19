@@ -32,8 +32,9 @@ module.exports = class ProfileLogic {
   }
 
   static async getSingleItem (req, res) {
-    const result = await Profile.findOne({ where: { author: req.params.author }, raw: true });
+    let result = await Profile.findOne({ where: { author: req.params.author }});
     if (!result) return res.sendStatus(404);
+    result = result.toJSON();
     result.image = !!result.image;
     result.referrer = !!result.referrer;
     return res.send(result);

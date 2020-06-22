@@ -66,27 +66,54 @@ class Aeternity {
       const microBlock = await this.client.getMicroBlockHeader(tx.blockHash);
 
       const eventsSchema = [
-        { name: 'TipReceived', types: [SOPHIA_TYPES.address, SOPHIA_TYPES.int, SOPHIA_TYPES.string] },
-        { name: 'ReTipReceived', types: [SOPHIA_TYPES.address, SOPHIA_TYPES.int, SOPHIA_TYPES.string] },
-        { name: 'TipWithdrawn', types: [SOPHIA_TYPES.address, SOPHIA_TYPES.int, SOPHIA_TYPES.string] },
+        {name: 'TipReceived', types: [SOPHIA_TYPES.address, SOPHIA_TYPES.int, SOPHIA_TYPES.string]},
+        {name: 'TipTokenReceived', types: [SOPHIA_TYPES.address, SOPHIA_TYPES.int, SOPHIA_TYPES.string, SOPHIA_TYPES.address]},
+        {name: 'ReTipReceived', types: [SOPHIA_TYPES.address, SOPHIA_TYPES.int, SOPHIA_TYPES.string]},
+        {name: 'ReTipTokenReceived', types: [SOPHIA_TYPES.address, SOPHIA_TYPES.int, SOPHIA_TYPES.string, SOPHIA_TYPES.address]},
+        {name: 'TipWithdrawn', types: [SOPHIA_TYPES.address, SOPHIA_TYPES.int, SOPHIA_TYPES.string]},
         {name: 'QueryOracle', types: [SOPHIA_TYPES.string, SOPHIA_TYPES.address]},
-        {name: 'CheckPersistClaim', types: [SOPHIA_TYPES.string, SOPHIA_TYPES.address, SOPHIA_TYPES.int]}
+        {name: 'CheckPersistClaim', types: [SOPHIA_TYPES.string, SOPHIA_TYPES.address, SOPHIA_TYPES.int]},
+        {name: 'Transfer', types: [SOPHIA_TYPES.address, SOPHIA_TYPES.address, SOPHIA_TYPES.int]},
+        {name: 'Allowance', types: [SOPHIA_TYPES.address, SOPHIA_TYPES.address, SOPHIA_TYPES.int]}
       ];
 
       const decodedEvents = decodeEvents(tx.log, { schema: eventsSchema });
 
       return decodedEvents.map(decodedEvent => {
-        return {
+        let event = {
           event: decodedEvent.name,
-          address: `ak_${decodedEvent.decoded[1]}`,
-          amount: decodedEvent.decoded[2] ? decodedEvent.decoded[2] : null,
-          url: decodedEvent.decoded[0],
           caller: tx.tx.callerId,
           nonce: tx.tx.nonce,
           height: tx.height,
           hash: tx.hash,
           time: microBlock.time,
-        };
+        }
+        switch (decodedEvent.name) {
+          case 'Transfer':
+            event.from = `ak_${decodedEvent.decoded[0]}`;
+            event.to = `ak_${decodedEvent.decoded[1]}`;
+            event.amount = decodedEvent.decoded[2] ? decodedEvent.decoded[2] : null;
+            break;
+           case 'Allowance':
+            event.from = `ak_${decodedEvent.decoded[0]}`;
+            event.for = `ak_${decodedEvent.decoded[1]}`;
+            event.amount = decodedEvent.decoded[2] ? decodedEvent.decoded[2] : null;
+            break;
+          case 'CheckPersistClaim':
+            event.address = `ak_${decodedEvent.decoded[1]}`;
+            event.amount = decodedEvent.decoded[2] ? decodedEvent.decoded[2] : null;
+            event.url = decodedEvent.decoded[0];
+            break;
+          case 'QueryOracle':
+            event.address = `ak_${decodedEvent.decoded[1]}`;
+            event.url = decodedEvent.decoded[0];
+            break;
+          default:
+            event.address = `ak_${decodedEvent.decoded[0]}`;
+            event.amount = decodedEvent.decoded[1] ? decodedEvent.decoded[1] : null;
+            event.url = decodedEvent.decoded[2];
+        }
+        return event;
       });
     };
 

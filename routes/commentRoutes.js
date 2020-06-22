@@ -8,6 +8,7 @@ const router = new Router();
 router.get('/api/', CommentLogic.getAllItems);
 router.get('/api/:id', CommentLogic.getSingleItem);
 router.get('/api/tip/:tipId', CommentLogic.getAllItemsForThread);
+router.get('/api/author/:author', CommentLogic.getAllItemsForAuthor);
 
 // Count routes
 router.get('/count/tips/', CommentLogic.getCommentCountForTips);

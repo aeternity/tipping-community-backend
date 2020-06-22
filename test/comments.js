@@ -46,7 +46,7 @@ describe('Comments', () => {
   });
 
   describe('Comment API', () => {
-    it('it should GET a  count of comments for tips', (done) => {
+    it('it should GET an empty array of comments for tips', (done) => {
       chai.request(server).get('/comment/api/').end((err, res) => {
         res.should.have.status(200);
         res.body.should.be.an('array');
@@ -205,6 +205,19 @@ describe('Comments', () => {
         res.body.should.be.an('object');
         res.body.should.have.property('count', 1);
         res.body.should.have.property('author', publicKey);
+        done();
+      });
+    });
+
+    it('it should GET all items for an address', (done) => {
+      chai.request(server).get('/comment/api/author/' + testData.author).end((err, res) => {
+        res.should.have.status(200);
+        res.body.should.be.a('array');
+        res.body.length.should.be.eql(1);
+        res.body[0].should.have.property('id', commentId);
+        res.body[0].should.have.property('Profile');
+        const profile = res.body[0].Profile;
+        profile.should.have.property('author', testData.author);
         done();
       });
     });

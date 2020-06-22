@@ -47,9 +47,17 @@ class Aeternity {
   };
 
   middlewareContractTransactions = async () => {
-    return axios.get(`${MIDDLEWARE_URL}/middleware/contracts/transactions/address/${process.env.CONTRACT_ADDRESS}`)
+    const oldContractTransactions = axios.get(`${MIDDLEWARE_URL}/middleware/contracts/transactions/address/${process.env.OLD_CONTRACT_ADDRESS}`)
       .then(res => res.data.transactions
         .filter(tx => tx.tx.type === 'ContractCallTx'));
+
+    const contractTransactions = axios.get(`${MIDDLEWARE_URL}/middleware/contracts/transactions/address/${process.env.CONTRACT_ADDRESS}`)
+      .then(res => res.data.transactions
+        .filter(tx => tx.tx.type === 'ContractCallTx'));
+
+    return Promise.all([oldContractTransactions, contractTransactions])
+      .then(([oldContractTransactions, contractTransactions]) =>
+        oldContractTransactions.concat(contractTransactions));
   };
 
   transactionEvents = async (hash) => {

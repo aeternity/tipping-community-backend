@@ -7,7 +7,7 @@ const Trace = require('../utils/trace');
 require = require('esm')(module); //use to handle es6 import/export
 const { decodeEvents, SOPHIA_TYPES } = require('@aeternity/aepp-sdk/es/contract/aci/transformation');
 const { topicsRegex } = require('./tipTopicUtil')
-
+const tippingContractUtil = require('tipping-contract/util/tippingContractUtil');
 const MIDDLEWARE_URL = process.env.MIDDLEWARE_URL || 'https://mainnet.aeternity.io';
 
 class Aeternity {
@@ -132,11 +132,30 @@ class Aeternity {
       : fetchOracleState();
   };
 
+  static addAdditionalTipsData = (tips) => {
+    return tips.map(tip => {
+      tip.topics = [...new Set(tip.title.match(topicsRegex))].map((x) => x.toLowerCase());
+
+      tip.amount_ae = Util.atomsToAe(tip.amount).toFixed();
+      tip.total_amount_ae = Util.atomsToAe(tip.total_amount).toFixed();
+      tip.total_unclaimed_amount_ae = Util.atomsToAe(tip.total_unclaimed_amount).toFixed();
+      tip.total_claimed_amount_ae = Util.atomsToAe(tip.total_claimed_amount).toFixed();
+
+      tip.retips = tip.retips.map(retip => {
+        retip.amount_ae = Util.atomsToAe(retip.amount).toFixed();
+        return retip;
+      });
+
+      return tip;
+    })
+  }
+
   getTips = async () => {
     if (!this.client) throw new Error('Init sdk first');
     const fetchTips = async () => {
       const state = await this.contract.methods.get_state();
-      return this.getTipsRetips(state.decodedResult);
+      const tips = tippingContractUtil.getTipsRetips(state.decodedResult).tips;
+      return Aeternity.addAdditionalTipsData(tips)
     };
 
     return this.cache
@@ -221,58 +240,6 @@ class Aeternity {
       if (e.message && e.message.includes('URL_NOT_EXISTING')) throw new Error(`Could not find any tips for url ${url}`);
       else throw new Error(e);
     }
-  };
-
-  getTipsRetips = (state) => {
-    const findUrl = (urlId) => state.urls.find(([, id]) => urlId === id)[0];
-
-    const findClaimGen = (tipClaimGen, urlId) => {
-      const [, data] = state.claims.find(([id]) => id === urlId);
-
-      return {
-        unclaimed: tipClaimGen > data[0],
-        claim_gen: data[0],
-        unclaimed_amount: data[1],
-      };
-    };
-
-    const findRetips = (tipId, urlId) => state.retips
-      .filter(([, data]) => data.tip_id === tipId).map(([id, data]) => ({
-        ...data,
-        id,
-        claim: findClaimGen(data.claim_gen, urlId),
-        amount_ae: Util.atomsToAe(data.amount).toFixed(),
-      }));
-
-    return state.tips.map(([id, data]) => {
-      const tipsData = data;
-      tipsData.id = id;
-      tipsData.url = findUrl(tipsData.url_id);
-      tipsData.topics = [...new Set(tipsData.title.match(topicsRegex))].map((x) => x.toLowerCase());
-      tipsData.retips = findRetips(id, tipsData.url_id);
-      tipsData.claim = findClaimGen(tipsData.claim_gen, tipsData.url_id);
-
-      tipsData.amount_ae = Util.atomsToAe(tipsData.amount).toFixed();
-
-      const retipAmount = tipsData.retips.reduce((acc, retip) => acc.plus(retip.amount), new BigNumber('0')).toFixed();
-
-      tipsData.retip_amount_ae = Util.atomsToAe(retipAmount).toFixed();
-
-      tipsData.total_amount = Util.atomsToAe(new BigNumber(tipsData.amount).plus(retipAmount)).toFixed();
-      tipsData.total_unclaimed_amount = Util.atomsToAe(
-        new BigNumber(tipsData.claim.unclaimed ? tipsData.amount : 0)
-          .plus(tipsData.retips
-            .reduce((acc, retip) =>
-              acc.plus(retip.claim.unclaimed ? retip.amount : 0), new BigNumber('0'))).toFixed()).toFixed();
-
-      tipsData.total_claimed_amount = Util.atomsToAe(
-        new BigNumber(tipsData.claim.unclaimed ? 0 : tipsData.amount)
-          .plus(tipsData.retips
-            .reduce((acc, retip) =>
-              acc.plus(retip.claim.unclaimed ? 0 : retip.amount), new BigNumber('0'))).toFixed()).toFixed();
-
-      return tipsData;
-    });
   };
 
   async getChainNames () {

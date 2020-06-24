@@ -10,7 +10,7 @@ const cache = require('../utils/cache');
 const BigNumber = require('bignumber.js');
 const {getTipTopics, topicsRegex} = require('../utils/tipTopicUtil');
 const Util = require('../utils/util');
-const { Profile } = require('../models');
+const {Profile} = require('../models');
 const Fuse = require('fuse.js');
 
 const searchOptions = {
@@ -102,7 +102,7 @@ module.exports = class CacheLogic {
   };
 
   static async getAllTips(blacklist = true) {
-    let [tips,  tipsPreview, chainNames, commentCounts, blacklistedIds, localTips] = await Promise.all([
+    let [tips, tipsPreview, chainNames, commentCounts, blacklistedIds, localTips] = await Promise.all([
       CacheLogic.getTipsAndVerifyLocalInfo(), LinkPreviewLogic.fetchAllLinkPreviews(), CacheLogic.fetchChainNames(),
       CommentLogic.fetchCommentCountForTips(), BlacklistLogic.getBlacklistedIds(), TipLogic.fetchAllLocalTips()
     ]);
@@ -194,7 +194,7 @@ module.exports = class CacheLogic {
       }
 
       // otherwise fuzzy search all content
-      if(searchTopics === null || searchTips.length === 0) {
+      if (searchTopics === null || searchTips.length === 0) {
         // TODO consider indexing
         searchTips = new Fuse(tips, searchOptions).search(req.query.search).map(res => {
           const tip = res.item;
@@ -259,9 +259,9 @@ module.exports = class CacheLogic {
     const userTips = allTips.filter((tip) => tip.sender === req.query.address);
 
     const userReTips = allTips.flatMap((tip) => tip.retips.filter((retip) => retip.sender === req.query.address));
-    const totalTipAmount = Util.atomsToAe(userTips
+    const totalTipAmount = userTips
       .reduce((acc, tip) => acc.plus(tip.amount), new BigNumber(0))
-      .plus(userReTips.reduce((acc, tip) => acc.plus(tip.amount), new BigNumber(0)))).toFixed(2);
+      .plus(userReTips.reduce((acc, tip) => acc.plus(tip.amount), new BigNumber(0))).toFixed();
 
     const claimedUrls = oracleState.success_claimed_urls
       ? oracleState.success_claimed_urls
@@ -283,10 +283,15 @@ module.exports = class CacheLogic {
     const stats = {
       tipsLength: userTips.length,
       retipsLength: userReTips.length,
-      totalTipAmount,
       claimedUrlsLength: claimedUrls.length,
+
+      totalTipAmount,
       unclaimedAmount,
       claimedAmount,
+      totalTipAmountAe: Util.atomsToAe(totalTipAmount).toFixed(),
+      unclaimedAmountAe: Util.atomsToAe(unclaimedAmount).toFixed(),
+      claimedAmountAe: Util.atomsToAe(claimedAmount).toFixed(),
+
       userComments: await CommentLogic.fetchCommentCountForAddress(req.query.address),
     };
 
@@ -319,13 +324,23 @@ module.exports = class CacheLogic {
 
     const retips_length = tips.reduce((acc, tip) => acc + tip.retips.length, 0);
 
+    const total_amount = tips.reduce((acc, tip) => acc.plus(tip.total_amount), new BigNumber('0')).toFixed();
+    const total_unclaimed_amount = tips.reduce((acc, tip) => acc.plus(tip.total_unclaimed_amount), new BigNumber('0')).toFixed();
+    const total_claimed_amount = tips.reduce((acc, tip) => acc.plus(tip.total_claimed_amount), new BigNumber('0')).toFixed();
+
     return {
       tips_length: tips.length,
       retips_length: retips_length,
       total_tips_length: tips.length + retips_length,
-      total_amount: tips.reduce((acc, tip) => acc.plus(tip.total_amount), new BigNumber('0')).toFixed(),
-      total_unclaimed_amount: tips.reduce((acc, tip) => acc.plus(tip.total_unclaimed_amount), new BigNumber('0')).toFixed(),
-      total_claimed_amount: tips.reduce((acc, tip) => acc.plus(tip.total_claimed_amount), new BigNumber('0')).toFixed(),
+
+      total_amount: total_amount,
+      total_unclaimed_amount: total_unclaimed_amount,
+      total_claimed_amount: total_claimed_amount,
+
+      total_amount_ae: Util.atomsToAe(total_amount).toFixed(),
+      total_unclaimed_amount_ae: Util.atomsToAe(total_unclaimed_amount).toFixed(),
+      total_claimed_amount_ae: Util.atomsToAe(total_claimed_amount).toFixed(),
+
       senders: senders,
       senders_length: senders.length
     }

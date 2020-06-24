@@ -1,4 +1,3 @@
-const { BigNumber } = require('bignumber.js');
 const { Universal, Node, MemoryAccount } = require('@aeternity/aepp-sdk');
 const fs = require('fs');
 const Util = require('../utils/util');
@@ -8,7 +7,10 @@ require = require('esm')(module); //use to handle es6 import/export
 const { decodeEvents, SOPHIA_TYPES } = require('@aeternity/aepp-sdk/es/contract/aci/transformation');
 const { topicsRegex } = require('./tipTopicUtil')
 const tippingContractUtil = require('tipping-contract/util/tippingContractUtil');
+
 const MIDDLEWARE_URL = process.env.MIDDLEWARE_URL || 'https://mainnet.aeternity.io';
+
+const TOKEN_CONTRACT_INTERFACE = fs.readFileSync(`${__dirname}/contracts/FungibleTokenInterface.aes`, 'utf-8');
 
 class Aeternity {
   constructor () {
@@ -171,6 +173,18 @@ class Aeternity {
   getOracleContractSource = () => {
     return fs.readFileSync(`${__dirname}/OracleServiceInterface.aes`, 'utf-8');
   };
+
+
+  getTokenMetaInfo = async (address) => {
+    const fetchData = async () => {
+      const contract = await this.client.getContractInstance(TOKEN_CONTRACT_INTERFACE, {contractAddress: address});
+      return contract.methods.meta_info().then(r => r.decodedResult);
+    }
+
+    return this.cache
+      ? this.cache.getOrSet(["getTokenMetaInfo", address], () => fetchData())
+      : fetchData();
+  }
 
   async checkPreClaim (address, url, trace) {
     trace.update({

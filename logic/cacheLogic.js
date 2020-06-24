@@ -12,7 +12,7 @@ const AsyncLock = require('async-lock');
 const lock = new AsyncLock();
 const {getTipTopics, topicsRegex} = require('../utils/tipTopicUtil');
 const Util = require('../utils/util');
-const { Profile } = require('../models');
+const {Profile} = require('../models');
 const Fuse = require('fuse.js');
 const lngDetector = new (require('languagedetect'));
 lngDetector.setLanguageType('iso2');
@@ -290,9 +290,9 @@ module.exports = class CacheLogic {
     const userTips = allTips.filter(tip => tip.sender === req.query.address);
 
     const userReTips = allTips.flatMap(tip => tip.retips.filter(retip => retip.sender === req.query.address));
-    const totalTipAmount = Util.atomsToAe(userTips
+    const totalTipAmount = userTips
       .reduce((acc, tip) => acc.plus(tip.amount), new BigNumber(0))
-      .plus(userReTips.reduce((acc, tip) => acc.plus(tip.amount), new BigNumber(0)))).toFixed(2);
+      .plus(userReTips.reduce((acc, tip) => acc.plus(tip.amount), new BigNumber(0))).toFixed();
 
     const claimedUrls = oracleState.success_claimed_urls
       ? oracleState.success_claimed_urls
@@ -314,10 +314,15 @@ module.exports = class CacheLogic {
     const stats = {
       tipsLength: userTips.length,
       retipsLength: userReTips.length,
-      totalTipAmount,
       claimedUrlsLength: claimedUrls.length,
+
+      totalTipAmount,
       unclaimedAmount,
       claimedAmount,
+      totalTipAmountAe: Util.atomsToAe(totalTipAmount).toFixed(),
+      unclaimedAmountAe: Util.atomsToAe(unclaimedAmount).toFixed(),
+      claimedAmountAe: Util.atomsToAe(claimedAmount).toFixed(),
+
       userComments: await CommentLogic.fetchCommentCountForAddress(req.query.address),
     };
 
@@ -352,13 +357,23 @@ module.exports = class CacheLogic {
 
     const retipsLength = tips.reduce((acc, tip) => acc + tip.retips.length, 0);
 
+    const total_amount = tips.reduce((acc, tip) => acc.plus(tip.total_amount), new BigNumber('0')).toFixed();
+    const total_unclaimed_amount = tips.reduce((acc, tip) => acc.plus(tip.total_unclaimed_amount), new BigNumber('0')).toFixed();
+    const total_claimed_amount = tips.reduce((acc, tip) => acc.plus(tip.total_claimed_amount), new BigNumber('0')).toFixed();
+
     return {
       tips_length: tips.length,
       retips_length: retipsLength,
       total_tips_length: tips.length + retipsLength,
-      total_amount: tips.reduce((acc, tip) => acc.plus(tip.total_amount), new BigNumber('0')).toFixed(),
-      total_unclaimed_amount: tips.reduce((acc, tip) => acc.plus(tip.total_unclaimed_amount), new BigNumber('0')).toFixed(),
-      total_claimed_amount: tips.reduce((acc, tip) => acc.plus(tip.total_claimed_amount), new BigNumber('0')).toFixed(),
+
+      total_amount: total_amount,
+      total_unclaimed_amount: total_unclaimed_amount,
+      total_claimed_amount: total_claimed_amount,
+
+      total_amount_ae: Util.atomsToAe(total_amount).toFixed(),
+      total_unclaimed_amount_ae: Util.atomsToAe(total_unclaimed_amount).toFixed(),
+      total_claimed_amount_ae: Util.atomsToAe(total_claimed_amount).toFixed(),
+
       senders,
       senders_length: senders.length,
     };

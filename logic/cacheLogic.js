@@ -1,7 +1,3 @@
-const axios = require('axios');
-const BigNumber = require('bignumber.js');
-const AsyncLock = require('async-lock');
-const Fuse = require('fuse.js');
 const aeternity = require('../utils/aeternity.js');
 const LinkPreviewLogic = require('./linkPreviewLogic.js');
 const TipOrderLogic = require('./tiporderLogic');
@@ -9,12 +5,18 @@ const CommentLogic = require('./commentLogic');
 const TipLogic = require('./tipLogic');
 const RetipLogic = require('./retipLogic');
 const BlacklistLogic = require('./blacklistLogic');
+const AsyncTipGeneratorsLogic = require('./asyncTipGeneratorsLogic');
 const cache = require('../utils/cache');
-
+const BigNumber = require('bignumber.js');
+const AsyncLock = require('async-lock');
 const lock = new AsyncLock();
-const { getTipTopics, topicsRegex } = require('../utils/tipTopicUtil');
+const {getTipTopics, topicsRegex} = require('../utils/tipTopicUtil');
 const Util = require('../utils/util');
 const { Profile } = require('../models');
+const Fuse = require('fuse.js');
+const lngDetector = new (require('languagedetect'));
+lngDetector.setLanguageType('iso2');
+const cld = require('cld');
 const logger = require('../utils/logger')(module);
 
 const searchOptions = {
@@ -75,6 +77,10 @@ module.exports = class CacheLogic {
       // Renew Stats
       await cache.del(['fetchStats']);
 
+      // not await on purpose, just trigger background actions
+      AsyncTipGeneratorsLogic.triggerGeneratePreviews(tips);
+      AsyncTipGeneratorsLogic.triggerLanguageDetection(tips);
+
       // not await on purpose, just trigger background preview fetch
       lock.acquire('LinkPreviewLogic.fetchAllLinkPreviews', async () => {
         const previews = await LinkPreviewLogic.fetchAllLinkPreviews();
@@ -92,7 +98,6 @@ module.exports = class CacheLogic {
         await TipLogic.updateTipsDB(tips);
         await RetipLogic.updateRetipsDB(tips);
       });
-
       return tips;
     }, cache.shortCacheTime);
   }

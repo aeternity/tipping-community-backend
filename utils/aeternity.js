@@ -5,6 +5,7 @@ const requireESM = require('esm')(module); // use to handle es6 import/export
 const axios = require('axios');
 const Util = require('./util');
 const { TRACE_STATES } = require('../models/enums/trace');
+const tippingContractUtil = require('tipping-contract/util/tippingContractUtil');
 const { topicsRegex } = require('./tipTopicUtil');
 const logger = require('./logger')(module);
 
@@ -116,17 +117,36 @@ class Aeternity {
         return event;
       });
     };
-  }
 
   async fetchOracleState() {
     if (!this.client) throw new Error('Init sdk first');
     return this.oracleContract.methods.get_state().then(res => res.decodedResult);
   }
 
-  async fetchTips() {
+  static addAdditionalTipsData = (tips) => {
+    return tips.map(tip => {
+      tip.topics = [...new Set(tip.title.match(topicsRegex))].map((x) => x.toLowerCase());
+
+      tip.amount_ae = Util.atomsToAe(tip.amount).toFixed();
+      tip.total_amount_ae = Util.atomsToAe(tip.total_amount).toFixed();
+      tip.total_unclaimed_amount_ae = Util.atomsToAe(tip.total_unclaimed_amount).toFixed();
+      tip.total_claimed_amount_ae = Util.atomsToAe(tip.total_claimed_amount).toFixed();
+
+      tip.retips = tip.retips.map(retip => {
+        retip.amount_ae = Util.atomsToAe(retip.amount).toFixed();
+        return retip;
+      });
+
+      return tip;
+    })
+  }
+
+
+async fetchTips() {
     if (!this.client) throw new Error('Init sdk first');
     const state = await this.contract.methods.get_state();
-    return this.getTipsRetips(state.decodedResult);
+    const tips = tippingContractUtil.getTipsRetips(state.decodedResult).tips;
+      return Aeternity.addAdditionalTipsData(tips)
   }
 
   getContractSource() {
@@ -257,7 +277,7 @@ class Aeternity {
     });
   }
 
-  async getChainNames() {
+  async getChainNames () {
     return axios.get(`${MIDDLEWARE_URL}/middleware/names/active`).then(res => res.data).catch(logger.error);
   }
 

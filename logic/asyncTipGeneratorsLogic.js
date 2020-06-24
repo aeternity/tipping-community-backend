@@ -1,5 +1,6 @@
 const LinkPreviewLogic = require('./linkPreviewLogic.js');
 const TipLogic = require('./tipLogic');
+const aeternity = require('../utils/aeternity.js');
 
 var AsyncLock = require('async-lock');
 var lock = new AsyncLock();
@@ -26,7 +27,7 @@ module.exports = class AsyncTipGeneratorsLogic {
   }
 
   static async triggerLanguageDetection(tips) {
-    await lock.acquire("AsyncTipGeneratorsLogic.triggerLanguageDetection", async () => {
+    lock.acquire("AsyncTipGeneratorsLogic.triggerLanguageDetection", async () => {
       const languages = await TipLogic.fetchAllLocalTips();
       const tipIds = [...new Set(tips.map(tip => tip.id))];
       const languageIds = [...new Set(languages.map(preview => preview.id))];
@@ -50,4 +51,15 @@ module.exports = class AsyncTipGeneratorsLogic {
     });
   }
 
+  static async triggerGetTokenContractIndex(tips) {
+    return lock.acquire("AsyncTipGeneratorsLogic.triggerTokenContractIndex", async () => {
+      const tokenContracts = [...new Set(tips.filter(t => t.token).map(t => t.token))];
+
+      await aeternity.init();
+      return tokenContracts.asyncMap(async address => {
+        const metaInfo = await aeternity.getTokenMetaInfo(address);
+        return {address, info: metaInfo};
+      });
+    });
+  }
 };

@@ -80,6 +80,7 @@ module.exports = class CacheLogic {
       // not await on purpose, just trigger background actions
       AsyncTipGeneratorsLogic.triggerGeneratePreviews(tips);
       AsyncTipGeneratorsLogic.triggerLanguageDetection(tips);
+    AsyncTipGeneratorsLogic.triggerGetTokenContractIndex(tips);
 
       // not await on purpose, just trigger background preview fetch
       lock.acquire('LinkPreviewLogic.fetchAllLinkPreviews', async () => {
@@ -104,6 +105,17 @@ module.exports = class CacheLogic {
 
   static async getOracleState() {
     return cache.getOrSet(['oracleState'], () => aeternity.fetchOracleState(), cache.shortCacheTime);
+  }
+
+  static async fetchTokenInfos() {
+    const fetchData = async () => {
+      const tips = await aeternity.getTips();
+      return AsyncTipGeneratorsLogic.triggerGetTokenContractIndex(tips);
+    };
+
+    return this.cache
+      ? this.cache.getOrSet(['fetchTokenInfos'], () => fetchData(), this.cache.shortCacheTime)
+      : fetchData();
   }
 
   static fetchChainNames() {
@@ -139,9 +151,9 @@ module.exports = class CacheLogic {
   }
 
   static async getAllTips(blacklist = true) {
-    const [allTips, tipsPreview, chainNames, commentCounts, blacklistedIds, localTips] = await Promise.all([
+    let [allTips, tipsPreview, chainNames, commentCounts, blacklistedIds, localTips, tokenInfos] = await Promise.all([
       CacheLogic.getTips(), LinkPreviewLogic.fetchAllLinkPreviews(), CacheLogic.fetchChainNames(),
-      CommentLogic.fetchCommentCountForTips(), BlacklistLogic.getBlacklistedIds(), TipLogic.fetchAllLocalTips(),
+      CommentLogic.fetchCommentCountForTips(), BlacklistLogic.getBlacklistedIds(), TipLogic.fetchAllLocalTips(), CacheLogic.fetchTokenInfos()
     ]);
 
     let tips = allTips;
@@ -182,6 +194,18 @@ module.exports = class CacheLogic {
 
     // add score to tips
     tips = TipOrderLogic.applyTipScoring(tips);
+
+    // add token information if tip with token
+    if (tokenInfos) {
+      tips = tips.map(tip => {
+        tip.token_info = tip.token ? tokenInfos.find(token => token.address === tip.token).info : null;
+        tip.retips = tip.retips.map(retip => {
+          retip.token_info = retip.token ? tokenInfos.find(token => token.address === retip.token).info : null;
+          return retip;
+        });
+        return tip;
+      })
+    }
 
     return tips;
   }

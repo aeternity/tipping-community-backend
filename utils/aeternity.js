@@ -10,6 +10,8 @@ const tippingContractUtil = require('tipping-contract/util/tippingContractUtil')
 
 const MIDDLEWARE_URL = process.env.MIDDLEWARE_URL || 'https://mainnet.aeternity.io';
 
+const TIPPING_INTERFACE = fs.readFileSync(`${__dirname}/contracts/TippingInterface.aes`, 'utf-8');
+const ORACLE_SERVICE_INTERFACE = fs.readFileSync(`${__dirname}/contracts/OracleServiceInterface.aes`, 'utf-8');
 const TOKEN_CONTRACT_INTERFACE = fs.readFileSync(`${__dirname}/contracts/FungibleTokenInterface.aes`, 'utf-8');
 
 class Aeternity {
@@ -35,8 +37,8 @@ class Aeternity {
         address: process.env.PUBLIC_KEY,
         compilerUrl: process.env.COMPILER_URL,
       });
-      this.contract = await this.client.getContractInstance(this.getContractSource(), { contractAddress: process.env.CONTRACT_ADDRESS });
-      this.oracleContract = await this.client.getContractInstance(this.getOracleContractSource(), { contractAddress: process.env.ORACLE_CONTRACT_ADDRESS });
+      this.contract = await this.client.getContractInstance(TIPPING_INTERFACE, { contractAddress: process.env.CONTRACT_ADDRESS });
+      this.oracleContract = await this.client.getContractInstance(ORACLE_SERVICE_INTERFACE, { contractAddress: process.env.ORACLE_CONTRACT_ADDRESS });
     }
   };
 
@@ -164,16 +166,6 @@ class Aeternity {
       ? this.cache.getOrSet(['getTips'], () => fetchTips(), this.cache.shortCacheTime)
       : fetchTips();
   };
-
-  getContractSource = () => {
-    if (!process.env.CONTRACT_FILE) throw new Error(`env.CONTRACT_FILE is ${process.env.CONTRACT_FILE}`);
-    return fs.readFileSync(`${__dirname}/${process.env.CONTRACT_FILE}.aes`, 'utf-8');
-  };
-
-  getOracleContractSource = () => {
-    return fs.readFileSync(`${__dirname}/OracleServiceInterface.aes`, 'utf-8');
-  };
-
 
   getTokenMetaInfo = async (address) => {
     const fetchData = async () => {

@@ -231,10 +231,11 @@ class Aeternity {
         let interval = null;
 
         const checkPreClaimFinished = async () => {
-          if (((await this.contract.methods.check_claim(url, address)).decodedResult.success)) {
+          if ((await this.contract.methods.check_claim(url, address)).decodedResult.success) {
             clearInterval(interval);
             return resolve();
           }
+
           if (intervalCounter++ > 20) {
             clearInterval(interval);
             return reject(Error('check_claim interval timeout'));

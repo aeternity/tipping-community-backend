@@ -13,6 +13,7 @@ const MIDDLEWARE_URL = process.env.MIDDLEWARE_URL || 'https://mainnet.aeternity.
 const TIPPING_INTERFACE = fs.readFileSync(`${__dirname}/contracts/TippingInterface.aes`, 'utf-8');
 const ORACLE_SERVICE_INTERFACE = fs.readFileSync(`${__dirname}/contracts/OracleServiceInterface.aes`, 'utf-8');
 const TOKEN_CONTRACT_INTERFACE = fs.readFileSync(`${__dirname}/contracts/FungibleTokenInterface.aes`, 'utf-8');
+const TOKEN_REGISTRY = fs.readFileSync(`${__dirname}/contracts/TokenRegistry.aes`, 'utf-8');
 
 class Aeternity {
   constructor () {
@@ -167,9 +168,28 @@ class Aeternity {
       : fetchTips();
   };
 
+  getTokenRegistryState = async () => {
+    const fetchData = async () => {
+      const contract = await this.client.getContractInstance(TOKEN_REGISTRY, {contractAddress: process.env.TOKEN_REGISTRY_ADDRESS});
+      return contract.methods.get_state().then(r => r.decodedResult);
+    }
+
+    return this.cache
+      ? this.cache.getOrSet(["getTokenRegistryState"], () => fetchData(), this.cache.shortCacheTime)
+      : fetchData();
+  }
+
   getTokenMetaInfo = async (address) => {
     const fetchData = async () => {
       const contract = await this.client.getContractInstance(TOKEN_CONTRACT_INTERFACE, {contractAddress: address});
+
+      // add token to registry if not added yet
+      const tokenInRegistry = await this.getTokenRegistryState().then(state => state.find(([token, _]) => token === address));
+      if (!tokenInRegistry) {
+        const contract = await this.client.getContractInstance(TOKEN_REGISTRY, {contractAddress: process.env.TOKEN_REGISTRY_ADDRESS});
+        await contract.methods.add_token(address);
+      }
+
       return contract.methods.meta_info().then(r => r.decodedResult);
     }
 

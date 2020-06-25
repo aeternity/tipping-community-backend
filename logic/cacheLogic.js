@@ -114,9 +114,9 @@ module.exports = class CacheLogic {
   };
 
   static async getAllTips(blacklist = true) {
-    let [tips, tipsPreview, chainNames, commentCounts, blacklistedIds, localTips, tokenInfos] = await Promise.all([
+    let [tips, tipsPreview, chainNames, commentCounts, blacklistedIds, localTips] = await Promise.all([
       CacheLogic.getTipsAndVerifyLocalInfo(), LinkPreviewLogic.fetchAllLinkPreviews(), CacheLogic.fetchChainNames(),
-      CommentLogic.fetchCommentCountForTips(), BlacklistLogic.getBlacklistedIds(), TipLogic.fetchAllLocalTips(), CacheLogic.fetchTokenInfos()
+      CommentLogic.fetchCommentCountForTips(), BlacklistLogic.getBlacklistedIds(), TipLogic.fetchAllLocalTips()
     ]);
 
     // filter by blacklisted from backend
@@ -160,18 +160,6 @@ module.exports = class CacheLogic {
 
     // add score to tips
     tips = TipOrderLogic.applyTipScoring(tips)
-
-    // add token information if tip with token
-    if (tokenInfos) {
-      tips = tips.map(tip => {
-        tip.token_info = tip.token ? tokenInfos.find(token => token.address === tip.token).info : null;
-        tip.retips = tip.retips.map(retip => {
-          retip.token_info = retip.token ? tokenInfos.find(token => token.address === retip.token).info : null;
-          return retip;
-        });
-        return tip;
-      })
-    }
 
     return tips;
   }
@@ -259,6 +247,10 @@ module.exports = class CacheLogic {
     res.send(tips);
   }
 
+  static async deliverTokenInfo(req, res) {
+    const tokenInfo = await CacheLogic.fetchTokenInfos();
+    res.send(tokenInfo);
+  }
 
   static async deliverContractEvents(req, res) {
     let contractEvents = await CacheLogic.findContractEvents();

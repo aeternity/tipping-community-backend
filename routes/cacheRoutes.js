@@ -24,6 +24,8 @@ router.get('/topics', CacheLogic.deliverTipTopics);
 
 router.get('/events', CacheLogic.deliverContractEvents);
 
+router.get('/tokenInfo', CacheLogic.deliverTokenInfo);
+
 router.get('/invalidate/tips', CacheLogic.invalidateTips);
 
 router.get('/invalidate/oracle', CacheLogic.invalidateOracle);

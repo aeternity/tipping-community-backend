@@ -19,8 +19,6 @@ Array.prototype.asyncMap = async function (asyncF) {
   }, Promise.resolve([]));
 };
 
-
-
 const groupBy = (xs, key) => xs.reduce((acc, x) => Object.assign({}, acc, {
   [x[key]]: (acc[x[key]] || []).concat(x)
 }), {});

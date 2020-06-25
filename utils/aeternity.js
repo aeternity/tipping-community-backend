@@ -210,7 +210,6 @@ class Aeternity {
     });
 
     if (claimAmount === 0) throw new Error('No zero amount claims');
-
     return claimAmount;
   }
 
@@ -233,10 +232,11 @@ class Aeternity {
         let intervalCounter = 0;
 
         const checkPreClaimFinished = async () => {
-          if (((await this.contract.methods.check_claim(url, address)).decodedResult.success)) {
+          if ((await this.contract.methods.check_claim(url, address)).decodedResult.success) {
             clearInterval(interval);
             return resolve();
           }
+
           if (intervalCounter++ > 20) {
             clearInterval(interval);
             return reject('check_claim interval timeout');
@@ -246,8 +246,6 @@ class Aeternity {
         // Run checks
         checkPreClaimFinished();
         const interval = setInterval(checkPreClaimFinished, 5000);
-
-
       });
     } else {
       return claimSuccess;

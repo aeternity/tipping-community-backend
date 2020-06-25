@@ -22,5 +22,4 @@ router.delete('/api/:tipId', basicAuth, Logic.removeItem);
 // Public routes
 router.post('/api/wallet', signatureAuth, Logic.flagTip);
 
-
 module.exports = router;

@@ -12,6 +12,8 @@ const { decodeEvents, SOPHIA_TYPES } = requireESM('@aeternity/aepp-sdk/es/contra
 
 const MIDDLEWARE_URL = process.env.MIDDLEWARE_URL || 'https://mainnet.aeternity.io';
 
+const TIPPING_INTERFACE = fs.readFileSync(`${__dirname}/contracts/TippingInterface.aes`, 'utf-8');
+const ORACLE_SERVICE_INTERFACE = fs.readFileSync(`${__dirname}/contracts/OracleServiceInterface.aes`, 'utf-8');
 const TOKEN_CONTRACT_INTERFACE = fs.readFileSync(`${__dirname}/contracts/FungibleTokenInterface.aes`, 'utf-8');
 
 class Aeternity {
@@ -36,9 +38,9 @@ class Aeternity {
         address: process.env.PUBLIC_KEY,
         compilerUrl: process.env.COMPILER_URL,
       });
-      this.contract = await this.client.getContractInstance(this.getContractSource(), { contractAddress: process.env.CONTRACT_ADDRESS });
+      this.contract = await this.client.getContractInstance(TIPPING_INTERFACE, { contractAddress: process.env.CONTRACT_ADDRESS });
       this.oracleContract = await this.client.getContractInstance(
-        this.getOracleContractSource(),
+        ORACLE_SERVICE_INTERFACE,
         { contractAddress: process.env.ORACLE_CONTRACT_ADDRESS },
       );
     }
@@ -66,58 +68,64 @@ class Aeternity {
     const tx = await this.client.tx(hash);
     const microBlock = await this.client.getMicroBlockHeader(tx.blockHash);
 
-      const eventsSchema = [
-        {name: 'TipReceived', types: [SOPHIA_TYPES.address, SOPHIA_TYPES.int, SOPHIA_TYPES.string]},
-        {name: 'TipTokenReceived', types: [SOPHIA_TYPES.address, SOPHIA_TYPES.int, SOPHIA_TYPES.string, SOPHIA_TYPES.address]},
-        {name: 'ReTipReceived', types: [SOPHIA_TYPES.address, SOPHIA_TYPES.int, SOPHIA_TYPES.string]},
-        {name: 'ReTipTokenReceived', types: [SOPHIA_TYPES.address, SOPHIA_TYPES.int, SOPHIA_TYPES.string, SOPHIA_TYPES.address]},
-        {name: 'TipWithdrawn', types: [SOPHIA_TYPES.address, SOPHIA_TYPES.int, SOPHIA_TYPES.string]},
-        {name: 'QueryOracle', types: [SOPHIA_TYPES.string, SOPHIA_TYPES.address]},
-        {name: 'CheckPersistClaim', types: [SOPHIA_TYPES.string, SOPHIA_TYPES.address, SOPHIA_TYPES.int]},
-        {name: 'Transfer', types: [SOPHIA_TYPES.address, SOPHIA_TYPES.address, SOPHIA_TYPES.int]},
-        {name: 'Allowance', types: [SOPHIA_TYPES.address, SOPHIA_TYPES.address, SOPHIA_TYPES.int]}
-      ];
+    const eventsSchema = [
+      { name: 'TipReceived', types: [SOPHIA_TYPES.address, SOPHIA_TYPES.int, SOPHIA_TYPES.string] },
+      {
+        name: 'TipTokenReceived',
+        types: [SOPHIA_TYPES.address, SOPHIA_TYPES.int, SOPHIA_TYPES.string, SOPHIA_TYPES.address],
+      },
+      { name: 'ReTipReceived', types: [SOPHIA_TYPES.address, SOPHIA_TYPES.int, SOPHIA_TYPES.string] },
+      {
+        name: 'ReTipTokenReceived',
+        types: [SOPHIA_TYPES.address, SOPHIA_TYPES.int, SOPHIA_TYPES.string, SOPHIA_TYPES.address],
+      },
+      { name: 'TipWithdrawn', types: [SOPHIA_TYPES.address, SOPHIA_TYPES.int, SOPHIA_TYPES.string] },
+      { name: 'QueryOracle', types: [SOPHIA_TYPES.string, SOPHIA_TYPES.address] },
+      { name: 'CheckPersistClaim', types: [SOPHIA_TYPES.string, SOPHIA_TYPES.address, SOPHIA_TYPES.int] },
+      { name: 'Transfer', types: [SOPHIA_TYPES.address, SOPHIA_TYPES.address, SOPHIA_TYPES.int] },
+      { name: 'Allowance', types: [SOPHIA_TYPES.address, SOPHIA_TYPES.address, SOPHIA_TYPES.int] },
+    ];
 
     const decodedEvents = decodeEvents(tx.log, { schema: eventsSchema });
 
-      return decodedEvents.map(decodedEvent => {
-        let event = {
-          event: decodedEvent.name,
-          caller: tx.tx.callerId,
-          nonce: tx.tx.nonce,
-          height: tx.height,
-          hash: tx.hash,
-          time: microBlock.time,
-          contract: tx.contractId,
-        }
-        switch (decodedEvent.name) {
-          case 'Transfer':
-            event.from = `ak_${decodedEvent.decoded[0]}`;
-            event.to = `ak_${decodedEvent.decoded[1]}`;
-            event.amount = decodedEvent.decoded[2] ? decodedEvent.decoded[2] : null;
-            break;
-           case 'Allowance':
-            event.from = `ak_${decodedEvent.decoded[0]}`;
-            event.for = `ak_${decodedEvent.decoded[1]}`;
-            event.amount = decodedEvent.decoded[2] ? decodedEvent.decoded[2] : null;
-            break;
-          case 'CheckPersistClaim':
-            event.address = `ak_${decodedEvent.decoded[1]}`;
-            event.amount = decodedEvent.decoded[2] ? decodedEvent.decoded[2] : null;
-            event.url = decodedEvent.decoded[0]; // eslint-disable-line prefer-destructuring
-            break;
-          case 'QueryOracle':
-            event.address = `ak_${decodedEvent.decoded[1]}`;
-            event.url = decodedEvent.decoded[0]; // eslint-disable-line prefer-destructuring
-            break;
-          default:
-            event.address = `ak_${decodedEvent.decoded[0]}`;
-            event.amount = decodedEvent.decoded[1] ? decodedEvent.decoded[1] : null;
-            event.url = decodedEvent.decoded[2]; // eslint-disable-line prefer-destructuring
-        }
-        return event;
-      });
-    };
+    return decodedEvents.map(decodedEvent => {
+      let event = {
+        event: decodedEvent.name,
+        caller: tx.tx.callerId,
+        nonce: tx.tx.nonce,
+        height: tx.height,
+        hash: tx.hash,
+        time: microBlock.time,
+        contract: tx.contractId,
+      };
+      switch (decodedEvent.name) {
+        case 'Transfer':
+          event.from = `ak_${decodedEvent.decoded[0]}`;
+          event.to = `ak_${decodedEvent.decoded[1]}`;
+          event.amount = decodedEvent.decoded[2] ? decodedEvent.decoded[2] : null;
+          break;
+        case 'Allowance':
+          event.from = `ak_${decodedEvent.decoded[0]}`;
+          event.for = `ak_${decodedEvent.decoded[1]}`;
+          event.amount = decodedEvent.decoded[2] ? decodedEvent.decoded[2] : null;
+          break;
+        case 'CheckPersistClaim':
+          event.address = `ak_${decodedEvent.decoded[1]}`;
+          event.amount = decodedEvent.decoded[2] ? decodedEvent.decoded[2] : null;
+          event.url = decodedEvent.decoded[0]; // eslint-disable-line prefer-destructuring
+          break;
+        case 'QueryOracle':
+          event.address = `ak_${decodedEvent.decoded[1]}`;
+          event.url = decodedEvent.decoded[0]; // eslint-disable-line prefer-destructuring
+          break;
+        default:
+          event.address = `ak_${decodedEvent.decoded[0]}`;
+          event.amount = decodedEvent.decoded[1] ? decodedEvent.decoded[1] : null;
+          event.url = decodedEvent.decoded[2]; // eslint-disable-line prefer-destructuring
+      }
+      return event;
+    });
+  };
 
   async fetchOracleState() {
     if (!this.client) throw new Error('Init sdk first');
@@ -139,17 +147,15 @@ class Aeternity {
       });
 
       return tip;
-    })
-  }
+    });
+  };
 
-
-async fetchTips() {
+  async fetchTips() {
     if (!this.client) throw new Error('Init sdk first');
     const state = await this.contract.methods.get_state();
     const tips = tippingContractUtil.getTipsRetips(state.decodedResult).tips;
-      return Aeternity.addAdditionalTipsData(tips)
+    return Aeternity.addAdditionalTipsData(tips);
   }
-
   getContractSource() {
     if (!process.env.CONTRACT_FILE) throw new Error(`env.CONTRACT_FILE is ${process.env.CONTRACT_FILE}`);
     return fs.readFileSync(`${__dirname}/${process.env.CONTRACT_FILE}.aes`, 'utf-8');
@@ -159,17 +165,16 @@ async fetchTips() {
     return fs.readFileSync(`${__dirname}/OracleServiceInterface.aes`, 'utf-8');
   }
 
-
   getTokenMetaInfo = async (address) => {
     const fetchData = async () => {
-      const contract = await this.client.getContractInstance(TOKEN_CONTRACT_INTERFACE, {contractAddress: address});
+      const contract = await this.client.getContractInstance(TOKEN_CONTRACT_INTERFACE, { contractAddress: address });
       return contract.methods.meta_info().then(r => r.decodedResult);
-    }
+    };
 
     return this.cache
-      ? this.cache.getOrSet(["getTokenMetaInfo", address], () => fetchData())
+      ? this.cache.getOrSet(['getTokenMetaInfo', address], () => fetchData())
       : fetchData();
-  }
+  };
 
   async getClaimableAmount(address, url, trace) {
     trace.update({
@@ -214,7 +219,8 @@ async fetchTips() {
           if (intervalCounter++ > 20) {
             clearInterval(interval);
             return reject(Error('check_claim interval timeout'));
-          } return null;
+          }
+          return null;
         };
 
         // Run checks
@@ -290,7 +296,7 @@ async fetchTips() {
     });
   }
 
-  async getChainNames () {
+  async getChainNames() {
     return axios.get(`${MIDDLEWARE_URL}/middleware/names/active`).then(res => res.data).catch(logger.error);
   }
 

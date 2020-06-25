@@ -53,14 +53,18 @@ module.exports = class AsyncTipGeneratorsLogic {
 
   static async triggerGetTokenContractIndex(tips) {
     return lock.acquire("AsyncTipGeneratorsLogic.triggerTokenContractIndex", async () => {
-      const tokenContracts = [...new Set(tips.filter(t => t.token).map(t => t.token))];
+      const tokenContracts = tips.filter(t => t.token).map(t => t.token);
 
       await aeternity.init();
-      return tokenContracts.reduce(async (promiseAcc, address) => {
-        const acc = await promiseAcc;
-        acc[address] = await aeternity.getTokenMetaInfo(address);
-        return acc;
-      }, Promise.resolve({}));
+      const tokenRegistryContracts = await aeternity.getTokenRegistryState()
+        .then(state => state.map(([token, _]) => token));
+
+      return [...new Set(tokenContracts.concat(tokenRegistryContracts))]
+        .reduce(async (promiseAcc, address) => {
+          const acc = await promiseAcc;
+          acc[address] = await aeternity.getTokenMetaInfo(address);
+          return acc;
+        }, Promise.resolve({}));
     });
   }
 };

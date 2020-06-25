@@ -56,10 +56,11 @@ module.exports = class AsyncTipGeneratorsLogic {
       const tokenContracts = [...new Set(tips.filter(t => t.token).map(t => t.token))];
 
       await aeternity.init();
-      return tokenContracts.asyncMap(async address => {
-        const metaInfo = await aeternity.getTokenMetaInfo(address);
-        return {[address]: metaInfo};
-      });
+      return tokenContracts.reduce(async (promiseAcc, address) => {
+        const acc = await promiseAcc;
+        acc[address] = await aeternity.getTokenMetaInfo(address);
+        return acc;
+      }, Promise.resolve({}));
     });
   }
 };

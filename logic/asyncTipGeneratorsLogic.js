@@ -58,7 +58,7 @@ module.exports = class AsyncTipGeneratorsLogic {
       await aeternity.init();
       return tokenContracts.asyncMap(async address => {
         const metaInfo = await aeternity.getTokenMetaInfo(address);
-        return {address, info: metaInfo};
+        return {[address]: metaInfo};
       });
     });
   }

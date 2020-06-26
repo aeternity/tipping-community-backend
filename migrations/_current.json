@@ -327,6 +327,16 @@
                     "field": "referrer",
                     "seqType": "Sequelize.STRING"
                 },
+                "location": {
+                    "allowNull": true,
+                    "field": "location",
+                    "seqType": "Sequelize.STRING"
+                },
+                "coverImage": {
+                    "allowNull": true,
+                    "field": "coverImage",
+                    "seqType": "Sequelize.STRING"
+                },
                 "signature": {
                     "allowNull": false,
                     "field": "signature",
@@ -426,5 +436,5 @@
             "indexes": []
         }
     },
-    "revision": 10
+    "revision": 11
 }

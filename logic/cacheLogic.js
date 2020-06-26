@@ -26,6 +26,9 @@ const searchOptions = {
   keys: ['title', 'chainName', 'sender', 'preview.description', 'preview.title', 'url', 'topics'],
 };
 
+// TODO route to index token and add to registry
+// TODO index true/false balance for accounts of tokens
+
 module.exports = class CacheLogic {
   constructor() {
     CacheLogic.init();

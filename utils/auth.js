@@ -4,6 +4,8 @@ const fs = require('fs');
 const path = require('path');
 const { Profile } = require('../models');
 
+const VERSION = '2-0-0';
+
 const basicAuth = (req, res, next) => {
   const auth = { login: process.env.AUTHENTICATION_USER, password: process.env.AUTHENTICATION_PASSWORD };
   const b64auth = (req.headers.authorization || '').split(' ')[1] || '';
@@ -30,28 +32,28 @@ const actions = [
     method: 'POST',
     path: '\/profile\/?$',
     actionName: 'CREATE_PROFILE',
-    relevantFields: ['biography', 'preferredChainName'],
+    relevantFields: ['author', 'biography', 'preferredChainName', 'image', 'referrer', 'coverImage', 'location'],
+    getFullEntry: async (req) => Profile.findOne({where: {author: req.body.author}, raw: true})
+  },
+  {
+    method: 'POST',
+    path: '\/profile\/ak_',
+    actionName: 'UPDATE_PROFILE',
+    relevantFields: ['author', 'biography', 'preferredChainName', 'image', 'referrer', 'coverImage', 'location'],
+    getFullEntry: async (req) => Profile.findOne({where: {author: req.params.author}, raw: true})
   },
   {
     method: 'POST',
     path: '\/profile\/image\/ak_',
-    actionName: 'CREATE_PROFILE_IMAGE',
-    relevantFields: [],
-    hasFile: true,
+    actionName: 'CREATE_PROFILE',
+    relevantFields: ['author', 'biography', 'preferredChainName', 'image', 'referrer', 'coverImage', 'location'],
+    getFullEntry: async (req) => Profile.findOne({where: {author: req.params.author}, raw: true})
   },
   {
     method: 'POST',
     path: '\/blacklist\/api\/wallet',
     actionName: 'CREATE_FLAGGED_TIP',
     relevantFields: ['tipId'],
-    hasFile: false,
-  },
-  {
-    method: 'PUT',
-    path: '\/profile\/ak_',
-    actionName: 'UPDATE_PROFILE',
-    relevantFields: ['biography', 'preferredChainName'],
-    getFullEntry: async (req) => Profile.findOne({where: {author: req.params.author}})
   },
   {
     method: 'DELETE',
@@ -98,7 +100,7 @@ const signatureAuth = async (req, res, next) => {
       // MemoryQueue probably has a significant list deleted items
       const queueItem = MemoryQueue.find(item => (item || {}).challenge === req.body.challenge);
       if (!queueItem) return sendError('Could not find challenge (maybe it already expired?)');
-      const { challenge, body, file, method, url } = queueItem;
+      const { challenge, body, files, method, url } = queueItem;
 
       // Verify that the challenge was issued for this method + path
       if (req.method !== method) return sendError('Challenge was issued for a different http method');
@@ -122,7 +124,7 @@ const signatureAuth = async (req, res, next) => {
         delete MemoryQueue[queueIndex];
         // forward request and merge current body onto existing
         req.body = Object.assign({}, req.body, body);
-        if (file) req.file = file;
+        if (files) req.files = files;
         return next();
       } else {
         return sendError('Invalid signature');
@@ -137,35 +139,29 @@ const signatureAuth = async (req, res, next) => {
       const action = actions
         .find(({ method, path }) => method === req.method && req.originalUrl.match(path));
       if (!action) return sendError('Could not find valid action related to this request');
-      const { actionName, relevantFields, hasFile, getFullEntry } = action;
 
-      let payload;
-      if(getFullEntry) {
-        // MERGE EXISTING ENTRY WITH CURRENT (PUT)
-        const fullEntry = await getFullEntry(req);
-        const mergedObject = Object.assign({}, fullEntry, req.body)
-        payload = relevantFields.reduce((acc, fieldIndex) => `${acc};${fieldIndex}=${mergedObject[fieldIndex]}`, '');
-      } else if (!hasFile) {
-        // JUST USE REMOTE ENTRY (POST)
-        payload = relevantFields.reduce((acc, fieldIndex) => `${acc};${fieldIndex}=${req.body[fieldIndex]}`, '');
-      } else {
-        // REQUEST HAS A FILE
-        if (!req.file) return sendError('Could not find any image in your request.');
-        payload = fs.readFileSync(path.resolve(__dirname, '../images/', req.file.filename));
-      }
+      const { actionName, relevantFields, getFullEntry } = action;
+      const existingEntry = getFullEntry ? await getFullEntry(req) : {};
+      const files = req.files ? Object.keys(req.files).reduce((acc, curr) => {
+        acc[curr] = hash(fs.readFileSync(path.resolve(__dirname, '../images/', req.files[curr][0].filename))).toString('hex')
+        return acc;
+      }, {}) : {};
+      const mergedObject = Object.assign({}, { author: req.params.author }, existingEntry, req.body, files);
+      const payload = relevantFields.reduce((acc, fieldIndex) => `${acc};${fieldIndex}=${mergedObject[fieldIndex]}`, '');
+
       // UUID-RelevantFieldHash-Action-Timestamp
-      const challenge = `${uuid}-${actionName.indexOf('DELETE') === 0 ? '' : hash(payload).toString('hex')}-${actionName}-${Date.now()}`;
+      const challenge = `${uuid}-${hash(payload).toString('hex')}-${actionName}-${Date.now()}-${VERSION}`;
       MemoryQueue.push({
         challenge,
         body: req.body,
         method: req.method,
         url: req.originalUrl,
-        file: req.file ? req.file : null,
+        files: req.files ? req.files : null,
         timestamp: Date.now(),
       });
       return res.send({
         challenge,
-        payload: hasFile ? 'file' : payload,
+        payload,
       });
     } catch (e) {
       console.error(e);

@@ -181,13 +181,18 @@ class Aeternity {
     const fetchData = async () => {
       const contract = await this.client.getContractInstance(TOKEN_CONTRACT_INTERFACE, { contractAddress: address });
 
+      const metaInfo = await contract.methods.meta_info().then(r => r.decodedResult).catch(e => {
+        console.warn(e.message);
+        return null;
+      })
+
       // add token to registry if not added yet
       const tokenInRegistry = await this.getTokenRegistryState().then(state => state.find(([token, _]) => token === address));
-      if (!tokenInRegistry) {
+      if (metaInfo && !tokenInRegistry) {
         const contract = await this.client.getContractInstance(TOKEN_REGISTRY, {contractAddress: process.env.TOKEN_REGISTRY_ADDRESS});
         await contract.methods.add_token(address);
       }
-      return contract.methods.meta_info().then(r => r.decodedResult);
+      return metaInfo
     };
 
     return this.cache

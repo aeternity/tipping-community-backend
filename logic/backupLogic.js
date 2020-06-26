@@ -7,15 +7,18 @@ module.exports = class BackupLogic {
 
   static types = {
     PROFILE_IMAGE: 'PROFILE_IMAGE',
+    COVER_IMAGE: 'COVER_IMAGE'
   };
 
-  static async backupProfileImageToIPFS (imagePath, publicKey) {
+  static async backupImageToIPFS (imagePath, publicKey, type) {
     const buffer = fs.readFileSync(imagePath);
     const results = await ipfs.addFile(buffer);
+    if(!BackupLogic.types.hasOwnProperty(type)) throw TypeError('Unknown type: ' + type)
     IPFSEntry.create({
-      type: this.types.PROFILE_IMAGE,
+      type,
       hash: results[0].path,
       reference: publicKey
     });
   }
+
 };

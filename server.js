@@ -25,6 +25,7 @@ app.use('/comment', require('./routes/commentRoutes.js'));
 app.use('/linkpreview', require('./routes/linkPreviewRoutes.js'));
 app.use('/verified', require('./routes/verifiedRoutes.js'));
 app.use('/cache', require('./routes/cacheRoutes.js'));
+app.use('/tokenCache', require('./routes/tokenCacheRoutes.js'));
 app.use('/claim', require('./routes/payForTxRoutes.js'));
 app.use('/logs', require('./routes/loggerRoutes.js'));
 app.use('/static', require('./routes/staticRoutes.js'));

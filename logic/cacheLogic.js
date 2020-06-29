@@ -26,9 +26,6 @@ const searchOptions = {
   keys: ['title', 'chainName', 'sender', 'preview.description', 'preview.title', 'url', 'topics'],
 };
 
-// TODO route to index token and add to registry
-// TODO index true/false balance for accounts of tokens
-
 module.exports = class CacheLogic {
   constructor() {
     CacheLogic.init();
@@ -108,17 +105,6 @@ module.exports = class CacheLogic {
 
   static async getOracleState() {
     return cache.getOrSet(['oracleState'], () => aeternity.fetchOracleState(), cache.shortCacheTime);
-  }
-
-  static async fetchTokenInfos() {
-    const fetchData = async () => {
-      const tips = await aeternity.getTips();
-      return AsyncTipGeneratorsLogic.triggerGetTokenContractIndex(tips);
-    };
-
-    return this.cache
-      ? this.cache.getOrSet(['fetchTokenInfos'], () => fetchData(), this.cache.shortCacheTime)
-      : fetchData();
   }
 
   static fetchChainNames() {
@@ -280,11 +266,6 @@ module.exports = class CacheLogic {
     }
 
     res.send(tips);
-  }
-
-  static async deliverTokenInfo(req, res) {
-    const tokenInfo = await CacheLogic.fetchTokenInfos();
-    res.send(tokenInfo);
   }
 
   static async deliverContractEvents(req, res) {

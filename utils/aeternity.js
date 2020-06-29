@@ -179,7 +179,7 @@ class Aeternity {
       : fetchData();
   }
 
-  getTokenMetaInfo = async (address) => {
+  getTokenMetaInfoCacheAccounts = async (address) => {
     const fetchData = async () => {
       const contract = await this.client.getContractInstance(TOKEN_CONTRACT_INTERFACE, {contractAddress: address});
 
@@ -198,9 +198,38 @@ class Aeternity {
       return metaInfo
     }
 
+    // just trigger cache buildup, no need to await for result
+    this.getCacheTokenAccounts(address);
+
     return this.cache
       ? this.cache.getOrSet(["getTokenMetaInfo", address], () => fetchData())
       : fetchData();
+  }
+
+  getCacheTokenBalances = async (account) => {
+    const cacheKeys = ["getCacheTokenAccounts.fetchBalances", account];
+    const hasBalanceTokens = await this.cache.get(cacheKeys);
+    return hasBalanceTokens ? hasBalanceTokens : [];
+  }
+
+  getCacheTokenAccounts = async (token) => {
+    const fetchBalances = async () => {
+
+      const contract = await this.client.getContractInstance(TOKEN_CONTRACT_INTERFACE, {contractAddress: token});
+
+      const balances = await contract.methods.balances().then(r => r.decodedResult);
+      balances.asyncMap(async ([account, _]) => {
+        const cacheKeys = ["getCacheTokenAccounts.fetchBalances", account];
+        const hasBalanceTokens = await this.cache.get(cacheKeys);
+        const updatedBalanceTokens = hasBalanceTokens ? hasBalanceTokens.concat([token]) : [token];
+        return this.cache.set(cacheKeys, [...new Set(updatedBalanceTokens)], this.cache.longCacheTime);
+      });
+
+      return true;
+    }
+
+    if (!this.cache) throw new Error('getCacheTokenAccounts will not work performant without cache');
+    return this.cache.getOrSet(["getCacheTokenAccounts", token], () => fetchBalances(), this.cache.longCacheTime);
   }
 
   async checkPreClaim (address, url, trace) {

@@ -8,5 +8,7 @@ new TokenCacheLogic(); //calls init
 // Open api routes
 router.get('/tokenInfo', TokenCacheLogic.deliverTokenInfo);
 
+router.post('/addToken', TokenCacheLogic.indexTokenInfo);
+
 module.exports = router;
 

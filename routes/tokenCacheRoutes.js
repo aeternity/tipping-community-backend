@@ -10,5 +10,7 @@ router.get('/tokenInfo', TokenCacheLogic.deliverTokenInfo);
 
 router.post('/addToken', TokenCacheLogic.indexTokenInfo);
 
+router.get('/balances', TokenCacheLogic.tokenAccountBalance);
+
 module.exports = router;
 

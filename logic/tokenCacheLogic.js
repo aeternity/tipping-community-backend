@@ -2,8 +2,6 @@ const aeternity = require('../utils/aeternity.js');
 const cache = require('../utils/cache');
 const AsyncTipGeneratorsLogic = require('./asyncTipGeneratorsLogic');
 
-// TODO index true/false balance for accounts of tokens
-
 module.exports = class TokenCacheLogic {
 
   constructor() {
@@ -39,6 +37,17 @@ module.exports = class TokenCacheLogic {
     } catch (e) {
       return res.status(500).send(e.message)
     }
+  }
+
+  static async tokenAccountBalance(req, res) {
+    if (!req.query.address) return res.status(400).send("address query missing")
+
+    const tokenBalances = await aeternity.getCacheTokenBalances(req.query.address);
+    return res.send(await tokenBalances.reduce(async (promiseAcc, address) => {
+      const acc = await promiseAcc;
+      acc[address] = await aeternity.getTokenMetaInfoCacheAccounts(address);
+      return acc;
+    }, Promise.resolve({})));
   }
 
 }

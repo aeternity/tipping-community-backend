@@ -30,6 +30,12 @@ cache.init = async (aeternity, keepHotFunction) => {
 
 const buildKey = keys => [cache.networkKey, ...keys].join(':');
 
+cache.get = async (keys) => {
+  const key = buildKey(keys);
+  const value = await get(key);
+  return value ? JSON.parse(value) : null;
+}
+
 cache.getOrSet = async (keys, asyncFetchData, expire = null) => {
   const key = buildKey(keys);
   const value = await get(key);

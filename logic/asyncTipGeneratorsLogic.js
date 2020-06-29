@@ -62,7 +62,7 @@ module.exports = class AsyncTipGeneratorsLogic {
       return [...new Set(tokenContracts.concat(tokenRegistryContracts))]
         .reduce(async (promiseAcc, address) => {
           const acc = await promiseAcc;
-          acc[address] = await aeternity.getTokenMetaInfo(address);
+          acc[address] = await aeternity.getTokenMetaInfoCacheAccounts(address);
           return acc;
         }, Promise.resolve({}));
     });

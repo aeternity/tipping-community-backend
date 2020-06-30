@@ -298,6 +298,70 @@
             },
             "indexes": []
         },
+        "Pins": {
+            "tableName": "Pins",
+            "schema": {
+                "id": {
+                    "allowNull": false,
+                    "primaryKey": true,
+                    "autoIncrement": true,
+                    "field": "id",
+                    "seqType": "Sequelize.INTEGER"
+                },
+                "entryId": {
+                    "allowNull": false,
+                    "field": "entryId",
+                    "seqType": "Sequelize.STRING"
+                },
+                "type": {
+                    "allowNull": false,
+                    "field": "type",
+                    "seqType": "Sequelize.ENUM('TIP')"
+                },
+                "author": {
+                    "allowNull": false,
+                    "field": "author",
+                    "seqType": "Sequelize.STRING"
+                },
+                "signature": {
+                    "allowNull": false,
+                    "field": "signature",
+                    "seqType": "Sequelize.STRING"
+                },
+                "challenge": {
+                    "allowNull": false,
+                    "field": "challenge",
+                    "seqType": "Sequelize.STRING"
+                },
+                "createdAt": {
+                    "allowNull": false,
+                    "field": "createdAt",
+                    "seqType": "Sequelize.DATE"
+                },
+                "updatedAt": {
+                    "allowNull": false,
+                    "field": "updatedAt",
+                    "seqType": "Sequelize.DATE"
+                }
+            },
+            "indexes": {
+                "f992eb318c688a9fe3930d2eaa598d7cf010d03c": {
+                    "unique": true,
+                    "fields": [
+                        "entryId",
+                        "type",
+                        "author"
+                    ],
+                    "name": "pins_entry_id_type_author",
+                    "options": {
+                        "indexName": "pins_entry_id_type_author",
+                        "name": "pins_entry_id_type_author",
+                        "indicesType": "UNIQUE",
+                        "type": "UNIQUE"
+                    }
+                }
+            }
+        },
         "Profiles": {
             "tableName": "Profiles",
             "schema": {
@@ -436,5 +500,5 @@
             "indexes": []
         }
     },
-    "revision": 12
+    "revision": 13
 }

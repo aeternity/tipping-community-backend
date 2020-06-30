@@ -4,6 +4,7 @@ const fs = require('fs');
 const BackupLogic = require('./backupLogic');
 const aeternity = require('../utils/aeternity.js');
 const { Profile } = require('../models');
+const { IPFS_TYPES } = require('../models/enums/ipfs');
 
 module.exports = class ProfileLogic {
 
@@ -45,8 +46,8 @@ module.exports = class ProfileLogic {
           location,
         });
       }
-      if(image && image[0].filename !== null) await BackupLogic.backupImageToIPFS('images/' + image[0].filename, author, BackupLogic.types.PROFILE_IMAGE);
-      if(coverImage && coverImage[0].filename !== null) await BackupLogic.backupImageToIPFS('images/' + coverImage[0].filename, author, BackupLogic.types.COVER_IMAGE);
+      if(image && image[0].filename !== null) await BackupLogic.backupImageToIPFS('images/' + image[0].filename, author, IPFS_TYPES.PROFILE_IMAGE);
+      if(coverImage && coverImage[0].filename !== null) await BackupLogic.backupImageToIPFS('images/' + coverImage[0].filename, author, IPFS_TYPES.COVER_IMAGE);
       return ProfileLogic.getSingleItem(req, res);
     } catch (e) {
       console.error(e);

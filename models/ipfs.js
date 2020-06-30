@@ -1,3 +1,5 @@
+const { IPFS_DB_TYPES } = require('./enums/ipfs')
+
 module.exports = (sequelize, DataTypes) => {
   return sequelize.define('IPFSEntry', {
     // attributes
@@ -6,7 +8,9 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
     },
     type: {
-      type: DataTypes.STRING,
+      type: DataTypes.ENUM({
+        values: IPFS_DB_TYPES
+      }),
       allowNull: false,
     },
     reference: {

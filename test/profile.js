@@ -8,7 +8,7 @@ const expect = chai.expect;
 const { Profile, IPFSEntry, Comment } = require('../models');
 const { generateKeyPair, hash } = require('@aeternity/aepp-sdk').Crypto;
 const fs = require('fs');
-const BackupLogic = require('../logic/backupLogic');
+const { IPFS_TYPES } = require('../models/enums/ipfs')
 const ae = require('../utils/aeternity.js');
 const sinon = require('sinon');
 const {
@@ -203,7 +203,7 @@ describe('Profile', () => {
     it('it should create an ipfs entry when uploading a new profile picture', async () => {
       const entry = await IPFSEntry.findOne({
         where: {
-          type: BackupLogic.types.PROFILE_IMAGE,
+          type: IPFS_TYPES.PROFILE_IMAGE,
           reference: publicKey,
         },
         raw: true,
@@ -211,7 +211,7 @@ describe('Profile', () => {
       entry.should.be.an('object');
       entry.should.have.property('id');
       entry.should.have.property('hash');
-      entry.should.have.property('type', BackupLogic.types.PROFILE_IMAGE);
+      entry.should.have.property('type', IPFS_TYPES.PROFILE_IMAGE);
       entry.should.have.property('reference', publicKey);
       entry.should.have.property('createdAt');
       entry.should.have.property('updatedAt');
@@ -273,7 +273,7 @@ describe('Profile', () => {
     it('it should create a new ipfs entry when uploading a new profile picture', async () => {
       const entries = await IPFSEntry.findAll({
         where: {
-          type: BackupLogic.types.PROFILE_IMAGE,
+          type: IPFS_TYPES.PROFILE_IMAGE,
           reference: publicKey,
         },
         raw: true,
@@ -403,7 +403,7 @@ describe('Profile', () => {
     it('it should create an ipfs entry when uploading a new cover picture', async () => {
       const entry = await IPFSEntry.findOne({
         where: {
-          type: BackupLogic.types.COVER_IMAGE,
+          type: IPFS_TYPES.COVER_IMAGE,
           reference: publicKey,
         },
         raw: true,
@@ -411,7 +411,7 @@ describe('Profile', () => {
       entry.should.be.an('object');
       entry.should.have.property('id');
       entry.should.have.property('hash');
-      entry.should.have.property('type', BackupLogic.types.COVER_IMAGE);
+      entry.should.have.property('type', IPFS_TYPES.COVER_IMAGE);
       entry.should.have.property('reference', publicKey);
       entry.should.have.property('createdAt');
       entry.should.have.property('updatedAt');
@@ -473,7 +473,7 @@ describe('Profile', () => {
     it('it should create a new ipfs entry when uploading a new cover picture', async () => {
       const entries = await IPFSEntry.findAll({
         where: {
-          type: BackupLogic.types.COVER_IMAGE,
+          type: IPFS_TYPES.COVER_IMAGE,
           reference: publicKey,
         },
         raw: true,
@@ -562,5 +562,4 @@ describe('Profile', () => {
         });
     });
   });
-})
-;
+});

@@ -1,3 +1,5 @@
+const { BLACKLIST_STATUS } = require('./enums/blacklist')
+
 module.exports = (sequelize, DataTypes) => {
 
   return sequelize.define('BlacklistEntry', {
@@ -9,7 +11,7 @@ module.exports = (sequelize, DataTypes) => {
     },
     status: {
       type: DataTypes.ENUM({
-        values: ['flagged', 'hidden']
+        values: BLACKLIST_STATUS
       }),
       defaultValue: 'hidden',
       allowNull: false,

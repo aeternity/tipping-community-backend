@@ -215,7 +215,7 @@
                 "type": {
                     "allowNull": false,
                     "field": "type",
-                    "seqType": "Sequelize.STRING"
+                    "seqType": "Sequelize.ENUM('PROFILE_IMAGE', 'COVER_IMAGE')"
                 },
                 "reference": {
                     "allowNull": true,
@@ -436,5 +436,5 @@
             "indexes": []
         }
     },
-    "revision": 11
+    "revision": 12
 }

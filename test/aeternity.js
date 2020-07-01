@@ -28,7 +28,7 @@ describe('Aeternity', () => {
   });
 
   it('it should get the oracle state', async function () {
-    this.timeout(10000);
+    this.timeout(30000);
     const result = await ae.getOracleState();
     result.should.be.an('object');
     result.should.have.property('minimum_amount_of_oracles');

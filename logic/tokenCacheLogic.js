@@ -32,7 +32,7 @@ module.exports = class TokenCacheLogic {
     if (!req.body.address) return res.status(400).send("address body attribute missing")
 
     try {
-      await aeternity.getTokenMetaInfo(req.body.address);
+      await aeternity.getTokenMetaInfoCacheAccounts(req.body.address);
       return res.send("OK");
     } catch (e) {
       return res.status(500).send(e.message)

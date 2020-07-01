@@ -328,6 +328,24 @@ module.exports = class CacheLogic {
     const total_unclaimed_amount = tips.reduce((acc, tip) => acc.plus(tip.total_unclaimed_amount), new BigNumber('0')).toFixed();
     const total_claimed_amount = tips.reduce((acc, tip) => acc.plus(tip.total_claimed_amount), new BigNumber('0')).toFixed();
 
+    const token_total_amount = Object.entries(tips.reduce((acc, tip) => {
+      tip.token_total_amount.forEach(t => {
+        acc[t.token] = acc[t.token]
+          ? new BigNumber(acc[t.token]).plus(t.amount).toFixed()
+          : new BigNumber(t.amount).toFixed();
+      })
+      return acc;
+    }, {})).map(([token, amount]) => ({token, amount}));
+
+    const token_total_unclaimed_amount = Object.entries(tips.reduce((acc, tip) => {
+      tip.token_total_unclaimed_amount.forEach(t => {
+        acc[t.token] = acc[t.token]
+          ? new BigNumber(acc[t.token]).plus(t.amount).toFixed()
+          : new BigNumber(t.amount).toFixed();
+      })
+      return acc;
+    }, {})).map(([token, amount]) => ({token, amount}));
+
     return {
       tips_length: tips.length,
       retips_length: retips_length,
@@ -340,6 +358,9 @@ module.exports = class CacheLogic {
       total_amount_ae: Util.atomsToAe(total_amount).toFixed(),
       total_unclaimed_amount_ae: Util.atomsToAe(total_unclaimed_amount).toFixed(),
       total_claimed_amount_ae: Util.atomsToAe(total_claimed_amount).toFixed(),
+
+      token_total_amount: token_total_amount,
+      token_total_unclaimed_amount: token_total_unclaimed_amount,
 
       senders: senders,
       senders_length: senders.length

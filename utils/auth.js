@@ -56,6 +56,19 @@ const actions = [
     relevantFields: ['tipId'],
   },
   {
+    method: 'POST',
+    path: '\/pin\/ak_',
+    actionName: 'CREATE_PIN',
+    relevantFields: ['author', 'entryId', 'type']
+  },
+  {
+    method: 'DELETE',
+    path: '\/pin\/\d*',
+    actionName: 'DELETE_PIN',
+    relevantFields: ['author'],
+    getFullEntry: async (req) => Profile.findOne({where: {author: req.body.author}, raw: true})
+  },
+  {
     method: 'DELETE',
     path: '\/comment\/api\/.*',
     actionName: 'DELETE_COMMENT',

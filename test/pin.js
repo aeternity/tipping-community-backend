@@ -32,7 +32,13 @@ describe('Pinning', () => {
       });
     });
 
-    let createdEntry = {};
+    it('it should reject CREATING a new pin with invalid type', (done) => {
+      performSignedJSONRequest(server, 'post', '/pin/' + publicKey, { ...testData, type: 'PIN' })
+        .then(({ res, signature, challenge }) => {
+          res.should.have.status(400);
+          done();
+        });
+    });
 
     it('it should CREATE a new pin via signature auth', (done) => {
       performSignedJSONRequest(server, 'post', '/pin/' + publicKey, testData)
@@ -46,7 +52,6 @@ describe('Pinning', () => {
           res.body.should.have.property('challenge', challenge);
           res.body.should.have.property('createdAt');
           res.body.should.have.property('updatedAt');
-          createdEntry = res.body;
           done();
         });
     });
@@ -62,7 +67,7 @@ describe('Pinning', () => {
     });
 
     it('it should reject CREATING a new pin as another user', (done) => {
-      const { secretKey} = generateKeyPair();
+      const { secretKey } = generateKeyPair();
       chai.request(server).post('/pin/' + publicKey)
         .send(testData).end((err, res) => {
         res.should.have.status(200);
@@ -77,12 +82,14 @@ describe('Pinning', () => {
       });
     });
 
-
     it('it should reject REMOVING a pinned entry from another user', (done) => {
-      const {secretKey, publicKey:localPublicKey} = generateKeyPair();
-      performSignedJSONRequest(server, 'delete', '/pin/' + publicKey, { ...testData, author: localPublicKey }, secretKey)
+      const { secretKey, publicKey: localPublicKey } = generateKeyPair();
+      performSignedJSONRequest(server, 'delete', '/pin/' + publicKey, {
+        ...testData,
+        author: localPublicKey,
+      }, secretKey)
         .then(({ res }) => {
-          console.log(res.text)
+          console.log(res.text);
           res.should.have.status(401);
           done();
         });
@@ -91,12 +98,11 @@ describe('Pinning', () => {
     it('it should REMOVE a pinned entry', (done) => {
       performSignedJSONRequest(server, 'delete', '/pin/' + publicKey, testData)
         .then(({ res }) => {
-          console.log(res.body)
+          console.log(res.body);
           res.should.have.status(200);
           done();
         });
     });
-
 
     it('it should 404 on getting a deleted item', (done) => {
       chai.request(server).get('/pin/' + publicKey).end((err, res) => {

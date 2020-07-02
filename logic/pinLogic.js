@@ -20,18 +20,13 @@ module.exports = class PinLogic {
   static async removeItem(req, res) {
     const result = await Pin.destroy({
       where: {
-        id: req.params.id,
+        entryId: req.body.entryId,
+        author: req.params.author,
+        type: req.body.type,
       },
     });
-    console.log(result, req.params.id,);
     return result === 1 ? res.sendStatus(200) : res.sendStatus(404);
   };
-
-  static async verifyOwner (req, res, next) {
-    if (!req.body.author) return res.status(400).send({ err: 'Author required' });
-    const result = await Pin.findOne({ where: { id: req.params.id, author: req.body.author }, raw: true });
-    return result ? next() : res.status(404).send({ err: `Could not find pin with id ${req.params.id} and ${req.body.author} as author` });
-  }
 
   static async getAllItemsPerUser(req, res) {
     res.send(await Pin.findAll({ where: { author: req.params.author }, raw: true }));

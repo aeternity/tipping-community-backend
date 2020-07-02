@@ -80,16 +80,16 @@ describe('Pinning', () => {
 
     it('it should reject REMOVING a pinned entry from another user', (done) => {
       const {secretKey, publicKey:localPublicKey} = generateKeyPair();
-      performSignedJSONRequest(server, 'delete', '/pin/' + createdEntry.id, { author: localPublicKey }, secretKey)
+      performSignedJSONRequest(server, 'delete', '/pin/' + publicKey, { ...testData, author: localPublicKey }, secretKey)
         .then(({ res }) => {
           console.log(res.text)
-          res.should.have.status(404);
+          res.should.have.status(401);
           done();
         });
     });
 
     it('it should REMOVE a pinned entry', (done) => {
-      performSignedJSONRequest(server, 'delete', '/pin/' + createdEntry.id, { author: publicKey })
+      performSignedJSONRequest(server, 'delete', '/pin/' + publicKey, testData)
         .then(({ res }) => {
           console.log(res.body)
           res.should.have.status(200);

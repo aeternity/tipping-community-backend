@@ -63,10 +63,10 @@ const actions = [
   },
   {
     method: 'DELETE',
-    path: '\/pin\/\d*',
+    path: '\/pin\/ak_',
     actionName: 'DELETE_PIN',
-    relevantFields: ['author'],
-    getFullEntry: async (req) => Profile.findOne({where: {author: req.body.author}, raw: true})
+    relevantFields: ['author', 'entryId', 'type'],
+    getFullEntry: async (req) => Profile.findOne({where: {author: req.params.author}, raw: true})
   },
   {
     method: 'DELETE',

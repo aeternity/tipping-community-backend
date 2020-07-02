@@ -9,6 +9,6 @@ router.get('/:author', Logic.getAllItemsPerUser);
 
 // Restricted api routes
 router.post('/:author', signatureAuth, Logic.addItem);
-router.delete('/:id', signatureAuth, Logic.verifyOwner, Logic.removeItem);
+router.delete('/:author', signatureAuth, Logic.removeItem);
 
 module.exports = router;

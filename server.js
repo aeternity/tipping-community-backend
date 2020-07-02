@@ -28,6 +28,7 @@ app.use('/profile', require('./routes/profileRoutes.js'));
 app.use('/errorreport', require('./routes/errorReportRoutes.js'));
 app.use('/tracing', require('./routes/tipTracingRoutes.js'));
 app.use('/health', require('./routes/healthRoutes.js'));
+app.use('/pin', require('./routes/pinRoutes.js'));
 app.use('/images', express.static('./images'));
 
 app.use((req, res) => {

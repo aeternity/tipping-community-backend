@@ -2,19 +2,32 @@ const chai = require('chai');
 const chaiHttp = require('chai-http');
 const server = require('../server');
 const should = chai.should();
+const sinon = require('sinon');
 
 const { Pin } = require('../models');
 const { publicKey, signChallenge, performSignedJSONRequest } = require('../utils/testingUtil');
 const { generateKeyPair } = require('@aeternity/aepp-sdk').Crypto;
-
+const CacheLogic = require('../logic/cacheLogic');
 chai.use(chaiHttp);
 //Our parent block
 describe('Pinning', () => {
-  before((done) => { //Before each test we empty the database
-    Pin.destroy({
+  let stub;
+  before(async () => { //Before each test we empty the database
+    await Pin.destroy({
       where: {},
       truncate: true,
-    }).then(() => done());
+    });
+    stub = sinon.stub(CacheLogic, 'getAllTips').callsFake(function () {
+      return [
+        {
+          id: 1,
+          url: 'https://www.test.domain.com',
+          claim: {
+            unclaimed: false,
+          }
+        },
+      ];
+    });
   });
 
   const testData = {
@@ -23,7 +36,8 @@ describe('Pinning', () => {
   };
 
   describe('Pinning API', () => {
-    it('it should GET 0 pinned entries for a user', (done) => {
+    it('it should GET 0 pinned entries for a user', function (done) {
+
       chai.request(server).get('/pin/' + publicKey).end((err, res) => {
         res.should.have.status(200);
         res.body.should.be.a('array');
@@ -61,7 +75,7 @@ describe('Pinning', () => {
         res.should.have.status(200);
         res.body.should.be.a('array');
         res.body.length.should.be.eql(1);
-        res.body[0].should.have.property('entryId', String(testData.entryId));
+        res.body[0].should.have.property('id', testData.entryId);
         done();
       });
     });
@@ -112,6 +126,11 @@ describe('Pinning', () => {
         done();
       });
     });
+
+    after((done) => {
+      stub.restore();
+      done();
+    })
   });
 
 });

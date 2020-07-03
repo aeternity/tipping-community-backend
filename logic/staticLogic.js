@@ -54,12 +54,8 @@ module.exports = class StaticLogic {
     }
   }
 
-  static async getContract(req, res) {
-    return res.send({ contractFile: process.env.CONTRACT_FILE, contractAddress: process.env.CONTRACT_ADDRESS });
-  }
-
-  static async getGrayList(req, res) {
-    return res.send([
+  static async getGrayList (req, res) {
+    res.send([
       'facebook.com',
       'weibo.com',
       'pinterest.com',

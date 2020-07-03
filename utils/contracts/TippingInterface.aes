@@ -24,6 +24,7 @@ contract Tipping =
   payable stateful entrypoint retip : (tip_id) => int
   stateful entrypoint retip_token : (tip_id, TokenContract, int) => int
   payable stateful entrypoint pre_claim : (string, address) => unit
+  stateful entrypoint claim : (string, address, bool) => unit
 
   entrypoint get_state : () => state
   entrypoint tips_for_url : (string) => list(tip)

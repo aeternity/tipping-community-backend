@@ -58,20 +58,15 @@ describe('Aeternity', () => {
       firstEntry.should.have.property('retips');
       firstEntry.should.have.property('claim');
       firstEntry.should.have.property('amount_ae');
-      firstEntry.should.have.property('retip_amount_ae');
       firstEntry.should.have.property('total_amount');
+      firstEntry.should.have.property('total_amount_ae');
+      firstEntry.should.have.property('total_claimed_amount');
+      firstEntry.should.have.property('total_claimed_amount_ae');
       firstEntry.should.have.property('total_unclaimed_amount');
+      firstEntry.should.have.property('total_unclaimed_amount_ae');
+      firstEntry.should.have.property('token_total_amount');
+      firstEntry.should.have.property('token_total_unclaimed_amount');
     }
-  });
-
-  it('it should get the tipping contract source', async () => {
-    const result = await ae.getContractSource();
-    result.should.be.an('string');
-  });
-
-  it('it should get the oracle contract source', async () => {
-    const result = await ae.getOracleContractSource();
-    result.should.be.an('string');
   });
 
   it('it should fail pre-claiming an non existing tip', async function () {
@@ -85,6 +80,7 @@ describe('Aeternity', () => {
 
   const url = 'https://probably.not.an.existing.tip';
   const address = 'ak_YCwfWaW5ER6cRsG9Jg4KMyVU59bQkt45WvcnJJctQojCqBeG2';
+
   it('it should succeed pre-claiming with stubs', async function () {
     this.timeout(10000);
     const unclaimdForUrl = sandbox.stub(ae.contract.methods, 'unclaimed_for_url').callsFake(async () => ({ decodedResult: 1 }));

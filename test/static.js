@@ -8,17 +8,7 @@ const { BlacklistEntry } = require('../models');
 chai.use(chaiHttp);
 //Our parent block
 describe('Static Routes', () => {
-  describe('Contract', () => {
-    it('it should GET the contract file and the contract address', (done) => {
-      chai.request(server).get('/static/contract').end((err, res) => {
-        res.should.have.status(200);
-        res.body.should.be.a('object');
-        res.body.should.have.property('contractFile', process.env.CONTRACT_FILE);
-        res.body.should.have.property('contractAddress', process.env.CONTRACT_ADDRESS);
-        done();
-      });
-    });
-  });
+
   describe('Stats', () => {
 
     before(async function () {

@@ -92,6 +92,7 @@ class Aeternity {
           height: tx.height,
           hash: tx.hash,
           time: microBlock.time,
+          contract: tx.contractId
         }
         switch (decodedEvent.name) {
           case 'Transfer':

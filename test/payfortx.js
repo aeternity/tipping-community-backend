@@ -1,15 +1,16 @@
-//Require the dev-dependencies
+// Require the dev-dependencies
 const chai = require('chai');
 const chaiHttp = require('chai-http');
-let should = chai.should();
+const { describe, it, before } = require('mocha');
 
-// Imports to load data
+const ae = require('../utils/aeternity.js');
 const server = require('../server.js');
-const { publicKey } = require('../utils/testingUtil.js')
-chai.use(chaiHttp);
-//Our parent block
-describe('Pay for TX', () => {
+const { publicKey } = require('../utils/testingUtil.js');
 
+chai.should();
+chai.use(chaiHttp);
+// Our parent block
+describe('Pay for TX', () => {
   describe('Flat API Tests', () => {
     it('it should fail without body', (done) => {
       chai.request(server).post('/claim/submit').send({}).end((err, res) => {
@@ -38,10 +39,8 @@ describe('Pay for TX', () => {
   });
 
   describe('valid request', () => {
-
     before(async function () {
       this.timeout(25000);
-      const ae = require('../utils/aeternity.js');
       await ae.init();
     });
 
@@ -55,7 +54,6 @@ describe('Pay for TX', () => {
         done();
       });
     }).timeout(10000);
-
   });
 
   describe('Logger tests', () => {
@@ -69,5 +67,4 @@ describe('Pay for TX', () => {
         });
     });
   });
-
 });

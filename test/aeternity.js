@@ -1,19 +1,19 @@
-//Require the dev-dependencies
-let chai = require('chai');
-let chaiHttp = require('chai-http');
-let server = require('../server');
-let should = chai.should();
-const expect = chai.expect;
-const ae = require('../utils/aeternity.js');
+// Require the dev-dependencies
+const chai = require('chai');
+const chaiHttp = require('chai-http');
+const { describe, it, before } = require('mocha');
 const sinon = require('sinon');
-const Trace = require('../utils/trace')
-chai.use(chaiHttp);
-//Our parent block
-describe('Aeternity', () => {
 
+const ae = require('../utils/aeternity.js');
+const Trace = require('../utils/trace');
+
+chai.should();
+chai.use(chaiHttp);
+// Our parent block
+describe('Aeternity', () => {
   let sandbox;
 
-  before(function () {
+  before(() => {
     sandbox = sinon.createSandbox();
   });
 
@@ -22,7 +22,7 @@ describe('Aeternity', () => {
     await ae.init();
   });
 
-  it('it should get the network id', async function () {
+  it('it should get the network id', async () => {
     const result = await ae.networkId();
     result.should.equal('ae_mainnet');
   });
@@ -63,19 +63,19 @@ describe('Aeternity', () => {
     }
   });
 
-  it('it should get the tipping contract source', async function () {
+  it('it should get the tipping contract source', async () => {
     const result = await ae.getContractSource();
     result.should.be.an('string');
   });
 
-  it('it should get the oracle contract source', async function () {
+  it('it should get the oracle contract source', async () => {
     const result = await ae.getOracleContractSource();
     result.should.be.an('string');
   });
 
   it('it should fail pre-claiming an non existing tip', async function () {
     this.timeout(10000);
-    let error = null;
+    let error = {};
     try {
       await ae.preClaim('not_a_real_account', 'https://probably.not.an.existing.tip', new Trace());
     } catch (e) {
@@ -89,28 +89,25 @@ describe('Aeternity', () => {
   const address = 'ak_YCwfWaW5ER6cRsG9Jg4KMyVU59bQkt45WvcnJJctQojCqBeG2';
   it('it should succeed pre-claiming with stubs', async function () {
     this.timeout(10000);
-    const unclaimdForUrl = sandbox.stub(ae.contract.methods, 'unclaimed_for_url').callsFake(async () => ({decodedResult: 1}));
-    const checkClaim = sandbox.stub(ae.contract.methods, 'check_claim').callsFake(async () => ({decodedResult: {success: true}}));
+    const unclaimdForUrl = sandbox.stub(ae.contract.methods, 'unclaimed_for_url').callsFake(async () => ({ decodedResult: 1 }));
+    const checkClaim = sandbox.stub(ae.contract.methods, 'check_claim').callsFake(async () => ({ decodedResult: { success: true } }));
     await ae.preClaim(address, url, new Trace());
-    unclaimdForUrl.called.should.be.true;
+    unclaimdForUrl.called.should.equal(true);
     sinon.assert.alwaysCalledWith(unclaimdForUrl, url);
-    checkClaim.called.should.be.true;
+    checkClaim.called.should.equal(true);
     sinon.assert.alwaysCalledWith(checkClaim, url, address);
-
   });
 
   it('it should allow to claim if all goes well (with stubs)', async function () {
     this.timeout(10000);
-    const claim = sandbox.stub(ae.contract.methods, 'claim').callsFake(async () => ({decodedResult: true}));
+    const claim = sandbox.stub(ae.contract.methods, 'claim').callsFake(async () => ({ decodedResult: true }));
     const result = await ae.claimTips(address, url, new Trace());
-    result.should.be.true;
-    claim.called.should.be.true;
+    result.should.equal(true);
+    claim.called.should.equal(true);
     sinon.assert.alwaysCalledWith(claim, url, address);
   });
 
-
-  after(function () {
+  after(() => {
     sandbox.restore();
   });
-
 });

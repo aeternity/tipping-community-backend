@@ -44,5 +44,5 @@ const getTipTopics = (tips) => {
 };
 
 module.exports = {
-  getTipTopics, topicsRegex
+  getTipTopics, topicsRegex,
 };

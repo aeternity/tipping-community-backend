@@ -1,8 +1,8 @@
 const ae = require('../utils/aeternity.js');
+const Logger = require('../utils/logger');
 
 module.exports = class Verified {
-
-  static async getAllClaimedEvents (req, res) {
+  static async getAllClaimedEvents(req, res) {
     try {
       const tips = await ae.getTips();
       const allClaimedDomains = [
@@ -11,7 +11,7 @@ module.exports = class Verified {
           .map(({ url }) => url)))];
       return res.send(allClaimedDomains);
     } catch (err) {
-      console.error(err);
+      (new Logger('VerifiedLogic')).error(err);
       return res.status(500).send(err.message);
     }
   }

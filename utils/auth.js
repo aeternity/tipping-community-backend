@@ -3,8 +3,10 @@ const { v4: uuidv4 } = require('uuid');
 const fs = require('fs');
 const path = require('path');
 const { Profile } = require('../models');
+const Logger = require('./logger');
 
 const VERSION = '2-0-0';
+const logger = new Logger('Authentication');
 
 const basicAuth = (req, res, next) => {
   const auth = { login: process.env.AUTHENTICATION_USER, password: process.env.AUTHENTICATION_PASSWORD };
@@ -17,88 +19,88 @@ const basicAuth = (req, res, next) => {
 
   // Access denied...
   res.set('WWW-Authenticate', 'Basic realm="Please enter user and password."'); // change this
-  res.status(401).send('Authentication required.'); // custom message
+  return res.status(401).send('Authentication required.'); // custom message
 };
 
 const MemoryQueue = [];
 const actions = [
   {
     method: 'POST',
-    path: '\/comment\/api\/?',
+    path: '/comment/api/?',
     actionName: 'CREATE_COMMENT',
-    relevantFields: ['text'],
+    relevantFields: ['text', 'tipId', 'author', 'parentId'],
   },
   {
     method: 'POST',
-    path: '\/profile\/?$',
+    path: '/profile/?$',
     actionName: 'CREATE_PROFILE',
     relevantFields: ['author', 'biography', 'preferredChainName', 'image', 'referrer', 'coverImage', 'location'],
-    getFullEntry: async (req) => Profile.findOne({where: {author: req.body.author}, raw: true})
+    getFullEntry: async (req) => Profile.findOne({ where: { author: req.body.author }, raw: true }),
   },
   {
     method: 'POST',
-    path: '\/profile\/ak_',
+    path: '/profile/ak_',
     actionName: 'UPDATE_PROFILE',
     relevantFields: ['author', 'biography', 'preferredChainName', 'image', 'referrer', 'coverImage', 'location'],
-    getFullEntry: async (req) => Profile.findOne({where: {author: req.params.author}, raw: true})
+    getFullEntry: async (req) => Profile.findOne({ where: { author: req.params.author }, raw: true }),
   },
   {
     method: 'POST',
-    path: '\/profile\/image\/ak_',
+    path: '/profile/image/ak_',
     actionName: 'CREATE_PROFILE',
     relevantFields: ['author', 'biography', 'preferredChainName', 'image', 'referrer', 'coverImage', 'location'],
-    getFullEntry: async (req) => Profile.findOne({where: {author: req.params.author}, raw: true})
+    getFullEntry: async (req) => Profile.findOne({ where: { author: req.params.author }, raw: true }),
   },
   {
     method: 'POST',
-    path: '\/blacklist\/api\/wallet',
+    path: '/blacklist/api/wallet',
     actionName: 'CREATE_FLAGGED_TIP',
-    relevantFields: ['tipId'],
+    relevantFields: ['tipId', 'author'],
   },
   {
     method: 'POST',
-    path: '\/pin\/ak_',
+    path: '/pin/ak_',
     actionName: 'CREATE_PIN',
-    relevantFields: ['author', 'entryId', 'type']
+    relevantFields: ['author', 'entryId', 'type'],
   },
   {
     method: 'DELETE',
-    path: '\/pin\/ak_',
+    path: '/pin/ak_',
     actionName: 'DELETE_PIN',
     relevantFields: ['author', 'entryId', 'type'],
-    getFullEntry: async (req) => Profile.findOne({where: {author: req.params.author}, raw: true})
+    getFullEntry: async (req) => Profile.findOne({ where: { author: req.params.author }, raw: true }),
   },
   {
     method: 'DELETE',
-    path: '\/comment\/api\/.*',
+    path: '/comment/api/.*',
     actionName: 'DELETE_COMMENT',
-    relevantFields: [],
+    relevantFields: ['author'],
   },
   {
     method: 'DELETE',
-    path: '\/profile\/ak_.*',
+    path: '/profile/ak_.*',
     actionName: 'DELETE_PROFILE',
     relevantFields: [],
   },
   {
     method: 'DELETE',
-    path: '\/profile\/image\/ak_.*',
+    path: '/profile/image/ak_.*',
     actionName: 'DELETE_PROFILE_IMAGE',
     relevantFields: [],
   }];
 
 const signatureAuth = async (req, res, next) => {
-  const sendError = message => res.status(401).send({ err: message });
+  const sendError = (message) => res.status(401).send({ err: message });
 
   // Filter expired items (10 mins timer)
   // use delete to avoid race condition while overwriting
-  MemoryQueue.map(({ timestamp, file }, index) => {
+  MemoryQueue.forEach(({ timestamp, file }, index) => {
     if (timestamp < Date.now() - 5 * 60 * 1000) {
       delete MemoryQueue[index];
       try {
         if (file) fs.unlinkSync(path.resolve(__dirname, '../images/', file.filename));
       } catch (e) {
-        console.error('Could not delete file:' + e.message);
+        logger.error(`Could not delete file:${e.message}`);
       }
     }
   });
@@ -108,12 +110,13 @@ const signatureAuth = async (req, res, next) => {
       if (!req.body.signature) return sendError('Missing field signature');
       if (!req.body.challenge) return sendError('Missing field challenge');
 
-
       // Find item
       // MemoryQueue probably has a significant list deleted items
-      const queueItem = MemoryQueue.find(item => (item || {}).challenge === req.body.challenge);
+      const queueItem = MemoryQueue.find((item) => (item || {}).challenge === req.body.challenge);
       if (!queueItem) return sendError('Could not find challenge (maybe it already expired?)');
-      const { challenge, body, files, method, url } = queueItem;
+      const {
+        challenge, body, files, method, url,
+      } = queueItem;
 
       // Verify that the challenge was issued for this method + path
       if (req.method !== method) return sendError('Challenge was issued for a different http method');
@@ -133,15 +136,14 @@ const signatureAuth = async (req, res, next) => {
       const validRequest = verifyPersonalMessage(authString, signatureArray, author);
       if (validRequest) {
         // Remove challenge from active queue
-        const queueIndex = MemoryQueue.findIndex(item => (item || {}).challenge === req.body.challenge);
+        const queueIndex = MemoryQueue.findIndex((item) => (item || {}).challenge === req.body.challenge);
         delete MemoryQueue[queueIndex];
         // forward request and merge current body onto existing
-        req.body = Object.assign({}, req.body, body);
+        req.body = { ...req.body, ...body };
         if (files) req.files = files;
         return next();
-      } else {
-        return sendError('Invalid signature');
       }
+      return sendError('Invalid signature');
     } catch (err) {
       return sendError(err.message);
     }
@@ -150,16 +152,18 @@ const signatureAuth = async (req, res, next) => {
     const uuid = uuidv4();
     try {
       const action = actions
-        .find(({ method, path }) => method === req.method && req.originalUrl.match(path));
+        .find(({ method, path: currentPath }) => method === req.method && req.originalUrl.match(currentPath));
       if (!action) return sendError('Could not find valid action related to this request');
 
       const { actionName, relevantFields, getFullEntry } = action;
       const existingEntry = getFullEntry ? await getFullEntry(req) : {};
       const files = req.files ? Object.keys(req.files).reduce((acc, curr) => {
-        acc[curr] = hash(fs.readFileSync(path.resolve(__dirname, '../images/', req.files[curr][0].filename))).toString('hex')
+        acc[curr] = hash(fs.readFileSync(path.resolve(__dirname, '../images/', req.files[curr][0].filename))).toString('hex');
         return acc;
       }, {}) : {};
-      const mergedObject = Object.assign({}, { author: req.params.author }, existingEntry, req.body, files);
+      const mergedObject = {
+        author: req.params.author, ...existingEntry, ...req.body, ...files,
+      };
       const payload = relevantFields.reduce((acc, fieldIndex) => `${acc};${fieldIndex}=${mergedObject[fieldIndex]}`, '');
 
       // UUID-RelevantFieldHash-Action-Timestamp
@@ -177,7 +181,7 @@ const signatureAuth = async (req, res, next) => {
         payload,
       });
     } catch (e) {
-      console.error(e);
+      logger.error(e);
       return sendError(e.message);
     }
   }

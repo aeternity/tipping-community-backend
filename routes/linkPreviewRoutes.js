@@ -1,4 +1,4 @@
-const Router = require('express').Router;
+const { Router } = require('express');
 const Logic = require('../logic/linkPreviewLogic.js');
 
 const router = new Router();

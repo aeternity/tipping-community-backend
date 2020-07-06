@@ -1,15 +1,16 @@
-//Require the dev-dependencies
-let chai = require('chai');
-let chaiHttp = require('chai-http');
-let server = require('../server');
+// Require the dev-dependencies
+const chai = require('chai');
+const chaiHttp = require('chai-http');
 const fs = require('fs');
+const { describe, it, before } = require('mocha');
+const server = require('../server');
 const { LinkPreview } = require('../models');
 const LinkPreviewLogic = require('../logic/linkPreviewLogic.js');
 
+chai.should();
 chai.use(chaiHttp);
-//Our parent block
+// Our parent block
 describe('LinkPreview', () => {
-
   const requestUrl = 'https://aeternity.com/';
 
   before(async function () {
@@ -33,7 +34,7 @@ describe('LinkPreview', () => {
     let imageUrl;
 
     it('it get link preview for aeternity.com', (done) => {
-      chai.request(server).get('/linkpreview?url=' + encodeURIComponent(requestUrl)).end((err, res) => {
+      chai.request(server).get(`/linkpreview?url=${encodeURIComponent(requestUrl)}`).end((err, res) => {
         res.should.have.status(200);
         res.body.should.be.a('object');
         res.body.should.have.property('id');
@@ -52,7 +53,6 @@ describe('LinkPreview', () => {
 
     it('it get an image for aeternity.com', (done) => {
       chai.request(server).get(imageUrl).end((err, res) => {
-        if(err) console.log(err);
         res.should.have.status(200);
         res.should.have.header('content-type');
         res.should.have.header('content-length');
@@ -61,7 +61,7 @@ describe('LinkPreview', () => {
     });
 
     it('it should fail on none cached urls', (done) => {
-      chai.request(server).get('/linkpreview?url=' + encodeURIComponent('https://domain.test')).end((err, res) => {
+      chai.request(server).get(`/linkpreview?url=${encodeURIComponent('https://domain.test')}`).end((err, res) => {
         res.should.have.status(404);
         done();
       });
@@ -69,8 +69,8 @@ describe('LinkPreview', () => {
 
     after(() => {
       fs.readdirSync('images')
-        .filter(fileName => fileName.includes('preview-'))
-        .map(file => fs.unlinkSync('images/' + file));
-    })
+        .filter((fileName) => fileName.includes('preview-'))
+        .map((file) => fs.unlinkSync(`images/${file}`));
+    });
   });
 });

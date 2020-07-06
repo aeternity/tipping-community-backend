@@ -1,4 +1,4 @@
-const Router = require('express').Router;
+const { Router } = require('express');
 const Logic = require('../logic/blacklistLogic.js');
 const ae = require('../utils/aeternity.js');
 const { basicAuth, signatureAuth } = require('../utils/auth.js');
@@ -11,7 +11,7 @@ router.get('/api/:tipId', Logic.getSingleItem);
 
 // View routes
 router.get('/', basicAuth, async (req, res) => res.render('admin', {
-  allItems: await Logic.augmentAllItems(await ae.getTips())
+  allItems: await Logic.augmentAllItems(await ae.getTips()),
 }));
 
 // Restricted api routes
@@ -21,6 +21,5 @@ router.delete('/api/:tipId', basicAuth, Logic.removeItem);
 
 // Public routes
 router.post('/api/wallet', signatureAuth, Logic.flagTip);
-
 
 module.exports = router;

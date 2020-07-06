@@ -1,36 +1,40 @@
+const axios = require('axios');
+const BigNumber = require('bignumber.js');
+const AsyncLock = require('async-lock');
+const Fuse = require('fuse.js');
+const LanguageDetector = require('languagedetect');
+const cld = require('cld');
 const aeternity = require('../utils/aeternity.js');
 const LinkPreviewLogic = require('./linkPreviewLogic.js');
 const TipOrderLogic = require('./tiporderLogic');
 const CommentLogic = require('./commentLogic');
 const TipLogic = require('./tipLogic');
 const BlacklistLogic = require('./blacklistLogic');
-const axios = require('axios');
 const cache = require('../utils/cache');
-const BigNumber = require('bignumber.js');
-var AsyncLock = require('async-lock');
-var lock = new AsyncLock();
-const {getTipTopics, topicsRegex} = require('../utils/tipTopicUtil');
+
+const lock = new AsyncLock();
+const { getTipTopics, topicsRegex } = require('../utils/tipTopicUtil');
 const Util = require('../utils/util');
 const { Profile } = require('../models');
-const Fuse = require('fuse.js');
-const lngDetector = new (require('languagedetect'));
+const Logger = require('../utils/logger');
+
+const logger = new Logger('CacheLogic');
+const lngDetector = new LanguageDetector();
 lngDetector.setLanguageType('iso2');
-const cld = require('cld');
 
 const searchOptions = {
   threshold: 0.3,
   includeScore: true,
   shouldSort: false,
-  keys: ['title', 'chainName', 'sender', 'preview.description', 'preview.title', 'url', 'topics']
-}
+  keys: ['title', 'chainName', 'sender', 'preview.description', 'preview.title', 'url', 'topics'],
+};
 
 module.exports = class CacheLogic {
-
   constructor() {
-    this.init();
+    CacheLogic.init();
   }
 
-  async init() {
+  static async init() {
     // Run once so the db is synced initially without getting triggered every 5 seconds
     await aeternity.init();
 
@@ -48,56 +52,57 @@ module.exports = class CacheLogic {
   static async findContractEvents() {
     const fetchContractEvents = async () => {
       const contractTransactions = await aeternity.middlewareContractTransactions();
-      return contractTransactions.map(tx => tx.hash).asyncMap(aeternity.transactionEvents);
-    }
+      return contractTransactions.map((tx) => tx.hash).asyncMap(aeternity.transactionEvents);
+    };
 
-    return cache.getOrSet(["contractEvents"], async () => {
-      return fetchContractEvents().catch(console.error);
-    }, cache.shortCacheTime)
+    return cache.getOrSet(['contractEvents'], async () => fetchContractEvents().catch(logger.error), cache.shortCacheTime);
   }
 
   static async fetchPrice() {
-    return cache.getOrSet(["fetchPrice"], async () => {
-      return axios.get('https://api.coingecko.com/api/v3/simple/price?ids=aeternity&vs_currencies=usd,eur,cny').then(res => res.data).catch(console.error);
-    }, cache.longCacheTime)
+    return cache.getOrSet(
+      ['fetchPrice'],
+      async () => axios.get('https://api.coingecko.com/api/v3/simple/price?ids=aeternity&vs_currencies=usd,eur,cny')
+        .then((res) => res.data).catch(logger.error),
+      cache.longCacheTime,
+    );
   }
 
   static async getTipsAndVerifyLocalInfo() {
     const tips = await aeternity.getTips();
 
     // not await on purpose, just trigger background preview fetch
-    lock.acquire("LinkPreviewLogic.fetchAllLinkPreviews", async () => {
+    lock.acquire('LinkPreviewLogic.fetchAllLinkPreviews', async () => {
       const previews = await LinkPreviewLogic.fetchAllLinkPreviews();
-      const tipUrls = [...new Set(tips.map(tip => tip.url))];
-      const previewUrls = [...new Set(previews.map(preview => preview.requestUrl))];
+      const tipUrls = [...new Set(tips.map((tip) => tip.url))];
+      const previewUrls = [...new Set(previews.map((preview) => preview.requestUrl))];
 
-      const difference = tipUrls.filter(url => !previewUrls.includes(url));
+      const difference = tipUrls.filter((url) => !previewUrls.includes(url));
 
       await difference.asyncMap(async (url) => {
-        await LinkPreviewLogic.generatePreview(url).catch(console.error);
-      })
+        await LinkPreviewLogic.generatePreview(url).catch(logger.error);
+      });
     });
     let result = [];
 
-    await lock.acquire("TipLogic.fetchAllLocalTips", async () => {
+    await lock.acquire('TipLogic.fetchAllLocalTips', async () => {
       const languages = await TipLogic.fetchAllLocalTips();
-      const tipIds = [...new Set(tips.map(tip => tip.id))];
-      const languageIds = [...new Set(languages.map(preview => preview.id))];
+      const tipIds = [...new Set(tips.map((tip) => tip.id))];
+      const languageIds = [...new Set(languages.map((preview) => preview.id))];
 
-      const difference = tipIds.filter(url => !languageIds.includes(url));
+      const difference = tipIds.filter((url) => !languageIds.includes(url));
 
       result = await difference.asyncMap(async (id) => {
-        let tip = tips.find(tip => tip.id === id)
-        let title = tip.title.replace(/[!0-9#.,?)-:'“@\/\\]/g, '');
-        //const probability = lngDetector.detect(title, 1);
+        let { title } = tips.find((tip) => tip.id === id);
+        title = title.replace(/[!0-9#.,?)-:'“@/\\]/g, '');
+        // const probability = lngDetector.detect(title, 1);
         const probability2 = await cld.detect(title).catch(() => ({}));
-        //const lang1 = probability[0] ? probability[0][0] !== null ? probability[0][0] : null : null;
+        // const lang1 = probability[0] ? probability[0][0] !== null ? probability[0][0] : null : null;
         const lang2 = probability2.languages ? probability2.languages[0].code : null;
-        return {id, lang2, title}
-      })
-      await TipLogic.bulkCreate(result.map(({id, lang2}) => ({
+        return { id, lang2, title };
+      });
+      await TipLogic.bulkCreate(result.map(({ id, lang2 }) => ({
         id,
-        language: lang2
+        language: lang2,
       })));
     });
 
@@ -105,20 +110,19 @@ module.exports = class CacheLogic {
   }
 
   static fetchChainNames() {
-    return cache.getOrSet(["getChainNames"], async () => {
+    return cache.getOrSet(['getChainNames'], async () => {
       const result = await aeternity.getChainNames();
-      const allProfiles = await Profile.findAll({raw: true});
+      const allProfiles = await Profile.findAll({ raw: true });
 
       return result.reduce((acc, chainName) => {
-
         if (!chainName.pointers) return acc;
 
-        const accountPubkeyPointer = chainName.pointers.find(pointer => pointer.key === "account_pubkey");
+        const accountPubkeyPointer = chainName.pointers.find((pointer) => pointer.key === 'account_pubkey');
         const pubkey = accountPubkeyPointer ? accountPubkeyPointer.id : null;
         if (!pubkey) return acc;
 
         // already found a chain name
-        if (acc.hasOwnProperty(pubkey)) {
+        if (acc[pubkey]) {
           // shorter always replaces
           if (chainName.name.length < acc[pubkey].length) acc[pubkey] = chainName.name;
           // equal length replaces if alphabetically earlier
@@ -127,94 +131,91 @@ module.exports = class CacheLogic {
           acc[pubkey] = chainName.name;
         }
 
-        const profile = allProfiles.find(profile => profile.author === pubkey);
-        if (profile && profile.preferredChainName) {
-          acc[pubkey] = profile.preferredChainName;
+        const currentProfile = allProfiles.find((profile) => profile.author === pubkey);
+        if (currentProfile && currentProfile.preferredChainName) {
+          acc[pubkey] = currentProfile.preferredChainName;
         }
 
         return acc;
       }, {});
-    }, cache.shortCacheTime)
-  };
+    }, cache.shortCacheTime);
+  }
 
   static async getAllTips(blacklist = true) {
-    let [tips,  tipsPreview, chainNames, commentCounts, blacklistedIds, localTips] = await Promise.all([
+    const [allTips, tipsPreview, chainNames, commentCounts, blacklistedIds, localTips] = await Promise.all([
       CacheLogic.getTipsAndVerifyLocalInfo(), LinkPreviewLogic.fetchAllLinkPreviews(), CacheLogic.fetchChainNames(),
-      CommentLogic.fetchCommentCountForTips(), BlacklistLogic.getBlacklistedIds(), TipLogic.fetchAllLocalTips()
+      CommentLogic.fetchCommentCountForTips(), BlacklistLogic.getBlacklistedIds(), TipLogic.fetchAllLocalTips(),
     ]);
+
+    let tips = allTips;
 
     // filter by blacklisted from backend
     if (blacklist && blacklistedIds) {
-      tips = tips.filter(tip => !blacklistedIds.includes(tip.id));
+      tips = tips.filter((tip) => !blacklistedIds.includes(tip.id));
     }
 
     // add preview to tips from backend
     if (tipsPreview) {
-      tips = tips.map(tip => {
-        tip.preview = tipsPreview.find(preview => preview.requestUrl === tip.url);
-        return tip;
+      tips = tips.map((tip) => {
+        const preview = tipsPreview.find((linkPreview) => linkPreview.requestUrl === tip.url);
+        return { ...tip, preview };
       });
     }
 
     // add language to tips from backend
     if (localTips) {
-      tips = tips.map(tip => {
-        const localTip = localTips.find(localTip => localTip.id === tip.id);
-        tip.contentLanguage = localTip ? localTip.language : null;
-        return tip;
+      tips = tips.map((tip) => {
+        const result = localTips.find((localTip) => localTip.id === tip.id);
+        return { ...tip, contentLanguage: result ? result.language : null };
       });
     }
 
     // add chain names for each tip sender
     if (chainNames) {
-      tips = tips.map(tip => {
-        tip.chainName = chainNames[tip.sender];
-        return tip;
-      });
+      tips = tips.map((tip) => ({ ...tip, chainName: chainNames[tip.sender] }));
     }
 
     // add comment count to each tip
     if (commentCounts) {
-      tips = tips.map(tip => {
-        const commentCount = commentCounts.find(comment => comment.tipId === tip.id);
-        tip.commentCount = commentCount ? commentCount.count : 0;
-        return tip;
+      tips = tips.map((tip) => {
+        const result = commentCounts.find((comment) => comment.tipId === tip.id);
+        return { ...tip, commentCount: result ? result.count : 0 };
       });
     }
 
     // add score to tips
-    tips = TipOrderLogic.applyTipScoring(tips)
+    tips = TipOrderLogic.applyTipScoring(tips);
 
     return tips;
   }
 
   static async invalidateTips(req, res) {
-    await cache.del(["getTips"]);
-    aeternity.getTips(); //just trigger cache update, so follow up requests may have it cached already
-    if (res) res.send({status: "OK"});
+    await cache.del(['getTips']);
+    aeternity.getTips(); // just trigger cache update, so follow up requests may have it cached already
+    if (res) res.send({ status: 'OK' });
   }
 
   static async invalidateOracle(req, res) {
-    await cache.del(["oracleState"]);
-    aeternity.getOracleState(); //just trigger cache update, so follow up requests may have it cached already
-    if (res) res.send({status: "OK"});
+    await cache.del(['oracleState']);
+    aeternity.getOracleState(); // just trigger cache update, so follow up requests may have it cached already
+    if (res) res.send({ status: 'OK' });
   }
 
   static async invalidateContractEvents(req, res) {
-    await cache.del(["contractEvents"]);
-    CacheLogic.findContractEvents(); //just trigger cache update, so follow up requests may have it cached already
-    if (res) res.send({status: "OK"});
+    await cache.del(['contractEvents']);
+    CacheLogic.findContractEvents(); // just trigger cache update, so follow up requests may have it cached already
+    if (res) res.send({ status: 'OK' });
   }
 
   static async deliverTip(req, res) {
     const tips = await CacheLogic.getAllTips(false);
-    const tip = tips.find(tip => tip.id === parseInt(req.query.id))
-    return tip ? res.send(tip) : res.sendStatus(404);
+    const result = tips.find((tip) => tip.id === parseInt(req.query.id, 10));
+    return result ? res.send(result) : res.sendStatus(404);
   }
 
   static async deliverTips(req, res) {
-    let limit = 30;
-    let tips = await CacheLogic.getAllTips(req.query.blacklist !== "false");
+    const limit = 30;
+    let tips = await CacheLogic.getAllTips(req.query.blacklist !== 'false');
 
     if (req.query.address) {
       tips = tips.filter((tip) => tip.sender === req.query.address);
@@ -226,16 +227,16 @@ module.exports = class CacheLogic {
       // if topics exist, only show topics
       const searchTopics = req.query.search.match(topicsRegex);
       if (searchTopics) {
-        searchTips = tips.filter(tip => searchTopics.every(topic => tip.topics.includes(topic)))
+        searchTips = tips.filter((tip) => searchTopics.every((topic) => tip.topics.includes(topic)));
       }
 
       // otherwise fuzzy search all content
-      if(searchTopics === null || searchTips.length === 0) {
+      if (searchTopics === null || searchTips.length === 0) {
         // TODO consider indexing
-        searchTips = new Fuse(tips, searchOptions).search(req.query.search).map(res => {
-          const tip = res.item;
-          tip.searchScore = res.item.score
-          return tip
+        searchTips = new Fuse(tips, searchOptions).search(req.query.search).map((result) => {
+          const tip = result.item;
+          tip.searchScore = result.item.score;
+          return tip;
         });
       }
 
@@ -244,9 +245,8 @@ module.exports = class CacheLogic {
 
     if (req.query.language) {
       const requestedLanguages = req.query.language.split('|');
-      tips = tips.filter((tip) =>
-        tip.preview && requestedLanguages.includes(tip.preview.lang) &&
-        (!tip.contentLanguage || requestedLanguages.includes(tip.contentLanguage)));
+      tips = tips.filter((tip) => tip.preview && requestedLanguages.includes(tip.preview.lang)
+        && (!tip.contentLanguage || requestedLanguages.includes(tip.contentLanguage)));
     }
 
     if (req.query.ordering) {
@@ -271,13 +271,12 @@ module.exports = class CacheLogic {
     res.send(tips);
   }
 
-
   static async deliverContractEvents(req, res) {
     let contractEvents = await CacheLogic.findContractEvents();
-    if (req.query.address) contractEvents = contractEvents.filter(e => e.address === req.query.address);
-    if (req.query.event) contractEvents = contractEvents.filter(e => e.event === req.query.event);
+    if (req.query.address) contractEvents = contractEvents.filter((e) => e.address === req.query.address);
+    if (req.query.event) contractEvents = contractEvents.filter((e) => e.event === req.query.event);
     contractEvents.sort((a, b) => b.time - a.time);
-    if (req.query.limit) contractEvents = contractEvents.slice(0, parseInt(req.query.limit));
+    if (req.query.limit) contractEvents = contractEvents.slice(0, parseInt(req.query.limit, 10));
     res.send(contractEvents);
   }
 
@@ -308,13 +307,13 @@ module.exports = class CacheLogic {
       .reduce((acc, tip) => (claimedUrls.includes(tip.url)
         ? acc.plus(tip.total_unclaimed_amount)
         : acc),
-        new BigNumber(0));
+      new BigNumber(0));
 
     const claimedAmount = allTips
       .reduce((acc, tip) => (claimedUrls.includes(tip.url)
         ? acc.plus(tip.total_claimed_amount)
         : acc),
-        new BigNumber(0));
+      new BigNumber(0));
 
     const stats = {
       tipsLength: userTips.length,
@@ -333,12 +332,10 @@ module.exports = class CacheLogic {
     const tips = await aeternity.getTips();
 
     const groupedByUrl = Util.groupBy(tips, 'url');
-    const statsByUrl = Object.keys(groupedByUrl).map(url => {
-      return {
-        url: url,
-        ...CacheLogic.statsForTips(groupedByUrl[url])
-      }
-    });
+    const statsByUrl = Object.keys(groupedByUrl).map((url) => ({
+      url,
+      ...CacheLogic.statsForTips(groupedByUrl[url]),
+    }));
 
     const stats = {
       ...CacheLogic.statsForTips(tips),
@@ -353,18 +350,18 @@ module.exports = class CacheLogic {
       .reduce((acc, tip) => acc
         .concat([tip.sender, ...tip.retips.map((retip) => retip.sender)]), []))];
 
-    const retips_length = tips.reduce((acc, tip) => acc + tip.retips.length, 0);
+    const retipsLength = tips.reduce((acc, tip) => acc + tip.retips.length, 0);
 
     return {
       tips_length: tips.length,
-      retips_length: retips_length,
-      total_tips_length: tips.length + retips_length,
+      retips_length: retipsLength,
+      total_tips_length: tips.length + retipsLength,
       total_amount: tips.reduce((acc, tip) => acc.plus(tip.total_amount), new BigNumber('0')).toFixed(),
       total_unclaimed_amount: tips.reduce((acc, tip) => acc.plus(tip.total_unclaimed_amount), new BigNumber('0')).toFixed(),
       total_claimed_amount: tips.reduce((acc, tip) => acc.plus(tip.total_claimed_amount), new BigNumber('0')).toFixed(),
-      senders: senders,
-      senders_length: senders.length
-    }
+      senders,
+      senders_length: senders.length,
+    };
   }
 
   static async deliverOracleState(req, res) {
@@ -375,5 +372,4 @@ module.exports = class CacheLogic {
     const tips = await CacheLogic.getAllTips();
     res.send(getTipTopics(tips));
   }
-
 };

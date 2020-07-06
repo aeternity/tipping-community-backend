@@ -1,8 +1,8 @@
-//Require the dev-dependencies
-let chai = require('chai');
-let chaiHttp = require('chai-http');
-let server = require('../server');
-let should = chai.should();
+// Require the dev-dependencies
+const chai = require('chai');
+const chaiHttp = require('chai-http');
+const { describe, it } = require('mocha');
+const server = require('../server');
 
 const {
   shouldBeValidChallengeResponse,
@@ -11,11 +11,10 @@ const {
   performSignedJSONRequest,
 } = require('../utils/testingUtil');
 
-
+chai.should();
 chai.use(chaiHttp);
-//Our parent block
+// Our parent block
 describe('Authenticator', () => {
-
   const testData = {
     biography: 'What an awesome bio',
     preferredChainName: 'awesomename.chain',
@@ -26,7 +25,7 @@ describe('Authenticator', () => {
 
   describe('Profile Authentication', () => {
     it('it should return a signature challenge', (done) => {
-      chai.request(server).post('/profile/' + publicKey ).send(testData).end((err, res) => {
+      chai.request(server).post(`/profile/${publicKey}`).send(testData).end((err, res) => {
         res.should.have.status(200);
         shouldBeValidChallengeResponse(res.body, testData);
         done();
@@ -34,51 +33,52 @@ describe('Authenticator', () => {
     });
 
     it('it should fail with invalid signature', (done) => {
-      chai.request(server).post('/profile/' + publicKey ).send(testData).end((err, res) => {
+      chai.request(server).post(`/profile/${publicKey}`).send(testData).end((err, res) => {
         res.should.have.status(200);
         shouldBeValidChallengeResponse(res.body, testData);
 
-        const challenge = res.body.challenge;
-        chai.request(server).post('/profile/' + publicKey ).send({ challenge, signature: 'wrong' }).end((err, res) => {
-          res.should.have.status(401);
-          res.body.should.be.a('object');
-          res.body.should.have.property('err', 'bad signature size');
-          done();
-        });
+        const { challenge } = res.body;
+        chai.request(server).post(`/profile/${publicKey}`).send({ challenge, signature: 'wrong' })
+          .end((innerError, innerRes) => {
+            innerRes.should.have.status(401);
+            innerRes.body.should.be.a('object');
+            innerRes.body.should.have.property('err', 'bad signature size');
+            done();
+          });
       });
     });
 
     it('it should fail on invalid challenge', (done) => {
-      chai.request(server).post('/profile/' + publicKey ).send(testData).end((err, res) => {
+      chai.request(server).post(`/profile/${publicKey}`).send(testData).end((err, res) => {
         res.should.have.status(200);
         shouldBeValidChallengeResponse(res.body, testData);
-        const challenge = res.body.challenge;
+        const { challenge } = res.body;
         const signature = signChallenge(challenge);
-        chai.request(server).post('/profile/' + publicKey ).send({
+        chai.request(server).post(`/profile/${publicKey}`).send({
           challenge: challenge.substring(2),
           signature,
-        }).end((err, res) => {
-          res.should.have.status(401);
-          res.body.should.be.a('object');
-          res.body.should.have.property('err', 'Could not find challenge (maybe it already expired?)');
+        }).end((innerError, innerRes) => {
+          innerRes.should.have.status(401);
+          innerRes.body.should.be.a('object');
+          innerRes.body.should.have.property('err', 'Could not find challenge (maybe it already expired?)');
           done();
         });
       });
     });
 
     it('it should fail at a change of paths', (done) => {
-      chai.request(server).post('/profile/' + publicKey ).send(testData).end((err, res) => {
+      chai.request(server).post(`/profile/${publicKey}`).send(testData).end((err, res) => {
         res.should.have.status(200);
         shouldBeValidChallengeResponse(res.body, testData);
-        const challenge = res.body.challenge;
+        const { challenge } = res.body;
         const signature = signChallenge(challenge);
-        chai.request(server).post('/profile/' ).send({
-          challenge: challenge,
+        chai.request(server).post('/profile/').send({
+          challenge,
           signature,
-        }).end((err, res) => {
-          res.should.have.status(401);
-          res.body.should.be.a('object');
-          res.body.should.have.property('err', 'Challenge was issued for a different path');
+        }).end((innerError, innerRes) => {
+          innerRes.should.have.status(401);
+          innerRes.body.should.be.a('object');
+          innerRes.body.should.have.property('err', 'Challenge was issued for a different path');
           done();
         });
       });
@@ -96,6 +96,3 @@ describe('Authenticator', () => {
     });
   });
 });
-
-
-

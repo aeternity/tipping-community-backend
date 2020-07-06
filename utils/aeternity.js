@@ -10,8 +10,8 @@ const tippingContractUtil = require('tipping-contract/util/tippingContractUtil')
 
 const MIDDLEWARE_URL = process.env.MIDDLEWARE_URL || 'https://mainnet.aeternity.io';
 
-const TIPPING_INTERFACE = fs.readFileSync(`${__dirname}/contracts/TippingInterface.aes`, 'utf-8');
-const ORACLE_SERVICE_INTERFACE = fs.readFileSync(`${__dirname}/contracts/OracleServiceInterface.aes`, 'utf-8');
+const TIPPING_INTERFACE = require('tipping-contract/TippingInterface.aes');
+const ORACLE_SERVICE_INTERFACE = require('tipping-oracle-service/OracleServiceInterface.aes');
 const TOKEN_CONTRACT_INTERFACE = fs.readFileSync(`${__dirname}/contracts/FungibleTokenInterface.aes`, 'utf-8');
 const TOKEN_REGISTRY = fs.readFileSync(`${__dirname}/contracts/TokenRegistry.aes`, 'utf-8');
 

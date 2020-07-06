@@ -39,11 +39,14 @@ class Aeternity {
         address: process.env.PUBLIC_KEY,
         compilerUrl: process.env.COMPILER_URL,
       });
+
       this.contract = await this.client.getContractInstance(TIPPING_INTERFACE, { contractAddress: process.env.CONTRACT_ADDRESS });
       this.oracleContract = await this.client.getContractInstance(
         ORACLE_SERVICE_INTERFACE,
         { contractAddress: process.env.ORACLE_CONTRACT_ADDRESS },
       );
+      this.tokenRegistry = await this.client.getContractInstance(TOKEN_REGISTRY, {contractAddress: process.env.TOKEN_REGISTRY_ADDRESS});
+      this.tokenContracts = {};
     }
   }
 
@@ -168,8 +171,7 @@ class Aeternity {
 
   getTokenRegistryState = async () => {
     const fetchData = async () => {
-      const contract = await this.client.getContractInstance(TOKEN_REGISTRY, {contractAddress: process.env.TOKEN_REGISTRY_ADDRESS});
-      return contract.methods.get_state().then(r => r.decodedResult);
+      return this.tokenRegistry.methods.get_state().then(r => r.decodedResult);
     }
 
     return this.cache
@@ -179,7 +181,9 @@ class Aeternity {
 
   getTokenMetaInfoCacheAccounts = async (address) => {
     const fetchData = async () => {
-      const contract = await this.client.getContractInstance(TOKEN_CONTRACT_INTERFACE, { contractAddress: address });
+      const contract =  this.tokenContracts[address]
+        ? this.tokenContracts[address]
+        : await this.client.getContractInstance(TOKEN_CONTRACT_INTERFACE, { contractAddress: address });
 
       const metaInfo = await contract.methods.meta_info().then(r => r.decodedResult).catch(e => {
         console.warn(e.message);
@@ -188,10 +192,7 @@ class Aeternity {
 
       // add token to registry if not added yet
       const tokenInRegistry = await this.getTokenRegistryState().then(state => state.find(([token, _]) => token === address));
-      if (metaInfo && !tokenInRegistry) {
-        const contract = await this.client.getContractInstance(TOKEN_REGISTRY, {contractAddress: process.env.TOKEN_REGISTRY_ADDRESS});
-        await contract.methods.add_token(address);
-      }
+      if (metaInfo && !tokenInRegistry) await this.tokenRegistry.methods.add_token(address);
       return metaInfo
     };
 
@@ -211,8 +212,9 @@ class Aeternity {
 
   getCacheTokenAccounts = async (token) => {
     const fetchBalances = async () => {
-
-      const contract = await this.client.getContractInstance(TOKEN_CONTRACT_INTERFACE, {contractAddress: token});
+      const contract =  this.tokenContracts[token]
+        ? this.tokenContracts[token]
+        : await this.client.getContractInstance(TOKEN_CONTRACT_INTERFACE, {contractAddress: token});
 
       const balances = await contract.methods.balances().then(r => r.decodedResult);
       balances.asyncMap(async ([account, _]) => {

@@ -12,8 +12,8 @@ const MIDDLEWARE_URL = process.env.MIDDLEWARE_URL || 'https://mainnet.aeternity.
 
 const TIPPING_INTERFACE = require('tipping-contract/TippingInterface.aes');
 const ORACLE_SERVICE_INTERFACE = require('tipping-oracle-service/OracleServiceInterface.aes');
-const TOKEN_CONTRACT_INTERFACE = fs.readFileSync(`${__dirname}/contracts/FungibleTokenInterface.aes`, 'utf-8');
-const TOKEN_REGISTRY = fs.readFileSync(`${__dirname}/contracts/TokenRegistry.aes`, 'utf-8');
+const TOKEN_CONTRACT_INTERFACE = require('aeternity-fungible-token/FungibleTokenFullInterface.aes');
+const TOKEN_REGISTRY = require('token-registry/TokenRegistry.aes');
 
 class Aeternity {
   constructor () {

@@ -35,14 +35,17 @@ module.exports = (sequelize, DataTypes) => {
     timestamps: true,
   });
   Comment.belongsTo(Profile(sequelize, DataTypes), { foreignKey: 'author' });
-  Comment.addHook('beforeCreate', async (comment, options) => {
-    const { Profile } = require('../models');
-    const profile = await Profile.findOne({ where: { author: comment.author }, raw: true });
-    if (!profile) await Profile.create({
-      author: comment.author,
-      signature: 'automated-profile',
-      challenge: 'automated-profile',
-    });
+  Comment.addHook('beforeCreate', async (comment) => {
+    // eslint-disable-next-line global-require
+    const { Profile: ProfileModel } = require('.');
+    const profile = await ProfileModel.findOne({ where: { author: comment.author }, raw: true });
+    if (!profile) {
+      await ProfileModel.create({
+        author: comment.author,
+        signature: 'automated-profile',
+        challenge: 'automated-profile',
+      });
+    }
   });
   return Comment;
 };

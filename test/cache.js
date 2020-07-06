@@ -1,17 +1,18 @@
-//Require the dev-dependencies
-let chai = require('chai');
-let chaiHttp = require('chai-http');
-let server = require('../server');
-let should = chai.should();
-const cache = require('../utils/cache');
+// Require the dev-dependencies
+const chai = require('chai');
+const chaiHttp = require('chai-http');
+const { describe, it, before } = require('mocha');
 const sinon = require('sinon');
+
+const server = require('../server');
+const cache = require('../utils/cache');
 const CacheLogic = require('../logic/cacheLogic.js');
 const BlacklistLogic = require('../logic/blacklistLogic.js');
 
+chai.should();
 chai.use(chaiHttp);
-//Our parent block
+// Our parent block
 describe('Cache', () => {
-
   before(async function () {
     this.timeout(20000);
     await cache.del(['getTips']);
@@ -30,55 +31,52 @@ describe('Cache', () => {
   const minimalTimeout = 200;
 
   describe('API', () => {
-
     it('it should GET all cache items', function (done) {
       this.timeout(20000);
       checkCachedRoute('/cache/tips', 'array', done);
     });
 
     it('it should GET all cache items with filters', async () => {
-      const stub = sinon.stub(CacheLogic, 'getAllTips').callsFake(function () {
-        return [
-          {
-            "sender": "ak_y87WkN4C4QevzjTuEYHg6XLqiWx3rjfYDFLBmZiqiro5mkRag",
-            "title": "#test tip",
-            "id": 1,
-            "url": "https://github.com/thepiwo",
-            "topics": [
-              "#test"
-            ],
-            "preview": {
-              "title": "thepiwo - Overview",
-              "description": "Blockchain Engineer / Full-Stack Developer justaverylongtestingname.chain - thepiwo",
-            },
-            "chainName": "justaverylongtestingname.chain",
+      const stub = sinon.stub(CacheLogic, 'getAllTips').callsFake(() => [
+        {
+          sender: 'ak_y87WkN4C4QevzjTuEYHg6XLqiWx3rjfYDFLBmZiqiro5mkRag',
+          title: '#test tip',
+          id: 1,
+          url: 'https://github.com/thepiwo',
+          topics: [
+            '#test',
+          ],
+          preview: {
+            title: 'thepiwo - Overview',
+            description: 'Blockchain Engineer / Full-Stack Developer justaverylongtestingname.chain - thepiwo',
           },
-          {
-            "sender": "ak_taR2fRi3cXYn7a7DaUNcU2KU41psa5JKmhyPC9QcER5T4efqp",
-            "title": "#other test",
-            "id": 2,
-            "url": "https://github.com/mradkov",
-            "topics": [
-              "#other"
-            ],
-          },
-        ];
-      });
+          chainName: 'justaverylongtestingname.chain',
+        },
+        {
+          sender: 'ak_taR2fRi3cXYn7a7DaUNcU2KU41psa5JKmhyPC9QcER5T4efqp',
+          title: '#other test',
+          id: 2,
+          url: 'https://github.com/mradkov',
+          topics: [
+            '#other',
+          ],
+        },
+      ]);
 
-      const resTest = await chai.request(server).get('/cache/tips?search=test')
+      const resTest = await chai.request(server).get('/cache/tips?search=test');
       resTest.should.have.status(200);
       resTest.body.should.be.a('array');
       resTest.body.should.have.length(2);
       stub.callCount.should.eql(1);
 
-      const resGithub = await chai.request(server).get('/cache/tips?search=github.com')
+      const resGithub = await chai.request(server).get('/cache/tips?search=github.com');
       resGithub.should.have.status(200);
       resGithub.body.should.be.a('array');
       resGithub.body.should.have.length(2);
       stub.callCount.should.eql(2);
 
       // only find topic with #
-      const resTopic = await chai.request(server).get('/cache/tips?search=%23test')
+      const resTopic = await chai.request(server).get('/cache/tips?search=%23test');
       resTopic.should.have.status(200);
       resTopic.body.should.be.a('array');
       resTopic.body.should.have.length(1);
@@ -89,41 +87,39 @@ describe('Cache', () => {
     });
 
     it('it should GET all cache items with language filters', async () => {
-      const stub = sinon.stub(CacheLogic, 'getAllTips').callsFake(function () {
-        return [
-          {
-            "id": 1,
-            "contentLanguage": "en",
-            "preview": {
-              "lang": "en",
-            },
+      const stub = sinon.stub(CacheLogic, 'getAllTips').callsFake(() => [
+        {
+          id: 1,
+          contentLanguage: 'en',
+          preview: {
+            lang: 'en',
           },
-          {
-            "id": 2,
-            "contentLanguage": null,
-            "preview": {
-              "lang": "en",
-            },
+        },
+        {
+          id: 2,
+          contentLanguage: null,
+          preview: {
+            lang: 'en',
           },
-          {
-            "id": 3,
-            "contentLanguage": "zh",
-            "preview": {
-              "lang": "en",
-            },
+        },
+        {
+          id: 3,
+          contentLanguage: 'zh',
+          preview: {
+            lang: 'en',
           },
-          {
-            "id": 4,
-            "contentLanguage": "zh",
-            "preview": {
-              "lang": "zh",
-            },
-          }
-        ];
-      });
+        },
+        {
+          id: 4,
+          contentLanguage: 'zh',
+          preview: {
+            lang: 'zh',
+          },
+        },
+      ]);
 
       // filter by english lang
-      const resLanguageEN = await chai.request(server).get('/cache/tips?language=en')
+      const resLanguageEN = await chai.request(server).get('/cache/tips?language=en');
       resLanguageEN.should.have.status(200);
       resLanguageEN.body.should.be.a('array');
       resLanguageEN.body.should.have.length(2);
@@ -131,7 +127,7 @@ describe('Cache', () => {
       stub.callCount.should.eql(1);
 
       // filter by chinese lang
-      const resLanguageZH = await chai.request(server).get('/cache/tips?language=zh')
+      const resLanguageZH = await chai.request(server).get('/cache/tips?language=zh');
       resLanguageZH.should.have.status(200);
       resLanguageZH.body.should.be.a('array');
       resLanguageZH.body.should.have.length(1);
@@ -139,7 +135,7 @@ describe('Cache', () => {
       stub.callCount.should.eql(2);
 
       // filter by chinese lang
-      const resLanguageZHEN = await chai.request(server).get('/cache/tips?language=zh|en')
+      const resLanguageZHEN = await chai.request(server).get('/cache/tips?language=zh|en');
       resLanguageZHEN.should.have.status(200);
       resLanguageZHEN.body.should.be.a('array');
       resLanguageZHEN.body.should.have.length(4);
@@ -148,7 +144,6 @@ describe('Cache', () => {
 
       stub.restore();
     });
-
 
     it('it should GET all cache items in less than 200ms', function (done) {
       this.timeout(200);
@@ -170,14 +165,14 @@ describe('Cache', () => {
       checkCachedRoute('/cache/tip?id=1', 'object', done);
     });
 
-    it(`it should 404 on a non existing tip`, function (done) {
+    it('it should 404 on a non existing tip', (done) => {
       chai.request(server).get('/cache/tip?id=15687651684785').end((err, res) => {
         res.should.have.status(404);
         done();
       });
     });
 
-    it(`it should GET a flagged / blacklisted tip`, function (done) {
+    it('it should GET a flagged / blacklisted tip', (done) => {
       const stub = sinon.stub(BlacklistLogic, 'getBlacklistedIds').callsFake(() => [1]);
       chai.request(server).get('/cache/tips').end((err, res) => {
         res.should.have.status(200);
@@ -187,11 +182,11 @@ describe('Cache', () => {
       });
     });
 
-    it(`it should not GET a flagged / blacklisted tip when requesting the full list`, function (done) {
+    it('it should not GET a flagged / blacklisted tip when requesting the full list', (done) => {
       const stub = sinon.stub(BlacklistLogic, 'getBlacklistedIds').callsFake(() => [1]);
       chai.request(server).get('/cache/tips').end((err, res) => {
         res.should.have.status(200);
-        const tipIds = res.body.map(tip => tip.id);
+        const tipIds = res.body.map((tip) => tip.id);
         tipIds.should.not.contain(1);
         stub.callCount.should.eql(1);
         stub.restore();
@@ -199,11 +194,11 @@ describe('Cache', () => {
       });
     });
 
-    it(`it should GET a flagged / blacklisted tip when requesting the full list explicitly`, function (done) {
+    it('it should GET a flagged / blacklisted tip when requesting the full list explicitly', (done) => {
       const stub = sinon.stub(BlacklistLogic, 'getBlacklistedIds').callsFake(() => [1]);
       chai.request(server).get('/cache/tips?blacklist=false').end((err, res) => {
         res.should.have.status(200);
-        const tipIds = res.body.map(tip => tip.id);
+        const tipIds = res.body.map((tip) => tip.id);
         tipIds.should.contain(1);
         stub.callCount.should.eql(1);
         stub.restore();
@@ -216,7 +211,7 @@ describe('Cache', () => {
       checkCachedRoute('/cache/userStats?address=ak_fUq2NesPXcYZ1CcqBcGC3StpdnQw3iVxMA3YSeCNAwfN4myQk', 'object', done);
     });
 
-    it(`it should GET all cached stats in less than 1000ms`, function (done) {
+    it('it should GET all cached stats in less than 1000ms', function (done) {
       this.timeout(1000);
       checkCachedRoute('/cache/stats', 'object', done);
     });
@@ -226,7 +221,7 @@ describe('Cache', () => {
       checkCachedRoute('/cache/chainnames', 'object', done);
     });
 
-    it('it should GET the cached price', function (done) {
+    it('it should GET the cached price', (done) => {
       checkCachedRoute('/cache/price', 'object', done);
     });
 
@@ -240,7 +235,7 @@ describe('Cache', () => {
       checkCachedRoute('/cache/topics', 'array', done);
     });
 
-    it.skip(`it should GET all cached events`, function (done) {
+    it.skip('it should GET all cached events', (done) => {
       checkCachedRoute('/cache/events', 'array', done);
     });
 
@@ -249,17 +244,16 @@ describe('Cache', () => {
       checkCachedRoute('/cache/events', 'array', done);
     });
 
-    it('it should invalidate the tips cache', function (done) {
+    it('it should invalidate the tips cache', (done) => {
       checkCachedRoute('/cache/invalidate/tips', 'object', done);
     });
 
-    it('it should invalidate the oracle cache', function (done) {
+    it('it should invalidate the oracle cache', (done) => {
       checkCachedRoute('/cache/invalidate/oracle', 'object', done);
     });
 
-    it('it should invalidate the events cache', function (done) {
+    it('it should invalidate the events cache', (done) => {
       checkCachedRoute('/cache/invalidate/events', 'object', done);
     });
   });
-})
-;
+});

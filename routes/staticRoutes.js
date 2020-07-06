@@ -1,4 +1,4 @@
-const Router = require('express').Router;
+const { Router } = require('express');
 const StaticLogic = require('../logic/staticLogic.js');
 
 const router = new Router();

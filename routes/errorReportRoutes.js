@@ -1,4 +1,4 @@
-const Router = require('express').Router;
+const { Router } = require('express');
 const Logic = require('../logic/errorReportLogic.js');
 const { basicAuth } = require('../utils/auth.js');
 

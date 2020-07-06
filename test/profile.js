@@ -1,26 +1,27 @@
-//Require the dev-dependencies
-let chai = require('chai');
-let chaiHttp = require('chai-http');
-let server = require('../server');
-let should = chai.should();
-
-const expect = chai.expect;
-const { Profile, IPFSEntry, Comment } = require('../models');
+// Require the dev-dependencies
+const chai = require('chai');
+const chaiHttp = require('chai-http');
+const sinon = require('sinon');
+const { describe, it, before } = require('mocha');
 const { generateKeyPair, hash } = require('@aeternity/aepp-sdk').Crypto;
 const fs = require('fs');
-const { IPFS_TYPES } = require('../models/enums/ipfs')
+
+const { Profile, IPFSEntry, Comment } = require('../models');
+const server = require('../server');
+const { IPFS_TYPES } = require('../models/enums/ipfs');
 const ae = require('../utils/aeternity.js');
-const sinon = require('sinon');
 const {
   publicKey,
   performSignedJSONRequest,
   performSignedMultipartFormRequest,
 } = require('../utils/testingUtil');
 
-chai.use(chaiHttp);
-//Our parent block
-describe('Profile', () => {
+const { expect } = chai;
 
+chai.should();
+chai.use(chaiHttp);
+// Our parent block
+describe('Profile', () => {
   const testData = {
     biography: 'What an awesome bio',
     preferredChainName: 'awesomename.chain',
@@ -29,7 +30,7 @@ describe('Profile', () => {
     location: 'awesome, location, country',
   };
 
-  before(async () => { //Before all tests we empty the database once
+  before(async () => { // Before all tests we empty the database once
     await Comment.destroy({
       where: {},
       truncate: true,
@@ -45,21 +46,18 @@ describe('Profile', () => {
   });
 
   describe('Profile API', () => {
-
     it('it should 404 on non existing profile', (done) => {
-      chai.request(server).get('/profile/' + publicKey).end((err, res) => {
+      chai.request(server).get(`/profile/${publicKey}`).end((err, res) => {
         res.should.have.status(404);
         done();
       });
     });
 
     it('it should CREATE a new profile', (done) => {
-      const stub = sinon.stub(ae, 'getChainNamesByAddress').callsFake(function () {
-        return [{
-          name: testData.preferredChainName,
-        }];
-      });
-      performSignedJSONRequest(server, 'post', '/profile/' + publicKey, testData)
+      const stub = sinon.stub(ae, 'getChainNamesByAddress').callsFake(() => [{
+        name: testData.preferredChainName,
+      }]);
+      performSignedJSONRequest(server, 'post', `/profile/${publicKey}`, testData)
         .then(({ res, signature, challenge }) => {
           res.should.have.status(200);
           res.body.should.be.a('object');
@@ -74,14 +72,14 @@ describe('Profile', () => {
           res.body.createdAt.should.contain('Z');
           res.body.should.have.property('updatedAt');
           res.body.updatedAt.should.contain('Z');
-          stub.called.should.be.true;
+          stub.called.should.equal(true);
           stub.restore();
           done();
         });
     });
 
     it('it should GET a profile', (done) => {
-      chai.request(server).get('/profile/' + publicKey).end((err, res) => {
+      chai.request(server).get(`/profile/${publicKey}`).end((err, res) => {
         res.should.have.status(200);
         res.body.should.be.a('object');
         res.body.should.have.property('biography', testData.biography);
@@ -98,7 +96,7 @@ describe('Profile', () => {
 
     const newBio = 'another updated bio';
     it('it should allow to update an profile', (done) => {
-      performSignedJSONRequest(server, 'post', '/profile/' + publicKey, {
+      performSignedJSONRequest(server, 'post', `/profile/${publicKey}`, {
         author: testData.author, biography: newBio,
       }).then(({ res }) => {
         res.should.have.status(200);
@@ -109,7 +107,7 @@ describe('Profile', () => {
     });
 
     it('it should GET a profile with updated bio', (done) => {
-      chai.request(server).get('/profile/' + publicKey).end((err, res) => {
+      chai.request(server).get(`/profile/${publicKey}`).end((err, res) => {
         res.should.have.status(200);
         res.body.should.be.a('object');
         res.body.should.have.property('biography', newBio);
@@ -120,37 +118,35 @@ describe('Profile', () => {
   });
 
   describe('Profile Image API', () => {
-
     before((done) => {
       fs.readdirSync('images')
-        .filter(fileName => fileName.includes('ak_'))
-        .map(file => fs.unlinkSync('images/' + file));
+        .filter((fileName) => fileName.includes('ak_'))
+        .map((file) => fs.unlinkSync(`images/${file}`));
 
       Profile.destroy({
         where: {},
         truncate: true,
-      }).then(() =>
-        Profile.create({
-          ...testData,
-          signature: 'signature',
-          challenge: 'challenge',
-        }).then(() => done()));
+      }).then(() => Profile.create({
+        ...testData,
+        signature: 'signature',
+        challenge: 'challenge',
+      }).then(() => done()));
     });
 
     const binaryParser = function (res, cb) {
       res.setEncoding('binary');
       res.data = '';
-      res.on('data', function (chunk) {
+      res.on('data', (chunk) => {
         res.data += chunk;
       });
-      res.on('end', function () {
+      res.on('end', () => {
         cb(null, Buffer.from(res.data, 'binary'));
       });
     };
 
     it('it should return 404 when no profile pic', (done) => {
-      chai.request(server).get('/profile/image/' + publicKey)
-        .end(function (err, res) {
+      chai.request(server).get(`/profile/image/${publicKey}`)
+        .end((err, res) => {
           if (err) {
             done(err);
           }
@@ -160,18 +156,18 @@ describe('Profile', () => {
     });
 
     it('it should allow an image upload on existing profile', (done) => {
-      performSignedMultipartFormRequest(server, 'post', '/profile/' + publicKey, 'image', './test/test.png')
+      performSignedMultipartFormRequest(server, 'post', `/profile/${publicKey}`, 'image', './test/test.png')
         .then(({ res, signature, challenge }) => {
           res.should.have.status(200);
           res.body.should.be.a('object');
           res.body.should.have.property('biography', testData.biography);
           res.body.should.have.property('author', testData.author);
           res.body.should.have.property('image');
-          res.body.image.should.contain('/images/' + publicKey);
+          res.body.image.should.contain(`/images/${publicKey}`);
           res.body.should.have.property('signature', signature);
           res.body.should.have.property('challenge', challenge);
-          res.body.should.have.property('imageSignature').is.null;
-          res.body.should.have.property('imageChallenge').is.null;
+          res.body.should.have.property('imageSignature', null);
+          res.body.should.have.property('imageChallenge', null);
           res.body.should.have.property('createdAt');
           res.body.should.have.property('updatedAt');
           done();
@@ -179,26 +175,24 @@ describe('Profile', () => {
     });
 
     it('it should allow an image upload on new profile', (done) => {
-      const { publicKey, secretKey } = generateKeyPair();
-      performSignedMultipartFormRequest(server, 'post', '/profile/' + publicKey, 'image', './test/test.png', secretKey)
+      const { publicKey: localPublicKey, secretKey } = generateKeyPair();
+      performSignedMultipartFormRequest(server, 'post', `/profile/${localPublicKey}`, 'image', './test/test.png', secretKey)
         .then(({ res, signature, challenge }) => {
           res.should.have.status(200);
           res.body.should.be.a('object');
           res.body.should.have.property('biography', null);
-          res.body.should.have.property('author', publicKey);
+          res.body.should.have.property('author', localPublicKey);
           res.body.should.have.property('image');
-          res.body.image.should.contain('/images/' + publicKey);
+          res.body.image.should.contain(`/images/${localPublicKey}`);
           res.body.should.have.property('signature', signature);
           res.body.should.have.property('challenge', challenge);
-          res.body.should.have.property('imageSignature').is.null;
-          res.body.should.have.property('imageChallenge').is.null;
+          res.body.should.have.property('imageSignature', null);
+          res.body.should.have.property('imageChallenge', null);
           res.body.should.have.property('createdAt');
           res.body.should.have.property('updatedAt');
           done();
         });
     });
-
-    let ipfsHash = null;
 
     it('it should create an ipfs entry when uploading a new profile picture', async () => {
       const entry = await IPFSEntry.findOne({
@@ -215,24 +209,23 @@ describe('Profile', () => {
       entry.should.have.property('reference', publicKey);
       entry.should.have.property('createdAt');
       entry.should.have.property('updatedAt');
-      ipfsHash = entry.hash;
     });
 
     let imageURL = '';
     it('it should GET an profile with image', (done) => {
-      chai.request(server).get('/profile/' + publicKey)
+      chai.request(server).get(`/profile/${publicKey}`)
         .end((err, res) => {
           res.should.have.status(200);
           res.body.should.be.a('object');
           res.body.should.have.property('biography', testData.biography);
           res.body.should.have.property('author', testData.author);
           res.body.should.have.property('image');
-          res.body.image.should.contain('/images/' + publicKey);
+          res.body.image.should.contain(`/images/${publicKey}`);
           imageURL = res.body.image;
           res.body.should.have.property('signature');
           res.body.should.have.property('challenge');
-          res.body.should.have.property('imageSignature').null;
-          res.body.should.have.property('imageChallenge').null;
+          res.body.should.have.property('imageSignature', null);
+          res.body.should.have.property('imageChallenge', null);
           res.body.should.have.property('createdAt');
           res.body.should.have.property('updatedAt');
           done();
@@ -243,7 +236,7 @@ describe('Profile', () => {
       chai.request(server).get(imageURL)
         .buffer()
         .parse(binaryParser)
-        .end(function (err, res) {
+        .end((err, res) => {
           if (err) {
             done(err);
           }
@@ -263,7 +256,7 @@ describe('Profile', () => {
     });
 
     it('it should allow overwriting of the profile image', (done) => {
-      performSignedMultipartFormRequest(server, 'post', '/profile/' + publicKey, 'image', './test/test.png')
+      performSignedMultipartFormRequest(server, 'post', `/profile/${publicKey}`, 'image', './test/test.png')
         .then(({ res }) => {
           res.should.have.status(200);
           done();
@@ -287,7 +280,7 @@ describe('Profile', () => {
     });
 
     it('it should delete the image', (done) => {
-      performSignedJSONRequest(server, 'post', '/profile/' + publicKey, { image: null })
+      performSignedJSONRequest(server, 'post', `/profile/${publicKey}`, { image: null })
         .then(({ res }) => {
           res.should.have.status(200);
           done();
@@ -295,20 +288,18 @@ describe('Profile', () => {
     });
 
     it('it should return no image after deletion ', (done) => {
-      chai.request(server).get('/profile/' + publicKey)
+      chai.request(server).get(`/profile/${publicKey}`)
         .end((err, res) => {
           res.should.have.status(200);
           res.body.should.be.a('object');
           res.body.should.have.property('image', false);
-          res.body.should.have.property('imageSignature').null;
-          res.body.should.have.property('imageChallenge').null;
           done();
         });
     });
 
     it('it should return 404 after deleting a profile image', (done) => {
-      chai.request(server).get('/profile/image/' + publicKey)
-        .end(function (err, res) {
+      chai.request(server).get(`/profile/image/${publicKey}`)
+        .end((err, res) => {
           if (err) {
             done(err);
           }
@@ -319,37 +310,35 @@ describe('Profile', () => {
   });
 
   describe('Cover Image API', () => {
-
     before((done) => {
       fs.readdirSync('images')
-        .filter(fileName => fileName.includes('ak_'))
-        .map(file => fs.unlinkSync('images/' + file));
+        .filter((fileName) => fileName.includes('ak_'))
+        .map((file) => fs.unlinkSync(`images/${file}`));
 
       Profile.destroy({
         where: {},
         truncate: true,
-      }).then(() =>
-        Profile.create({
-          ...testData,
-          signature: 'signature',
-          challenge: 'challenge',
-        }).then(() => done()));
+      }).then(() => Profile.create({
+        ...testData,
+        signature: 'signature',
+        challenge: 'challenge',
+      }).then(() => done()));
     });
 
     const binaryParser = function (res, cb) {
       res.setEncoding('binary');
       res.data = '';
-      res.on('data', function (chunk) {
+      res.on('data', (chunk) => {
         res.data += chunk;
       });
-      res.on('end', function () {
+      res.on('end', () => {
         cb(null, Buffer.from(res.data, 'binary'));
       });
     };
 
     it('it should return 404 when no cover pic', (done) => {
-      chai.request(server).get('/profile/' + publicKey)
-        .end(function (err, res) {
+      chai.request(server).get(`/profile/${publicKey}`)
+        .end((err, res) => {
           if (err) {
             done(err);
           }
@@ -360,18 +349,18 @@ describe('Profile', () => {
     });
 
     it('it should allow an cover image upload on existing profile', (done) => {
-      performSignedMultipartFormRequest(server, 'post', '/profile/' + publicKey, 'coverImage', './test/test.png')
+      performSignedMultipartFormRequest(server, 'post', `/profile/${publicKey}`, 'coverImage', './test/test.png')
         .then(({ res, signature, challenge }) => {
           res.should.have.status(200);
           res.body.should.be.a('object');
           res.body.should.have.property('biography', testData.biography);
           res.body.should.have.property('author', testData.author);
           res.body.should.have.property('coverImage');
-          res.body.coverImage.should.contain('/images/' + publicKey);
+          res.body.coverImage.should.contain(`/images/${publicKey}`);
           res.body.should.have.property('signature', signature);
           res.body.should.have.property('challenge', challenge);
-          res.body.should.have.property('imageSignature').is.null;
-          res.body.should.have.property('imageChallenge').is.null;
+          res.body.should.have.property('imageSignature', null);
+          res.body.should.have.property('imageChallenge', null);
           res.body.should.have.property('createdAt');
           res.body.should.have.property('updatedAt');
           done();
@@ -379,26 +368,24 @@ describe('Profile', () => {
     });
 
     it('it should allow an cover image upload on new profile', (done) => {
-      const { publicKey, secretKey } = generateKeyPair();
-      performSignedMultipartFormRequest(server, 'post', '/profile/' + publicKey, 'coverImage', './test/test.png', secretKey)
+      const { publicKey: localPublicKey, secretKey } = generateKeyPair();
+      performSignedMultipartFormRequest(server, 'post', `/profile/${localPublicKey}`, 'coverImage', './test/test.png', secretKey)
         .then(({ res, signature, challenge }) => {
           res.should.have.status(200);
           res.body.should.be.a('object');
           res.body.should.have.property('biography', null);
-          res.body.should.have.property('author', publicKey);
+          res.body.should.have.property('author', localPublicKey);
           res.body.should.have.property('coverImage');
-          res.body.coverImage.should.contain('/images/' + publicKey);
+          res.body.coverImage.should.contain(`/images/${localPublicKey}`);
           res.body.should.have.property('signature', signature);
           res.body.should.have.property('challenge', challenge);
-          res.body.should.have.property('imageSignature').is.null;
-          res.body.should.have.property('imageChallenge').is.null;
+          res.body.should.have.property('imageSignature', null);
+          res.body.should.have.property('imageChallenge', null);
           res.body.should.have.property('createdAt');
           res.body.should.have.property('updatedAt');
           done();
         });
     });
-
-    let ipfsHash = null;
 
     it('it should create an ipfs entry when uploading a new cover picture', async () => {
       const entry = await IPFSEntry.findOne({
@@ -415,24 +402,23 @@ describe('Profile', () => {
       entry.should.have.property('reference', publicKey);
       entry.should.have.property('createdAt');
       entry.should.have.property('updatedAt');
-      ipfsHash = entry.hash;
     });
 
     let imageURL = '';
     it('it should GET an profile with image', (done) => {
-      chai.request(server).get('/profile/' + publicKey)
+      chai.request(server).get(`/profile/${publicKey}`)
         .end((err, res) => {
           res.should.have.status(200);
           res.body.should.be.a('object');
           res.body.should.have.property('biography', testData.biography);
           res.body.should.have.property('author', testData.author);
           res.body.should.have.property('coverImage');
-          res.body.coverImage.should.contain('/images/' + publicKey);
+          res.body.coverImage.should.contain(`/images/${publicKey}`);
           imageURL = res.body.coverImage;
           res.body.should.have.property('signature');
           res.body.should.have.property('challenge');
-          res.body.should.have.property('imageSignature').null;
-          res.body.should.have.property('imageChallenge').null;
+          res.body.should.have.property('imageSignature', null);
+          res.body.should.have.property('imageChallenge', null);
           res.body.should.have.property('createdAt');
           res.body.should.have.property('updatedAt');
           done();
@@ -443,7 +429,7 @@ describe('Profile', () => {
       chai.request(server).get(imageURL)
         .buffer()
         .parse(binaryParser)
-        .end(function (err, res) {
+        .end((err, res) => {
           if (err) {
             done(err);
           }
@@ -463,7 +449,7 @@ describe('Profile', () => {
     });
 
     it('it should allow overwriting of the cover image', (done) => {
-      performSignedMultipartFormRequest(server, 'post', '/profile/' + publicKey, 'coverImage', './test/test.png')
+      performSignedMultipartFormRequest(server, 'post', `/profile/${publicKey}`, 'coverImage', './test/test.png')
         .then(({ res }) => {
           res.should.have.status(200);
           done();
@@ -487,7 +473,7 @@ describe('Profile', () => {
     });
 
     it('it should delete the cover image', (done) => {
-      performSignedJSONRequest(server, 'post', '/profile/' + publicKey, { coverImage: null })
+      performSignedJSONRequest(server, 'post', `/profile/${publicKey}`, { coverImage: null })
         .then(({ res }) => {
           res.should.have.status(200);
           done();
@@ -495,35 +481,32 @@ describe('Profile', () => {
     });
 
     it('it should return no image after deletion ', (done) => {
-      chai.request(server).get('/profile/' + publicKey)
+      chai.request(server).get(`/profile/${publicKey}`)
         .end((err, res) => {
           res.should.have.status(200);
           res.body.should.be.a('object');
           res.body.should.have.property('coverImage', false);
-          res.body.should.have.property('imageSignature').null;
-          res.body.should.have.property('imageChallenge').null;
           done();
         });
     });
   });
 
   describe('Legacy API', () => {
-
-    const { publicKey, secretKey } = generateKeyPair();
+    const { publicKey: localPublicKey, secretKey } = generateKeyPair();
 
     it('POST /profile/image/ak_... (upload new image)', (done) => {
-      performSignedMultipartFormRequest(server, 'post', '/profile/image/' + publicKey, 'image', './test/test.png', secretKey)
+      performSignedMultipartFormRequest(server, 'post', `/profile/image/${localPublicKey}`, 'image', './test/test.png', secretKey)
         .then(({ res, signature, challenge }) => {
           res.should.have.status(200);
           res.body.should.be.a('object');
           res.body.should.have.property('biography', null);
-          res.body.should.have.property('author', publicKey);
+          res.body.should.have.property('author', localPublicKey);
           res.body.should.have.property('image');
-          res.body.image.should.contain('/images/' + publicKey);
+          res.body.image.should.contain(`/images/${localPublicKey}`);
           res.body.should.have.property('signature', signature);
           res.body.should.have.property('challenge', challenge);
-          res.body.should.have.property('imageSignature').is.null;
-          res.body.should.have.property('imageChallenge').is.null;
+          res.body.should.have.property('imageSignature', null);
+          res.body.should.have.property('imageChallenge', null);
           res.body.should.have.property('createdAt');
           res.body.should.have.property('updatedAt');
           done();
@@ -531,7 +514,7 @@ describe('Profile', () => {
     });
 
     it('DELETE /profile/image/ak_...', (done) => {
-      performSignedJSONRequest(server, 'delete', '/profile/image/' + publicKey, {}, secretKey)
+      performSignedJSONRequest(server, 'delete', `/profile/image/${localPublicKey}`, {}, secretKey)
         .then(({ res }) => {
           res.should.have.status(200);
           res.body.should.be.a('object');
@@ -540,20 +523,18 @@ describe('Profile', () => {
     });
 
     it('it should return no image after deletion ', (done) => {
-      chai.request(server).get('/profile/' + publicKey)
+      chai.request(server).get(`/profile/${localPublicKey}`)
         .end((err, res) => {
           res.should.have.status(200);
           res.body.should.be.a('object');
           res.body.should.have.property('image', false);
-          res.body.should.have.property('imageSignature').null;
-          res.body.should.have.property('imageChallenge').null;
           done();
         });
     });
 
     it('it should return 404 after deleting a profile image', (done) => {
-      chai.request(server).get('/profile/image/' + publicKey)
-        .end(function (err, res) {
+      chai.request(server).get(`/profile/image/${localPublicKey}`)
+        .end((err, res) => {
           if (err) {
             done(err);
           }

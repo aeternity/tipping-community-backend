@@ -1,15 +1,15 @@
-//Require the dev-dependencies
-let chai = require('chai');
-let chaiHttp = require('chai-http');
-let server = require('../server');
-let should = chai.should();
-
+// Require the dev-dependencies
+const chai = require('chai');
+const chaiHttp = require('chai-http');
+const { describe, it, before } = require('mocha');
+const server = require('../server');
 const { ErrorReport } = require('../models');
 
+chai.should();
 chai.use(chaiHttp);
-//Our parent block
+// Our parent block
 describe('Error Reports', () => {
-  before((done) => { //Before each test we empty the database
+  before((done) => { // Before each test we empty the database
     ErrorReport.destroy({
       where: {},
       truncate: true,
@@ -29,11 +29,11 @@ describe('Error Reports', () => {
       Some
       Multiline
       Info`,
-      other: 'fields'
+      other: 'fields',
     },
     time: 143489512334,
     platform: 'extension',
-    description: 'description'
+    description: 'description',
   };
 
   describe('Error Report API', () => {

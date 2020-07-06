@@ -1,5 +1,5 @@
+const { Router } = require('express');
 const PayForTxLogic = require('../logic/payForTxLogic.js');
-const Router = require('express').Router;
 
 const router = new Router();
 
@@ -7,4 +7,3 @@ const router = new Router();
 router.post('/submit', PayForTxLogic.payForTx);
 
 module.exports = router;
-

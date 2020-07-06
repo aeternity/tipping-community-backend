@@ -1,4 +1,4 @@
-const Router = require('express').Router;
+const { Router } = require('express');
 const Logic = require('../logic/verifiedLogic.js');
 
 const router = new Router();

@@ -9,7 +9,8 @@
     "db:create": "npx sequelize-cli db:migrate",
     "db:makemigrations": "./node_modules/sequelize-auto-migrations/bin/makemigration.js",
     "lint": "eslint .",
-    "lint-fix": "eslint . --fix"
+    "lint-fix": "eslint --ext .js --fix .",
+    "lint-ci": "eslint --ext .js --max-warnings=0 ."
   },
   "repository": {
     "type": "git",

@@ -1,9 +1,9 @@
+const { Router } = require('express');
 const CacheLogic = require('../logic/cacheLogic.js');
-const Router = require('express').Router;
 
 const router = new Router();
 
-new CacheLogic(); //calls init
+CacheLogic.init(); // calls init
 
 // Open api routes
 router.get('/tip', CacheLogic.deliverTip);
@@ -31,4 +31,3 @@ router.get('/invalidate/oracle', CacheLogic.invalidateOracle);
 router.get('/invalidate/events', CacheLogic.invalidateContractEvents);
 
 module.exports = router;
-

@@ -1,16 +1,17 @@
-//Require the dev-dependencies
-let chai = require('chai');
-let chaiHttp = require('chai-http');
-let server = require('../server');
-let should = chai.should();
-const { Trace: TraceModel } = require('../models');
-const ae = require('../utils/aeternity');
+// Require the dev-dependencies
+const chai = require('chai');
+const chaiHttp = require('chai-http');
 const fs = require('fs');
+const { describe, it, before } = require('mocha');
+const server = require('../server');
+const ae = require('../utils/aeternity');
+const { Trace: TraceModel } = require('../models');
 
+chai.should();
 chai.use(chaiHttp);
-//Our parent block
+// Our parent block
 describe('Trace', () => {
-  before(async function () { //Before each test we empty the database
+  before(async function () { // Before each test we empty the database
     this.timeout(10000);
     await TraceModel.destroy({
       where: {},
@@ -30,22 +31,21 @@ describe('Trace', () => {
       });
     });
 
-    it('malformed request without url should not leave a trace', (done) => {
+    it('malformed request without url should not leave a trace', done => {
       chai.request(server).post('/claim/submit')
         .send({
           address: 'ak_25tyimcbt8W5BHauzazQKnb6oM1AbkPBYFu6fnSvp38kVrtr8t', // RANDOM PK
         })
         .end((err, res) => {
           res.should.have.status(400);
-          TraceModel.findAll({raw: true}).then(results => {
+          TraceModel.findAll({ raw: true }).then(results => {
             results.should.have.length(0);
             done();
           });
-
         });
     });
 
-    it('malformed request with claimamount 0 should not leave a trace', (done) => {
+    it('malformed request with claimamount 0 should not leave a trace', done => {
       chai.request(server).post('/claim/submit')
         .send({
           address: 'ak_25tyimcbt8W5BHauzazQKnb6oM1AbkPBYFu6fnSvp38kVrtr8t', // Random PK
@@ -53,14 +53,14 @@ describe('Trace', () => {
         })
         .end((err, res) => {
           res.should.have.status(500);
-          TraceModel.findAll({raw: true}).then(results => {
+          TraceModel.findAll({ raw: true }).then(results => {
             results.should.have.length(0);
             done();
           });
         });
     });
 
-    it('proper request should leave a trace', (done) => {
+    it('proper request should leave a trace', done => {
       chai.request(server).post('/claim/submit')
         .send({
           address: 'ak_25tyimcbt8W5BHauzazQKnb6oM1AbkPBYFu6fnSvp38kVrtr8t', // Random PK
@@ -69,7 +69,7 @@ describe('Trace', () => {
         .end((err, res) => {
           res.should.have.status(200);
           res.body.should.have.property('claimUUID');
-          fs.existsSync(`./traces/${res.body.claimUUID}.json`).should.be.true;
+          fs.existsSync(`./traces/${res.body.claimUUID}.json`).should.equal(true);
           done();
         });
     });

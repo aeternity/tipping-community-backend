@@ -2,19 +2,31 @@ const fs = require('fs');
 const path = require('path');
 
 module.exports = class Logger {
-
-  service = null;
-
-  constructor (_service) {
+  constructor(_service) {
     this.service = _service;
   }
 
-  log (message) {
-    message.date = (new Date).toISOString();
-    message.service = this.service;
-    const jsonString = JSON.stringify(message);
-    console.log(jsonString);
-    fs.appendFileSync(path.resolve(`./logs/${new Date().toISOString().substring(0, 10)}.log`), jsonString + '\n');
+  log(message) {
+    const logMessage = this.prepareMessage(message);
+    // eslint-disable-next-line no-console
+    console.log(logMessage);
+    fs.appendFileSync(path.resolve(`./logs/${new Date().toISOString().substring(0, 10)}.log`), `${JSON.stringify(logMessage)}\n`);
   }
 
+  error(message) {
+    let logMessage = this.prepareMessage(message, true);
+    if (message.stack && message.message) logMessage = this.prepareMessage({ message: message.message, stack: message.stack }, true);
+    // eslint-disable-next-line no-console
+    console.error(logMessage);
+    fs.appendFileSync(path.resolve(`./logs/${new Date().toISOString().substring(0, 10)}.log`), `${JSON.stringify(logMessage)}\n`);
+  }
+
+  prepareMessage(message, err = false) {
+    return {
+      msg: message,
+      service: this.service,
+      date: (new Date()).toISOString(),
+      level: err ? 'err' : 'info',
+    };
+  }
 };

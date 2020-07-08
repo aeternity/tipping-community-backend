@@ -1,9 +1,11 @@
-const { BlacklistEntry, Comment, LinkPreview, Profile } = require('../models');
 const Sequelize = require('sequelize');
+const {
+  BlacklistEntry, Comment, LinkPreview, Profile,
+} = require('../models');
+const Logger = require('../utils/logger');
 
 module.exports = class StaticLogic {
-
-  static async getStatsPerModel (Model) {
+  static async getStatsPerModel(Model) {
     return {
       today: await Model.count({
         where: {
@@ -30,22 +32,22 @@ module.exports = class StaticLogic {
     };
   }
 
-  static async getStats (req, res) {
+  static async getStats(req, res) {
     try {
-      res.send({
+      return res.send({
         comments: await StaticLogic.getStatsPerModel(Comment),
         linkPreviews: await StaticLogic.getStatsPerModel(LinkPreview),
         profiles: await StaticLogic.getStatsPerModel(Profile),
         blacklist: await StaticLogic.getStatsPerModel(BlacklistEntry),
       });
     } catch (err) {
-      console.error(err);
+      (new Logger('StaticLogic')).error(err);
       return res.status(500).send(err.message);
     }
   }
 
-  static async getGrayList (req, res) {
-    res.send([
+  static async getGrayList(req, res) {
+    return res.send([
       'facebook.com',
       'weibo.com',
       'pinterest.com',

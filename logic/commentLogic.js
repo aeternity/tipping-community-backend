@@ -1,26 +1,30 @@
 const { Comment, Profile } = require('../models');
 
 module.exports = class CommentLogic {
-
-  static async addItem (req, res) {
+  static async addItem(req, res) {
     try {
-      const { tipId, text, author, signature, challenge, parentId } = req.body;
-      if (tipId === null || tipId === undefined || !text || !author || !signature || !challenge) return res.status(400)
-        .send('Missing required field');
+      const {
+        tipId, text, author, signature, challenge, parentId,
+      } = req.body;
+      if (tipId === null || tipId === undefined || !text || !author || !signature || !challenge) {
+        return res.status(400)
+          .send('Missing required field');
+      }
       if (typeof parentId !== 'undefined') {
         const result = await Comment.findOne({ where: { id: parentId } }, { raw: true });
-        if (result === null) return res.status(400).send({ err: 'Could not find parent comment with id ' + parentId });
+        if (result === null) return res.status(400).send({ err: `Could not find parent comment with id ${parentId}` });
       }
 
-      const entry = await Comment.create({ tipId, text, author, signature, challenge, parentId });
-      res.send(entry);
+      const entry = await Comment.create({
+        tipId, text, author, signature, challenge, parentId,
+      });
+      return res.send(entry);
     } catch (e) {
-      console.error(e);
-      res.status(500).send(e.message);
+      return res.status(500).send(e.message);
     }
   }
 
-  static async removeItem (req, res) {
+  static async removeItem(req, res) {
     const result = await Comment.destroy({
       where: {
         id: req.params.id,
@@ -29,9 +33,10 @@ module.exports = class CommentLogic {
     return result === 1 ? res.sendStatus(200) : res.sendStatus(404);
   }
 
-  static async getAllItemsForThread (req, res) {
+  static async getAllItemsForThread(req, res) {
     res.send((await Comment.findAll({
-      where: { tipId: req.params.tipId }, include: [{
+      where: { tipId: req.params.tipId },
+      include: [{
         model: Comment,
         as: 'descendents',
         hierarchy: true,
@@ -39,9 +44,10 @@ module.exports = class CommentLogic {
     })).map(comment => comment.toJSON()));
   }
 
-  static async getAllItemsForAuthor (req, res) {
+  static async getAllItemsForAuthor(req, res) {
     res.send((await Comment.findAll({
-      where: { author: req.params.author }, include: [{
+      where: { author: req.params.author },
+      include: [{
         model: Comment,
         as: 'descendents',
         hierarchy: true,
@@ -49,8 +55,9 @@ module.exports = class CommentLogic {
     })).map(comment => comment.toJSON()));
   }
 
-  static async getAllItems (req, res) {
-    res.send((await Comment.findAll({include: [{
+  static async getAllItems(req, res) {
+    res.send((await Comment.findAll({
+      include: [{
         model: Comment,
         as: 'descendents',
         hierarchy: true,
@@ -58,9 +65,10 @@ module.exports = class CommentLogic {
     })).map(comment => comment.toJSON()));
   }
 
-  static async getSingleItem (req, res) {
+  static async getSingleItem(req, res) {
     const result = await Comment.findOne({
-      where: { id: req.params.id }, include: [{
+      where: { id: req.params.id },
+      include: [{
         model: Comment,
         as: 'descendents',
         hierarchy: true,
@@ -70,13 +78,13 @@ module.exports = class CommentLogic {
   }
 
   // TODO move to stats
-  static async fetchCommentCountForAddress (address) {
+  static async fetchCommentCountForAddress(address) {
     const result = await Comment.count({ where: { author: address }, raw: true });
-    return result ? result : 0;
+    return result || 0;
   }
 
   // TODO move to stats
-  static async getCommentCountForAddress (req, res) {
+  static async getCommentCountForAddress(req, res) {
     return res.send({
       count: await CommentLogic.fetchCommentCountForAddress(req.params.author),
       author: req.params.author,
@@ -84,16 +92,16 @@ module.exports = class CommentLogic {
   }
 
   // TODO move to stats
-  static fetchCommentCountForTips () {
+  static fetchCommentCountForTips() {
     return Comment.count({ group: ['tipId'], raw: true });
   }
 
   // TODO move to stats
-  static async getCommentCountForTips (req, res) {
+  static async getCommentCountForTips(req, res) {
     return res.send(await CommentLogic.fetchCommentCountForTips());
   }
 
-  static async updateItem (req, res) {
+  static async updateItem(req, res) {
     const { text, author, hidden } = req.body;
     if (!author) return res.status(400).send({ err: 'Author required' });
     if (!text && !hidden) return res.status(400).send({ err: 'Missing at least one updatable field' });
@@ -105,7 +113,7 @@ module.exports = class CommentLogic {
     return result ? res.send(result) : res.sendStatus(404);
   }
 
-  static async verifyAuthor (req, res, next) {
+  static async verifyAuthor(req, res, next) {
     if (!req.body.author) return res.status(400).send({ err: 'Author required' });
     const result = await Comment.findOne({ where: { id: req.params.id, author: req.body.author }, raw: true });
     return result ? next() : res.status(404).send({ err: `Could not find comment with id ${req.params.id} and ${req.body.author} as author` });

@@ -1,26 +1,27 @@
 const chai = require('chai');
 const chaiHttp = require('chai-http');
-const should = chai.should();
+const crypto = require('crypto');
+const { describe, it, before } = require('mocha');
 
 const ipfs = require('../utils/ipfs.js');
 
+chai.should();
 chai.use(chaiHttp);
-//Our parent block
+// Our parent block
 describe('IPFS', () => {
   describe('IPFS Util', () => {
-
     let path = null;
     let randomBuffer;
 
-    before((done) => {
-      require('crypto').randomBytes(1000000, function(err, buffer) {
+    before(done => {
+      crypto.randomBytes(1000000, (err, buffer) => {
         randomBuffer = buffer;
         done();
       });
     });
 
-    it('it should have a node property', (done) => {
-      ipfs.node.should.not.be.undefined;
+    it('it should have a node property', done => {
+      ipfs.should.have.property('node');
       done();
     });
 
@@ -47,14 +48,14 @@ describe('IPFS', () => {
       await ipfs.pinFile(path);
       const pinned = await ipfs.getPinnedFiles();
       const foundResult = pinned.find(pinnedFile => pinnedFile.cid.toString() === path);
-      foundResult.should.not.be.undefined;
+      foundResult.should.be.an('object');
     });
 
     it('it should check if a file exists', async () => {
       const result = await ipfs.checkFileExists(path);
-      result.should.be.true;
+      result.should.equal(true);
       const negativeResult = await ipfs.checkFileExists('QmeQe5FTgMs8PNspzTQ3LRz1iMhdq9K34TQnsCP2jqt8wV');
-      negativeResult.should.be.false;
+      negativeResult.should.equal(false);
     });
 
     it('it should get a file', async () => {

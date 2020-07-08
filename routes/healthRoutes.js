@@ -1,5 +1,5 @@
+const { Router } = require('express');
 const HealthLogic = require('../logic/healthLogic.js');
-const Router = require('express').Router;
 
 const router = new Router();
 

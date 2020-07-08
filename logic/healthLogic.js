@@ -4,7 +4,6 @@ const models = require('../models');
 const aeternity = require('../utils/aeternity');
 
 module.exports = class HealthLogic {
-
   /**
    * Checks for database consistency
    * Its using the ORM to query all tables which errors
@@ -15,10 +14,9 @@ module.exports = class HealthLogic {
     try {
       await Promise.all(Object.keys(models)
         .filter(key => key.toLowerCase() !== 'sequelize')
-        .map(async (key) => models[key].findAll({ raw: true })));
+        .map(async key => models[key].findAll({ raw: true })));
       return true;
     } catch (e) {
-      console.error(e);
       return false;
     }
   }
@@ -29,29 +27,25 @@ module.exports = class HealthLogic {
       await ipfs.node.version();
       return true;
     } catch (e) {
-      console.error(e);
       return false;
     }
   }
 
   static async checkRedisHealth() {
     try {
-      await cache.getOrSet(['redisTest'], async () => 'done')
+      await cache.getOrSet(['redisTest'], async () => 'done');
       return true;
     } catch (e) {
-      console.error(e);
       return false;
     }
   }
-
 
   static async checkAEClient() {
     try {
       const address = await aeternity.client.address();
       const balance = await aeternity.client.getBalance(address);
-      return process.env.NODE_ENV === 'test'? parseInt(balance) === 0 : parseInt(balance) > 0;
+      return process.env.NODE_ENV === 'test' ? parseInt(balance, 10) === 0 : parseInt(balance, 10) > 0;
     } catch (e) {
-      console.error(e);
       return false;
     }
   }
@@ -63,7 +57,7 @@ module.exports = class HealthLogic {
     const aeHealth = await HealthLogic.checkAEClient();
     const allHealthy = dbHealth && ipfsHealth && redisHealth && aeHealth;
     res.status(allHealthy ? 200 : 500).send({
-      dbHealth, ipfsHealth, redisHealth, aeHealth, allHealthy
+      dbHealth, ipfsHealth, redisHealth, aeHealth, allHealthy,
     });
   }
 };

@@ -1,8 +1,10 @@
 const express = require('express');
+
 const app = express();
 const exphbs = require('express-handlebars');
 const cors = require('cors');
 const Logger = require('./utils/logger.js');
+
 const logger = new Logger('main');
 // VIEWS
 app.engine('handlebars', exphbs());
@@ -10,7 +12,7 @@ app.set('view engine', 'handlebars');
 app.use(express.json()); // for parsing application/json
 
 process.on('unhandledRejection', (reason, p) => {
-  console.error('Unhandled Rejection at: Promise', p, 'reason:', reason.stack)
+  logger.error('Unhandled Rejection at: Promise', p, 'reason:', reason.stack);
 });
 
 app.use(cors({
@@ -34,6 +36,7 @@ app.use('/errorreport', require('./routes/errorReportRoutes.js'));
 app.use('/tracing', require('./routes/tipTracingRoutes.js'));
 app.use('/health', require('./routes/healthRoutes.js'));
 app.use('/pin', require('./routes/pinRoutes.js'));
+
 app.use('/images', express.static('./images'));
 
 app.use((req, res) => {
@@ -41,7 +44,7 @@ app.use((req, res) => {
 });
 
 app.listen(3000, () => {
-  logger.log({ message: 'Server started' });
+  logger.log('Server started');
 });
 
 module.exports = app;

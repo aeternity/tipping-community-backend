@@ -1,33 +1,33 @@
 const chai = require('chai');
 const chaiHttp = require('chai-http');
-const server = require('../server');
-const should = chai.should();
+const { describe, it, before } = require('mocha');
 const sinon = require('sinon');
+const { generateKeyPair } = require('@aeternity/aepp-sdk').Crypto;
+const server = require('../server');
 
 const { Pin } = require('../models');
 const { publicKey, signChallenge, performSignedJSONRequest } = require('../utils/testingUtil');
-const { generateKeyPair } = require('@aeternity/aepp-sdk').Crypto;
 const CacheLogic = require('../logic/cacheLogic');
+
+chai.should();
 chai.use(chaiHttp);
-//Our parent block
+// Our parent block
 describe('Pinning', () => {
   let stub;
-  before(async () => { //Before each test we empty the database
+  before(async () => { // Before each test we empty the database
     await Pin.destroy({
       where: {},
       truncate: true,
     });
-    stub = sinon.stub(CacheLogic, 'getAllTips').callsFake(function () {
-      return [
-        {
-          id: 1,
-          url: 'https://www.test.domain.com',
-          claim: {
-            unclaimed: false,
-          }
+    stub = sinon.stub(CacheLogic, 'getAllTips').callsFake(() => [
+      {
+        id: 1,
+        url: 'https://www.test.domain.com',
+        claim: {
+          unclaimed: false,
         },
-      ];
-    });
+      },
+    ]);
   });
 
   const testData = {
@@ -36,9 +36,8 @@ describe('Pinning', () => {
   };
 
   describe('Pinning API', () => {
-    it('it should GET 0 pinned entries for a user', function (done) {
-
-      chai.request(server).get('/pin/' + publicKey).end((err, res) => {
+    it('it should GET 0 pinned entries for a user', done => {
+      chai.request(server).get(`/pin/${publicKey}`).end((err, res) => {
         res.should.have.status(200);
         res.body.should.be.a('array');
         res.body.length.should.be.eql(0);
@@ -46,16 +45,16 @@ describe('Pinning', () => {
       });
     });
 
-    it('it should reject CREATING a new pin with invalid type', (done) => {
-      performSignedJSONRequest(server, 'post', '/pin/' + publicKey, { ...testData, type: 'PIN' })
-        .then(({ res, signature, challenge }) => {
+    it('it should reject CREATING a new pin with invalid type', done => {
+      performSignedJSONRequest(server, 'post', `/pin/${publicKey}`, { ...testData, type: 'PIN' })
+        .then(({ res }) => {
           res.should.have.status(400);
           done();
         });
     });
 
-    it('it should CREATE a new pin via signature auth', (done) => {
-      performSignedJSONRequest(server, 'post', '/pin/' + publicKey, testData)
+    it('it should CREATE a new pin via signature auth', done => {
+      performSignedJSONRequest(server, 'post', `/pin/${publicKey}`, testData)
         .then(({ res, signature, challenge }) => {
           res.should.have.status(200);
           res.body.should.be.a('object');
@@ -70,8 +69,8 @@ describe('Pinning', () => {
         });
     });
 
-    it('it should GET one pinned entry for a user', (done) => {
-      chai.request(server).get('/pin/' + publicKey).end((err, res) => {
+    it('it should GET one pinned entry for a user', done => {
+      chai.request(server).get(`/pin/${publicKey}`).end((err, res) => {
         res.should.have.status(200);
         res.body.should.be.a('array');
         res.body.length.should.be.eql(1);
@@ -80,46 +79,45 @@ describe('Pinning', () => {
       });
     });
 
-    it('it should reject CREATING a new pin as another user', (done) => {
+    it('it should reject CREATING a new pin as another user', done => {
       const { secretKey } = generateKeyPair();
-      chai.request(server).post('/pin/' + publicKey)
+      chai.request(server).post(`/pin/${publicKey}`)
         .send(testData).end((err, res) => {
-        res.should.have.status(200);
-        res.body.should.be.a('object');
-        res.body.should.have.property('challenge');
-        const challenge = res.body.challenge;
-        const signature = signChallenge(challenge, secretKey);
-        chai.request(server).post('/pin/' + publicKey).send({ challenge, signature }).end((err, res) => {
-          res.should.have.status(401);
-          done();
+          res.should.have.status(200);
+          res.body.should.be.a('object');
+          res.body.should.have.property('challenge');
+          const { challenge } = res.body;
+          const signature = signChallenge(challenge, secretKey);
+          chai.request(server).post(`/pin/${publicKey}`).send({ challenge, signature })
+            .end((innerError, innerRes) => {
+              innerRes.should.have.status(401);
+              done();
+            });
         });
-      });
     });
 
-    it('it should reject REMOVING a pinned entry from another user', (done) => {
+    it('it should reject REMOVING a pinned entry from another user', done => {
       const { secretKey, publicKey: localPublicKey } = generateKeyPair();
-      performSignedJSONRequest(server, 'delete', '/pin/' + publicKey, {
+      performSignedJSONRequest(server, 'delete', `/pin/${publicKey}`, {
         ...testData,
         author: localPublicKey,
       }, secretKey)
         .then(({ res }) => {
-          console.log(res.text);
           res.should.have.status(401);
           done();
         });
     });
 
-    it('it should REMOVE a pinned entry', (done) => {
-      performSignedJSONRequest(server, 'delete', '/pin/' + publicKey, testData)
+    it('it should REMOVE a pinned entry', done => {
+      performSignedJSONRequest(server, 'delete', `/pin/${publicKey}`, testData)
         .then(({ res }) => {
-          console.log(res.body);
           res.should.have.status(200);
           done();
         });
     });
 
-    it('it should 404 on getting a deleted item', (done) => {
-      chai.request(server).get('/pin/' + publicKey).end((err, res) => {
+    it('it should 404 on getting a deleted item', done => {
+      chai.request(server).get(`/pin/${publicKey}`).end((err, res) => {
         res.should.have.status(200);
         res.body.should.be.a('array');
         res.body.length.should.be.eql(0);
@@ -127,10 +125,9 @@ describe('Pinning', () => {
       });
     });
 
-    after((done) => {
+    after(done => {
       stub.restore();
       done();
-    })
+    });
   });
-
 });

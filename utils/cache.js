@@ -1,15 +1,19 @@
-const redis = require("redis");
-const {promisify} = require('util');
+const redis = require('redis');
+const { promisify } = require('util');
+const AsyncLock = require('async-lock');
 
-if (!process.env.REDIS_URL) throw "REDIS_URL is not set";
+const Logger = require('./logger');
+
+if (!process.env.REDIS_URL) throw Error('REDIS_URL is not set');
 
 const client = redis.createClient(process.env.REDIS_URL);
 const get = promisify(client.get).bind(client);
 const set = promisify(client.set).bind(client);
 const del = promisify(client.del).bind(client);
-const keys = promisify(client.keys).bind(client);
-var AsyncLock = require('async-lock');
-var lock = new AsyncLock({timeout: 30 * 1000});
+const cacheKeys = promisify(client.keys).bind(client);
+
+const lock = new AsyncLock({ timeout: 30 * 1000 });
+const logger = new Logger('cache');
 
 const cache = {};
 cache.wsconnection = null;
@@ -17,81 +21,90 @@ cache.wsconnection = null;
 cache.shortCacheTime = process.env.SHORT_CACHE_TIME || 5 * 60;
 cache.longCacheTime = process.env.LONG_CACHE_TIME || 60 * 60;
 cache.keepHotInterval = process.env.KEEP_HOT_INTERVAL || 20 * 1000;
-cache.networkKey = "";
+cache.networkKey = '';
 
 cache.init = async (aeternity, keepHotFunction) => {
-    aeternity.setCache(cache);
-    cache.networkKey = await aeternity.networkId();
-    console.log("cache networkKey", cache.networkKey);
-    if (process.env.NODE_ENV !== 'test') cache.keepHot(aeternity, keepHotFunction);
+  aeternity.setCache(cache);
+  cache.networkKey = await aeternity.networkId();
+  logger.log('cache networkKey', cache.networkKey);
+  if (process.env.NODE_ENV !== 'test') cache.keepHot(aeternity, keepHotFunction);
 };
 
-const buildKey = (keys) => [cache.networkKey, ...keys].join(":");
+const buildKey = keys => [cache.networkKey, ...keys].join(':');
 
-cache.get = async (keys) => {
+cache.get = async keys => {
   const key = buildKey(keys);
   const value = await get(key);
   return value ? JSON.parse(value) : null;
-}
+};
 
 cache.getOrSet = async (keys, asyncFetchData, expire = null) => {
-    const key = buildKey(keys);
-    const value = await get(key);
-    if (value) return JSON.parse(value);
+  const key = buildKey(keys);
+  const value = await get(key);
+  if (value) return JSON.parse(value);
 
-    const startLock = new Date().getTime();
-    return lock.acquire(key, async () => {
-        const lockedValue = await get(key);
-        if (lockedValue) {
-            console.log("\n   lock.acquire", key, new Date().getTime() - startLock, "ms");
-            return JSON.parse(lockedValue);
-        }
+  const startLock = new Date().getTime();
+  return lock.acquire(key, async () => {
+    const lockedValue = await get(key);
+    if (lockedValue) {
+      // eslint-disable-next-line no-console
+      console.log('\n   lock.acquire', key, new Date().getTime() - startLock, 'ms');
+      return JSON.parse(lockedValue);
+    }
 
-        const start = new Date().getTime();
-        const data = await asyncFetchData();
-        cache.set(keys, data, expire);
-        (new Date().getTime() - start > 50) ? console.log("\n   cache", key, new Date().getTime() - start, "ms") : process.stdout.write("'");
+    const start = new Date().getTime();
+    const data = await asyncFetchData();
+    cache.set(keys, data, expire);
+    if (new Date().getTime() - start > 50) {
+      // eslint-disable-next-line no-console
+      console.log('\n   cache', key, new Date().getTime() - start, 'ms');
+    } else {
+      process.stdout.write('\'');
+    }
 
-        return data;
-    }).catch(e => {
-        console.error(e);
-        return asyncFetchData();
-    });
+    return data;
+  }).catch(e => {
+    logger.error(e);
+    return asyncFetchData();
+  });
 };
 
 cache.set = async (keys, data, expire = null) => {
-    const key = buildKey(keys);
+  const key = buildKey(keys);
 
-    if (expire) {
-        await set(key, JSON.stringify(data), "EX", expire);
-    } else {
-        await set(key, JSON.stringify(data));
-    }
+  if (expire) {
+    await set(key, JSON.stringify(data), 'EX', expire);
+  } else {
+    await set(key, JSON.stringify(data));
+  }
 };
 
-cache.delByPrefix = async (prefixes) => {
-    const prefix = buildKey(prefixes);
-    console.log("      cache keys", prefix + "*");
-    const rows = await keys(prefix + "*");
-    if (rows.length) console.log("      cache delByPrefix", rows);
-    await Promise.all(rows.map(key => del(key)));
+cache.delByPrefix = async prefixes => {
+  const prefix = buildKey(prefixes);
+  // eslint-disable-next-line no-console
+  console.log('      cache keys', `${prefix}*`);
+  const rows = await cacheKeys(`${prefix}*`);
+  if (rows.length) logger.log('      cache delByPrefix', rows);
+  await Promise.all(rows.map(key => del(key)));
 };
 
-cache.del = async (keys) => {
-    const key = buildKey(keys);
-    console.log("      cache del", key);
-    await del(key);
+cache.del = async keys => {
+  const key = buildKey(keys);
+  // eslint-disable-next-line no-console
+  console.log('      cache del', key);
+  await del(key);
 };
 
 cache.keepHot = (aeternity, keepHotFunction) => {
-    const keepHotLogic = async () => {
-        const start = new Date().getTime();
-        await keepHotFunction();
-        console.log("\n  cache keepHot", new Date().getTime() - start, "ms");
-    };
+  const keepHotLogic = async () => {
+    const start = new Date().getTime();
+    await keepHotFunction();
+    // eslint-disable-next-line no-console
+    console.log('\n  cache keepHot', new Date().getTime() - start, 'ms');
+  };
 
-    keepHotLogic();
-    setInterval(keepHotLogic, cache.keepHotInterval);
+  keepHotLogic();
+  setInterval(keepHotLogic, cache.keepHotInterval);
 };
 
 module.exports = cache;

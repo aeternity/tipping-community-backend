@@ -1,17 +1,16 @@
-//Require the dev-dependencies
-let chai = require('chai');
-let chaiHttp = require('chai-http');
-let server = require('../server');
-let should = chai.should();
+// Require the dev-dependencies
+const chai = require('chai');
+const chaiHttp = require('chai-http');
+const { describe, it, before } = require('mocha');
+const server = require('../server');
 const { BlacklistEntry } = require('../models');
 
+chai.should();
 chai.use(chaiHttp);
-//Our parent block
+// Our parent block
 describe('Static Routes', () => {
-
   describe('Stats', () => {
-
-    before(async function () {
+    before(async () => {
       // Test is based on Blacklist model
       await BlacklistEntry.destroy({
         where: {},
@@ -39,7 +38,7 @@ describe('Static Routes', () => {
       });
     });
 
-    it('it should GET the correct stats', (done) => {
+    it('it should GET the correct stats', done => {
       chai.request(server).get('/static/stats').end((err, res) => {
         res.should.have.status(200);
         res.body.should.be.a('object');
@@ -57,11 +56,11 @@ describe('Static Routes', () => {
     });
   });
   describe('GrayList', () => {
-    it('it should GET the hardcoded graylist', (done) => {
+    it('it should GET the hardcoded graylist', done => {
       chai.request(server).get('/static/wallet/graylist').end((err, res) => {
         res.should.have.status(200);
         res.body.should.be.a('array');
-        res.body.includes('facebook.com').should.be.true;
+        res.body.includes('facebook.com').should.equal(true);
         done();
       });
     });

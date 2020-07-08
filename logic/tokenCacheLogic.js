@@ -3,15 +3,15 @@ const cache = require('../utils/cache');
 const AsyncTipGeneratorsLogic = require('./asyncTipGeneratorsLogic');
 
 module.exports = class TokenCacheLogic {
-
   constructor() {
-    this.init();
+    TokenCacheLogic.init();
   }
 
-  async init() {
+  static async init() {
     await aeternity.init();
     await cache.init(aeternity, () => {});
   }
+
   static async fetchTokenInfos() {
     const fetchData = async () => {
       const tips = await aeternity.getTips();
@@ -29,18 +29,18 @@ module.exports = class TokenCacheLogic {
   }
 
   static async indexTokenInfo(req, res) {
-    if (!req.body.address) return res.status(400).send("address body attribute missing")
+    if (!req.body.address) return res.status(400).send('address body attribute missing');
 
     try {
       await aeternity.getTokenMetaInfoCacheAccounts(req.body.address);
-      return res.send("OK");
+      return res.send('OK');
     } catch (e) {
-      return res.status(500).send(e.message)
+      return res.status(500).send(e.message);
     }
   }
 
   static async tokenAccountBalance(req, res) {
-    if (!req.query.address) return res.status(400).send("address query missing")
+    if (!req.query.address) return res.status(400).send('address query missing');
 
     const tokenBalances = await aeternity.getCacheTokenBalances(req.query.address);
     return res.send(await tokenBalances.reduce(async (promiseAcc, address) => {
@@ -49,5 +49,4 @@ module.exports = class TokenCacheLogic {
       return acc;
     }, Promise.resolve({})));
   }
-
-}
+};

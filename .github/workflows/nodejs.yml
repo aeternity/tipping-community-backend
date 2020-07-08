@@ -1,7 +1,7 @@
 # This workflow will do a clean install of node dependencies, build the source code and run tests across different versions of node
 # For more information see: https://help.github.com/actions/language-and-framework-guides/using-nodejs-with-github-actions
 
-name: Node.js CI
+name: CI
 
 on:
   push:
@@ -10,31 +10,51 @@ on:
     branches: [ master ]
 
 jobs:
-  build-and-test:
-
+  test:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout
-      uses: actions/checkout@master
-    - name: Use Node.js 12.x
-      uses: actions/setup-node@v1
-      with:
-        node-version: 12.x
-    - run: npm --build-from-source install sqlite3
-    - run: npm i
-    - run: docker run --name server-redis -p 6379:6379 -d redis
-    - run: docker run --name ipfs_host -p 5001:5001 -d ipfs/go-ipfs
-    - run: npx sequelize-cli db:migrate
-    - run: npm test
-      env:
-        REDIS_URL: redis://localhost:6379
-        IPFS_URL: http://localhost:5001
+      - name: Checkout
+        uses: actions/checkout@master
+      - name: Use Node.js 12.x
+        uses: actions/setup-node@v1
+        with:
+          node-version: 12.x
+      - name: Install Dependencies
+        run: |
+          npm --build-from-source install sqlite3
+          npm i
+      - name: Run Tests
+        run: |
+          docker run --name server-redis -p 6379:6379 -d redis
+          docker run --name ipfs_host -p 5001:5001 -d ipfs/go-ipfs
+          npx sequelize-cli db:migrate
+          npm test
+        env:
+          REDIS_URL: redis://localhost:6379
+          IPFS_URL: http://localhost:5001
 
   build-docker:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout
-      uses: actions/checkout@master
-    - run: docker build .
+      - name: Checkout
+        uses: actions/checkout@master
+      - run: docker build .
+
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@master
+      - name: Use Node.js 12.x
+        uses: actions/setup-node@v1
+        with:
+          node-version: 12.x
+      - name: Install Dependencies
+        run: |
+          npm --build-from-source install sqlite3
+          npm i
+      - name: Lint Codebase
+        run: npm run lint-ci

@@ -1,5 +1,5 @@
+const { Router } = require('express');
 const LoggerLogic = require('../logic/loggerLogic.js');
-const Router = require('express').Router;
 const { basicAuth } = require('../utils/auth.js');
 
 const router = new Router();
@@ -8,4 +8,3 @@ const router = new Router();
 router.get('/all', basicAuth, LoggerLogic.showLogs);
 
 module.exports = router;
-

@@ -36,7 +36,7 @@ describe('Pinning', () => {
   };
 
   describe('Pinning API', () => {
-    it('it should GET 0 pinned entries for a user', (done) => {
+    it('it should GET 0 pinned entries for a user', done => {
       chai.request(server).get(`/pin/${publicKey}`).end((err, res) => {
         res.should.have.status(200);
         res.body.should.be.a('array');
@@ -45,7 +45,7 @@ describe('Pinning', () => {
       });
     });
 
-    it('it should reject CREATING a new pin with invalid type', (done) => {
+    it('it should reject CREATING a new pin with invalid type', done => {
       performSignedJSONRequest(server, 'post', `/pin/${publicKey}`, { ...testData, type: 'PIN' })
         .then(({ res }) => {
           res.should.have.status(400);
@@ -53,7 +53,7 @@ describe('Pinning', () => {
         });
     });
 
-    it('it should CREATE a new pin via signature auth', (done) => {
+    it('it should CREATE a new pin via signature auth', done => {
       performSignedJSONRequest(server, 'post', `/pin/${publicKey}`, testData)
         .then(({ res, signature, challenge }) => {
           res.should.have.status(200);
@@ -69,7 +69,7 @@ describe('Pinning', () => {
         });
     });
 
-    it('it should GET one pinned entry for a user', (done) => {
+    it('it should GET one pinned entry for a user', done => {
       chai.request(server).get(`/pin/${publicKey}`).end((err, res) => {
         res.should.have.status(200);
         res.body.should.be.a('array');
@@ -79,7 +79,7 @@ describe('Pinning', () => {
       });
     });
 
-    it('it should reject CREATING a new pin as another user', (done) => {
+    it('it should reject CREATING a new pin as another user', done => {
       const { secretKey } = generateKeyPair();
       chai.request(server).post(`/pin/${publicKey}`)
         .send(testData).end((err, res) => {
@@ -96,7 +96,7 @@ describe('Pinning', () => {
         });
     });
 
-    it('it should reject REMOVING a pinned entry from another user', (done) => {
+    it('it should reject REMOVING a pinned entry from another user', done => {
       const { secretKey, publicKey: localPublicKey } = generateKeyPair();
       performSignedJSONRequest(server, 'delete', `/pin/${publicKey}`, {
         ...testData,
@@ -108,7 +108,7 @@ describe('Pinning', () => {
         });
     });
 
-    it('it should REMOVE a pinned entry', (done) => {
+    it('it should REMOVE a pinned entry', done => {
       performSignedJSONRequest(server, 'delete', `/pin/${publicKey}`, testData)
         .then(({ res }) => {
           res.should.have.status(200);
@@ -116,7 +116,7 @@ describe('Pinning', () => {
         });
     });
 
-    it('it should 404 on getting a deleted item', (done) => {
+    it('it should 404 on getting a deleted item', done => {
       chai.request(server).get(`/pin/${publicKey}`).end((err, res) => {
         res.should.have.status(200);
         res.body.should.be.a('array');
@@ -125,7 +125,7 @@ describe('Pinning', () => {
       });
     });
 
-    after((done) => {
+    after(done => {
       stub.restore();
       done();
     });

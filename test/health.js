@@ -9,7 +9,7 @@ chai.use(chaiHttp);
 // Our parent block
 describe('Health Endpoint', () => {
   describe('Backend Health', () => {
-    it('it should GET a health endpoint answer', (done) => {
+    it('it should GET a health endpoint answer', done => {
       chai.request(server).get('/health/backend').end((err, res) => {
         res.should.have.status(200);
         res.body.should.be.a('object');

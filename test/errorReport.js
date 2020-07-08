@@ -9,7 +9,7 @@ chai.should();
 chai.use(chaiHttp);
 // Our parent block
 describe('Error Reports', () => {
-  before((done) => { // Before each test we empty the database
+  before(done => { // Before each test we empty the database
     ErrorReport.destroy({
       where: {},
       truncate: true,
@@ -37,7 +37,7 @@ describe('Error Reports', () => {
   };
 
   describe('Error Report API', () => {
-    it('it should GET all reports (empty)', (done) => {
+    it('it should GET all reports (empty)', done => {
       chai.request(server).get('/errorreport').auth(process.env.AUTHENTICATION_USER, process.env.AUTHENTICATION_PASSWORD).end((err, res) => {
         res.should.have.status(200);
         res.body.should.be.a('array');
@@ -46,7 +46,7 @@ describe('Error Reports', () => {
       });
     });
     let reportId = null;
-    it('it should CREATE a new error report', (done) => {
+    it('it should CREATE a new error report', done => {
       chai.request(server).post('/errorreport').send(testData).end((err, res) => {
         res.should.have.status(200);
         res.body.should.be.a('object');
@@ -64,7 +64,7 @@ describe('Error Reports', () => {
       });
     });
 
-    it('it should GET all reports (1 result)', (done) => {
+    it('it should GET all reports (1 result)', done => {
       chai.request(server).get('/errorreport').auth(process.env.AUTHENTICATION_USER, process.env.AUTHENTICATION_PASSWORD).end((err, res) => {
         res.should.have.status(200);
         res.body.should.be.a('array');

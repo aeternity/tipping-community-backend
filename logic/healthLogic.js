@@ -13,8 +13,8 @@ module.exports = class HealthLogic {
   static async checkDBHealth() {
     try {
       await Promise.all(Object.keys(models)
-        .filter((key) => key.toLowerCase() !== 'sequelize')
-        .map(async (key) => models[key].findAll({ raw: true })));
+        .filter(key => key.toLowerCase() !== 'sequelize')
+        .map(async key => models[key].findAll({ raw: true })));
       return true;
     } catch (e) {
       return false;

@@ -11,9 +11,9 @@ module.exports = class LoggerLogic {
         ...allLogs,
         ...fs.readFileSync(`${logFolder}/${file}`, 'utf-8')
           .split('\n')
-          .map((line) => (line ? JSON.parse(line) : null)),
+          .map(line => (line ? JSON.parse(line) : null)),
       ], [])
-      .filter((line) => !!line)
+      .filter(line => !!line)
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
     res.send(logLines);
   }

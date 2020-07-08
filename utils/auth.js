@@ -35,21 +35,21 @@ const actions = [
     path: '/profile/?$',
     actionName: 'CREATE_PROFILE',
     relevantFields: ['author', 'biography', 'preferredChainName', 'image', 'referrer', 'coverImage', 'location'],
-    getFullEntry: async (req) => Profile.findOne({ where: { author: req.body.author }, raw: true }),
+    getFullEntry: async req => Profile.findOne({ where: { author: req.body.author }, raw: true }),
   },
   {
     method: 'POST',
     path: '/profile/ak_',
     actionName: 'UPDATE_PROFILE',
     relevantFields: ['author', 'biography', 'preferredChainName', 'image', 'referrer', 'coverImage', 'location'],
-    getFullEntry: async (req) => Profile.findOne({ where: { author: req.params.author }, raw: true }),
+    getFullEntry: async req => Profile.findOne({ where: { author: req.params.author }, raw: true }),
   },
   {
     method: 'POST',
     path: '/profile/image/ak_',
     actionName: 'CREATE_PROFILE',
     relevantFields: ['author', 'biography', 'preferredChainName', 'image', 'referrer', 'coverImage', 'location'],
-    getFullEntry: async (req) => Profile.findOne({ where: { author: req.params.author }, raw: true }),
+    getFullEntry: async req => Profile.findOne({ where: { author: req.params.author }, raw: true }),
   },
   {
     method: 'POST',
@@ -68,7 +68,7 @@ const actions = [
     path: '/pin/ak_',
     actionName: 'DELETE_PIN',
     relevantFields: ['author', 'entryId', 'type'],
-    getFullEntry: async (req) => Profile.findOne({ where: { author: req.params.author }, raw: true }),
+    getFullEntry: async req => Profile.findOne({ where: { author: req.params.author }, raw: true }),
   },
   {
     method: 'DELETE',
@@ -90,7 +90,7 @@ const actions = [
   }];
 
 const signatureAuth = async (req, res, next) => {
-  const sendError = (message) => res.status(401).send({ err: message });
+  const sendError = message => res.status(401).send({ err: message });
 
   // Filter expired items (10 mins timer)
   // use delete to avoid race condition while overwriting
@@ -112,7 +112,7 @@ const signatureAuth = async (req, res, next) => {
 
       // Find item
       // MemoryQueue probably has a significant list deleted items
-      const queueItem = MemoryQueue.find((item) => (item || {}).challenge === req.body.challenge);
+      const queueItem = MemoryQueue.find(item => (item || {}).challenge === req.body.challenge);
       if (!queueItem) return sendError('Could not find challenge (maybe it already expired?)');
       const {
         challenge, body, files, method, url,
@@ -136,7 +136,7 @@ const signatureAuth = async (req, res, next) => {
       const validRequest = verifyPersonalMessage(authString, signatureArray, author);
       if (validRequest) {
         // Remove challenge from active queue
-        const queueIndex = MemoryQueue.findIndex((item) => (item || {}).challenge === req.body.challenge);
+        const queueIndex = MemoryQueue.findIndex(item => (item || {}).challenge === req.body.challenge);
         delete MemoryQueue[queueIndex];
         // forward request and merge current body onto existing
         req.body = { ...req.body, ...body };

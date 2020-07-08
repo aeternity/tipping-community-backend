@@ -18,5 +18,6 @@ module.exports = {
     'class-methods-use-this': 'off',
     'no-plusplus': 'off',
     'func-names': ['error', 'never'],
+    'arrow-parens': ['error', 'as-needed'],
   },
 };

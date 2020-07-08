@@ -13,14 +13,14 @@ describe('IPFS', () => {
     let path = null;
     let randomBuffer;
 
-    before((done) => {
+    before(done => {
       crypto.randomBytes(1000000, (err, buffer) => {
         randomBuffer = buffer;
         done();
       });
     });
 
-    it('it should have a node property', (done) => {
+    it('it should have a node property', done => {
       ipfs.should.have.property('node');
       done();
     });
@@ -47,7 +47,7 @@ describe('IPFS', () => {
     it('it should allow file pinning', async () => {
       await ipfs.pinFile(path);
       const pinned = await ipfs.getPinnedFiles();
-      const foundResult = pinned.find((pinnedFile) => pinnedFile.cid.toString() === path);
+      const foundResult = pinned.find(pinnedFile => pinnedFile.cid.toString() === path);
       foundResult.should.be.an('object');
     });
 

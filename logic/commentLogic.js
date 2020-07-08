@@ -41,7 +41,7 @@ module.exports = class CommentLogic {
         as: 'descendents',
         hierarchy: true,
       }, Profile],
-    })).map((comment) => comment.toJSON()));
+    })).map(comment => comment.toJSON()));
   }
 
   static async getAllItemsForAuthor(req, res) {
@@ -52,7 +52,7 @@ module.exports = class CommentLogic {
         as: 'descendents',
         hierarchy: true,
       }, Profile],
-    })).map((comment) => comment.toJSON()));
+    })).map(comment => comment.toJSON()));
   }
 
   static async getAllItems(req, res) {
@@ -62,7 +62,7 @@ module.exports = class CommentLogic {
         as: 'descendents',
         hierarchy: true,
       }, Profile],
-    })).map((comment) => comment.toJSON()));
+    })).map(comment => comment.toJSON()));
   }
 
   static async getSingleItem(req, res) {

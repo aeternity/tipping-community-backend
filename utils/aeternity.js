@@ -53,8 +53,8 @@ class Aeternity {
 
   async middlewareContractTransactions() {
     return axios.get(`${MIDDLEWARE_URL}/middleware/contracts/transactions/address/${process.env.CONTRACT_ADDRESS}`)
-      .then((res) => res.data.transactions
-        .filter((tx) => tx.tx.type === 'ContractCallTx'));
+      .then(res => res.data.transactions
+        .filter(tx => tx.tx.type === 'ContractCallTx'));
   }
 
   async transactionEvents(hash) {
@@ -72,7 +72,7 @@ class Aeternity {
 
       const decodedEvents = decodeEvents(tx.log, { schema: eventsSchema });
 
-      return decodedEvents.map((decodedEvent) => ({
+      return decodedEvents.map(decodedEvent => ({
         event: decodedEvent.name,
         address: `ak_${decodedEvent.decoded[1]}`,
         amount: decodedEvent.decoded[2] ? decodedEvent.decoded[2] : null,
@@ -93,7 +93,7 @@ class Aeternity {
   async getOracleState() {
     if (!this.client) throw new Error('Init sdk first');
 
-    const fetchOracleState = () => this.oracleContract.methods.get_state().then((res) => res.decodedResult);
+    const fetchOracleState = () => this.oracleContract.methods.get_state().then(res => res.decodedResult);
 
     return this.cache
       ? this.cache.getOrSet(['oracleState'], () => fetchOracleState(), this.cache.shortCacheTime)
@@ -125,7 +125,7 @@ class Aeternity {
     trace.update({
       state: TRACE_STATES.STARTED_PRE_CLAIM,
     });
-    const claimAmount = await this.contract.methods.unclaimed_for_url(url).then((r) => r.decodedResult).catch(trace.catchError(0));
+    const claimAmount = await this.contract.methods.unclaimed_for_url(url).then(r => r.decodedResult).catch(trace.catchError(0));
 
     trace.update({
       state: TRACE_STATES.CLAIM_AMOUNT,
@@ -141,7 +141,7 @@ class Aeternity {
     await this.checkPreClaim(address, url, trace);
 
     // pre-claim if necessary (if not already claimed successfully)
-    const claimSuccess = await this.contract.methods.check_claim(url, address).then((r) => r.decodedResult.success).catch(trace.catchError(false));
+    const claimSuccess = await this.contract.methods.check_claim(url, address).then(r => r.decodedResult.success).catch(trace.catchError(false));
 
     trace.update({ state: TRACE_STATES.INITIAL_PRECLAIM_RESULT, claimSuccess });
 
@@ -189,7 +189,7 @@ class Aeternity {
   }
 
   getTipsRetips(state) {
-    const findUrl = (urlId) => state.urls.find(([, id]) => urlId === id)[0];
+    const findUrl = urlId => state.urls.find(([, id]) => urlId === id)[0];
 
     const findClaimGen = (tipClaimGen, urlId) => {
       const [, data] = state.claims.find(([id]) => id === urlId);
@@ -213,7 +213,7 @@ class Aeternity {
       const tipsData = data;
       tipsData.id = id;
       tipsData.url = findUrl(tipsData.url_id);
-      tipsData.topics = [...new Set(tipsData.title.match(topicsRegex))].map((x) => x.toLowerCase());
+      tipsData.topics = [...new Set(tipsData.title.match(topicsRegex))].map(x => x.toLowerCase());
       tipsData.retips = findRetips(id, tipsData.url_id);
       tipsData.claim = findClaimGen(tipsData.claim_gen, tipsData.url_id);
 
@@ -241,11 +241,11 @@ class Aeternity {
   }
 
   async getChainNames() {
-    return axios.get(`${MIDDLEWARE_URL}/middleware/names/active`).then((res) => res.data).catch(this.logger.error);
+    return axios.get(`${MIDDLEWARE_URL}/middleware/names/active`).then(res => res.data).catch(this.logger.error);
   }
 
   async getChainNamesByAddress(address) {
-    return axios.get(`${MIDDLEWARE_URL}/middleware/names/reverse/${address}`).then((res) => res.data).catch(this.logger.error);
+    return axios.get(`${MIDDLEWARE_URL}/middleware/names/reverse/${address}`).then(res => res.data).catch(this.logger.error);
   }
 }
 

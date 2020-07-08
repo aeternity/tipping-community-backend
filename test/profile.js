@@ -46,14 +46,14 @@ describe('Profile', () => {
   });
 
   describe('Profile API', () => {
-    it('it should 404 on non existing profile', (done) => {
+    it('it should 404 on non existing profile', done => {
       chai.request(server).get(`/profile/${publicKey}`).end((err, res) => {
         res.should.have.status(404);
         done();
       });
     });
 
-    it('it should CREATE a new profile', (done) => {
+    it('it should CREATE a new profile', done => {
       const stub = sinon.stub(ae, 'getChainNamesByAddress').callsFake(() => [{
         name: testData.preferredChainName,
       }]);
@@ -78,7 +78,7 @@ describe('Profile', () => {
         });
     });
 
-    it('it should GET a profile', (done) => {
+    it('it should GET a profile', done => {
       chai.request(server).get(`/profile/${publicKey}`).end((err, res) => {
         res.should.have.status(200);
         res.body.should.be.a('object');
@@ -95,7 +95,7 @@ describe('Profile', () => {
     });
 
     const newBio = 'another updated bio';
-    it('it should allow to update an profile', (done) => {
+    it('it should allow to update an profile', done => {
       performSignedJSONRequest(server, 'post', `/profile/${publicKey}`, {
         author: testData.author, biography: newBio,
       }).then(({ res }) => {
@@ -106,7 +106,7 @@ describe('Profile', () => {
       });
     });
 
-    it('it should GET a profile with updated bio', (done) => {
+    it('it should GET a profile with updated bio', done => {
       chai.request(server).get(`/profile/${publicKey}`).end((err, res) => {
         res.should.have.status(200);
         res.body.should.be.a('object');
@@ -118,10 +118,10 @@ describe('Profile', () => {
   });
 
   describe('Profile Image API', () => {
-    before((done) => {
+    before(done => {
       fs.readdirSync('images')
-        .filter((fileName) => fileName.includes('ak_'))
-        .map((file) => fs.unlinkSync(`images/${file}`));
+        .filter(fileName => fileName.includes('ak_'))
+        .map(file => fs.unlinkSync(`images/${file}`));
 
       Profile.destroy({
         where: {},
@@ -136,7 +136,7 @@ describe('Profile', () => {
     const binaryParser = function (res, cb) {
       res.setEncoding('binary');
       res.data = '';
-      res.on('data', (chunk) => {
+      res.on('data', chunk => {
         res.data += chunk;
       });
       res.on('end', () => {
@@ -144,7 +144,7 @@ describe('Profile', () => {
       });
     };
 
-    it('it should return 404 when no profile pic', (done) => {
+    it('it should return 404 when no profile pic', done => {
       chai.request(server).get(`/profile/image/${publicKey}`)
         .end((err, res) => {
           if (err) {
@@ -155,7 +155,7 @@ describe('Profile', () => {
         });
     });
 
-    it('it should allow an image upload on existing profile', (done) => {
+    it('it should allow an image upload on existing profile', done => {
       performSignedMultipartFormRequest(server, 'post', `/profile/${publicKey}`, 'image', './test/test.png')
         .then(({ res, signature, challenge }) => {
           res.should.have.status(200);
@@ -174,7 +174,7 @@ describe('Profile', () => {
         });
     });
 
-    it('it should allow an image upload on new profile', (done) => {
+    it('it should allow an image upload on new profile', done => {
       const { publicKey: localPublicKey, secretKey } = generateKeyPair();
       performSignedMultipartFormRequest(server, 'post', `/profile/${localPublicKey}`, 'image', './test/test.png', secretKey)
         .then(({ res, signature, challenge }) => {
@@ -212,7 +212,7 @@ describe('Profile', () => {
     });
 
     let imageURL = '';
-    it('it should GET an profile with image', (done) => {
+    it('it should GET an profile with image', done => {
       chai.request(server).get(`/profile/${publicKey}`)
         .end((err, res) => {
           res.should.have.status(200);
@@ -232,7 +232,7 @@ describe('Profile', () => {
         });
     });
 
-    it('it should GET an profile image', (done) => {
+    it('it should GET an profile image', done => {
       chai.request(server).get(imageURL)
         .buffer()
         .parse(binaryParser)
@@ -255,7 +255,7 @@ describe('Profile', () => {
         });
     });
 
-    it('it should allow overwriting of the profile image', (done) => {
+    it('it should allow overwriting of the profile image', done => {
       performSignedMultipartFormRequest(server, 'post', `/profile/${publicKey}`, 'image', './test/test.png')
         .then(({ res }) => {
           res.should.have.status(200);
@@ -279,7 +279,7 @@ describe('Profile', () => {
       entries[0].hash.should.equal(entries[1].hash);
     });
 
-    it('it should delete the image', (done) => {
+    it('it should delete the image', done => {
       performSignedJSONRequest(server, 'post', `/profile/${publicKey}`, { image: null })
         .then(({ res }) => {
           res.should.have.status(200);
@@ -287,7 +287,7 @@ describe('Profile', () => {
         });
     });
 
-    it('it should return no image after deletion ', (done) => {
+    it('it should return no image after deletion ', done => {
       chai.request(server).get(`/profile/${publicKey}`)
         .end((err, res) => {
           res.should.have.status(200);
@@ -297,7 +297,7 @@ describe('Profile', () => {
         });
     });
 
-    it('it should return 404 after deleting a profile image', (done) => {
+    it('it should return 404 after deleting a profile image', done => {
       chai.request(server).get(`/profile/image/${publicKey}`)
         .end((err, res) => {
           if (err) {
@@ -310,10 +310,10 @@ describe('Profile', () => {
   });
 
   describe('Cover Image API', () => {
-    before((done) => {
+    before(done => {
       fs.readdirSync('images')
-        .filter((fileName) => fileName.includes('ak_'))
-        .map((file) => fs.unlinkSync(`images/${file}`));
+        .filter(fileName => fileName.includes('ak_'))
+        .map(file => fs.unlinkSync(`images/${file}`));
 
       Profile.destroy({
         where: {},
@@ -328,7 +328,7 @@ describe('Profile', () => {
     const binaryParser = function (res, cb) {
       res.setEncoding('binary');
       res.data = '';
-      res.on('data', (chunk) => {
+      res.on('data', chunk => {
         res.data += chunk;
       });
       res.on('end', () => {
@@ -336,7 +336,7 @@ describe('Profile', () => {
       });
     };
 
-    it('it should return 404 when no cover pic', (done) => {
+    it('it should return 404 when no cover pic', done => {
       chai.request(server).get(`/profile/${publicKey}`)
         .end((err, res) => {
           if (err) {
@@ -348,7 +348,7 @@ describe('Profile', () => {
         });
     });
 
-    it('it should allow an cover image upload on existing profile', (done) => {
+    it('it should allow an cover image upload on existing profile', done => {
       performSignedMultipartFormRequest(server, 'post', `/profile/${publicKey}`, 'coverImage', './test/test.png')
         .then(({ res, signature, challenge }) => {
           res.should.have.status(200);
@@ -367,7 +367,7 @@ describe('Profile', () => {
         });
     });
 
-    it('it should allow an cover image upload on new profile', (done) => {
+    it('it should allow an cover image upload on new profile', done => {
       const { publicKey: localPublicKey, secretKey } = generateKeyPair();
       performSignedMultipartFormRequest(server, 'post', `/profile/${localPublicKey}`, 'coverImage', './test/test.png', secretKey)
         .then(({ res, signature, challenge }) => {
@@ -405,7 +405,7 @@ describe('Profile', () => {
     });
 
     let imageURL = '';
-    it('it should GET an profile with image', (done) => {
+    it('it should GET an profile with image', done => {
       chai.request(server).get(`/profile/${publicKey}`)
         .end((err, res) => {
           res.should.have.status(200);
@@ -425,7 +425,7 @@ describe('Profile', () => {
         });
     });
 
-    it('it should GET an cover image', (done) => {
+    it('it should GET an cover image', done => {
       chai.request(server).get(imageURL)
         .buffer()
         .parse(binaryParser)
@@ -448,7 +448,7 @@ describe('Profile', () => {
         });
     });
 
-    it('it should allow overwriting of the cover image', (done) => {
+    it('it should allow overwriting of the cover image', done => {
       performSignedMultipartFormRequest(server, 'post', `/profile/${publicKey}`, 'coverImage', './test/test.png')
         .then(({ res }) => {
           res.should.have.status(200);
@@ -472,7 +472,7 @@ describe('Profile', () => {
       entries[0].hash.should.equal(entries[1].hash);
     });
 
-    it('it should delete the cover image', (done) => {
+    it('it should delete the cover image', done => {
       performSignedJSONRequest(server, 'post', `/profile/${publicKey}`, { coverImage: null })
         .then(({ res }) => {
           res.should.have.status(200);
@@ -480,7 +480,7 @@ describe('Profile', () => {
         });
     });
 
-    it('it should return no image after deletion ', (done) => {
+    it('it should return no image after deletion ', done => {
       chai.request(server).get(`/profile/${publicKey}`)
         .end((err, res) => {
           res.should.have.status(200);
@@ -494,7 +494,7 @@ describe('Profile', () => {
   describe('Legacy API', () => {
     const { publicKey: localPublicKey, secretKey } = generateKeyPair();
 
-    it('POST /profile/image/ak_... (upload new image)', (done) => {
+    it('POST /profile/image/ak_... (upload new image)', done => {
       performSignedMultipartFormRequest(server, 'post', `/profile/image/${localPublicKey}`, 'image', './test/test.png', secretKey)
         .then(({ res, signature, challenge }) => {
           res.should.have.status(200);
@@ -513,7 +513,7 @@ describe('Profile', () => {
         });
     });
 
-    it('DELETE /profile/image/ak_...', (done) => {
+    it('DELETE /profile/image/ak_...', done => {
       performSignedJSONRequest(server, 'delete', `/profile/image/${localPublicKey}`, {}, secretKey)
         .then(({ res }) => {
           res.should.have.status(200);
@@ -522,7 +522,7 @@ describe('Profile', () => {
         });
     });
 
-    it('it should return no image after deletion ', (done) => {
+    it('it should return no image after deletion ', done => {
       chai.request(server).get(`/profile/${localPublicKey}`)
         .end((err, res) => {
           res.should.have.status(200);
@@ -532,7 +532,7 @@ describe('Profile', () => {
         });
     });
 
-    it('it should return 404 after deleting a profile image', (done) => {
+    it('it should return 404 after deleting a profile image', done => {
       chai.request(server).get(`/profile/image/${localPublicKey}`)
         .end((err, res) => {
           if (err) {

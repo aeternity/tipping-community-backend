@@ -31,21 +31,21 @@ describe('Trace', () => {
       });
     });
 
-    it('malformed request without url should not leave a trace', (done) => {
+    it('malformed request without url should not leave a trace', done => {
       chai.request(server).post('/claim/submit')
         .send({
           address: 'ak_25tyimcbt8W5BHauzazQKnb6oM1AbkPBYFu6fnSvp38kVrtr8t', // RANDOM PK
         })
         .end((err, res) => {
           res.should.have.status(400);
-          TraceModel.findAll({ raw: true }).then((results) => {
+          TraceModel.findAll({ raw: true }).then(results => {
             results.should.have.length(0);
             done();
           });
         });
     });
 
-    it('malformed request with claimamount 0 should not leave a trace', (done) => {
+    it('malformed request with claimamount 0 should not leave a trace', done => {
       chai.request(server).post('/claim/submit')
         .send({
           address: 'ak_25tyimcbt8W5BHauzazQKnb6oM1AbkPBYFu6fnSvp38kVrtr8t', // Random PK
@@ -53,14 +53,14 @@ describe('Trace', () => {
         })
         .end((err, res) => {
           res.should.have.status(500);
-          TraceModel.findAll({ raw: true }).then((results) => {
+          TraceModel.findAll({ raw: true }).then(results => {
             results.should.have.length(0);
             done();
           });
         });
     });
 
-    it('proper request should leave a trace', (done) => {
+    it('proper request should leave a trace', done => {
       chai.request(server).post('/claim/submit')
         .send({
           address: 'ak_25tyimcbt8W5BHauzazQKnb6oM1AbkPBYFu6fnSvp38kVrtr8t', // Random PK

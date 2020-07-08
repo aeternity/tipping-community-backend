@@ -19,7 +19,7 @@ const shouldBeValidChallengeResponse = (serverBody, testData) => {
   serverBody.should.be.a('object');
   serverBody.should.have.property('challenge');
   serverBody.should.have.property('payload');
-  Object.keys(testData).map((key) => serverBody.payload.should.contain(`${key}=${testData[key]}`));
+  Object.keys(testData).map(key => serverBody.payload.should.contain(`${key}=${testData[key]}`));
 };
 
 const performSignedMultipartFormRequest = (server, method, url, field, path, privateKey = null) => new Promise((resolve, reject) => {

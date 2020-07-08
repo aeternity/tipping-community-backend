@@ -165,14 +165,14 @@ describe('Cache', () => {
       checkCachedRoute('/cache/tip?id=1', 'object', done);
     });
 
-    it('it should 404 on a non existing tip', (done) => {
+    it('it should 404 on a non existing tip', done => {
       chai.request(server).get('/cache/tip?id=15687651684785').end((err, res) => {
         res.should.have.status(404);
         done();
       });
     });
 
-    it('it should GET a flagged / blacklisted tip', (done) => {
+    it('it should GET a flagged / blacklisted tip', done => {
       const stub = sinon.stub(BlacklistLogic, 'getBlacklistedIds').callsFake(() => [1]);
       chai.request(server).get('/cache/tips').end((err, res) => {
         res.should.have.status(200);
@@ -182,11 +182,11 @@ describe('Cache', () => {
       });
     });
 
-    it('it should not GET a flagged / blacklisted tip when requesting the full list', (done) => {
+    it('it should not GET a flagged / blacklisted tip when requesting the full list', done => {
       const stub = sinon.stub(BlacklistLogic, 'getBlacklistedIds').callsFake(() => [1]);
       chai.request(server).get('/cache/tips').end((err, res) => {
         res.should.have.status(200);
-        const tipIds = res.body.map((tip) => tip.id);
+        const tipIds = res.body.map(tip => tip.id);
         tipIds.should.not.contain(1);
         stub.callCount.should.eql(1);
         stub.restore();
@@ -194,11 +194,11 @@ describe('Cache', () => {
       });
     });
 
-    it('it should GET a flagged / blacklisted tip when requesting the full list explicitly', (done) => {
+    it('it should GET a flagged / blacklisted tip when requesting the full list explicitly', done => {
       const stub = sinon.stub(BlacklistLogic, 'getBlacklistedIds').callsFake(() => [1]);
       chai.request(server).get('/cache/tips?blacklist=false').end((err, res) => {
         res.should.have.status(200);
-        const tipIds = res.body.map((tip) => tip.id);
+        const tipIds = res.body.map(tip => tip.id);
         tipIds.should.contain(1);
         stub.callCount.should.eql(1);
         stub.restore();
@@ -221,7 +221,7 @@ describe('Cache', () => {
       checkCachedRoute('/cache/chainnames', 'object', done);
     });
 
-    it('it should GET the cached price', (done) => {
+    it('it should GET the cached price', done => {
       checkCachedRoute('/cache/price', 'object', done);
     });
 
@@ -235,7 +235,7 @@ describe('Cache', () => {
       checkCachedRoute('/cache/topics', 'array', done);
     });
 
-    it.skip('it should GET all cached events', (done) => {
+    it.skip('it should GET all cached events', done => {
       checkCachedRoute('/cache/events', 'array', done);
     });
 
@@ -244,15 +244,15 @@ describe('Cache', () => {
       checkCachedRoute('/cache/events', 'array', done);
     });
 
-    it('it should invalidate the tips cache', (done) => {
+    it('it should invalidate the tips cache', done => {
       checkCachedRoute('/cache/invalidate/tips', 'object', done);
     });
 
-    it('it should invalidate the oracle cache', (done) => {
+    it('it should invalidate the oracle cache', done => {
       checkCachedRoute('/cache/invalidate/oracle', 'object', done);
     });
 
-    it('it should invalidate the events cache', (done) => {
+    it('it should invalidate the events cache', done => {
       checkCachedRoute('/cache/invalidate/events', 'object', done);
     });
   });

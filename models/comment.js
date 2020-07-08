@@ -35,7 +35,7 @@ module.exports = (sequelize, DataTypes) => {
     timestamps: true,
   });
   Comment.belongsTo(Profile(sequelize, DataTypes), { foreignKey: 'author' });
-  Comment.addHook('beforeCreate', async (comment) => {
+  Comment.addHook('beforeCreate', async comment => {
     // eslint-disable-next-line global-require
     const { Profile: ProfileModel } = require('.');
     const profile = await ProfileModel.findOne({ where: { author: comment.author }, raw: true });

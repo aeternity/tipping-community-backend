@@ -8,9 +8,9 @@ module.exports = class TipTracing {
   static async getAllTraces(req, res) {
     if (!req.query.id) return res.status(400).send('tip id parameter missing');
     const tipId = parseInt(req.query.id, 10);
-    const tip = await aeternity.getTips().then((ts) => ts.find((t) => t.id === tipId));
+    const tip = await aeternity.getTips().then(ts => ts.find(t => t.id === tipId));
 
-    const readFile = (uuid) => {
+    const readFile = uuid => {
       const traceFolder = path.resolve('./traces/');
       try {
         return JSON.parse(fs.readFileSync(`${traceFolder}/${uuid}.json`, 'utf-8'));
@@ -31,18 +31,18 @@ module.exports = class TipTracing {
     if (!req.query.id) throw Error('tip id parameter missing');
     const tipId = parseInt(req.query.id, 10);
 
-    const tip = await aeternity.getTips().then((ts) => ts.find((t) => t.id === tipId));
-    const tips = await aeternity.getTips().then((ts) => ts.filter((t) => t.url === tip.url));
+    const tip = await aeternity.getTips().then(ts => ts.find(t => t.id === tipId));
+    const tips = await aeternity.getTips().then(ts => ts.filter(t => t.url === tip.url));
     const urlStats = CacheLogic.statsForTips(tips);
 
-    const oracle = await aeternity.oracleContract.methods.get_state().then((x) => x.decodedResult);
+    const oracle = await aeternity.oracleContract.methods.get_state().then(x => x.decodedResult);
     const oracleClaim = oracle.success_claimed_urls.find(([url]) => url === tip.url);
-    const unsafeCheckOracleAnswers = await aeternity.oracleContract.methods.unsafe_check_oracle_answers(tip.url).then((x) => x.decodedResult);
+    const unsafeCheckOracleAnswers = await aeternity.oracleContract.methods.unsafe_check_oracle_answers(tip.url).then(x => x.decodedResult);
 
     const contractTransactions = await aeternity.middlewareContractTransactions();
-    const events = await contractTransactions.map((tx) => tx.hash)
+    const events = await contractTransactions.map(tx => tx.hash)
       .asyncMap(aeternity.transactionEvents)
-      .then((transactionEvents) => transactionEvents.filter((e) => e.url === tip.url));
+      .then(transactionEvents => transactionEvents.filter(e => e.url === tip.url));
 
     const result = {
       tip,

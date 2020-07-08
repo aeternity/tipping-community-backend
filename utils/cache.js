@@ -30,7 +30,7 @@ cache.init = async (aeternity, keepHotFunction) => {
   if (process.env.NODE_ENV !== 'test') cache.keepHot(aeternity, keepHotFunction);
 };
 
-const buildKey = (keys) => [cache.networkKey, ...keys].join(':');
+const buildKey = keys => [cache.networkKey, ...keys].join(':');
 
 cache.getOrSet = async (keys, asyncFetchData, expire = null) => {
   const key = buildKey(keys);
@@ -57,7 +57,7 @@ cache.getOrSet = async (keys, asyncFetchData, expire = null) => {
     }
 
     return data;
-  }).catch((e) => {
+  }).catch(e => {
     logger.error(e);
     return asyncFetchData();
   });
@@ -73,16 +73,16 @@ cache.set = async (keys, data, expire = null) => {
   }
 };
 
-cache.delByPrefix = async (prefixes) => {
+cache.delByPrefix = async prefixes => {
   const prefix = buildKey(prefixes);
   // eslint-disable-next-line no-console
   console.log('      cache keys', `${prefix}*`);
   const rows = await cacheKeys(`${prefix}*`);
   if (rows.length) logger.log('      cache delByPrefix', rows);
-  await Promise.all(rows.map((key) => del(key)));
+  await Promise.all(rows.map(key => del(key)));
 };
 
-cache.del = async (keys) => {
+cache.del = async keys => {
   const key = buildKey(keys);
   // eslint-disable-next-line no-console
   console.log('      cache del', key);

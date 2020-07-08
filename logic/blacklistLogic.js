@@ -5,10 +5,10 @@ module.exports = class Blacklist {
     const blacklist = await BlacklistEntry.findAll({
       raw: true,
     });
-    return allItems.map((item) => ({
+    return allItems.map(item => ({
       ...item,
-      hidden: blacklist.some((b) => b.tipId === item.id && b.status === 'hidden'),
-      flagged: blacklist.some((b) => b.tipId === item.id && b.status === 'flagged'),
+      hidden: blacklist.some(b => b.tipId === item.id && b.status === 'hidden'),
+      flagged: blacklist.some(b => b.tipId === item.id && b.status === 'flagged'),
     })).sort((a, b) => b.timestamp - a.timestamp);
   }
 
@@ -71,6 +71,6 @@ module.exports = class Blacklist {
 
   static async getBlacklistedIds() {
     const blacklist = await BlacklistEntry.findAll({ raw: true, where: { status: 'hidden' } });
-    return blacklist.map((b) => b.tipId);
+    return blacklist.map(b => b.tipId);
   }
 };

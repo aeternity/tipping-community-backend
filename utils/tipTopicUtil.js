@@ -2,13 +2,13 @@ const BigNumber = require('bignumber.js');
 
 const topicsRegex = /(#[a-zA-Z]+\b)(?!;)/g;
 
-const getTipTopics = (tips) => {
+const getTipTopics = tips => {
   const avgTipScoreWeight = 1.5;
   const countScoreWeight = 0.8;
 
   const topics = tips.reduce((acc, tip) => {
     if (tip.topics) {
-      tip.topics.forEach((topic) => {
+      tip.topics.forEach(topic => {
         const score = tip.score ? tip.score : 0;
 
         if (topic) {
@@ -28,7 +28,7 @@ const getTipTopics = (tips) => {
     return acc;
   }, {});
 
-  const maxCount = Math.max(...Object.values(topics).map((x) => x.count));
+  const maxCount = Math.max(...Object.values(topics).map(x => x.count));
 
   const sortedTopic = Object.entries(topics).map(([topic, data]) => {
     const topicData = data;

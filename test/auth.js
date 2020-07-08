@@ -24,7 +24,7 @@ describe('Authenticator', () => {
   };
 
   describe('Profile Authentication', () => {
-    it('it should return a signature challenge', (done) => {
+    it('it should return a signature challenge', done => {
       chai.request(server).post(`/profile/${publicKey}`).send(testData).end((err, res) => {
         res.should.have.status(200);
         shouldBeValidChallengeResponse(res.body, testData);
@@ -32,7 +32,7 @@ describe('Authenticator', () => {
       });
     });
 
-    it('it should fail with invalid signature', (done) => {
+    it('it should fail with invalid signature', done => {
       chai.request(server).post(`/profile/${publicKey}`).send(testData).end((err, res) => {
         res.should.have.status(200);
         shouldBeValidChallengeResponse(res.body, testData);
@@ -48,7 +48,7 @@ describe('Authenticator', () => {
       });
     });
 
-    it('it should fail on invalid challenge', (done) => {
+    it('it should fail on invalid challenge', done => {
       chai.request(server).post(`/profile/${publicKey}`).send(testData).end((err, res) => {
         res.should.have.status(200);
         shouldBeValidChallengeResponse(res.body, testData);
@@ -66,7 +66,7 @@ describe('Authenticator', () => {
       });
     });
 
-    it('it should fail at a change of paths', (done) => {
+    it('it should fail at a change of paths', done => {
       chai.request(server).post(`/profile/${publicKey}`).send(testData).end((err, res) => {
         res.should.have.status(200);
         shouldBeValidChallengeResponse(res.body, testData);
@@ -84,7 +84,7 @@ describe('Authenticator', () => {
       });
     });
 
-    it('it should reject creation for someone elses public key', (done) => {
+    it('it should reject creation for someone elses public key', done => {
       performSignedJSONRequest(server, 'post', '/profile/ak_fUq2NesPXcYZ1CcqBcGC3StpdnQw3iVxMA3YSeCNAwfN4myQk', {
         biography: 'new bio',
       }).then(({ res }) => {

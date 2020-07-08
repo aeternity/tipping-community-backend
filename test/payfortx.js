@@ -12,14 +12,14 @@ chai.use(chaiHttp);
 // Our parent block
 describe('Pay for TX', () => {
   describe('Flat API Tests', () => {
-    it('it should fail without body', (done) => {
+    it('it should fail without body', done => {
       chai.request(server).post('/claim/submit').send({}).end((err, res) => {
         res.should.have.status(400);
         done();
       });
     });
 
-    it('it should fail without address', (done) => {
+    it('it should fail without address', done => {
       chai.request(server).post('/claim/submit').send({
         url: 'https://aeternity.com',
       }).end((err, res) => {
@@ -28,7 +28,7 @@ describe('Pay for TX', () => {
       });
     });
 
-    it('it should fail without url', (done) => {
+    it('it should fail without url', done => {
       chai.request(server).post('/claim/submit').send({
         address: publicKey,
       }).end((err, res) => {
@@ -44,7 +44,7 @@ describe('Pay for TX', () => {
       await ae.init();
     });
 
-    it('it should reject on website not in contract', (done) => {
+    it('it should reject on website not in contract', done => {
       chai.request(server).post('/claim/submit').send({
         address: publicKey,
         url: 'https://complicated.domain.test',
@@ -57,7 +57,7 @@ describe('Pay for TX', () => {
   });
 
   describe('Logger tests', () => {
-    it('should return json parsable logs on endpoint', (done) => {
+    it('should return json parsable logs on endpoint', done => {
       chai.request(server).get('/logs/all')
         .auth(process.env.AUTHENTICATION_USER, process.env.AUTHENTICATION_PASSWORD)
         .end((err, res) => {

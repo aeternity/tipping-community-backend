@@ -37,7 +37,7 @@ module.exports = class Trace {
   }
 
   catchError(returnValue) {
-    return (e) => {
+    return e => {
       this.update({ state: TRACE_STATES.CAUGHT_ERROR, error: { ...e } });
       return returnValue;
     };

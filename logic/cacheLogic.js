@@ -52,7 +52,7 @@ module.exports = class CacheLogic {
   static async findContractEvents() {
     const fetchContractEvents = async () => {
       const contractTransactions = await aeternity.middlewareContractTransactions();
-      return contractTransactions.map((tx) => tx.hash).asyncMap(aeternity.transactionEvents);
+      return contractTransactions.map(tx => tx.hash).asyncMap(aeternity.transactionEvents);
     };
 
     return cache.getOrSet(['contractEvents'], async () => fetchContractEvents().catch(logger.error), cache.shortCacheTime);
@@ -62,7 +62,7 @@ module.exports = class CacheLogic {
     return cache.getOrSet(
       ['fetchPrice'],
       async () => axios.get('https://api.coingecko.com/api/v3/simple/price?ids=aeternity&vs_currencies=usd,eur,cny')
-        .then((res) => res.data).catch(logger.error),
+        .then(res => res.data).catch(logger.error),
       cache.longCacheTime,
     );
   }
@@ -73,12 +73,12 @@ module.exports = class CacheLogic {
     // not await on purpose, just trigger background preview fetch
     lock.acquire('LinkPreviewLogic.fetchAllLinkPreviews', async () => {
       const previews = await LinkPreviewLogic.fetchAllLinkPreviews();
-      const tipUrls = [...new Set(tips.map((tip) => tip.url))];
-      const previewUrls = [...new Set(previews.map((preview) => preview.requestUrl))];
+      const tipUrls = [...new Set(tips.map(tip => tip.url))];
+      const previewUrls = [...new Set(previews.map(preview => preview.requestUrl))];
 
-      const difference = tipUrls.filter((url) => !previewUrls.includes(url));
+      const difference = tipUrls.filter(url => !previewUrls.includes(url));
 
-      await difference.asyncMap(async (url) => {
+      await difference.asyncMap(async url => {
         await LinkPreviewLogic.generatePreview(url).catch(logger.error);
       });
     });
@@ -86,13 +86,13 @@ module.exports = class CacheLogic {
 
     await lock.acquire('TipLogic.fetchAllLocalTips', async () => {
       const languages = await TipLogic.fetchAllLocalTips();
-      const tipIds = [...new Set(tips.map((tip) => tip.id))];
-      const languageIds = [...new Set(languages.map((preview) => preview.id))];
+      const tipIds = [...new Set(tips.map(tip => tip.id))];
+      const languageIds = [...new Set(languages.map(preview => preview.id))];
 
-      const difference = tipIds.filter((url) => !languageIds.includes(url));
+      const difference = tipIds.filter(url => !languageIds.includes(url));
 
-      result = await difference.asyncMap(async (id) => {
-        let { title } = tips.find((tip) => tip.id === id);
+      result = await difference.asyncMap(async id => {
+        let { title } = tips.find(tip => tip.id === id);
         title = title.replace(/[!0-9#.,?)-:'“@/\\]/g, '');
         // const probability = lngDetector.detect(title, 1);
         const probability2 = await cld.detect(title).catch(() => ({}));
@@ -117,7 +117,7 @@ module.exports = class CacheLogic {
       return result.reduce((acc, chainName) => {
         if (!chainName.pointers) return acc;
 
-        const accountPubkeyPointer = chainName.pointers.find((pointer) => pointer.key === 'account_pubkey');
+        const accountPubkeyPointer = chainName.pointers.find(pointer => pointer.key === 'account_pubkey');
         const pubkey = accountPubkeyPointer ? accountPubkeyPointer.id : null;
         if (!pubkey) return acc;
 
@@ -131,7 +131,7 @@ module.exports = class CacheLogic {
           acc[pubkey] = chainName.name;
         }
 
-        const currentProfile = allProfiles.find((profile) => profile.author === pubkey);
+        const currentProfile = allProfiles.find(profile => profile.author === pubkey);
         if (currentProfile && currentProfile.preferredChainName) {
           acc[pubkey] = currentProfile.preferredChainName;
         }
@@ -151,34 +151,34 @@ module.exports = class CacheLogic {
 
     // filter by blacklisted from backend
     if (blacklist && blacklistedIds) {
-      tips = tips.filter((tip) => !blacklistedIds.includes(tip.id));
+      tips = tips.filter(tip => !blacklistedIds.includes(tip.id));
     }
 
     // add preview to tips from backend
     if (tipsPreview) {
-      tips = tips.map((tip) => {
-        const preview = tipsPreview.find((linkPreview) => linkPreview.requestUrl === tip.url);
+      tips = tips.map(tip => {
+        const preview = tipsPreview.find(linkPreview => linkPreview.requestUrl === tip.url);
         return { ...tip, preview };
       });
     }
 
     // add language to tips from backend
     if (localTips) {
-      tips = tips.map((tip) => {
-        const result = localTips.find((localTip) => localTip.id === tip.id);
+      tips = tips.map(tip => {
+        const result = localTips.find(localTip => localTip.id === tip.id);
         return { ...tip, contentLanguage: result ? result.language : null };
       });
     }
 
     // add chain names for each tip sender
     if (chainNames) {
-      tips = tips.map((tip) => ({ ...tip, chainName: chainNames[tip.sender] }));
+      tips = tips.map(tip => ({ ...tip, chainName: chainNames[tip.sender] }));
     }
 
     // add comment count to each tip
     if (commentCounts) {
-      tips = tips.map((tip) => {
-        const result = commentCounts.find((comment) => comment.tipId === tip.id);
+      tips = tips.map(tip => {
+        const result = commentCounts.find(comment => comment.tipId === tip.id);
         return { ...tip, commentCount: result ? result.count : 0 };
       });
     }
@@ -209,7 +209,7 @@ module.exports = class CacheLogic {
 
   static async deliverTip(req, res) {
     const tips = await CacheLogic.getAllTips(false);
-    const result = tips.find((tip) => tip.id === parseInt(req.query.id, 10));
+    const result = tips.find(tip => tip.id === parseInt(req.query.id, 10));
     return result ? res.send(result) : res.sendStatus(404);
   }
 
@@ -218,7 +218,7 @@ module.exports = class CacheLogic {
     let tips = await CacheLogic.getAllTips(req.query.blacklist !== 'false');
 
     if (req.query.address) {
-      tips = tips.filter((tip) => tip.sender === req.query.address);
+      tips = tips.filter(tip => tip.sender === req.query.address);
     }
 
     if (req.query.search) {
@@ -227,13 +227,13 @@ module.exports = class CacheLogic {
       // if topics exist, only show topics
       const searchTopics = req.query.search.match(topicsRegex);
       if (searchTopics) {
-        searchTips = tips.filter((tip) => searchTopics.every((topic) => tip.topics.includes(topic)));
+        searchTips = tips.filter(tip => searchTopics.every(topic => tip.topics.includes(topic)));
       }
 
       // otherwise fuzzy search all content
       if (searchTopics === null || searchTips.length === 0) {
         // TODO consider indexing
-        searchTips = new Fuse(tips, searchOptions).search(req.query.search).map((result) => {
+        searchTips = new Fuse(tips, searchOptions).search(req.query.search).map(result => {
           const tip = result.item;
           tip.searchScore = result.item.score;
           return tip;
@@ -245,7 +245,7 @@ module.exports = class CacheLogic {
 
     if (req.query.language) {
       const requestedLanguages = req.query.language.split('|');
-      tips = tips.filter((tip) => tip.preview && requestedLanguages.includes(tip.preview.lang)
+      tips = tips.filter(tip => tip.preview && requestedLanguages.includes(tip.preview.lang)
         && (!tip.contentLanguage || requestedLanguages.includes(tip.contentLanguage)));
     }
 
@@ -273,8 +273,8 @@ module.exports = class CacheLogic {
 
   static async deliverContractEvents(req, res) {
     let contractEvents = await CacheLogic.findContractEvents();
-    if (req.query.address) contractEvents = contractEvents.filter((e) => e.address === req.query.address);
-    if (req.query.event) contractEvents = contractEvents.filter((e) => e.event === req.query.event);
+    if (req.query.address) contractEvents = contractEvents.filter(e => e.address === req.query.address);
+    if (req.query.event) contractEvents = contractEvents.filter(e => e.event === req.query.event);
     contractEvents.sort((a, b) => b.time - a.time);
     if (req.query.limit) contractEvents = contractEvents.slice(0, parseInt(req.query.limit, 10));
     res.send(contractEvents);
@@ -291,9 +291,9 @@ module.exports = class CacheLogic {
   static async deliverUserStats(req, res) {
     const oracleState = await aeternity.getOracleState();
     const allTips = await CacheLogic.getAllTips();
-    const userTips = allTips.filter((tip) => tip.sender === req.query.address);
+    const userTips = allTips.filter(tip => tip.sender === req.query.address);
 
-    const userReTips = allTips.flatMap((tip) => tip.retips.filter((retip) => retip.sender === req.query.address));
+    const userReTips = allTips.flatMap(tip => tip.retips.filter(retip => retip.sender === req.query.address));
     const totalTipAmount = Util.atomsToAe(userTips
       .reduce((acc, tip) => acc.plus(tip.amount), new BigNumber(0))
       .plus(userReTips.reduce((acc, tip) => acc.plus(tip.amount), new BigNumber(0)))).toFixed(2);
@@ -332,7 +332,7 @@ module.exports = class CacheLogic {
     const tips = await aeternity.getTips();
 
     const groupedByUrl = Util.groupBy(tips, 'url');
-    const statsByUrl = Object.keys(groupedByUrl).map((url) => ({
+    const statsByUrl = Object.keys(groupedByUrl).map(url => ({
       url,
       ...CacheLogic.statsForTips(groupedByUrl[url]),
     }));
@@ -348,7 +348,7 @@ module.exports = class CacheLogic {
   static statsForTips(tips) {
     const senders = [...new Set(tips
       .reduce((acc, tip) => acc
-        .concat([tip.sender, ...tip.retips.map((retip) => retip.sender)]), []))];
+        .concat([tip.sender, ...tip.retips.map(retip => retip.sender)]), []))];
 
     const retipsLength = tips.reduce((acc, tip) => acc + tip.retips.length, 0);
 

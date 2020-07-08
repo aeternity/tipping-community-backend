@@ -26,7 +26,7 @@ describe('Comments', () => {
     });
 
     await Promise.all((await Comment.findAll()).map(
-      (object) => Comment.update({ parentId: null }, { where: { id: object.id } }),
+      object => Comment.update({ parentId: null }, { where: { id: object.id } }),
     ));
 
     await Comment.destroy({
@@ -36,7 +36,7 @@ describe('Comments', () => {
   });
 
   describe('Comment API', () => {
-    it('it should GET an empty array of comments for tips', (done) => {
+    it('it should GET an empty array of comments for tips', done => {
       chai.request(server).get('/comment/api/').end((err, res) => {
         res.should.have.status(200);
         res.body.should.be.an('array');
@@ -45,7 +45,7 @@ describe('Comments', () => {
       });
     });
 
-    it('it should GET a 0 count of comments for tips', (done) => {
+    it('it should GET a 0 count of comments for tips', done => {
       chai.request(server).get('/comment/count/tips/').end((err, res) => {
         res.should.have.status(200);
         res.body.should.be.an('array');
@@ -54,7 +54,7 @@ describe('Comments', () => {
       });
     });
 
-    it(`it should GET a 0 count of comments for address ${publicKey}`, (done) => {
+    it(`it should GET a 0 count of comments for address ${publicKey}`, done => {
       chai.request(server).get(`/comment/count/author/${publicKey}`).end((err, res) => {
         res.should.have.status(200);
         res.body.should.be.an('object');
@@ -64,14 +64,14 @@ describe('Comments', () => {
       });
     });
 
-    it('it should return a signature challenge', (done) => {
+    it('it should return a signature challenge', done => {
       chai.request(server).post('/comment/api').send(testData).end((err, res) => {
         shouldBeValidChallengeResponse(res.body, testData);
         done();
       });
     });
 
-    it('it should CREATE a new comment entry', (done) => {
+    it('it should CREATE a new comment entry', done => {
       performSignedJSONRequest(server, 'post', '/comment/api', testData).then(({ res, challenge, signature }) => {
         res.should.have.status(200);
         res.body.should.be.a('object');
@@ -89,7 +89,7 @@ describe('Comments', () => {
       });
     });
 
-    it('it should CREATE a profile with a new comment', (done) => {
+    it('it should CREATE a profile with a new comment', done => {
       chai.request(server).get(`/profile/${testData.author}`).end((err, res) => {
         res.should.have.status(200);
         res.body.should.be.a('object');
@@ -102,7 +102,7 @@ describe('Comments', () => {
       });
     });
 
-    it('it should GET a single item', (done) => {
+    it('it should GET a single item', done => {
       chai.request(server).get(`/comment/api/${commentId}`).end((err, res) => {
         res.should.have.status(200);
         res.body.should.be.a('object');
@@ -122,7 +122,7 @@ describe('Comments', () => {
       });
     });
 
-    it('it should GET all items from a thread', (done) => {
+    it('it should GET all items from a thread', done => {
       chai.request(server).get(`/comment/api/tip/${encodeURIComponent(testData.tipId)}`).end((err, res) => {
         res.should.have.status(200);
         res.body.should.be.a('array');
@@ -135,7 +135,7 @@ describe('Comments', () => {
       });
     });
 
-    it('it should GET a count of comments for tips', (done) => {
+    it('it should GET a count of comments for tips', done => {
       chai.request(server).get('/comment/count/tips/').end((err, res) => {
         res.should.have.status(200);
         res.body.should.be.an('array');
@@ -146,7 +146,7 @@ describe('Comments', () => {
       });
     });
 
-    it(`it should GET a count of comments for address${publicKey}`, (done) => {
+    it(`it should GET a count of comments for address${publicKey}`, done => {
       chai.request(server).get(`/comment/count/author/${publicKey}`).end((err, res) => {
         res.should.have.status(200);
         res.body.should.be.an('object');
@@ -156,7 +156,7 @@ describe('Comments', () => {
       });
     });
 
-    it('it should GET all items for an address', (done) => {
+    it('it should GET all items for an address', done => {
       chai.request(server).get(`/comment/api/author/${testData.author}`).end((err, res) => {
         res.should.have.status(200);
         res.body.should.be.a('array');
@@ -169,7 +169,7 @@ describe('Comments', () => {
       });
     });
 
-    it('it should DELETE a single comment entry', (done) => {
+    it('it should DELETE a single comment entry', done => {
       performSignedJSONRequest(server, 'delete', `/comment/api/${commentId}`, { author: testData.author })
         .then(({ res }) => {
           res.should.have.status(200);
@@ -178,7 +178,7 @@ describe('Comments', () => {
         });
     });
 
-    it('it should 404 on getting a deleted item', (done) => {
+    it('it should 404 on getting a deleted item', done => {
       chai.request(server).get(`/comment/api/${commentId}`).end((err, res) => {
         res.should.have.status(404);
         done();
@@ -222,7 +222,7 @@ describe('Comments', () => {
       }, { raw: true });
     });
 
-    it('it should CREATE a nested comment entry', (done) => {
+    it('it should CREATE a nested comment entry', done => {
       const nestedTestData = { ...testData, parentId: parentComment.id };
       performSignedJSONRequest(server, 'post', '/comment/api', nestedTestData)
         .then(({ res, signature, challenge }) => {
@@ -243,7 +243,7 @@ describe('Comments', () => {
         });
     });
 
-    it('it should REJECT a nested comment entry with a wrong parent id', (done) => {
+    it('it should REJECT a nested comment entry with a wrong parent id', done => {
       const nestedTestData = { ...testData, parentId: 0 };
       performSignedJSONRequest(server, 'post', '/comment/api', nestedTestData).then(({ res }) => {
         res.should.have.status(400);
@@ -252,7 +252,7 @@ describe('Comments', () => {
       });
     });
 
-    it('it should GET children with parent', (done) => {
+    it('it should GET children with parent', done => {
       chai.request(server).get(`/comment/api/${parentComment.id}`).end((err, res) => {
         res.should.have.status(200);
         res.body.should.be.a('object');
@@ -271,7 +271,7 @@ describe('Comments', () => {
       });
     });
 
-    it('it should GET ALL comments with children for a tipId', (done) => {
+    it('it should GET ALL comments with children for a tipId', done => {
       chai.request(server).get('/comment/api/tip/1').end((err, res) => {
         res.should.have.status(200);
         res.body.should.be.a('array');

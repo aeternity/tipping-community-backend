@@ -18,7 +18,7 @@ class IPFS {
   async checkFileExists(hash) {
     const result = await Promise.race([
       this.node.files.stat(`/ipfs/${hash}`),
-      new Promise((resolve) => {
+      new Promise(resolve => {
         setTimeout(() => {
           resolve(null);
         }, 1000);

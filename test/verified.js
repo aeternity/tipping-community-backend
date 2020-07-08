@@ -12,7 +12,7 @@ chai.use(chaiHttp);
 // Our parent block
 describe('Verified', () => {
   describe('Verified API', () => {
-    it('it should GET all the verified entries', (done) => {
+    it('it should GET all the verified entries', done => {
       const stub = sinon.stub(ae, 'getTips').callsFake(() => [
         {
           url: 'https://www.test.domain.com',

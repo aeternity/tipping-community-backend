@@ -7,9 +7,9 @@ const tipTitleScoreWeight = 0.7;
 
 module.exports = class Tiporder {
   static applyTipScoring(tips) {
-    const maxTipAmount = BigNumber.max(...tips.map((tip) => tip.total_amount), '1');
+    const maxTipAmount = BigNumber.max(...tips.map(tip => tip.total_amount), '1');
 
-    return tips.map((tip) => {
+    return tips.map(tip => {
       // remove some dates that are older than .9995%
       const datesToConsiderScore = Math.max(((tip.timestamp / new Date().getTime()) - 0.9995) * 1000, 0);
       // decay older dates more than newer ones

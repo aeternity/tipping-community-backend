@@ -23,7 +23,7 @@ describe('LinkPreview', () => {
   });
 
   describe('LinkPreview API', () => {
-    it('it should GET all the linkpreview entries (empty)', (done) => {
+    it('it should GET all the linkpreview entries (empty)', done => {
       chai.request(server).get('/linkpreview/').end((err, res) => {
         res.should.have.status(200);
         res.body.should.be.a('array');
@@ -33,7 +33,7 @@ describe('LinkPreview', () => {
 
     let imageUrl;
 
-    it('it get link preview for aeternity.com', (done) => {
+    it('it get link preview for aeternity.com', done => {
       chai.request(server).get(`/linkpreview?url=${encodeURIComponent(requestUrl)}`).end((err, res) => {
         res.should.have.status(200);
         res.body.should.be.a('object');
@@ -51,7 +51,7 @@ describe('LinkPreview', () => {
       });
     });
 
-    it('it get an image for aeternity.com', (done) => {
+    it('it get an image for aeternity.com', done => {
       chai.request(server).get(imageUrl).end((err, res) => {
         res.should.have.status(200);
         res.should.have.header('content-type');
@@ -60,7 +60,7 @@ describe('LinkPreview', () => {
       });
     });
 
-    it('it should fail on none cached urls', (done) => {
+    it('it should fail on none cached urls', done => {
       chai.request(server).get(`/linkpreview?url=${encodeURIComponent('https://domain.test')}`).end((err, res) => {
         res.should.have.status(404);
         done();
@@ -69,8 +69,8 @@ describe('LinkPreview', () => {
 
     after(() => {
       fs.readdirSync('images')
-        .filter((fileName) => fileName.includes('preview-'))
-        .map((file) => fs.unlinkSync(`images/${file}`));
+        .filter(fileName => fileName.includes('preview-'))
+        .map(file => fs.unlinkSync(`images/${file}`));
     });
   });
 });

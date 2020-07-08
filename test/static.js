@@ -10,7 +10,7 @@ chai.use(chaiHttp);
 // Our parent block
 describe('Static Routes', () => {
   describe('Contract', () => {
-    it('it should GET the contract file and the contract address', (done) => {
+    it('it should GET the contract file and the contract address', done => {
       chai.request(server).get('/static/contract').end((err, res) => {
         res.should.have.status(200);
         res.body.should.be.a('object');
@@ -49,7 +49,7 @@ describe('Static Routes', () => {
       });
     });
 
-    it('it should GET the correct stats', (done) => {
+    it('it should GET the correct stats', done => {
       chai.request(server).get('/static/stats').end((err, res) => {
         res.should.have.status(200);
         res.body.should.be.a('object');
@@ -67,7 +67,7 @@ describe('Static Routes', () => {
     });
   });
   describe('GrayList', () => {
-    it('it should GET the hardcoded graylist', (done) => {
+    it('it should GET the hardcoded graylist', done => {
       chai.request(server).get('/static/wallet/graylist').end((err, res) => {
         res.should.have.status(200);
         res.body.should.be.a('array');

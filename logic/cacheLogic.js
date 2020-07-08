@@ -46,7 +46,7 @@ module.exports = class CacheLogic {
       await CacheLogic.findContractEvents();
     };
 
-    await cache.init(aeternity, keepHotFunction);
+    await cache.setKeepHot(keepHotFunction);
   }
 
   static async findTransactionEvents(hash) {

@@ -56,8 +56,6 @@ module.exports = class AsyncTipGeneratorsLogic {
   static async triggerGetTokenContractIndex(tips) {
     return lock.acquire('AsyncTipGeneratorsLogic.triggerTokenContractIndex', async () => {
       const tokenContracts = tips.filter(t => t.token).map(t => t.token);
-
-      await aeternity.init();
       const tokenRegistryContracts = await aeternity.getTokenRegistryState()
         .then(state => state.map(([token]) => token));
 

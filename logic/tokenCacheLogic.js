@@ -1,17 +1,7 @@
 const aeternity = require('../utils/aeternity.js');
-const cache = require('../utils/cache');
 const AsyncTipGeneratorsLogic = require('./asyncTipGeneratorsLogic');
 
 module.exports = class TokenCacheLogic {
-  constructor() {
-    TokenCacheLogic.init();
-  }
-
-  static async init() {
-    await aeternity.init();
-    await cache.init(aeternity, () => {});
-  }
-
   static async fetchTokenInfos() {
     const fetchData = async () => {
       const tips = await aeternity.getTips();

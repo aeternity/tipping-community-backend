@@ -4,6 +4,8 @@ const app = express();
 const exphbs = require('express-handlebars');
 const cors = require('cors');
 const Logger = require('./utils/logger.js');
+const aeternity = require('./utils/aeternity');
+const cache = require('./utils/cache');
 
 const logger = new Logger('main');
 // VIEWS
@@ -12,7 +14,7 @@ app.set('view engine', 'handlebars');
 app.use(express.json()); // for parsing application/json
 
 process.on('unhandledRejection', (reason, p) => {
-  logger.error('Unhandled Rejection at: Promise', p, 'reason:', reason.stack);
+  logger.error(`Unhandled Rejection at: Promise ${p} reason: ${reason.stack}`);
 });
 
 app.use(cors({
@@ -43,8 +45,16 @@ app.use((req, res) => {
   res.sendStatus(404);
 });
 
-app.listen(3000, () => {
-  logger.log('Server started');
-});
+// first initialize aeternity sdk and cache before starting server
+const startup = async () => {
+  await aeternity.init();
+  await cache.init(aeternity);
+
+  app.listen(3000, () => {
+    logger.log('Server started');
+  });
+};
+
+startup();
 
 module.exports = app;

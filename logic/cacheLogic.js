@@ -33,9 +33,6 @@ module.exports = class CacheLogic {
   }
 
   static async init() {
-    // Run once so the db is synced initially without getting triggered every 5 seconds
-    await aeternity.init();
-
     const keepHotFunction = async () => {
       await CacheLogic.getTipsAndVerifyLocalInfo();
       await CacheLogic.fetchChainNames();
@@ -44,7 +41,7 @@ module.exports = class CacheLogic {
       await CacheLogic.findContractEvents();
     };
 
-    await cache.init(aeternity, keepHotFunction);
+    await cache.setKeepHot(keepHotFunction);
   }
 
   static async findContractEvents() {

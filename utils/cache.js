@@ -23,11 +23,14 @@ cache.longCacheTime = process.env.LONG_CACHE_TIME || 60 * 60;
 cache.keepHotInterval = process.env.KEEP_HOT_INTERVAL || 20 * 1000;
 cache.networkKey = '';
 
-cache.init = async (aeternity, keepHotFunction) => {
+cache.init = async aeternity => {
   aeternity.setCache(cache);
   cache.networkKey = await aeternity.networkId();
   logger.log('cache networkKey', cache.networkKey);
-  if (process.env.NODE_ENV !== 'test') cache.keepHot(aeternity, keepHotFunction);
+};
+
+cache.setKeepHot = keepHotFunction => {
+  if (process.env.NODE_ENV !== 'test') cache.keepHot(keepHotFunction);
 };
 
 const buildKey = keys => [cache.networkKey, ...keys].join(':');
@@ -95,7 +98,7 @@ cache.del = async keys => {
   await del(key);
 };
 
-cache.keepHot = (aeternity, keepHotFunction) => {
+cache.keepHot = keepHotFunction => {
   const keepHotLogic = async () => {
     const start = new Date().getTime();
     await keepHotFunction();

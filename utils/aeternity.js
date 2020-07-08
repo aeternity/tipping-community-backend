@@ -184,11 +184,9 @@ class Aeternity {
 
   getTokenMetaInfoCacheAccounts = async (address) => {
     const fetchData = async () => {
-      const contract =  this.tokenContracts[address]
-        ? this.tokenContracts[address]
-        : await this.client.getContractInstance(TOKEN_CONTRACT_INTERFACE, {contractAddress: address});
+      if (!this.tokenContracts[address]) this.tokenContracts[address] = await this.client.getContractInstance(TOKEN_CONTRACT_INTERFACE, {contractAddress: address});
 
-      const metaInfo = await contract.methods.meta_info().then(r => r.decodedResult).catch(e => {
+      const metaInfo = await this.tokenContracts[address].methods.meta_info().then(r => r.decodedResult).catch(e => {
         console.warn(e.message);
         return null;
       })
@@ -216,11 +214,9 @@ class Aeternity {
 
   getCacheTokenAccounts = async (token) => {
     const fetchBalances = async () => {
-      const contract =  this.tokenContracts[token]
-        ? this.tokenContracts[token]
-        : await this.client.getContractInstance(TOKEN_CONTRACT_INTERFACE, {contractAddress: token});
+      if (!this.tokenContracts[token]) this.tokenContracts[token] = await this.client.getContractInstance(TOKEN_CONTRACT_INTERFACE, {contractAddress: token});
 
-      const balances = await contract.methods.balances().then(r => r.decodedResult);
+      const balances = await this.tokenContracts[token].methods.balances().then(r => r.decodedResult);
       balances.asyncMap(async ([account, _]) => {
         const cacheKeys = ["getCacheTokenAccounts.fetchBalances", account];
         const hasBalanceTokens = await this.cache.get(cacheKeys);

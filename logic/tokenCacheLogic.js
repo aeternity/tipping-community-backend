@@ -1,5 +1,4 @@
 const aeternity = require('../utils/aeternity.js');
-const cache = require('../utils/cache');
 const AsyncTipGeneratorsLogic = require('./asyncTipGeneratorsLogic');
 
 module.exports = class TokenCacheLogic {

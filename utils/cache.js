@@ -22,9 +22,12 @@ cache.longCacheTime = process.env.LONG_CACHE_TIME || 60 * 60;
 cache.keepHotInterval = process.env.KEEP_HOT_INTERVAL || 20 * 1000;
 cache.networkKey = '';
 
-cache.init = async (aeternity, keepHotFunction) => {
+cache.init = async aeternity => {
   cache.networkKey = await aeternity.networkId();
   logger.info(`cache networkKey ${cache.networkKey}`);
+};
+
+cache.setKeepHot = keepHotFunction => {
   if (process.env.NODE_ENV !== 'test') cache.keepHot(keepHotFunction);
 };
 

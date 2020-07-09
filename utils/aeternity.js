@@ -128,19 +128,13 @@ class Aeternity {
       });
     };
 
-    return this.cache
-      ? this.cache.getOrSet(['transactionEvents', hash], () => fetchTransactionEvents())
-      : fetchTransactionEvents();
+    return this.cache.getOrSet(['transactionEvents', hash], () => fetchTransactionEvents());
   }
 
   async getOracleState() {
-    if (!this.client) throw new Error('Init sdk first');
-
     const fetchOracleState = () => this.oracleContract.methods.get_state().then(res => res.decodedResult);
 
-    return this.cache
-      ? this.cache.getOrSet(['oracleState'], () => fetchOracleState(), this.cache.shortCacheTime)
-      : fetchOracleState();
+    return this.cache.getOrSet(['oracleState'], () => fetchOracleState(), this.cache.shortCacheTime);
   }
 
   addAdditionalTipsData(tips) {
@@ -164,24 +158,19 @@ class Aeternity {
   }
 
   async getTips() {
-    if (!this.client) throw new Error('Init sdk first');
     const fetchTips = async () => {
       const state = await this.contract.methods.get_state();
       const { tips } = tippingContractUtil.getTipsRetips(state.decodedResult);
       return this.addAdditionalTipsData(tips);
     };
 
-    return this.cache
-      ? this.cache.getOrSet(['getTips'], () => fetchTips(), this.cache.shortCacheTime)
-      : fetchTips();
+    return this.cache.getOrSet(['getTips'], () => fetchTips(), this.cache.shortCacheTime);
   }
 
   async getTokenRegistryState() {
     const fetchData = async () => this.tokenRegistry.methods.get_state().then(r => r.decodedResult);
 
-    return this.cache
-      ? this.cache.getOrSet(['getTokenRegistryState'], () => fetchData(), this.cache.shortCacheTime)
-      : fetchData();
+    return this.cache.getOrSet(['getTokenRegistryState'], () => fetchData(), this.cache.shortCacheTime);
   }
 
   async getTokenMetaInfoCacheAccounts(address) {
@@ -205,9 +194,7 @@ class Aeternity {
     // just trigger cache buildup, no need to await for result
     this.getCacheTokenAccounts(address);
 
-    return this.cache
-      ? this.cache.getOrSet(['getTokenMetaInfo', address], () => fetchData())
-      : fetchData();
+    return this.cache.getOrSet(['getTokenMetaInfo', address], () => fetchData());
   }
 
   async getCacheTokenBalances(account) {
@@ -233,7 +220,6 @@ class Aeternity {
       return true;
     };
 
-    if (!this.cache) throw new Error('getCacheTokenAccounts will not work performant without cache');
     return this.cache.getOrSet(['getCacheTokenAccounts', token], () => fetchBalances(), this.cache.longCacheTime);
   }
 

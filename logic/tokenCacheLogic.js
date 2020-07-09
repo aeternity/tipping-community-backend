@@ -1,5 +1,6 @@
 const aeternity = require('../utils/aeternity.js');
 const AsyncTipGeneratorsLogic = require('./asyncTipGeneratorsLogic');
+const cache = require('../utils/cache');
 
 module.exports = class TokenCacheLogic {
 
@@ -17,9 +18,7 @@ module.exports = class TokenCacheLogic {
       return AsyncTipGeneratorsLogic.triggerGetTokenContractIndex(tips);
     };
 
-    return this.cache
-      ? this.cache.getOrSet(['fetchTokenInfos'], () => fetchData(), this.cache.shortCacheTime)
-      : fetchData();
+    return cache.getOrSet(['fetchTokenInfos'], () => fetchData(), cache.shortCacheTime);
   }
 
   static async deliverTokenInfo(req, res) {

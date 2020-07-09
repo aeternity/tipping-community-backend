@@ -160,23 +160,13 @@ class Aeternity {
     const tips = tippingContractUtil.getTipsRetips(state.decodedResult).tips;
     return Aeternity.addAdditionalTipsData(tips);
   }
-  getContractSource() {
-    if (!process.env.CONTRACT_FILE) throw new Error(`env.CONTRACT_FILE is ${process.env.CONTRACT_FILE}`);
-    return fs.readFileSync(`${__dirname}/${process.env.CONTRACT_FILE}.aes`, 'utf-8');
-  }
-
-  getOracleContractSource() {
-    return fs.readFileSync(`${__dirname}/OracleServiceInterface.aes`, 'utf-8');
-  }
 
   getTokenRegistryState = async () => {
     const fetchData = async () => {
       return this.tokenRegistry.methods.get_state().then(r => r.decodedResult);
     }
 
-    return this.cache
-      ? this.cache.getOrSet(["getTokenRegistryState"], () => fetchData(), this.cache.shortCacheTime)
-      : fetchData();
+    return this.cache.getOrSet(["getTokenRegistryState"], () => fetchData(), this.cache.shortCacheTime);
   }
 
   getTokenMetaInfoCacheAccounts = async (address) => {
@@ -197,9 +187,7 @@ class Aeternity {
     // just trigger cache buildup, no need to await for result
     this.getCacheTokenAccounts(address);
 
-    return this.cache
-      ? this.cache.getOrSet(['getTokenMetaInfo', address], () => fetchData())
-      : fetchData();
+    return this.cache.getOrSet(['getTokenMetaInfo', address], () => fetchData());
   };
 
   getCacheTokenBalances = async (account) => {
@@ -223,7 +211,6 @@ class Aeternity {
       return true;
     }
 
-    if (!this.cache) throw new Error('getCacheTokenAccounts will not work performant without cache');
     return this.cache.getOrSet(["getCacheTokenAccounts", token], () => fetchBalances(), this.cache.longCacheTime);
   }
 

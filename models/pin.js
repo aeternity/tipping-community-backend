@@ -1,4 +1,4 @@
-const { PINNED_CONTENT_DB_TYPES } = require('./enums/pin');
+const { PINNED_CONTENT_TYPES } = require('./enums/pin');
 
 module.exports = (sequelize, DataTypes) => sequelize.define('Pin', {
   // attributes
@@ -8,7 +8,7 @@ module.exports = (sequelize, DataTypes) => sequelize.define('Pin', {
   },
   type: {
     type: DataTypes.ENUM({
-      values: PINNED_CONTENT_DB_TYPES,
+      values: Object.values(PINNED_CONTENT_TYPES),
     }),
     allowNull: false,
   },

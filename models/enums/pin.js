@@ -3,5 +3,4 @@ const PINNED_CONTENT_TYPES = {
 };
 module.exports = {
   PINNED_CONTENT_TYPES,
-  PINNED_CONTENT_DB_TYPES: Object.values(PINNED_CONTENT_TYPES),
 };

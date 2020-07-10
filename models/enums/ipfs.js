@@ -5,5 +5,4 @@ const IPFS_TYPES = {
 
 module.exports = {
   IPFS_TYPES,
-  IPFS_DB_TYPES: Object.values(IPFS_TYPES),
 };

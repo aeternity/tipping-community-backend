@@ -16,5 +16,4 @@ const TRACE_STATES = {
 };
 module.exports = {
   TRACE_STATES,
-  PINNED_CONTENT_DB_TYPES: Object.values(TRACE_STATES),
 };

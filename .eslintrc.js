@@ -11,6 +11,7 @@ module.exports = {
   parserOptions: {
     ecmaVersion: 11,
   },
+  parser: 'babel-eslint',
   rules: {
     'no-extend-native': 'off',
     'max-len': ['error', { code: 150 }],

@@ -12,7 +12,7 @@ chai.use(chaiHttp);
 // Our parent block
 describe('Comments', () => {
   const testData = {
-    tipId: 1,
+    tipId: 0,
     text: 'What an awesome website',
     author: publicKey,
   };
@@ -196,7 +196,7 @@ describe('Comments', () => {
       });
 
       parentComment = await Comment.create({
-        tipId: 1,
+        tipId: 0,
         text: 'Parent Comment',
         author: 'ak_testing',
         signature: 'sig',
@@ -204,7 +204,7 @@ describe('Comments', () => {
       }, { raw: true });
 
       const childComment = await Comment.create({
-        tipId: 1,
+        tipId: 0,
         text: 'Child Comment',
         author: 'ak_testing',
         signature: 'sig',
@@ -213,7 +213,7 @@ describe('Comments', () => {
       }, { raw: true });
 
       await Comment.create({
-        tipId: 1,
+        tipId: 0,
         text: 'Child Comment',
         author: 'ak_testing',
         signature: 'sig',
@@ -226,6 +226,7 @@ describe('Comments', () => {
       const nestedTestData = { ...testData, parentId: parentComment.id };
       performSignedJSONRequest(server, 'post', '/comment/api', nestedTestData)
         .then(({ res, signature, challenge }) => {
+          console.log(res.text);
           res.should.have.status(200);
           res.body.should.be.a('object');
           res.body.should.have.property('id');
@@ -247,7 +248,7 @@ describe('Comments', () => {
       const nestedTestData = { ...testData, parentId: 0 };
       performSignedJSONRequest(server, 'post', '/comment/api', nestedTestData).then(({ res }) => {
         res.should.have.status(400);
-        res.body.err.should.equal(`Could not find parent comment with id ${nestedTestData.parentId}`);
+        res.text.should.equal(`Could not find parent comment with id ${nestedTestData.parentId}`);
         done();
       });
     });
@@ -272,7 +273,7 @@ describe('Comments', () => {
     });
 
     it('it should GET ALL comments with children for a tipId', done => {
-      chai.request(server).get('/comment/api/tip/1').end((err, res) => {
+      chai.request(server).get('/comment/api/tip/0').end((err, res) => {
         res.should.have.status(200);
         res.body.should.be.a('array');
         res.body.should.have.length(4);

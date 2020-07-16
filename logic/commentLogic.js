@@ -1,3 +1,4 @@
+const aeternity = require('../utils/aeternity');
 const { Comment, Profile } = require('../models');
 
 module.exports = class CommentLogic {
@@ -7,13 +8,15 @@ module.exports = class CommentLogic {
         tipId, text, author, signature, challenge, parentId,
       } = req.body;
       if (tipId === null || tipId === undefined || !text || !author || !signature || !challenge) {
-        return res.status(400)
-          .send('Missing required field');
+        return res.status(400).send('Missing required field');
       }
-      if (typeof parentId !== 'undefined') {
-        const result = await Comment.findOne({ where: { id: parentId } }, { raw: true });
-        if (result === null) return res.status(400).send({ err: `Could not find parent comment with id ${parentId}` });
-      }
+
+      const parentComment = typeof parentId !== 'undefined'
+        ? await Comment.findOne({ where: { id: parentId } }, { raw: true }) : null;
+      if (parentComment === null && typeof parentId !== 'undefined') return res.status(400).send(`Could not find parent comment with id ${parentId}`);
+
+      const relevantTip = (await aeternity.getTips()).find(({ id }) => id === tipId);
+      if (!relevantTip) return res.status(400).send(`Could not find tip with id ${tipId}`);
 
       const entry = await Comment.create({
         tipId, text, author, signature, challenge, parentId,

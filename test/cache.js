@@ -162,7 +162,7 @@ describe('Cache', () => {
 
     it(`it should GET a single tip cache item in less than ${minimalTimeout}ms`, function (done) {
       this.timeout(minimalTimeout);
-      checkCachedRoute('/cache/tip?id=1', 'object', done);
+      checkCachedRoute('/cache/tip?id=0', 'object', done);
     });
 
     it('it should 404 on a non existing tip', done => {
@@ -173,7 +173,7 @@ describe('Cache', () => {
     });
 
     it('it should GET a flagged / blacklisted tip', done => {
-      const stub = sinon.stub(BlacklistLogic, 'getBlacklistedIds').callsFake(() => [1]);
+      const stub = sinon.stub(BlacklistLogic, 'getBlacklistedIds').callsFake(() => [0]);
       chai.request(server).get('/cache/tips').end((err, res) => {
         res.should.have.status(200);
         stub.callCount.should.eql(1);
@@ -183,11 +183,11 @@ describe('Cache', () => {
     });
 
     it('it should not GET a flagged / blacklisted tip when requesting the full list', done => {
-      const stub = sinon.stub(BlacklistLogic, 'getBlacklistedIds').callsFake(() => [1]);
+      const stub = sinon.stub(BlacklistLogic, 'getBlacklistedIds').callsFake(() => [0]);
       chai.request(server).get('/cache/tips').end((err, res) => {
         res.should.have.status(200);
-        const tipIds = res.body.map(tip => tip.id);
-        tipIds.should.not.contain(1);
+        const tipIds = res.body.map(({ id }) => id);
+        tipIds.should.not.contain(0);
         stub.callCount.should.eql(1);
         stub.restore();
         done();
@@ -199,7 +199,7 @@ describe('Cache', () => {
       chai.request(server).get('/cache/tips?blacklist=false').end((err, res) => {
         res.should.have.status(200);
         const tipIds = res.body.map(tip => tip.id);
-        tipIds.should.contain(1);
+        tipIds.should.contain(0);
         stub.callCount.should.eql(1);
         stub.restore();
         done();

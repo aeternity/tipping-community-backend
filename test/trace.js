@@ -3,6 +3,7 @@ const chai = require('chai');
 const chaiHttp = require('chai-http');
 const fs = require('fs');
 const { describe, it, before } = require('mocha');
+const sinon = require('sinon');
 const server = require('../server');
 const ae = require('../utils/aeternity');
 const { Trace: TraceModel } = require('../models');
@@ -61,6 +62,7 @@ describe('Trace', () => {
     });
 
     it('proper request should leave a trace', done => {
+      const stub = sinon.stub(ae, 'checkPreClaim').callsFake(async () => 10);
       chai.request(server).post('/claim/submit')
         .send({
           address: 'ak_25tyimcbt8W5BHauzazQKnb6oM1AbkPBYFu6fnSvp38kVrtr8t', // Random PK
@@ -70,6 +72,7 @@ describe('Trace', () => {
           res.should.have.status(200);
           res.body.should.have.property('claimUUID');
           fs.existsSync(`./traces/${res.body.claimUUID}.json`).should.equal(true);
+          stub.restore();
           done();
         });
     });

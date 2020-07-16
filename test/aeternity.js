@@ -24,7 +24,7 @@ describe('Aeternity', () => {
 
   it('it should get the network id', async () => {
     const result = await ae.networkId();
-    result.should.equal('ae_mainnet');
+    result.should.equal('ae_uat');
   });
 
   it('it should get the oracle state', async function () {

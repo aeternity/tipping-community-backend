@@ -42,8 +42,8 @@ module.exports = class CacheLogic {
       await CacheLogic.getTipsAndVerifyLocalInfo();
       await CacheLogic.fetchChainNames();
       await CacheLogic.fetchPrice();
-      await aeternity.getOracleState();
       await CacheLogic.findContractEvents();
+      await aeternity.getOracleState();
     };
 
     await cache.init(aeternity, keepHotFunction);
@@ -52,7 +52,7 @@ module.exports = class CacheLogic {
   static async findContractEvents() {
     const fetchContractEvents = async () => {
       const contractTransactions = await aeternity.middlewareContractTransactions();
-      return contractTransactions.map(tx => tx.hash).asyncMap(aeternity.transactionEvents);
+      return contractTransactions.map(tx => tx.hash).asyncMap(hash => aeternity.transactionEvents(hash));
     };
 
     return cache.getOrSet(['contractEvents'], async () => fetchContractEvents().catch(logger.error), cache.shortCacheTime);

@@ -51,6 +51,7 @@
     "uuid": "^8.1.0"
   },
   "devDependencies": {
+    "babel-eslint": "^10.1.0",
     "chai": "^4.2.0",
     "chai-http": "^4.3.0",
     "eslint": "^7.4.0",

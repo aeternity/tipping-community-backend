@@ -1,5 +1,7 @@
 const aeternity = require('../utils/aeternity');
 const { Comment, Profile } = require('../models');
+const NotificationLogic = require('./notificationLogic');
+const { NOTIFICATION_TYPES } = require('../models/enums/notification');
 
 module.exports = class CommentLogic {
   static async addItem(req, res) {
@@ -21,6 +23,13 @@ module.exports = class CommentLogic {
       const entry = await Comment.create({
         tipId, text, author, signature, challenge, parentId,
       });
+
+      // Create notification
+      await NotificationLogic.add[NOTIFICATION_TYPES.COMMENT_ON_TIP](relevantTip.sender, entry.id);
+      if (parentComment !== null) {
+        await NotificationLogic.add[NOTIFICATION_TYPES.COMMENT_ON_COMMENT](parentComment.author, entry.id);
+      }
+
       return res.send(entry);
     } catch (e) {
       return res.status(500).send(e.message);

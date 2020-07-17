@@ -4,8 +4,10 @@ const chaiHttp = require('chai-http');
 const { describe, it, before } = require('mocha');
 
 const server = require('../server');
-const { Comment, sequelize } = require('../models');
+const { Comment, sequelize, Notification } = require('../models');
+const { ENTITY_TYPES, NOTIFICATION_TYPES } = require('../models/enums/notification');
 const { publicKey, performSignedJSONRequest, shouldBeValidChallengeResponse } = require('../utils/testingUtil');
+const aeternity = require('../utils/aeternity');
 
 chai.should();
 chai.use(chaiHttp);
@@ -33,6 +35,12 @@ describe('Comments', () => {
       where: {},
       truncate: true,
     });
+
+    await Notification.destroy({
+      where: {},
+      truncate: true,
+    });
+    await aeternity.init();
   });
 
   describe('Comment API', () => {
@@ -85,7 +93,20 @@ describe('Comments', () => {
         res.body.should.have.property('createdAt');
         res.body.should.have.property('updatedAt');
         commentId = res.body.id;
-        done();
+
+        // SHOULD ALSO CREATE NOTIFICATIONS
+        Notification.findOne({
+          where: {
+            type: NOTIFICATION_TYPES.COMMENT_ON_TIP,
+            entityType: ENTITY_TYPES.COMMENT,
+            entityId: commentId,
+            receiver: 'ak_y87WkN4C4QevzjTuEYHg6XLqiWx3rjfYDFLBmZiqiro5mkRag',
+          },
+          raw: true,
+        }).then(notification => {
+          notification.should.be.a('object');
+          done();
+        });
       });
     });
 
@@ -226,7 +247,6 @@ describe('Comments', () => {
       const nestedTestData = { ...testData, parentId: parentComment.id };
       performSignedJSONRequest(server, 'post', '/comment/api', nestedTestData)
         .then(({ res, signature, challenge }) => {
-          console.log(res.text);
           res.should.have.status(200);
           res.body.should.be.a('object');
           res.body.should.have.property('id');
@@ -240,7 +260,31 @@ describe('Comments', () => {
           res.body.should.have.property('createdAt');
           res.body.should.have.property('updatedAt');
           commentId = res.body.id;
-          done();
+          // SHOULD ALSO CREATE NOTIFICATIONS
+          Notification.findOne({
+            where: {
+              type: NOTIFICATION_TYPES.COMMENT_ON_TIP,
+              entityType: ENTITY_TYPES.COMMENT,
+              entityId: commentId,
+              receiver: 'ak_y87WkN4C4QevzjTuEYHg6XLqiWx3rjfYDFLBmZiqiro5mkRag',
+            },
+            raw: true,
+          }).then(notification => {
+            notification.should.be.a('object');
+            // SHOULD ALSO CREATE NOTIFICATIONS
+            Notification.findOne({
+              where: {
+                type: NOTIFICATION_TYPES.COMMENT_ON_COMMENT,
+                entityType: ENTITY_TYPES.COMMENT,
+                entityId: commentId,
+                receiver: 'ak_testing',
+              },
+              raw: true,
+            }).then(secondNotification => {
+              secondNotification.should.be.a('object');
+              done();
+            });
+          });
         });
     });
 

@@ -298,6 +298,57 @@
             },
             "indexes": []
         },
+        "Notifications": {
+            "tableName": "Notifications",
+            "schema": {
+                "id": {
+                    "allowNull": false,
+                    "primaryKey": true,
+                    "autoIncrement": true,
+                    "field": "id",
+                    "seqType": "Sequelize.INTEGER"
+                },
+                "type": {
+                    "allowNull": false,
+                    "field": "type",
+                    "seqType": "Sequelize.ENUM('COMMENT_ON_COMMENT', 'COMMENT_ON_TIP')"
+                },
+                "receiver": {
+                    "allowNull": false,
+                    "field": "receiver",
+                    "seqType": "Sequelize.STRING"
+                },
+                "status": {
+                    "allowNull": false,
+                    "defaultValue": {
+                        "value": "CREATED"
+                    },
+                    "field": "status",
+                    "seqType": "Sequelize.ENUM('CREATED', 'READ')"
+                },
+                "entityType": {
+                    "allowNull": true,
+                    "field": "entityType",
+                    "seqType": "Sequelize.ENUM('COMMENT', 'TIP')"
+                },
+                "entityId": {
+                    "allowNull": true,
+                    "field": "entityId",
+                    "seqType": "Sequelize.STRING"
+                },
+                "createdAt": {
+                    "allowNull": false,
+                    "field": "createdAt",
+                    "seqType": "Sequelize.DATE"
+                },
+                "updatedAt": {
+                    "allowNull": false,
+                    "field": "updatedAt",
+                    "seqType": "Sequelize.DATE"
+                }
+            },
+            "indexes": []
+        },
         "Pins": {
             "tableName": "Pins",
             "schema": {
@@ -500,5 +551,5 @@
             "indexes": []
         }
     },
-    "revision": 13
+    "revision": 14
 }

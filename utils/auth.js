@@ -2,6 +2,8 @@ const { verifyPersonalMessage, decodeBase58Check, hash } = require('@aeternity/a
 const { v4: uuidv4 } = require('uuid');
 const fs = require('fs');
 const path = require('path');
+const urlParser = require('url');
+
 const { Profile } = require('../models');
 const Logger = require('./logger');
 
@@ -25,10 +27,22 @@ const basicAuth = (req, res, next) => {
 const MemoryQueue = [];
 const actions = [
   {
+    method: 'GET',
+    path: '/notification/user/ak_',
+    actionName: 'GET_NOTIFICATIONS',
+    relevantFields: ['author'],
+  },
+  {
     method: 'POST',
     path: '/comment/api/?',
     actionName: 'CREATE_COMMENT',
     relevantFields: ['text', 'tipId', 'author', 'parentId'],
+  },
+  {
+    method: 'POST',
+    path: '/notification/?',
+    actionName: 'MODIFY_NOTIFICATION',
+    relevantFields: ['author', 'status'],
   },
   {
     method: 'POST',
@@ -104,23 +118,24 @@ const signatureAuth = async (req, res, next) => {
       }
     }
   });
+  const { signature, challenge } = { ...req.body, ...req.params, ...req.query };
 
-  if (req.body.signature || req.body.challenge) {
+  if (signature || challenge) {
     try {
-      if (!req.body.signature) return sendError('Missing field signature');
-      if (!req.body.challenge) return sendError('Missing field challenge');
+      if (!signature) return sendError('Missing field signature');
+      if (!challenge) return sendError('Missing field challenge');
 
       // Find item
       // MemoryQueue probably has a significant list deleted items
-      const queueItem = MemoryQueue.find(item => (item || {}).challenge === req.body.challenge);
+      const queueItem = MemoryQueue.find(item => (item || {}).challenge === challenge);
       if (!queueItem) return sendError('Could not find challenge (maybe it already expired?)');
       const {
-        challenge, body, files, method, url,
+        challenge: originalChallenge, body, files, method, url,
       } = queueItem;
 
       // Verify that the challenge was issued for this method + path
       if (req.method !== method) return sendError('Challenge was issued for a different http method');
-      if (req.originalUrl !== url) return sendError('Challenge was issued for a different path');
+      if (urlParser.parse(req.originalUrl).pathname !== url) return sendError('Challenge was issued for a different path');
 
       // The public key can either be
       // body.author --> Comment route or POST profile
@@ -130,8 +145,8 @@ const signatureAuth = async (req, res, next) => {
       if (!publicKey) sendError('Could not find associated public key');
       const author = decodeBase58Check(publicKey.substring(3));
 
-      const authString = Buffer.from(challenge);
-      const signatureArray = Uint8Array.from(Buffer.from(req.body.signature, 'hex'));
+      const authString = Buffer.from(originalChallenge);
+      const signatureArray = Uint8Array.from(Buffer.from(signature, 'hex'));
 
       const validRequest = verifyPersonalMessage(authString, signatureArray, author);
       if (validRequest) {
@@ -167,17 +182,17 @@ const signatureAuth = async (req, res, next) => {
       const payload = relevantFields.reduce((acc, fieldIndex) => `${acc};${fieldIndex}=${mergedObject[fieldIndex]}`, '');
 
       // UUID-RelevantFieldHash-Action-Timestamp
-      const challenge = `${uuid}-${hash(payload).toString('hex')}-${actionName}-${Date.now()}-${VERSION}`;
+      const newChallenge = `${uuid}-${hash(payload).toString('hex')}-${actionName}-${Date.now()}-${VERSION}`;
       MemoryQueue.push({
-        challenge,
+        challenge: newChallenge,
         body: req.body,
         method: req.method,
-        url: req.originalUrl,
+        url: urlParser.parse(req.originalUrl).pathname,
         files: req.files ? req.files : null,
         timestamp: Date.now(),
       });
       return res.send({
-        challenge,
+        challenge: newChallenge,
         payload,
       });
     } catch (e) {

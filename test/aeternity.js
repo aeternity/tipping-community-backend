@@ -18,7 +18,7 @@ describe('Aeternity', () => {
   });
 
   it('it should init', async function () {
-    this.timeout(10000);
+    this.timeout(5000);
     await ae.init();
   });
 

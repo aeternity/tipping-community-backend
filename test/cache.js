@@ -32,7 +32,7 @@ describe('Cache', () => {
 
   describe('API', () => {
     it('it should GET all cache items', function (done) {
-      this.timeout(20000);
+      this.timeout(5000);
       checkCachedRoute('/cache/tips', 'array', done);
     });
 
@@ -235,11 +235,12 @@ describe('Cache', () => {
       checkCachedRoute('/cache/topics', 'array', done);
     });
 
-    it.skip('it should GET all cached events', done => {
+    it('it should GET all cached events', function (done) {
+      this.timeout(5000);
       checkCachedRoute('/cache/events', 'array', done);
     });
 
-    it.skip(`it should GET all cached events in less than ${minimalTimeout}ms`, function (done) {
+    it(`it should GET all cached events in less than ${minimalTimeout}ms`, function (done) {
       this.timeout(minimalTimeout);
       checkCachedRoute('/cache/events', 'array', done);
     });

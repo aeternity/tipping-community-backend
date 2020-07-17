@@ -6,7 +6,7 @@ const server = require('../server');
 
 chai.should();
 chai.use(chaiHttp);
-// Our parent block
+
 describe('Health Endpoint', () => {
   describe('Backend Health', () => {
     it('it should GET a health endpoint answer', done => {

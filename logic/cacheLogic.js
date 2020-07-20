@@ -42,8 +42,8 @@ module.exports = class CacheLogic {
       await CacheLogic.getTipsAndVerifyLocalInfo();
       await CacheLogic.fetchChainNames();
       await CacheLogic.fetchPrice();
-      await CacheLogic.findContractEvents();
       await aeternity.getOracleState();
+      await CacheLogic.findContractEvents();
     };
 
     await cache.init(aeternity, keepHotFunction);

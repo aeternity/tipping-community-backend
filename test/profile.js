@@ -155,6 +155,25 @@ describe('Profile', () => {
         });
     });
 
+    it('it should allow an extremely large image upload on existing profile', done => {
+      performSignedMultipartFormRequest(server, 'post', `/profile/${publicKey}`, 'image', './test/test_large.png')
+        .then(({ res, signature, challenge }) => {
+          res.should.have.status(200);
+          res.body.should.be.a('object');
+          res.body.should.have.property('biography', testData.biography);
+          res.body.should.have.property('author', testData.author);
+          res.body.should.have.property('image');
+          res.body.image.should.contain(`/images/${publicKey}`);
+          res.body.should.have.property('signature', signature);
+          res.body.should.have.property('challenge', challenge);
+          res.body.should.have.property('imageSignature', null);
+          res.body.should.have.property('imageChallenge', null);
+          res.body.should.have.property('createdAt');
+          res.body.should.have.property('updatedAt');
+          done();
+        });
+    });
+
     it('it should allow an image upload on existing profile', done => {
       performSignedMultipartFormRequest(server, 'post', `/profile/${publicKey}`, 'image', './test/test.png')
         .then(({ res, signature, challenge }) => {
@@ -273,10 +292,11 @@ describe('Profile', () => {
       });
       // two entries
       // first from initial upload
-      // second from re-upload of first user
+      // second from large image upload
+      // third from re-upload of first user
       entries.should.be.an('array');
-      entries.should.have.length(2);
-      entries[0].hash.should.equal(entries[1].hash);
+      entries.should.have.length(3);
+      entries[1].hash.should.equal(entries[2].hash);
     });
 
     it('it should delete the image', done => {

@@ -13,7 +13,12 @@ const storage = multer.diskStorage({
     cb(null, `${req.params.author}-${Date.now()}${path.extname(file.originalname)}`); // Appending extension
   },
 });
-const upload = multer({ storage });
+const upload = multer({
+  storage,
+  limits: {
+    fieldSize: 5000000,
+  },
+});
 
 // Open api routes
 router.get('/:author', ProfileLogic.getSingleItem);

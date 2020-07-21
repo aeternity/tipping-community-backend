@@ -99,11 +99,10 @@ module.exports = class ProfileLogic {
     // No chain name
     if (typeof req.body.preferredChainName === 'undefined') return next();
 
-    // Can be called without init because its technically static
-    const chainNames = (await aeternity.getChainNamesByAddress(author))
-      .reduce((acc, curr) => [...acc, curr.name], []);
-
+    const queryResult = await aeternity.getAddressForChainName(req.body.preferredChainName);
+    let addresses = [];
+    if (queryResult) addresses = queryResult.pointers.filter(({ key }) => key === 'account_pubkey').map(({ id }) => id);
     // check if chain name points to author
-    return chainNames.includes(req.body.preferredChainName) ? next() : res.status(400).send({ err: 'Chainname does not point to author' });
+    return addresses.includes(author) ? next() : res.status(400).send({ err: 'Chainname does not point to author' });
   }
 };

@@ -54,9 +54,9 @@ describe('Profile', () => {
     });
 
     it('it should CREATE a new profile', done => {
-      const stub = sinon.stub(ae, 'getChainNamesByAddress').callsFake(() => [{
-        name: testData.preferredChainName,
-      }]);
+      const stub = sinon.stub(ae, 'getAddressForChainName').callsFake(() => ({
+        pointers: [{ id: testData.author, key: 'account_pubkey' }],
+      }));
       performSignedJSONRequest(server, 'post', `/profile/${publicKey}`, testData)
         .then(({ res, signature, challenge }) => {
           res.should.have.status(200);

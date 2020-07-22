@@ -60,10 +60,26 @@ const performSignedJSONRequest = (server, method, url, data, privateKey = null) 
     });
 });
 
+const performSignedGETRequest = (server, url, privateKey = null) => new Promise((resolve, reject) => {
+  chai.request(server).get(url)
+    .end((err, res) => {
+      res.should.have.status(200);
+      const { challenge } = res.body;
+      const signature = signChallenge(challenge, privateKey);
+      chai.request(server).get(url)
+        .query({ challenge, signature })
+        .end((secondErr, secondRes) => {
+          if (secondErr) return reject(secondErr);
+          return resolve({ res: secondRes, signature, challenge });
+        });
+    });
+});
+
 module.exports = {
   publicKey,
   signChallenge,
   shouldBeValidChallengeResponse,
   performSignedJSONRequest,
   performSignedMultipartFormRequest,
+  performSignedGETRequest,
 };

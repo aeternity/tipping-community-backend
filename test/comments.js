@@ -4,15 +4,17 @@ const chaiHttp = require('chai-http');
 const { describe, it, before } = require('mocha');
 
 const server = require('../server');
-const { Comment, sequelize } = require('../models');
+const { Comment, sequelize, Notification } = require('../models');
+const { ENTITY_TYPES, NOTIFICATION_TYPES } = require('../models/enums/notification');
 const { publicKey, performSignedJSONRequest, shouldBeValidChallengeResponse } = require('../utils/testingUtil');
+const aeternity = require('../utils/aeternity');
 
 chai.should();
 chai.use(chaiHttp);
 // Our parent block
 describe('Comments', () => {
   const testData = {
-    tipId: 1,
+    tipId: 0,
     text: 'What an awesome website',
     author: publicKey,
   };
@@ -33,6 +35,12 @@ describe('Comments', () => {
       where: {},
       truncate: true,
     });
+
+    await Notification.destroy({
+      where: {},
+      truncate: true,
+    });
+    await aeternity.init();
   });
 
   describe('Comment API', () => {
@@ -85,7 +93,20 @@ describe('Comments', () => {
         res.body.should.have.property('createdAt');
         res.body.should.have.property('updatedAt');
         commentId = res.body.id;
-        done();
+
+        // SHOULD ALSO CREATE NOTIFICATIONS
+        Notification.findOne({
+          where: {
+            type: NOTIFICATION_TYPES.COMMENT_ON_TIP,
+            entityType: ENTITY_TYPES.COMMENT,
+            entityId: commentId,
+            receiver: 'ak_y87WkN4C4QevzjTuEYHg6XLqiWx3rjfYDFLBmZiqiro5mkRag',
+          },
+          raw: true,
+        }).then(notification => {
+          notification.should.be.a('object');
+          done();
+        });
       });
     });
 
@@ -196,7 +217,7 @@ describe('Comments', () => {
       });
 
       parentComment = await Comment.create({
-        tipId: 1,
+        tipId: 0,
         text: 'Parent Comment',
         author: 'ak_testing',
         signature: 'sig',
@@ -204,7 +225,7 @@ describe('Comments', () => {
       }, { raw: true });
 
       const childComment = await Comment.create({
-        tipId: 1,
+        tipId: 0,
         text: 'Child Comment',
         author: 'ak_testing',
         signature: 'sig',
@@ -213,7 +234,7 @@ describe('Comments', () => {
       }, { raw: true });
 
       await Comment.create({
-        tipId: 1,
+        tipId: 0,
         text: 'Child Comment',
         author: 'ak_testing',
         signature: 'sig',
@@ -239,7 +260,31 @@ describe('Comments', () => {
           res.body.should.have.property('createdAt');
           res.body.should.have.property('updatedAt');
           commentId = res.body.id;
-          done();
+          // SHOULD ALSO CREATE NOTIFICATIONS
+          Notification.findOne({
+            where: {
+              type: NOTIFICATION_TYPES.COMMENT_ON_TIP,
+              entityType: ENTITY_TYPES.COMMENT,
+              entityId: commentId,
+              receiver: 'ak_y87WkN4C4QevzjTuEYHg6XLqiWx3rjfYDFLBmZiqiro5mkRag',
+            },
+            raw: true,
+          }).then(notification => {
+            notification.should.be.a('object');
+            // SHOULD ALSO CREATE NOTIFICATIONS
+            Notification.findOne({
+              where: {
+                type: NOTIFICATION_TYPES.COMMENT_ON_COMMENT,
+                entityType: ENTITY_TYPES.COMMENT,
+                entityId: commentId,
+                receiver: 'ak_testing',
+              },
+              raw: true,
+            }).then(secondNotification => {
+              secondNotification.should.be.a('object');
+              done();
+            });
+          });
         });
     });
 
@@ -247,7 +292,7 @@ describe('Comments', () => {
       const nestedTestData = { ...testData, parentId: 0 };
       performSignedJSONRequest(server, 'post', '/comment/api', nestedTestData).then(({ res }) => {
         res.should.have.status(400);
-        res.body.err.should.equal(`Could not find parent comment with id ${nestedTestData.parentId}`);
+        res.text.should.equal(`Could not find parent comment with id ${nestedTestData.parentId}`);
         done();
       });
     });
@@ -272,7 +317,7 @@ describe('Comments', () => {
     });
 
     it('it should GET ALL comments with children for a tipId', done => {
-      chai.request(server).get('/comment/api/tip/1').end((err, res) => {
+      chai.request(server).get('/comment/api/tip/0').end((err, res) => {
         res.should.have.status(200);
         res.body.should.be.a('array');
         res.body.should.have.length(4);

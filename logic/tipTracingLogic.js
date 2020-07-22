@@ -41,7 +41,7 @@ module.exports = class TipTracing {
 
     const contractTransactions = await aeternity.middlewareContractTransactions();
     const events = await contractTransactions.map(tx => tx.hash)
-      .asyncMap(aeternity.transactionEvents)
+      .asyncMap(hash => aeternity.transactionEvents(hash))
       .then(transactionEvents => transactionEvents.filter(e => e.url === tip.url));
 
     const result = {

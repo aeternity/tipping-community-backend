@@ -1,4 +1,7 @@
+const aeternity = require('../utils/aeternity');
 const { Comment, Profile } = require('../models');
+const NotificationLogic = require('./notificationLogic');
+const { NOTIFICATION_TYPES } = require('../models/enums/notification');
 
 module.exports = class CommentLogic {
   static async addItem(req, res) {
@@ -7,17 +10,26 @@ module.exports = class CommentLogic {
         tipId, text, author, signature, challenge, parentId,
       } = req.body;
       if (tipId === null || tipId === undefined || !text || !author || !signature || !challenge) {
-        return res.status(400)
-          .send('Missing required field');
+        return res.status(400).send('Missing required field');
       }
-      if (typeof parentId !== 'undefined') {
-        const result = await Comment.findOne({ where: { id: parentId } }, { raw: true });
-        if (result === null) return res.status(400).send({ err: `Could not find parent comment with id ${parentId}` });
-      }
+
+      const parentComment = typeof parentId !== 'undefined'
+        ? await Comment.findOne({ where: { id: parentId } }, { raw: true }) : null;
+      if (parentComment === null && typeof parentId !== 'undefined') return res.status(400).send(`Could not find parent comment with id ${parentId}`);
+
+      const relevantTip = (await aeternity.getTips()).find(({ id }) => id === tipId);
+      if (!relevantTip) return res.status(400).send(`Could not find tip with id ${tipId}`);
 
       const entry = await Comment.create({
         tipId, text, author, signature, challenge, parentId,
       });
+
+      // Create notification
+      await NotificationLogic.add[NOTIFICATION_TYPES.COMMENT_ON_TIP](relevantTip.sender, entry.id);
+      if (parentComment !== null) {
+        await NotificationLogic.add[NOTIFICATION_TYPES.COMMENT_ON_COMMENT](parentComment.author, entry.id);
+      }
+
       return res.send(entry);
     } catch (e) {
       return res.status(500).send(e.message);

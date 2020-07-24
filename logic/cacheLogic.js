@@ -9,6 +9,8 @@ const LinkPreviewLogic = require('./linkPreviewLogic.js');
 const TipOrderLogic = require('./tiporderLogic');
 const CommentLogic = require('./commentLogic');
 const TipLogic = require('./tipLogic');
+const RetipLogic = require('./retipLogic');
+const NotificationLogic = require('./notificationLogic');
 const BlacklistLogic = require('./blacklistLogic');
 const cache = require('../utils/cache');
 
@@ -82,28 +84,42 @@ module.exports = class CacheLogic {
         await LinkPreviewLogic.generatePreview(url).catch(logger.error);
       });
     });
-    let result = [];
 
     await lock.acquire('TipLogic.fetchAllLocalTips', async () => {
-      const languages = await TipLogic.fetchAllLocalTips();
-      const tipIds = [...new Set(tips.map(tip => tip.id))];
-      const languageIds = [...new Set(languages.map(preview => preview.id))];
+      const localTips = await TipLogic.fetchAllLocalTips();
+      const remoteTipIds = [...new Set(tips.map(tip => tip.id))];
+      const localTipIds = [...new Set(localTips.map(tip => tip.id))];
 
-      const difference = tipIds.filter(url => !languageIds.includes(url));
+      const difference = remoteTipIds.filter(id => !localTipIds.includes(id));
 
-      result = await difference.asyncMap(async id => {
+      // Send appropriate notifications for new tips
+      await difference.asyncMap(id => NotificationLogic.handleNewTip(tips.find(tip => tip.id === id)));
+
+      const result = await difference.asyncMap(async id => {
         let { title } = tips.find(tip => tip.id === id);
         title = title.replace(/[!0-9#.,?)-:'“@/\\]/g, '');
         // const probability = lngDetector.detect(title, 1);
         const probability2 = await cld.detect(title).catch(() => ({}));
         // const lang1 = probability[0] ? probability[0][0] !== null ? probability[0][0] : null : null;
         const lang2 = probability2.languages ? probability2.languages[0].code : null;
-        return { id, lang2, title };
+        return { id, lang2 };
       });
       await TipLogic.bulkCreate(result.map(({ id, lang2 }) => ({
         id,
         language: lang2,
       })));
+    });
+
+    await lock.acquire('TipLogic.fetchAllLocalRetips', async () => {
+      const localRetips = await RetipLogic.fetchAllLocalRetips();
+      const remoteRetips = [...new Set(tips.map(tip => tip.retips.map(retip => ({ ...retip, parentTip: tip }))).flat())];
+      const remoteRetipIds = [...new Set(remoteRetips.map(retip => retip.id))];
+      const localRetipIds = [...new Set(localRetips.map(retip => retip.id))];
+
+      const difference = remoteRetipIds.filter(id => !localRetipIds.includes(id));
+
+      // Send appropriate notifications for new tips
+      await difference.asyncMap(id => NotificationLogic.handleNewRetip(remoteRetips.find(retip => retip.id === id)));
     });
 
     return tips;

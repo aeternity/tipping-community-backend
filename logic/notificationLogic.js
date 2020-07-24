@@ -1,4 +1,4 @@
-const { Notification } = require('../models');
+const { Notification, Comment } = require('../models');
 const { NOTIFICATION_TYPES, ENTITY_TYPES, NOTIFICATION_STATES } = require('../models/enums/notification');
 
 module.exports = class NotificationLogic {
@@ -45,6 +45,35 @@ module.exports = class NotificationLogic {
       return res.send((await Notification.findOne({ where: { id: notificationId } })).toJSON());
     } catch (e) {
       return res.status(500).send(e.message);
+    }
+  }
+
+  static async handleNewTip(tip) {
+    // TIP ON COMMENT
+    const commentMatch = tip.url.match(/https:\/\/superhero\.com\/tip\/(\d+)\/comment\/(\d+)/);
+    if (commentMatch) {
+      const commentId = commentMatch[2];
+      const comment = await Comment.findOne({ where: { id: commentId }, raw: true });
+      Notification.create({
+        receiver: comment.author,
+        entityType: ENTITY_TYPES.TIP,
+        entityId: tip.id,
+        type: NOTIFICATION_TYPES.TIP_ON_COMMENT,
+      });
+    }
+  }
+
+  static async handleNewRetip(retip) {
+    // RETIP ON TIP
+    // Do not create notifications for rather old retips
+    // 2020, 6, 24 === 24.07.2020
+    if (retip.timestamp > (new Date(2020, 6, 24)).getTime()) {
+      Notification.create({
+        receiver: retip.parentTip.sender,
+        entityType: ENTITY_TYPES.TIP,
+        entityId: retip.parentTip.id,
+        type: NOTIFICATION_TYPES.RETIP_ON_TIP,
+      });
     }
   }
 };

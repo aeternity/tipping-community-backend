@@ -1,4 +1,5 @@
 const BigNumber = require('bignumber.js');
+const Util = require('../utils/util');
 
 const topicsRegex = /(#[a-zA-Z]+\b)(?!;)/g;
 
@@ -56,6 +57,7 @@ const getTipTopics = tips => {
 
   return sortedTopic.slice(0, 10).map(([topic, data]) => {
     const topicData = data;
+    topicData.amount_ae = Util.atomsToAe(topicData.amount).toFixed();
     topicData.token_amount = Object.entries(topicData.token_amount).map(([token, amount]) => ({ token, amount }));
     return [topic, topicData];
   });

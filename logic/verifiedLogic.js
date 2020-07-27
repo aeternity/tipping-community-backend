@@ -7,7 +7,7 @@ module.exports = class Verified {
       const tips = await ae.getTips();
       const allClaimedDomains = [
         ...(new Set(tips
-          .filter(({ claim }) => !claim.unclaimed)
+          .filter(({ claim }) => claim && !claim.unclaimed)
           .map(({ url }) => url)))];
       return res.send(allClaimedDomains);
     } catch (err) {

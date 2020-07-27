@@ -17,7 +17,7 @@ module.exports = class AsyncTipGeneratorsLogic {
   static async triggerGeneratePreviews(tips) {
     lock.acquire('AsyncTipGeneratorsLogic.triggerGeneratePreviews', async () => {
       const previews = await LinkPreviewLogic.fetchAllLinkPreviews();
-      const tipUrls = [...new Set(tips.map(tip => tip.url))];
+      const tipUrls = [...new Set(tips.filter(tip => tip.url).map(tip => tip.url))];
       const previewUrls = [...new Set(previews.map(preview => preview.requestUrl))];
 
       const difference = tipUrls.filter(url => !previewUrls.includes(url));

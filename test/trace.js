@@ -6,6 +6,7 @@ const { describe, it, before } = require('mocha');
 const sinon = require('sinon');
 const server = require('../server');
 const ae = require('../utils/aeternity');
+const cache = require('../utils/cache');
 const { Trace: TraceModel } = require('../models');
 
 chai.should();
@@ -18,7 +19,9 @@ describe('Trace', () => {
       where: {},
       truncate: true,
     });
+
     await ae.init();
+    await cache.init(ae);
   });
 
   describe('TraceLogic API Backend', () => {

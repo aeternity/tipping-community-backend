@@ -11,7 +11,7 @@ module.exports = class PinLogic {
       } = req.body;
       const { author } = req.params;
       if (!entryId || !type || !author || !signature || !challenge) res.send(400, 'Missing required field');
-      if (!PINNED_CONTENT_TYPES[type]) return res.send(400, `Send type is invalid ${type}`);
+      if (!PINNED_CONTENT_TYPES[type]) return res.status(400).send(`Send type is invalid ${type}`);
       const entry = await Pin.create({
         entryId, type, author, signature, challenge,
       });

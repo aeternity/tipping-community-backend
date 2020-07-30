@@ -294,8 +294,8 @@ class Aeternity {
     return axios.get(`${MIDDLEWARE_URL}/middleware/names/active`).then(res => res.data).catch(this.logger.error);
   }
 
-  async getChainNamesByAddress(address) {
-    return axios.get(`${MIDDLEWARE_URL}/middleware/names/reverse/${address}`).then(res => res.data).catch(this.logger.error);
+  async getAddressForChainName(name) {
+    return this.client.aensQuery(name).catch(() => null);
   }
 }
 

@@ -26,7 +26,7 @@ cache.networkKey = '';
 cache.init = async aeternity => {
   aeternity.setCache(cache);
   cache.networkKey = await aeternity.networkId();
-  logger.log('cache networkKey', cache.networkKey);
+  logger.log(`cache networkKey ${cache.networkKey}`);
 };
 
 cache.setKeepHot = keepHotFunction => {

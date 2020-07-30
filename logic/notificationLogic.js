@@ -87,13 +87,12 @@ module.exports = class NotificationLogic {
     });
 
     if (existingTip.unclaimed && !tip.claim.unclaimed) {
-      /* disabled for migration purposes
       await Notification.create({
         receiver: tip.sender,
         entityType: ENTITY_TYPES.TIP,
         entityId: tip.id,
         type: NOTIFICATION_TYPES.CLAIM_OF_TIP,
-      }); */
+      });
 
       await Tip.update({ unclaimed: false }, {
         where: {
@@ -111,13 +110,12 @@ module.exports = class NotificationLogic {
     });
 
     if (existingRetip.unclaimed && !retip.claim.unclaimed) {
-      /* disabled for migration purposes
       await Notification.create({
         receiver: retip.sender,
         entityType: ENTITY_TYPES.TIP,
         entityId: retip.parentTip.id,
         type: NOTIFICATION_TYPES.CLAIM_OF_RETIP,
-      }); */
+      });
       await Retip.update({ unclaimed: false }, {
         where: {
           id: retip.id,

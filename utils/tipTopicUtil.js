@@ -1,5 +1,5 @@
 const BigNumber = require('bignumber.js');
-const Util = require('../utils/util');
+const Util = require('./util');
 
 const topicsRegex = /(#[a-zA-Z]+\b)(?!;)/g;
 

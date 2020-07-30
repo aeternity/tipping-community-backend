@@ -162,7 +162,6 @@ describe('Notifications', () => {
       createdNotification.should.have.property('entityType', ENTITY_TYPES.TIP);
       createdNotification.should.have.property('entityId', '1');
       createdNotification.should.have.property('type', NOTIFICATION_TYPES.RETIP_ON_TIP);
-
     });
 
     it('it should create notifications for CLAIM_OF_TIP', async () => {
@@ -325,7 +324,10 @@ describe('Notifications', () => {
     });
 
     it('it should MODIFY a single notifications for a user', done => {
-      performSignedJSONRequest(server, 'post', `/notification/${createdNotification.id}`, { author: publicKey, status: NOTIFICATION_STATES.READ })
+      performSignedJSONRequest(server, 'post', `/notification/${createdNotification.id}`, {
+        author: publicKey,
+        status: NOTIFICATION_STATES.READ,
+      })
         .then(({ res }) => {
           res.should.have.status(200);
           res.body.should.be.a('object');

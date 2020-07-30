@@ -21,7 +21,8 @@ process.env = {
   ...process.env,
   NODE_URL: 'https://testnet.aeternity.io',
   COMPILER_URL: 'https://latest.compiler.aepps.com',
-  CONTRACT_ADDRESS: 'ct_2siQwATqx7TFPr6D7nj4SqAGmkurVSBvRvL8xUfRPS5VZD4y4Y',
+  OLD_CONTRACT_ADDRESS: 'ct_2siQwATqx7TFPr6D7nj4SqAGmkurVSBvRvL8xUfRPS5VZD4y4Y',
+  CONTRACT_ADDRESS: 'ct_2aqpb2CEJ1aZvzBXw2xbVnUNQqs9SfTD2w2ZbGe7VWX7bdFEDr',
   AUTHENTICATION_USER: 'admin',
   AUTHENTICATION_PASSWORD: 'pass',
   NODE_ENV: 'test',
@@ -29,7 +30,7 @@ process.env = {
   IPFS_URL: 'http://localhost:5001',
   ORACLE_CONTRACT_ADDRESS: 'ct_2PbBVGroJ2G618tHbWEWRrrxxf1BAn7Qt7BoNcLh3LqsSck8Lu',
   MIDDLEWARE_URL: 'https://testnet.aeternity.io',
-  CONTRACT_FILE: 'NewTippingInterface',
+  TOKEN_REGISTRY_ADDRESS: 'ct_2Ga3mNT8er2zYjGKx7tJggn9nVnYt5UzmH9x9irRV4ayg4sfLL',
 }
 
 const Crypto = require('@aeternity/aepp-sdk').Crypto;

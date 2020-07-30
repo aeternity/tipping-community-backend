@@ -77,12 +77,14 @@ module.exports = class CacheLogic {
       // Renew Stats
       await cache.del(['fetchStats']);
 
-      // not await on purpose, just trigger background actions
-      AsyncTipGeneratorsLogic.triggerGeneratePreviews(tips);
-      AsyncTipGeneratorsLogic.triggerLanguageDetection(tips);
+      await TipLogic.updateTipsDB(tips);
+    await RetipLogic.updateRetipsDB(tips);
+
+    // not await on purpose, just trigger background actions
+    AsyncTipGeneratorsLogic.triggerGeneratePreviews(tips);
+    AsyncTipGeneratorsLogic.triggerLanguageDetection(tips);
       AsyncTipGeneratorsLogic.triggerGetTokenContractIndex(tips);
       AsyncTipGeneratorsLogic.triggerFetchAllLocalRetips(tips);
-
       // not await on purpose, just trigger background preview fetch
       lock.acquire('LinkPreviewLogic.fetchAllLinkPreviews', async () => {
         const previews = await LinkPreviewLogic.fetchAllLinkPreviews();
@@ -99,7 +101,7 @@ module.exports = class CacheLogic {
         await TipLogic.updateTipsDB(tips);
         await RetipLogic.updateRetipsDB(tips);
       });
-      return tips;
+    return tips;
     }, cache.shortCacheTime);
   }
 

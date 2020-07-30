@@ -80,7 +80,8 @@ module.exports = class CacheLogic {
       // not await on purpose, just trigger background actions
       AsyncTipGeneratorsLogic.triggerGeneratePreviews(tips);
       AsyncTipGeneratorsLogic.triggerLanguageDetection(tips);
-    AsyncTipGeneratorsLogic.triggerGetTokenContractIndex(tips);
+      AsyncTipGeneratorsLogic.triggerGetTokenContractIndex(tips);
+      AsyncTipGeneratorsLogic.triggerFetchAllLocalRetips(tips);
 
       // not await on purpose, just trigger background preview fetch
       lock.acquire('LinkPreviewLogic.fetchAllLinkPreviews', async () => {
@@ -94,7 +95,6 @@ module.exports = class CacheLogic {
           await LinkPreviewLogic.generatePreview(url).catch(logger.error);
         });
       });
-
       lock.acquire('CacheLogic.UpdateTipsAndRetips', async () => {
         await TipLogic.updateTipsDB(tips);
         await RetipLogic.updateRetipsDB(tips);

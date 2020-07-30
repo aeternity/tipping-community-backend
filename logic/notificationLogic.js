@@ -25,6 +25,38 @@ module.exports = class NotificationLogic {
         entityType: ENTITY_TYPES.COMMENT,
       });
     },
+    [NOTIFICATION_TYPES.TIP_ON_COMMENT]: async (receiver, commentId) => {
+      Notification.create({
+        receiver,
+        type: NOTIFICATION_TYPES.TIP_ON_COMMENT,
+        entityId: commentId,
+        entityType: ENTITY_TYPES.TIP,
+      });
+    },
+    [NOTIFICATION_TYPES.RETIP_ON_TIP]: async (receiver, tipId) => {
+      Notification.create({
+        receiver,
+        type: NOTIFICATION_TYPES.RETIP_ON_TIP,
+        entityId: tipId,
+        entityType: ENTITY_TYPES.TIP,
+      });
+    },
+    [NOTIFICATION_TYPES.CLAIM_OF_TIP]: async (receiver, tipId) => {
+      Notification.create({
+        receiver,
+        type: NOTIFICATION_TYPES.CLAIM_OF_TIP,
+        entityId: tipId,
+        entityType: ENTITY_TYPES.TIP,
+      });
+    },
+    [NOTIFICATION_TYPES.CLAIM_OF_RETIP]: async (receiver, tipId) => {
+      Notification.create({
+        receiver,
+        type: NOTIFICATION_TYPES.CLAIM_OF_RETIP,
+        entityId: tipId,
+        entityType: ENTITY_TYPES.TIP,
+      });
+    },
   };
 
   static async getForUser(req, res) {
@@ -56,12 +88,7 @@ module.exports = class NotificationLogic {
     if (commentMatch) {
       const commentId = commentMatch[2];
       const comment = await Comment.findOne({ where: { id: commentId }, raw: true });
-      await Notification.create({
-        receiver: comment.author,
-        entityType: ENTITY_TYPES.TIP,
-        entityId: tip.id,
-        type: NOTIFICATION_TYPES.TIP_ON_COMMENT,
-      });
+      await NotificationLogic.add[NOTIFICATION_TYPES.TIP_ON_COMMENT](comment.author, tip.id);
     }
   }
 
@@ -70,12 +97,7 @@ module.exports = class NotificationLogic {
     // Do not create notifications for rather old retips
     // 2020, 6, 24 === 24.07.2020
     if (retip.timestamp > (new Date(2020, 6, 24)).getTime()) {
-      await Notification.create({
-        receiver: retip.parentTip.sender,
-        entityType: ENTITY_TYPES.TIP,
-        entityId: retip.parentTip.id,
-        type: NOTIFICATION_TYPES.RETIP_ON_TIP,
-      });
+      await NotificationLogic.add[NOTIFICATION_TYPES.RETIP_ON_TIP](retip.parentTip.sender, retip.parentTip.id);
     }
   }
 
@@ -87,13 +109,7 @@ module.exports = class NotificationLogic {
     });
 
     if (existingTip.unclaimed && !tip.claim.unclaimed) {
-      await Notification.create({
-        receiver: tip.sender,
-        entityType: ENTITY_TYPES.TIP,
-        entityId: tip.id,
-        type: NOTIFICATION_TYPES.CLAIM_OF_TIP,
-      });
-
+      await NotificationLogic.add[NOTIFICATION_TYPES.CLAIM_OF_TIP](tip.sender, tip.id);
       await Tip.update({ unclaimed: false }, {
         where: {
           id: tip.id,
@@ -110,12 +126,7 @@ module.exports = class NotificationLogic {
     });
 
     if (existingRetip.unclaimed && !retip.claim.unclaimed) {
-      await Notification.create({
-        receiver: retip.sender,
-        entityType: ENTITY_TYPES.TIP,
-        entityId: retip.parentTip.id,
-        type: NOTIFICATION_TYPES.CLAIM_OF_RETIP,
-      });
+      await NotificationLogic.add[NOTIFICATION_TYPES.CLAIM_OF_RETIP](retip.sender, retip.parentTip.id);
       await Retip.update({ unclaimed: false }, {
         where: {
           id: retip.id,

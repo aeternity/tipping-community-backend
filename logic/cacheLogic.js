@@ -62,12 +62,12 @@ module.exports = class CacheLogic {
   static async getTipsAndVerifyLocalInfo() {
     const tips = await aeternity.getTips();
 
+    await TipLogic.updateTipsDB(tips);
+    await RetipLogic.updateRetipsDB(tips);
+
     // not await on purpose, just trigger background actions
     AsyncTipGeneratorsLogic.triggerGeneratePreviews(tips);
     AsyncTipGeneratorsLogic.triggerGetTokenContractIndex(tips);
-
-    await lock.acquire('TipLogic.updateTipsDB', () => TipLogic.updateTipsDB(tips));
-    await lock.acquire('RetipLogic.updateRetipsDB', () => RetipLogic.updateRetipsDB(tips));
 
     return tips;
   }

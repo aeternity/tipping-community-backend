@@ -311,7 +311,7 @@
                 "type": {
                     "allowNull": false,
                     "field": "type",
-                    "seqType": "Sequelize.ENUM('COMMENT_ON_COMMENT', 'COMMENT_ON_TIP', 'TIP_ON_COMMENT', 'RETIP_ON_TIP')"
+                    "seqType": "Sequelize.ENUM('COMMENT_ON_COMMENT', 'COMMENT_ON_TIP', 'TIP_ON_COMMENT', 'RETIP_ON_TIP', 'CLAIM_OF_TIP', 'CLAIM_OF_RETIP')"
                 },
                 "receiver": {
                     "allowNull": false,
@@ -494,6 +494,13 @@
                     "field": "id",
                     "seqType": "Sequelize.INTEGER"
                 },
+                "unclaimed": {
+                    "defaultValue": {
+                        "value": true
+                    },
+                    "field": "unclaimed",
+                    "seqType": "Sequelize.BOOLEAN"
+                },
                 "createdAt": {
                     "allowNull": false,
                     "field": "createdAt",
@@ -539,6 +546,13 @@
                     "allowNull": false,
                     "field": "type",
                     "seqType": "Sequelize.ENUM('AE_TIP', 'TOKEN_TIP', 'DIRECT_AE_TIP', 'DIRECT_TOKEN_TIP')"
+                },
+                "unclaimed": {
+                    "defaultValue": {
+                        "value": true
+                    },
+                    "field": "unclaimed",
+                    "seqType": "Sequelize.BOOLEAN"
                 },
                 "createdAt": {
                     "allowNull": false,
@@ -592,5 +606,5 @@
             "indexes": []
         }
     },
-    "revision": 15
+    "revision": 16
 }

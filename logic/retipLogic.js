@@ -1,4 +1,5 @@
 const AsyncLock = require('async-lock');
+
 const { Retip } = require('../models');
 const NotificationLogic = require('./notificationLogic');
 
@@ -14,12 +15,9 @@ module.exports = class RetipLogic {
   }
 
   static async updateRetipsDB(remoteTips) {
-    await lock.acquire('RetipLogic.updateRetipsDB', async () => {
+    return lock.acquire('RetipLogic.updateRetipsDB', async () => {
       const localRetips = await RetipLogic.fetchAllLocalRetips();
-      const remoteRetips = [...new Set(remoteTips.map(tip => tip.retips.map(retip => ({
-        ...retip,
-        parentTip: tip,
-      }))).flat())];
+      const remoteRetips = [...new Set(remoteTips.map(tip => tip.retips.map(retip => ({ ...retip, parentTip: tip }))).flat())];
       const remoteRetipIds = [...new Set(remoteRetips.map(retip => retip.id))];
       const localRetipIds = [...new Set(localRetips.map(retip => retip.id))];
 

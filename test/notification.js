@@ -1,12 +1,11 @@
 // Require the dev-dependencies
 const chai = require('chai');
 const chaiHttp = require('chai-http');
-const sinon = require('sinon');
 const { describe, it } = require('mocha');
 
 const server = require('../server');
-const aeternity = require('../utils/aeternity');
-const CacheLogic = require('../logic/cacheLogic');
+const RetipLogic = require('../logic/retipLogic');
+const TipLogic = require('../logic/tipLogic');
 const { publicKey, performSignedGETRequest, performSignedJSONRequest } = require('../utils/testingUtil');
 const {
   Notification, Comment, Tip, Retip,
@@ -57,7 +56,7 @@ describe('Notifications', () => {
     });
 
     it('it should create notifications for TIP_ON_COMMENT', async () => {
-      const tipStub = sinon.stub(aeternity, 'getTips').callsFake(() => [
+      const fakeData = [
         {
           sender: 'ak_tip',
           title: '#test tip',
@@ -68,11 +67,11 @@ describe('Notifications', () => {
             unclaimed: true,
           },
         },
-      ]);
+      ];
 
-      await CacheLogic.getTipsAndVerifyLocalInfo();
+      await TipLogic.updateTipsDB(fakeData);
+      await RetipLogic.updateRetipsDB(fakeData);
 
-      tipStub.callCount.should.eql(1);
       const createdNotification = await Notification.findOne({
         where: {
           type: NOTIFICATION_TYPES.TIP_ON_COMMENT,
@@ -87,12 +86,10 @@ describe('Notifications', () => {
       createdNotification.should.have.property('entityType', ENTITY_TYPES.TIP);
       createdNotification.should.have.property('entityId', '1');
       createdNotification.should.have.property('type', NOTIFICATION_TYPES.TIP_ON_COMMENT);
-
-      tipStub.restore();
     });
 
     it('it should not create notifications for RETIP_ON_TIP if the retip is old', async () => {
-      const tipStub = sinon.stub(aeternity, 'getTips').callsFake(() => [
+      const fakeData = [
         {
           sender: 'ak_tip_old',
           title: '#test tip',
@@ -109,11 +106,11 @@ describe('Notifications', () => {
             },
           }],
         },
-      ]);
+      ];
 
-      await CacheLogic.getTipsAndVerifyLocalInfo();
+      await TipLogic.updateTipsDB(fakeData);
+      await RetipLogic.updateRetipsDB(fakeData);
 
-      tipStub.callCount.should.eql(1);
       const emptyArray = await Notification.findAll({
         where: {
           type: NOTIFICATION_TYPES.RETIP_ON_TIP,
@@ -121,11 +118,10 @@ describe('Notifications', () => {
         raw: true,
       });
       emptyArray.should.have.length(0);
-      tipStub.restore();
     });
 
     it('it should create notifications for RETIP_ON_TIP', async () => {
-      const tipStub = sinon.stub(aeternity, 'getTips').callsFake(() => [
+      const fakeData = [
         {
           sender: 'ak_tip',
           title: '#test tip',
@@ -142,11 +138,10 @@ describe('Notifications', () => {
             },
           }],
         },
-      ]);
+      ];
 
-      await CacheLogic.getTipsAndVerifyLocalInfo();
-      tipStub.callCount.should.eql(1);
-      tipStub.restore();
+      await TipLogic.updateTipsDB(fakeData);
+      await RetipLogic.updateRetipsDB(fakeData);
 
       const createdNotification = await Notification.findOne({
         where: {
@@ -162,6 +157,124 @@ describe('Notifications', () => {
       createdNotification.should.have.property('entityType', ENTITY_TYPES.TIP);
       createdNotification.should.have.property('entityId', '1');
       createdNotification.should.have.property('type', NOTIFICATION_TYPES.RETIP_ON_TIP);
+    });
+
+    it('it should create notifications for CLAIM_OF_TIP', async () => {
+      await Tip.destroy({
+        where: {},
+        truncate: true,
+      });
+
+      await Retip.destroy({
+        where: {},
+        truncate: true,
+      });
+
+      await Tip.create({
+        id: 1,
+        language: null,
+        unclaimed: true,
+      });
+
+      const fakeData = [
+        {
+          sender: 'ak_tip',
+          title: '#test tip',
+          id: 1,
+          url: `https://superhero.com/tip/1/comment/${createdComment.id}`,
+          retips: [{
+            sender: 'ak_retip',
+            timestamp: (new Date(2020, 8, 1)).getTime(),
+            claim: {
+              unclaimed: true,
+            },
+          }],
+          claim: {
+            unclaimed: false,
+          },
+        },
+      ];
+
+      await TipLogic.updateTipsDB(fakeData);
+      await RetipLogic.updateRetipsDB(fakeData);
+
+      const createdNotification = await Notification.findOne({
+        where: {
+          type: NOTIFICATION_TYPES.CLAIM_OF_TIP,
+          entityType: ENTITY_TYPES.TIP,
+          entityId: '1',
+          receiver: 'ak_tip',
+        },
+        raw: true,
+      });
+
+      createdNotification.should.be.a('object');
+      createdNotification.should.have.property('receiver', 'ak_tip');
+      createdNotification.should.have.property('entityType', ENTITY_TYPES.TIP);
+      createdNotification.should.have.property('entityId', '1');
+      createdNotification.should.have.property('type', NOTIFICATION_TYPES.CLAIM_OF_TIP);
+    });
+
+    it('it should create notifications for CLAIM_OF_RETIP', async () => {
+      await Tip.destroy({
+        where: {},
+        truncate: true,
+      });
+
+      await Retip.destroy({
+        where: {},
+        truncate: true,
+      });
+
+      await Tip.create({
+        id: 1,
+        language: null,
+        unclaimed: true,
+      });
+
+      await Retip.create({
+        id: 1,
+        tipId: 1,
+        unclaimed: true,
+      });
+
+      const fakeData = [
+        {
+          sender: 'ak_tip',
+          title: '#test tip',
+          id: 1,
+          url: `https://superhero.com/tip/1/comment/${createdComment.id}`,
+          retips: [{
+            id: 1,
+            sender: 'ak_retip',
+            timestamp: (new Date(2020, 8, 1)).getTime(),
+            claim: {
+              unclaimed: false,
+            },
+          }],
+          claim: {
+            unclaimed: false,
+          },
+        },
+      ];
+
+      await TipLogic.updateTipsDB(fakeData);
+      await RetipLogic.updateRetipsDB(fakeData);
+
+      const createdNotification = await Notification.findOne({
+        where: {
+          type: NOTIFICATION_TYPES.CLAIM_OF_RETIP,
+          entityType: ENTITY_TYPES.TIP,
+          entityId: 1,
+          receiver: 'ak_retip',
+        },
+        raw: true,
+      });
+      createdNotification.should.be.a('object');
+      createdNotification.should.have.property('receiver', 'ak_retip');
+      createdNotification.should.have.property('entityType', ENTITY_TYPES.TIP);
+      createdNotification.should.have.property('entityId', '1');
+      createdNotification.should.have.property('type', NOTIFICATION_TYPES.CLAIM_OF_RETIP);
     });
   });
 
@@ -204,7 +317,10 @@ describe('Notifications', () => {
     });
 
     it('it should MODIFY a single notifications for a user', done => {
-      performSignedJSONRequest(server, 'post', `/notification/${createdNotification.id}`, { author: publicKey, status: NOTIFICATION_STATES.READ })
+      performSignedJSONRequest(server, 'post', `/notification/${createdNotification.id}`, {
+        author: publicKey,
+        status: NOTIFICATION_STATES.READ,
+      })
         .then(({ res }) => {
           res.should.have.status(200);
           res.body.should.be.a('object');

@@ -16,7 +16,7 @@ module.exports = class TipLogic {
   }
 
   static async updateTipsDB(remoteTips) {
-    await lock.acquire('TipLogic.updateTipsDB', async () => {
+    return lock.acquire('TipLogic.updateTipsDB', async () => {
       const localTips = await TipLogic.fetchAllLocalTips();
       const remoteTipIds = [...new Set(remoteTips.map(tip => tip.id))];
       const localTipIds = [...new Set(localTips.map(tip => tip.id))];

@@ -1,4 +1,6 @@
-const { Notification, Comment } = require('../models');
+const {
+  Notification, Comment, Retip, Tip,
+} = require('../models');
 const { NOTIFICATION_TYPES, ENTITY_TYPES, NOTIFICATION_STATES } = require('../models/enums/notification');
 
 module.exports = class NotificationLogic {
@@ -23,7 +25,7 @@ module.exports = class NotificationLogic {
         entityType: ENTITY_TYPES.COMMENT,
       });
     },
-  }
+  };
 
   static async getForUser(req, res) {
     try {
@@ -54,7 +56,7 @@ module.exports = class NotificationLogic {
     if (commentMatch) {
       const commentId = commentMatch[2];
       const comment = await Comment.findOne({ where: { id: commentId }, raw: true });
-      Notification.create({
+      await Notification.create({
         receiver: comment.author,
         entityType: ENTITY_TYPES.TIP,
         entityId: tip.id,
@@ -68,11 +70,58 @@ module.exports = class NotificationLogic {
     // Do not create notifications for rather old retips
     // 2020, 6, 24 === 24.07.2020
     if (retip.timestamp > (new Date(2020, 6, 24)).getTime()) {
-      Notification.create({
+      await Notification.create({
         receiver: retip.parentTip.sender,
         entityType: ENTITY_TYPES.TIP,
         entityId: retip.parentTip.id,
         type: NOTIFICATION_TYPES.RETIP_ON_TIP,
+      });
+    }
+  }
+
+  static async handleOldTip(tip) {
+    const existingTip = await Tip.findOne({
+      where: {
+        id: tip.id,
+      },
+    });
+
+    if (existingTip.unclaimed && !tip.claim.unclaimed) {
+      /* disabled for migration purposes
+      await Notification.create({
+        receiver: tip.sender,
+        entityType: ENTITY_TYPES.TIP,
+        entityId: tip.id,
+        type: NOTIFICATION_TYPES.CLAIM_OF_TIP,
+      }); */
+
+      await Tip.update({ unclaimed: false }, {
+        where: {
+          id: tip.id,
+        },
+      });
+    }
+  }
+
+  static async handleOldRetip(retip) {
+    const existingRetip = await Retip.findOne({
+      where: {
+        id: retip.id,
+      },
+    });
+
+    if (existingRetip.unclaimed && !retip.claim.unclaimed) {
+      /* disabled for migration purposes
+      await Notification.create({
+        receiver: retip.sender,
+        entityType: ENTITY_TYPES.TIP,
+        entityId: retip.parentTip.id,
+        type: NOTIFICATION_TYPES.CLAIM_OF_RETIP,
+      }); */
+      await Retip.update({ unclaimed: false }, {
+        where: {
+          id: retip.id,
+        },
       });
     }
   }

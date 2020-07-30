@@ -1,13 +1,12 @@
 const axios = require('axios');
 const BigNumber = require('bignumber.js');
 const Fuse = require('fuse.js');
-const LanguageDetector = require('languagedetect');
-
 const aeternity = require('../utils/aeternity.js');
 const LinkPreviewLogic = require('./linkPreviewLogic.js');
 const TipOrderLogic = require('./tiporderLogic');
 const CommentLogic = require('./commentLogic');
 const TipLogic = require('./tipLogic');
+const RetipLogic = require('./retipLogic');
 const BlacklistLogic = require('./blacklistLogic');
 const AsyncTipGeneratorsLogic = require('./asyncTipGeneratorsLogic');
 const cache = require('../utils/cache');
@@ -17,8 +16,6 @@ const { Profile } = require('../models');
 const Logger = require('../utils/logger');
 
 const logger = new Logger('CacheLogic');
-const lngDetector = new LanguageDetector();
-lngDetector.setLanguageType('iso2');
 
 const searchOptions = {
   threshold: 0.3,
@@ -67,9 +64,10 @@ module.exports = class CacheLogic {
 
     // not await on purpose, just trigger background actions
     AsyncTipGeneratorsLogic.triggerGeneratePreviews(tips);
-    AsyncTipGeneratorsLogic.triggerLanguageDetection(tips);
     AsyncTipGeneratorsLogic.triggerGetTokenContractIndex(tips);
-    AsyncTipGeneratorsLogic.triggerFetchAllLocalRetips(tips);
+
+    await lock.acquire('TipLogic.updateTipsDB', () => TipLogic.updateTipsDB(tips));
+    await lock.acquire('RetipLogic.updateRetipsDB', () => RetipLogic.updateRetipsDB(tips));
 
     return tips;
   }

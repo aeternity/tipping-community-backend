@@ -64,6 +64,9 @@ describe('Notifications', () => {
           id: 1,
           url: `https://superhero.com/tip/1/comment/${createdComment.id}`,
           retips: [],
+          claim: {
+            unclaimed: true,
+          },
         },
       ]);
 
@@ -88,16 +91,22 @@ describe('Notifications', () => {
       tipStub.restore();
     });
 
-    it('it should not create notifications for RETIP_ON_TIP if the tip is old', async () => {
+    it('it should not create notifications for RETIP_ON_TIP if the retip is old', async () => {
       const tipStub = sinon.stub(aeternity, 'getTips').callsFake(() => [
         {
           sender: 'ak_tip_old',
           title: '#test tip',
           id: 1,
           url: `https://superhero.com/tip/1/comment/${createdComment.id}`,
+          claim: {
+            unclaimed: true,
+          },
           retips: [{
             sender: 'ak_retip',
             timestamp: (new Date(2020, 5, 1)).getTime(),
+            claim: {
+              unclaimed: true,
+            },
           }],
         },
       ]);
@@ -122,16 +131,23 @@ describe('Notifications', () => {
           title: '#test tip',
           id: 1,
           url: `https://superhero.com/tip/1/comment/${createdComment.id}`,
+          claim: {
+            unclaimed: true,
+          },
           retips: [{
             sender: 'ak_retip',
             timestamp: (new Date(2020, 8, 1)).getTime(),
+            claim: {
+              unclaimed: true,
+            },
           }],
         },
       ]);
 
       await CacheLogic.getTipsAndVerifyLocalInfo();
-
       tipStub.callCount.should.eql(1);
+      tipStub.restore();
+
       const createdNotification = await Notification.findOne({
         where: {
           type: NOTIFICATION_TYPES.RETIP_ON_TIP,
@@ -146,8 +162,6 @@ describe('Notifications', () => {
       createdNotification.should.have.property('entityType', ENTITY_TYPES.TIP);
       createdNotification.should.have.property('entityId', '1');
       createdNotification.should.have.property('type', NOTIFICATION_TYPES.RETIP_ON_TIP);
-
-      tipStub.restore();
     });
   });
 

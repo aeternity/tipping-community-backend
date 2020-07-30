@@ -8,6 +8,10 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       primaryKey: true,
     },
+    unclaimed: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: true,
+    },
   }, {
     timestamps: true,
   });

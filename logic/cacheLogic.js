@@ -8,8 +8,6 @@ const LinkPreviewLogic = require('./linkPreviewLogic.js');
 const TipOrderLogic = require('./tiporderLogic');
 const CommentLogic = require('./commentLogic');
 const TipLogic = require('./tipLogic');
-const RetipLogic = require('./retipLogic');
-const NotificationLogic = require('./notificationLogic');
 const BlacklistLogic = require('./blacklistLogic');
 const AsyncTipGeneratorsLogic = require('./asyncTipGeneratorsLogic');
 const cache = require('../utils/cache');
@@ -71,19 +69,7 @@ module.exports = class CacheLogic {
     AsyncTipGeneratorsLogic.triggerGeneratePreviews(tips);
     AsyncTipGeneratorsLogic.triggerLanguageDetection(tips);
     AsyncTipGeneratorsLogic.triggerGetTokenContractIndex(tips);
-    AsyncTipGeneratorsLogic.triggerFetchAllLocalTips(tips);
-
-    await lock.acquire('TipLogic.fetchAllLocalRetips', async () => {
-      const localRetips = await RetipLogic.fetchAllLocalRetips();
-      const remoteRetips = [...new Set(tips.map(tip => tip.retips.map(retip => ({ ...retip, parentTip: tip }))).flat())];
-      const remoteRetipIds = [...new Set(remoteRetips.map(retip => retip.id))];
-      const localRetipIds = [...new Set(localRetips.map(retip => retip.id))];
-
-      const difference = remoteRetipIds.filter(id => !localRetipIds.includes(id));
-
-      // Send appropriate notifications for new tips
-      await difference.asyncMap(id => NotificationLogic.handleNewRetip(remoteRetips.find(retip => retip.id === id)));
-    });
+    AsyncTipGeneratorsLogic.triggerFetchAllLocalRetips(tips);
 
     return tips;
   }

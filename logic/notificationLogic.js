@@ -84,7 +84,7 @@ module.exports = class NotificationLogic {
 
   static async handleNewTip(tip) {
     // TIP ON COMMENT
-    const commentMatch = tip.url.match(/https:\/\/superhero\.com\/tip\/(\d+)\/comment\/(\d+)/);
+    const commentMatch = tip.url && tip.url.match(/https:\/\/superhero\.com\/tip\/(\d+)\/comment\/(\d+)/);
     if (commentMatch) {
       const commentId = commentMatch[2];
       const comment = await Comment.findOne({ where: { id: commentId }, raw: true });

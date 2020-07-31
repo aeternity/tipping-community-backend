@@ -39,7 +39,7 @@ module.exports = class TipLogic {
       await TipLogic.bulkCreate(result.map(({ id, lang, claim }) => ({
         id,
         language: lang,
-        unclaimed: claim.unclaimed,
+        unclaimed: claim ? claim.unclaimed : false,
       })));
     });
   }

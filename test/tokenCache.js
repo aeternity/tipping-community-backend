@@ -38,10 +38,16 @@ describe('Token Cache', () => {
       });
     });
 
-    it('it should GET token balances for address', function (done) {
-      chai.request(server).get('/tokenCache/balances?address=' + process.env.PUBLIC_KEY).end((err, res) => {
+    it('it should GET token balances for address', done => {
+      chai.request(server).get('/tokenCache/balances?address=ak_2VnwoJPQgrXvreUx2L9BVvd9BidWwpu1ASKK1AMre21soEgpRT').end((err, res) => {
         res.should.have.status(200);
         res.body.should.be.a('object');
+        res.body.should.have.property('ct_MRgnq6YXCi4Bd6CCks1bu8rTUfFmgLEAWWXVi7hSsJA4LZejs');
+        res.body.ct_MRgnq6YXCi4Bd6CCks1bu8rTUfFmgLEAWWXVi7hSsJA4LZejs.should.be.deep.equal({
+          decimals: 0,
+          name: 'Other Test Token',
+          symbol: 'OT',
+        });
         done();
       });
     });

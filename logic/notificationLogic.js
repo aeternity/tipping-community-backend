@@ -108,7 +108,7 @@ module.exports = class NotificationLogic {
       },
     });
 
-    if (existingTip.unclaimed && !tip.claim.unclaimed) {
+    if (existingTip.unclaimed && tip.claim && !tip.claim.unclaimed) {
       await NotificationLogic.add[NOTIFICATION_TYPES.CLAIM_OF_TIP](tip.sender, tip.id);
       await Tip.update({ unclaimed: false }, {
         where: {

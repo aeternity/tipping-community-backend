@@ -44,7 +44,7 @@
     "multer": "^1.4.2",
     "puppeteer": "^3.1.0",
     "redis": "^3.0.2",
-    "tipping-contract": "github:aeternity/tipping-contract#develop",
+    "tipping-contract": "github:aeternity/tipping-contract#feature/remove-owner",
     "tipping-oracle-service": "github:aeternity/tipping-oracle-service",
     "token-registry": "github:thepiwo/token-registry",
     "aeternity-fungible-token": "github:mradkov/aeternity-fungible-token",

@@ -11,8 +11,8 @@ const logger = require('./logger')(module);
 const { decodeEvents, SOPHIA_TYPES } = requireESM('@aeternity/aepp-sdk/es/contract/aci/transformation');
 
 const MIDDLEWARE_URL = process.env.MIDDLEWARE_URL || 'https://mainnet.aeternity.io';
-
-const TIPPING_INTERFACE = require('tipping-contract/TippingInterface.aes');
+const TIPPING_V1_INTERFACE = require('tipping-contract/Tipping_v1_Interface.aes');
+const TIPPING_V2_INTERFACE = require('tipping-contract/Tipping_v2_Interface.aes');
 const ORACLE_SERVICE_INTERFACE = require('tipping-oracle-service/OracleServiceInterface.aes');
 const TOKEN_CONTRACT_INTERFACE = require('aeternity-fungible-token/FungibleTokenFullInterface.aes');
 const TOKEN_REGISTRY = require('token-registry/TokenRegistry.aes');
@@ -40,7 +40,8 @@ class Aeternity {
         compilerUrl: process.env.COMPILER_URL,
       });
 
-      this.contract = await this.client.getContractInstance(TIPPING_INTERFACE, { contractAddress: process.env.CONTRACT_ADDRESS });
+      this.contractV1 = await this.client.getContractInstance(TIPPING_V1_INTERFACE, { contractAddress: process.env.OLD_CONTRACT_ADDRESS });
+      this.contractV2 = await this.client.getContractInstance(TIPPING_V2_INTERFACE, { contractAddress: process.env.CONTRACT_ADDRESS });
       this.oracleContract = await this.client.getContractInstance(
         ORACLE_SERVICE_INTERFACE,
         { contractAddress: process.env.ORACLE_CONTRACT_ADDRESS },
@@ -156,8 +157,9 @@ class Aeternity {
 
   async fetchTips() {
     if (!this.client) throw new Error('Init sdk first');
-    const state = await this.contract.methods.get_state();
-    const tips = tippingContractUtil.getTipsRetips(state.decodedResult).tips;
+    const fetchV1State = this.contractV1.methods.get_state();
+      const fetchV2State = this.contractV2.methods.get_state();
+    const tips = tippingContractUtil.getTipsRetips(await fetchV1State, await fetchV2State).tips;
     return Aeternity.addAdditionalTipsData(tips);
   }
 
@@ -218,7 +220,9 @@ class Aeternity {
     trace.update({
       state: TRACE_STATES.STARTED_PRE_CLAIM,
     });
-    const claimAmount = await this.contract.methods.unclaimed_for_url(url).then(r => r.decodedResult).catch(trace.catchError(0));
+
+    //TODO update for v1 v2 simulataneous
+    const claimAmount = await this.contractV2.methods.unclaimed_for_url(url).then(r => r.decodedResult).catch(trace.catchError(0));
 
     trace.update({
       state: TRACE_STATES.CLAIM_AMOUNT,
@@ -234,14 +238,16 @@ class Aeternity {
     if (amount === 0) return false;
 
     // pre-claim if necessary (if not already claimed successfully)
-    const claimSuccess = await this.contract.methods.check_claim(url, address).then(r => r.decodedResult.success).catch(trace.catchError(false));
+    //TODO update for v1 v2 simulataneous
+    const claimSuccess = await this.contractV2.methods.check_claim(url, address).then(r => r.decodedResult.success).catch(trace.catchError(false));
 
     trace.update({ state: TRACE_STATES.INITIAL_PRECLAIM_RESULT, claimSuccess });
 
     if (!claimSuccess) {
       const fee = await this.oracleContract.methods.estimate_query_fee();
       trace.update({ state: TRACE_STATES.ESTIMATED_FEE, fee: fee.decodedResult });
-      await this.contract.methods.pre_claim(url, address, { amount: fee.decodedResult });
+      //TODO update for v1 v2 simulataneous
+      await this.contractV2.methods.pre_claim(url, address, { amount: fee.decodedResult });
       trace.update({ state: TRACE_STATES.PRECLAIM_STARTED });
 
       return new Promise((resolve, reject) => {
@@ -250,7 +256,8 @@ class Aeternity {
         let interval = null;
 
         const checkPreClaimFinished = async () => {
-          if ((await this.contract.methods.check_claim(url, address)).decodedResult.success) {
+          //TODO update for v1 v2 simulataneous
+          if ((await this.contractV2.methods.check_claim(url, address)).decodedResult.success) {
             clearInterval(interval);
             return resolve();
           }
@@ -274,7 +281,8 @@ class Aeternity {
     try {
       const claimSuccess = await this.preClaim(address, url, trace);
       trace.update({ state: TRACE_STATES.FINAL_PRECLAIM_RESULT, claimSuccess });
-      const result = await this.contract.methods.claim(url, address, false);
+      //TODO update for v1 v2 simulataneous
+      const result = await this.contractV2.methods.claim(url, address, false);
       trace.update({ state: TRACE_STATES.CLAIM_RESULT, tx: result, result: result.decodedResult });
       return result.decodedResult;
     } catch (e) {

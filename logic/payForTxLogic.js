@@ -52,7 +52,7 @@ module.exports = class PayForTxLogic {
     // Try to claim
     try {
       // Check sync if properties are okay
-      const result = await ae.getClaimableAmount(req.body.address, req.body.url, trace);
+      const result = await ae.checkPreClaimProperties(req.body.address, req.body.url, trace);
 
       // run claim async
       PayForTxLogic.runAsyncClaim(req.body.address, req.body.url, trace);

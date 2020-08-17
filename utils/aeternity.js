@@ -40,8 +40,8 @@ class Aeternity {
         compilerUrl: process.env.COMPILER_URL,
       });
 
-      this.contractV1 = await this.client.getContractInstance(TIPPING_V1_INTERFACE, { contractAddress: process.env.OLD_CONTRACT_ADDRESS });
-      this.contractV2 = await this.client.getContractInstance(TIPPING_V2_INTERFACE, { contractAddress: process.env.CONTRACT_ADDRESS });
+      this.contractV1 = await this.client.getContractInstance(TIPPING_V1_INTERFACE, { contractAddress: process.env.CONTRACT_V1_ADDRESS });
+      this.contractV2 = await this.client.getContractInstance(TIPPING_V2_INTERFACE, { contractAddress: process.env.CONTRACT_V2_ADDRESS });
       this.oracleContract = await this.client.getContractInstance(
         ORACLE_SERVICE_INTERFACE,
         { contractAddress: process.env.ORACLE_CONTRACT_ADDRESS },
@@ -216,13 +216,20 @@ class Aeternity {
     return this.cache.getOrSet(["getCacheTokenAccounts", token], () => fetchBalances(), this.cache.longCacheTime);
   }
 
-  async getClaimableAmount(address, url, trace) {
+  async checkPreClaimProperties(address, url, trace) {
+    const amountV1 = await this.checkPreClaim(address, url, trace, this.contractV1).catch(console.error)
+    const amountV2 = await this.checkPreClaim(address, url, trace, this.contractV2).catch(console.error)
+
+    const claimAmount = amountV1 + amountV2;
+    return claimAmount;
+  }
+
+  async checkPreClaim(address, url, trace, contract) {
     trace.update({
       state: TRACE_STATES.STARTED_PRE_CLAIM,
     });
 
-    //TODO update for v1 v2 simulataneous
-    const claimAmount = await this.contractV2.methods.unclaimed_for_url(url).then(r => r.decodedResult).catch(trace.catchError(0));
+    const claimAmount = await contract.methods.unclaimed_for_url(url).then(r => r.decodedResult).catch(trace.catchError(false));
 
     trace.update({
       state: TRACE_STATES.CLAIM_AMOUNT,
@@ -232,22 +239,20 @@ class Aeternity {
     return claimAmount;
   }
 
-  async preClaim(address, url, trace) {
-    const amount = await this.getClaimableAmount(address, url, trace);
+  async preClaim(address, url, trace, contract) {
+    const amount = await this.getClaimableAmount(address, url, trace, contract);
 
     if (amount === 0) return false;
 
     // pre-claim if necessary (if not already claimed successfully)
-    //TODO update for v1 v2 simulataneous
-    const claimSuccess = await this.contractV2.methods.check_claim(url, address).then(r => r.decodedResult.success).catch(trace.catchError(false));
+    const claimSuccess = await contract.methods.check_claim(url, address).then(r => r.decodedResult.success).catch(trace.catchError(false));
 
     trace.update({ state: TRACE_STATES.INITIAL_PRECLAIM_RESULT, claimSuccess });
 
     if (!claimSuccess) {
       const fee = await this.oracleContract.methods.estimate_query_fee();
       trace.update({ state: TRACE_STATES.ESTIMATED_FEE, fee: fee.decodedResult });
-      //TODO update for v1 v2 simulataneous
-      await this.contractV2.methods.pre_claim(url, address, { amount: fee.decodedResult });
+      await contract.pre_claim(url, address, { amount: fee.decodedResult });
       trace.update({ state: TRACE_STATES.PRECLAIM_STARTED });
 
       return new Promise((resolve, reject) => {
@@ -256,8 +261,7 @@ class Aeternity {
         let interval = null;
 
         const checkPreClaimFinished = async () => {
-          //TODO update for v1 v2 simulataneous
-          if ((await this.contractV2.methods.check_claim(url, address)).decodedResult.success) {
+          if ((await contract.methods.check_claim(url, address)).decodedResult.success) {
             clearInterval(interval);
             return resolve();
           }
@@ -278,14 +282,19 @@ class Aeternity {
   }
 
   async claimTips(address, url, trace) {
+    await this.claimTipsOnContract(address, url, trace, this.contractV1)
+    await this.claimTipsOnContract(address, url, trace, this.contractV2)
+  }
+
+  async claimTipsOnContract(address, url, trace, contract) {
     try {
-      const claimSuccess = await this.preClaim(address, url, trace);
+      const claimSuccess = await this.preClaim(address, url, trace, contract);
       trace.update({ state: TRACE_STATES.FINAL_PRECLAIM_RESULT, claimSuccess });
-      //TODO update for v1 v2 simulataneous
-      const result = await this.contractV2.methods.claim(url, address, false);
+      const result = await contract.methods.claim(url, address, false);
       trace.update({ state: TRACE_STATES.CLAIM_RESULT, tx: result, result: result.decodedResult });
       return result.decodedResult;
     } catch (e) {
+      if (e.message && e.message.includes('NO_ZERO_AMOUNT_PAYOUT')) return null; //ignoring this
       if (e.message && e.message.includes('URL_NOT_EXISTING')) throw new Error(`Could not find any tips for url ${url}`);
       else throw new Error(e);
     }

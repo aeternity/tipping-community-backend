@@ -1,6 +1,7 @@
 const { Universal, Node, MemoryAccount } = require('@aeternity/aepp-sdk');
 const requireESM = require('esm')(module); // use to handle es6 import/export
 const axios = require('axios');
+const BigNumber = require('bignumber.js');
 const TIPPING_V1_INTERFACE = require('tipping-contract/Tipping_v1_Interface.aes');
 const TIPPING_V2_INTERFACE = require('tipping-contract/Tipping_v2_Interface.aes');
 const ORACLE_SERVICE_INTERFACE = require('tipping-oracle-service/OracleServiceInterface.aes');
@@ -230,8 +231,9 @@ class Aeternity {
     const amountV1 = await this.checkPreClaim(address, url, trace, this.contractV1).catch(console.error)
     const amountV2 = await this.checkPreClaim(address, url, trace, this.contractV2).catch(console.error)
 
-    const claimAmount = amountV1 + amountV2;
-    if (claimAmount === 0) throw new Error('No zero amount claims');
+    const claimAmount = new BigNumber(amountV1).plus(amountV2);
+
+    if (claimAmount.isZero()) throw new Error('No zero amount claims');
     return claimAmount;
   }
 
@@ -240,7 +242,11 @@ class Aeternity {
       state: TRACE_STATES.STARTED_PRE_CLAIM,
     });
 
-    const claimAmount = await contract.methods.unclaimed_for_url(url).then(r => r.decodedResult).catch(trace.catchError(false));
+    const claimAmount = await contract.methods.unclaimed_for_url(url).then(r => {
+      return Array.isArray(r.decodedResult)
+        ? r.decodedResult[1].reduce((acc, cur) => acc.plus(cur[1]), new BigNumber(r.decodedResult[0])).toFixed() //sum token amounts
+        : String(r.decodedResult)
+    }).catch(trace.catchError("0"));
 
     trace.update({
       state: TRACE_STATES.CLAIM_AMOUNT,

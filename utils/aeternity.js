@@ -220,7 +220,7 @@ class Aeternity {
     const amountV1 = await this.checkPreClaim(address, url, trace, this.contractV1).catch(console.error)
     const amountV2 = await this.checkPreClaim(address, url, trace, this.contractV2).catch(console.error)
 
-    const claimAmount = amountV1 + amountV2;
+    const claimAmount = new BigNumber(amountV1).plus(amountV2);
     return claimAmount;
   }
 
@@ -229,7 +229,11 @@ class Aeternity {
       state: TRACE_STATES.STARTED_PRE_CLAIM,
     });
 
-    const claimAmount = await contract.methods.unclaimed_for_url(url).then(r => r.decodedResult).catch(trace.catchError(false));
+    const claimAmount = await contract.methods.unclaimed_for_url(url).then(r => {
+      return Array.isArray(r.decodedResult)
+        ? r.decodedResult[1].reduce((acc, cur) => acc.plus(cur[1]), new BigNumber(r.decodedResult[0])).toFixed() //sum token amounts
+        : String(r.decodedResult)
+    }).catch(trace.catchError("0"));
 
     trace.update({
       state: TRACE_STATES.CLAIM_AMOUNT,

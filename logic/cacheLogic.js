@@ -41,6 +41,7 @@ module.exports = class CacheLogic {
       await CacheLogic.fetchPrice();
       await aeternity.getOracleState();
       await CacheLogic.findContractEvents();
+      await CacheLogic.deliverStats();
     };
 
     await cache.init(aeternity, keepHotFunction);
@@ -307,21 +308,25 @@ module.exports = class CacheLogic {
     res.send(stats);
   }
 
+  static async fetchStats() {
+    return cache.getOrSet(['fetchStats'], async () => {
+      const tips = await aeternity.getTips();
+
+      const groupedByUrl = Util.groupBy(tips, 'url');
+      const statsByUrl = Object.keys(groupedByUrl).map(url => ({
+        url,
+        ...CacheLogic.statsForTips(groupedByUrl[url]),
+      }));
+
+      return {
+        ...CacheLogic.statsForTips(tips),
+        by_url: statsByUrl,
+      };
+    }, cache.extraShortCacheTime);
+  }
+
   static async deliverStats(req, res) {
-    const tips = await aeternity.getTips();
-
-    const groupedByUrl = Util.groupBy(tips, 'url');
-    const statsByUrl = Object.keys(groupedByUrl).map(url => ({
-      url,
-      ...CacheLogic.statsForTips(groupedByUrl[url]),
-    }));
-
-    const stats = {
-      ...CacheLogic.statsForTips(tips),
-      by_url: statsByUrl,
-    };
-
-    res.send(stats);
+    res.send(await CacheLogic.fetchStats());
   }
 
   static statsForTips(tips) {

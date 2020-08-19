@@ -65,6 +65,13 @@ describe('Static Routes', () => {
         done();
       });
     });
+    it('it should GET the correct stats in under 200ms', function (done) {
+      this.timeout(200);
+      chai.request(server).get('/static/stats').end((err, res) => {
+        res.should.have.status(200);
+        done();
+      });
+    });
   });
   describe('GrayList', () => {
     it('it should GET the hardcoded graylist', done => {

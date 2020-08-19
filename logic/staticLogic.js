@@ -2,6 +2,7 @@ const Sequelize = require('sequelize');
 const {
   BlacklistEntry, Comment, LinkPreview, Profile,
 } = require('../models');
+const cache = require('../utils/cache');
 const Logger = require('../utils/logger');
 
 module.exports = class StaticLogic {
@@ -32,14 +33,22 @@ module.exports = class StaticLogic {
     };
   }
 
-  static async getStats(req, res) {
-    try {
-      return res.send({
+  static async getStats() {
+    return cache.getOrSet(
+      ['StaticLogic.getStats'],
+      async () => ({
         comments: await StaticLogic.getStatsPerModel(Comment),
         linkPreviews: await StaticLogic.getStatsPerModel(LinkPreview),
         profiles: await StaticLogic.getStatsPerModel(Profile),
         blacklist: await StaticLogic.getStatsPerModel(BlacklistEntry),
-      });
+      }),
+      cache.extraShortCacheTime,
+    );
+  }
+
+  static async deliverStats(req, res) {
+    try {
+      return res.send(await StaticLogic.getStats());
     } catch (err) {
       (new Logger('StaticLogic')).error(err);
       return res.status(500).send(err.message);

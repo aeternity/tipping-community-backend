@@ -35,13 +35,15 @@ module.exports = class CacheLogic {
     // Run once so the db is synced initially without getting triggered every 5 seconds
     await aeternity.init();
 
+    // INIT ONCE
+    await CacheLogic.fetchStats();
+
     const keepHotFunction = async () => {
       await CacheLogic.getTipsAndVerifyLocalInfo();
       await CacheLogic.fetchChainNames();
       await CacheLogic.fetchPrice();
       await aeternity.getOracleState();
       await CacheLogic.findContractEvents();
-      await CacheLogic.fetchStats();
     };
 
     await cache.init(aeternity, keepHotFunction);
@@ -321,7 +323,7 @@ module.exports = class CacheLogic {
         ...CacheLogic.statsForTips(tips),
         by_url: statsByUrl,
       };
-    }, cache.extraShortCacheTime);
+    });
   }
 
   static async deliverStats(req, res) {

@@ -15,6 +15,7 @@ const metascraper = require('metascraper')([
 
 const { LinkPreview } = require('../models');
 const DomLoader = require('../utils/domLoader.js');
+const cache = require('../utils/cache');
 const logger = new (require('../utils/logger'))('LinkPreviewLogic');
 
 lngDetector.setLanguageType('iso2');
@@ -135,6 +136,9 @@ module.exports = class LinkPreviewLogic {
       if (existingEntry) {
         return await LinkPreview.update({ ...data, failReason: null }, { where: { requestUrl: url }, raw: true });
       }
+      // Kill stats cache
+      await cache.del(['StaticLogic.getStats']);
+
       return await LinkPreview.create(data, { raw: true });
     } catch (err) {
       logger.error(`Crawling ${url} failed with "${err.message}"`);

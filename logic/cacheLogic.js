@@ -80,8 +80,10 @@ module.exports = class CacheLogic {
       });
     });
 
-    TipLogic.updateTipsDB(tips);
-    RetipLogic.updateRetipsDB(tips);
+    lock.acquire('CacheLogic.UpdateTipsAndRetips', async () => {
+      await TipLogic.updateTipsDB(tips);
+      await RetipLogic.updateRetipsDB(tips);
+    });
 
     return tips;
   }

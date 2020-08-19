@@ -17,7 +17,7 @@ module.exports = (sequelize, DataTypes) => {
     timestamps: true,
   });
   Retip.belongsTo(Tip(sequelize, DataTypes), { foreignKey: 'tipId' });
-  Retip.addHook('afterCreate', async () => { await cache.del(['fetchStats']); });
-  Retip.addHook('afterUpdate', async () => { await cache.del(['fetchStats']); });
+  Retip.addHook('afterCreate', () => cache.del(['fetchStats']));
+  Retip.addHook('afterUpdate', () => cache.del(['fetchStats']));
   return Retip;
 };

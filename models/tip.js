@@ -27,7 +27,7 @@ module.exports = (sequelize, DataTypes) => {
   }, {
     timestamps: true,
   });
-  Tip.addHook('afterCreate', async () => { await cache.del(['fetchStats']); });
-  Tip.addHook('afterUpdate', async () => { await cache.del(['fetchStats']); });
+  Tip.addHook('afterCreate', () => cache.del(['fetchStats']));
+  Tip.addHook('afterUpdate', () => cache.del(['fetchStats']));
   return Tip;
 };

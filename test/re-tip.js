@@ -13,22 +13,24 @@ chai.should();
 
 describe('(Re)Tips', () => {
   describe('Invocations', () => {
-    it('should call updateTipsDB on cache renewal', async () => {
+    it('should call updateTipsDB on cache renewal', done => {
       const tipStub = sinon.stub(aeternity, 'getTips').callsFake(() => []);
-      const updateStub = sinon.stub(TipLogic, 'updateTipsDB').callsFake(() => Promise.resolve());
-      await CacheLogic.getTipsAndVerifyLocalInfo();
-      updateStub.callCount.should.equal(1);
-      updateStub.restore();
-      tipStub.restore();
+      const updateStub = sinon.stub(TipLogic, 'updateTipsDB').callsFake(() => {
+        tipStub.restore();
+        updateStub.restore();
+        done();
+      });
+      CacheLogic.getTipsAndVerifyLocalInfo();
     });
 
-    it('should call updateRetipsDB on cache renewal', async () => {
+    it('should call updateRetipsDB on cache renewal', done => {
       const tipStub = sinon.stub(aeternity, 'getTips').callsFake(() => []);
-      const updateStub = sinon.stub(RetipLogic, 'updateRetipsDB').callsFake(() => Promise.resolve());
-      await CacheLogic.getTipsAndVerifyLocalInfo();
-      updateStub.callCount.should.equal(1);
-      updateStub.restore();
-      tipStub.restore();
+      const updateRetipsStub = sinon.stub(RetipLogic, 'updateRetipsDB').callsFake(() => {
+        tipStub.restore();
+        updateRetipsStub.restore();
+        done();
+      });
+      CacheLogic.getTipsAndVerifyLocalInfo();
     });
   });
 

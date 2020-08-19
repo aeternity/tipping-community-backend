@@ -7,7 +7,7 @@ const CacheLogic = require('./cacheLogic');
 module.exports = class TipTracing {
   static async getAllTraces(req, res) {
     if (!req.query.id) return res.status(400).send('tip id parameter missing');
-    const tipId = parseInt(req.query.id, 10);
+    const tipId = req.query.id;
     const tip = await aeternity.getTips().then(ts => ts.find(t => t.id === tipId));
 
     const readFile = uuid => {
@@ -29,7 +29,7 @@ module.exports = class TipTracing {
 
   static async fetchBlockchainTrace(req, res) {
     if (!req.query.id) throw Error('tip id parameter missing');
-    const tipId = parseInt(req.query.id, 10);
+    const tipId = req.query.id;
 
     const tip = await aeternity.getTips().then(ts => ts.find(t => t.id === tipId));
     const tips = await aeternity.getTips().then(ts => ts.filter(t => t.url === tip.url));

@@ -172,7 +172,7 @@ module.exports = class CacheLogic {
 
   static async deliverTip(req, res) {
     const tips = await CacheLogic.getAllTips(false);
-    const result = tips.find(tip => tip.id === parseInt(req.query.id, 10));
+    const result = tips.find(tip => tip.id === req.query.id);
     return result ? res.send(result) : res.sendStatus(404);
   }
 

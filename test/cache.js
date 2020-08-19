@@ -244,7 +244,7 @@ describe('Cache', () => {
     });
 
     it('it should GET all cached events', function (done) {
-      this.timeout(5000);
+      this.timeout(25000);
       checkCachedRoute('/cache/events', 'array', done);
     });
 

@@ -8,6 +8,7 @@ const server = require('../server');
 const cache = require('../utils/cache');
 const CacheLogic = require('../logic/cacheLogic.js');
 const BlacklistLogic = require('../logic/blacklistLogic.js');
+const ae = require('../utils/aeternity');
 
 chai.should();
 chai.use(chaiHttp);
@@ -18,7 +19,9 @@ describe('Cache', () => {
     await cache.del(['getTips']);
     await cache.del(['fetchPrice']);
     await cache.del(['getChainNames']);
+    await cache.del(['fetchStats']);
     await cache.del(['oracleState']);
+    await ae.init();
   });
 
   const checkCachedRoute = (route, type, done) => {
@@ -213,6 +216,11 @@ describe('Cache', () => {
 
     it('it should GET all cached stats in less than 1000ms', function (done) {
       this.timeout(1000);
+      checkCachedRoute('/cache/stats', 'object', done);
+    });
+
+    it(`it should GET all cached stats in less than ${minimalTimeout}ms`, function (done) {
+      this.timeout(minimalTimeout);
       checkCachedRoute('/cache/stats', 'object', done);
     });
 

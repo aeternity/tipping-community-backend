@@ -2,8 +2,6 @@ const redis = require('redis');
 const { promisify } = require('util');
 const AsyncLock = require('async-lock');
 
-const Logger = require('./logger');
-
 if (!process.env.REDIS_URL) throw Error('REDIS_URL is not set');
 
 const client = redis.createClient(process.env.REDIS_URL);
@@ -13,7 +11,6 @@ const del = promisify(client.del).bind(client);
 const cacheKeys = promisify(client.keys).bind(client);
 
 const lock = new AsyncLock({ timeout: 30 * 1000 });
-const logger = new Logger('cache');
 
 const cache = {};
 cache.wsconnection = null;
@@ -26,7 +23,8 @@ cache.networkKey = '';
 cache.init = async aeternity => {
   aeternity.setCache(cache);
   cache.networkKey = await aeternity.networkId();
-  logger.log(`cache networkKey ${cache.networkKey}`);
+  // eslint-disable-next-line no-console
+  console.log(`cache networkKey ${cache.networkKey}`);
 };
 
 cache.setKeepHot = keepHotFunction => {
@@ -67,7 +65,8 @@ cache.getOrSet = async (keys, asyncFetchData, expire = null) => {
 
     return data;
   }).catch(e => {
-    logger.error(e);
+    // eslint-disable-next-line no-console
+    console.error(e);
     return asyncFetchData();
   });
 };
@@ -87,7 +86,8 @@ cache.delByPrefix = async prefixes => {
   // eslint-disable-next-line no-console
   console.log('      cache keys', `${prefix}*`);
   const rows = await cacheKeys(`${prefix}*`);
-  if (rows.length) logger.log('      cache delByPrefix', rows);
+  // eslint-disable-next-line no-console
+  if (rows.length) console.log('      cache delByPrefix', rows);
   await Promise.all(rows.map(key => del(key)));
 };
 

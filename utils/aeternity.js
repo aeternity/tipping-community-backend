@@ -61,11 +61,11 @@ class Aeternity {
   }
 
   async middlewareContractTransactions() {
-    const fetchOldContractTransactions = axios.get(`${MIDDLEWARE_URL}/middleware/contracts/transactions/address/${process.env.OLD_CONTRACT_ADDRESS}`)
+    const fetchOldContractTransactions = axios.get(`${MIDDLEWARE_URL}/middleware/contracts/transactions/address/${process.env.CONTRACT_V1_ADDRESS}`)
       .then(res => res.data.transactions
         .filter(tx => tx.tx.type === 'ContractCallTx'));
 
-    const fetchContractTransactions = axios.get(`${MIDDLEWARE_URL}/middleware/contracts/transactions/address/${process.env.CONTRACT_ADDRESS}`)
+    const fetchContractTransactions = axios.get(`${MIDDLEWARE_URL}/middleware/contracts/transactions/address/${process.env.CONTRACT_V2_ADDRESS}`)
       .then(res => res.data.transactions
         .filter(tx => tx.tx.type === 'ContractCallTx'));
 

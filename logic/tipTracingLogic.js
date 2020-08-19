@@ -30,7 +30,7 @@ module.exports = class TipTracing {
 
   static async fetchBlockchainTrace(req, res) {
     if (!req.query.id) throw Error('tip id parameter missing');
-    const tipId = parseInt(req.query.id, 10);
+    const tipId = req.query.id;
 
     const tip = await CacheLogic.getTips().then(ts => ts.find(t => t.id === tipId));
     const tips = await CacheLogic.getTips().then(ts => ts.filter(t => t.url === tip.url));

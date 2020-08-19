@@ -17,9 +17,10 @@ module.exports = class Blacklist {
     try {
       const { tipId } = req.body;
       if (!tipId) return res.status(400).send('Missing required field tipId');
+
+      const entry = await BlacklistEntry.create({ tipId });
       // Kill stats cache
       await cache.del(['StaticLogic.getStats']);
-      const entry = await BlacklistEntry.create({ tipId });
       return res.send(entry);
     } catch (e) {
       return res.status(500).send(e.message);
@@ -33,9 +34,9 @@ module.exports = class Blacklist {
       if (!author) return res.status(400).send('Missing required field author');
       let existingEntry = await BlacklistEntry.findOne({ where: { tipId }, raw: true });
       if (!existingEntry) {
+        existingEntry = await BlacklistEntry.create({ tipId, flagger: author, status: 'flagged' });
         // Kill stats cache
         await cache.del(['StaticLogic.getStats']);
-        existingEntry = await BlacklistEntry.create({ tipId, flagger: author, status: 'flagged' });
       }
       return res.send(existingEntry);
     } catch (e) {

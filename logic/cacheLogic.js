@@ -222,7 +222,6 @@ module.exports = class CacheLogic {
 
       tips = searchTips;
     }
-
     if (req.query.language) {
       const requestedLanguages = req.query.language.split('|');
       tips = tips.filter(tip => tip.preview && requestedLanguages.includes(tip.preview.lang)

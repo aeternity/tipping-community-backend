@@ -24,7 +24,8 @@ cache.networkKey = '';
 
 cache.init = async aeternity => {
   cache.networkKey = await aeternity.networkId();
-  logger.info(`cache networkKey ${cache.networkKey}`);
+  // eslint-disable-next-line no-console
+  console.info(`cache networkKey ${cache.networkKey}`);
 };
 
 cache.setKeepHot = keepHotFunction => {
@@ -59,7 +60,8 @@ cache.getOrSet = async (keys, asyncFetchData, expire = null) => {
 
     return data;
   }).catch(e => {
-    logger.error(e);
+    // eslint-disable-next-line no-console
+    console.error(e);
     return asyncFetchData();
   });
 };
@@ -78,7 +80,8 @@ cache.delByPrefix = async prefixes => {
   const prefix = buildKey(prefixes);
   logger.info(`cache keys ${prefix}*`);
   const rows = await cacheKeys(`${prefix}*`);
-  if (rows.length) logger.info(`cache delByPrefix ${rows}`);
+  // eslint-disable-next-line no-console
+  if (rows.length) console.info(`cache delByPrefix ${rows}`);
   await Promise.all(rows.map(key => del(key)));
 };
 

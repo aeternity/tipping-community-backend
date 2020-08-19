@@ -16,7 +16,6 @@ const { getTipTopics, topicsRegex } = require('../utils/tipTopicUtil');
 const Util = require('../utils/util');
 const { Profile } = require('../models');
 const Logger = require('../utils/logger');
-const StaticLogic = require('./staticLogic');
 
 const logger = new Logger('CacheLogic');
 
@@ -43,7 +42,6 @@ module.exports = class CacheLogic {
       await aeternity.getOracleState();
       await CacheLogic.findContractEvents();
       await CacheLogic.fetchStats();
-      await StaticLogic.getStats();
     };
 
     await cache.init(aeternity, keepHotFunction);

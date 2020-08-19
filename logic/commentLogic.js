@@ -1,6 +1,7 @@
 const aeternity = require('../utils/aeternity');
 const { Comment, Profile } = require('../models');
 const NotificationLogic = require('./notificationLogic');
+const cache = require('../utils/cache');
 const { NOTIFICATION_TYPES } = require('../models/enums/notification');
 
 module.exports = class CommentLogic {
@@ -23,6 +24,9 @@ module.exports = class CommentLogic {
       const entry = await Comment.create({
         tipId, text, author, signature, challenge, parentId,
       });
+
+      // Kill stats cache
+      await cache.del(['StaticLogic.getStats']);
 
       // Create notification
       await NotificationLogic.add[NOTIFICATION_TYPES.COMMENT_ON_TIP](relevantTip.sender, entry.id);

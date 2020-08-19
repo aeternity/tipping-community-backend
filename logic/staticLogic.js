@@ -42,7 +42,6 @@ module.exports = class StaticLogic {
         profiles: await StaticLogic.getStatsPerModel(Profile),
         blacklist: await StaticLogic.getStatsPerModel(BlacklistEntry),
       }),
-      cache.extraShortCacheTime,
     );
   }
 

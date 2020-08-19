@@ -4,6 +4,7 @@ const fs = require('fs');
 const Logger = require('../utils/logger');
 const BackupLogic = require('./backupLogic');
 const aeternity = require('../utils/aeternity.js');
+const cache = require('../utils/cache');
 const { Profile } = require('../models');
 const { IPFS_TYPES } = require('../models/enums/ipfs');
 
@@ -47,6 +48,8 @@ module.exports = class ProfileLogic {
           coverImage: coverImage ? coverImage[0].filename : null,
           location,
         });
+        // Kill stats cache
+        await cache.del(['StaticLogic.getStats']);
       }
       if (image && image[0].filename !== null) {
         await BackupLogic.backupImageToIPFS(`images/${image[0].filename}`, author, IPFS_TYPES.PROFILE_IMAGE);

@@ -59,14 +59,14 @@ module.exports = class CacheLogic {
       return contractTransactions.map(tx => tx.hash).asyncMap(hash => CacheLogic.findTransactionEvents(hash));
     });
 
-    return cache.getOrSet(['contractEvents'], async () => fetchContractEvents().catch(logger.error), cache.shortCacheTime);
+    return cache.getOrSet(['contractEvents'], async () => fetchContractEvents().catch(console.error), cache.shortCacheTime);
   }
 
   static async fetchPrice() {
     return cache.getOrSet(
       ['fetchPrice'],
       async () => axios.get('https://api.coingecko.com/api/v3/simple/price?ids=aeternity&vs_currencies=usd,eur,cny')
-        .then(res => res.data).catch(logger.error),
+        .then(res => res.data).catch(console.error),
       cache.longCacheTime,
     );
   }

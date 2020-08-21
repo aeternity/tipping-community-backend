@@ -224,7 +224,8 @@ class Aeternity {
       return true;
     };
 
-    return this.cache.getOrSet(['getCacheTokenAccounts', token], () => fetchBalances(), this.cache.longCacheTime);
+    // TODO optimize cache generation for account balances
+    return this.cache.getOrSet(['getCacheTokenAccounts', token], () => fetchBalances(), this.cache.shortCacheTime);
   }
 
   async checkPreClaimProperties(address, url, trace) {

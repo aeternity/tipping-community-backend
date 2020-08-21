@@ -12,6 +12,7 @@ const AsyncLock = require('async-lock');
 const lock = new AsyncLock();
 const {getTipTopics, topicsRegex} = require('../utils/tipTopicUtil');
 const Util = require('../utils/util');
+const TokenCacheLogic = require("./tokenCacheLogic");
 const {Profile} = require('../models');
 const Fuse = require('fuse.js');
 const lngDetector = new (require('languagedetect'));
@@ -44,9 +45,12 @@ module.exports = class CacheLogic {
       await CacheLogic.fetchPrice();
       await CacheLogic.getOracleState();
       await CacheLogic.findContractEvents();
+      await TokenCacheLogic.fetchTokenInfos();
     };
 
-    await cache.setKeepHot(keepHotFunction);
+    setTimeout(() => {
+      cache.setKeepHot(keepHotFunction);
+    }, 5000);
   }
 
   static async findTransactionEvents(hash) {

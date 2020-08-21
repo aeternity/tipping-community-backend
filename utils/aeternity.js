@@ -267,7 +267,8 @@ class Aeternity {
     if (!claimSuccess) {
       const fee = await this.oracleContract.methods.estimate_query_fee();
       trace.update({ state: TRACE_STATES.ESTIMATED_FEE, fee: fee.decodedResult });
-      await contract.pre_claim(url, address, { amount: fee.decodedResult });
+
+      await contract.methods.pre_claim(url, address, { amount: fee.decodedResult });
       trace.update({ state: TRACE_STATES.PRECLAIM_STARTED });
 
       return new Promise((resolve, reject) => {

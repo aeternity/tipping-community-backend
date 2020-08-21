@@ -51,14 +51,10 @@ module.exports = class CacheLogic {
     }, 5000);
   }
 
-  static async findTransactionEvents(hash) {
-    return cache.getOrSet(['transactionEvents', hash], () => aeternity.fetchTransactionEvents(hash));
-  }
-
   static async findContractEvents() {
     const fetchContractEvents = async () => lock.acquire('fetchContractEvents', async () => {
       const contractTransactions = await aeternity.middlewareContractTransactions();
-      return contractTransactions.map(tx => tx.hash).asyncMap(hash => CacheLogic.findTransactionEvents(hash));
+      return contractTransactions.asyncMap(tx => aeternity.decodeTransactionEvents(tx));
     });
 
     return cache.getOrSet(['contractEvents'], async () => fetchContractEvents().catch(logger.error), cache.shortCacheTime);
@@ -110,16 +106,15 @@ module.exports = class CacheLogic {
     return cache.getOrSet(['oracleState'], () => aeternity.fetchOracleState(), cache.shortCacheTime);
   }
 
-  static fetchChainNames() {
-    return cache.getOrSet(['getChainNames'], async () => {
+  static async fetchChainNames() {
+    return cache.getOrSet(['fetchChainNames'], async () => {
       const result = await aeternity.getChainNames();
       const allProfiles = await Profile.findAll({ raw: true });
 
       return result.reduce((acc, chainName) => {
-        if (!chainName.pointers) return acc;
+        if (!chainName.info.pointers || !chainName.info.pointers.account_pubkey) return acc;
 
-        const accountPubkeyPointer = chainName.pointers.find(pointer => pointer.key === 'account_pubkey');
-        const pubkey = accountPubkeyPointer ? accountPubkeyPointer.id : null;
+        const pubkey = chainName.info.pointers.account_pubkey;
         if (!pubkey) return acc;
 
         // already found a chain name
@@ -331,7 +326,7 @@ module.exports = class CacheLogic {
     let contractEvents = await CacheLogic.findContractEvents();
     if (req.query.address) contractEvents = contractEvents.filter(e => e.address === req.query.address);
     if (req.query.event) contractEvents = contractEvents.filter(e => e.event === req.query.event);
-    contractEvents.sort((a, b) => b.time - a.time);
+    contractEvents.sort((a, b) => b.time - a.time || b.nonce - a.nonce);
     if (req.query.limit) contractEvents = contractEvents.slice(0, parseInt(req.query.limit, 10));
     res.send(contractEvents);
   }

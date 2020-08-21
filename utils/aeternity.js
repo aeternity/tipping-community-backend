@@ -6,7 +6,7 @@ const BigNumber = require('bignumber.js');
 
 const { decodeEvents, SOPHIA_TYPES } = requireESM('@aeternity/aepp-sdk/es/contract/aci/transformation');
 
-const MIDDLEWARE_URL = process.env.MIDDLEWARE_URL || 'https://mainnet.aeternity.io';
+const MIDDLEWARE_URL = process.env.MIDDLEWARE_URL || 'https://mainnet.aeternity.io/mdw/';
 const TIPPING_V1_INTERFACE = require('tipping-contract/Tipping_v1_Interface.aes');
 const TIPPING_V2_INTERFACE = require('tipping-contract/Tipping_v2_Interface.aes');
 const ORACLE_SERVICE_INTERFACE = require('tipping-oracle-service/OracleServiceInterface.aes');
@@ -61,26 +61,29 @@ class Aeternity {
     return (await this.client.getNodeInfo()).nodeNetworkId;
   }
 
+  async iterateMdw(next) {
+    const result = await axios.get(`${MIDDLEWARE_URL}/${next}`).then(res => res.data);
+    if (result.next) {
+      return result.data.concat(await this.iterateMdw(result.next));
+    }
+    return result.data;
+  }
+
   async middlewareContractTransactions() {
-    const oldContractTransactionsPromise = axios.get(`${MIDDLEWARE_URL}/middleware/contracts/transactions/address/${process.env.CONTRACT_V1_ADDRESS}`)
-      .then(res => res.data.transactions
-        .filter(tx => tx.tx.type === 'ContractCallTx'));
-
+    const oldContractTransactionsPromise = this.iterateMdw(
+      `txs/backward/and?contract=${process.env.CONTRACT_V1_ADDRESS}&type=contract_call&limit=1000`,
+    );
     if (process.env.CONTRACT_V2_ADDRESS) {
-      const contractTransactionsPromise = axios.get(`${MIDDLEWARE_URL}/middleware/contracts/transactions/address/${process.env.CONTRACT_V2_ADDRESS}`)
-        .then(res => res.data.transactions
-          .filter(tx => tx.tx.type === 'ContractCallTx'));
-
+      const contractTransactionsPromise = this.iterateMdw(
+        `txs/backward/and?contract=${process.env.CONTRACT_V2_ADDRESS}&type=contract_call&limit=1000`,
+      );
       return Promise.all([oldContractTransactionsPromise, contractTransactionsPromise])
         .then(([oldContractTransactions, contractTransactions]) => oldContractTransactions.concat(contractTransactions));
     }
     return oldContractTransactionsPromise;
   }
 
-  async fetchTransactionEvents(hash) {
-    const tx = await this.client.tx(hash);
-    const microBlock = await this.client.getMicroBlockHeader(tx.blockHash);
-
+  async decodeTransactionEvents(data) {
     const eventsSchema = [
       { name: 'TipReceived', types: [SOPHIA_TYPES.address, SOPHIA_TYPES.int, SOPHIA_TYPES.string] },
       {
@@ -99,17 +102,17 @@ class Aeternity {
       { name: 'Allowance', types: [SOPHIA_TYPES.address, SOPHIA_TYPES.address, SOPHIA_TYPES.int] },
     ];
 
-    const decodedEvents = decodeEvents(tx.log, { schema: eventsSchema });
+    const decodedEvents = decodeEvents(data.tx.log, { schema: eventsSchema });
 
     return decodedEvents.map(decodedEvent => {
       const event = {
         event: decodedEvent.name,
-        caller: tx.tx.callerId,
-        nonce: tx.tx.nonce,
-        height: tx.height,
-        hash: tx.hash,
-        time: microBlock.time,
-        contract: tx.contractId,
+        caller: data.tx.caller_id,
+        nonce: data.tx.nonce,
+        height: data.block_height,
+        hash: data.hash,
+        time: data.micro_time,
+        contract: data.tx.contract_id,
       };
       switch (decodedEvent.name) {
         case 'Transfer':
@@ -295,7 +298,7 @@ class Aeternity {
   }
 
   async getChainNames() {
-    return axios.get(`${MIDDLEWARE_URL}/middleware/names/active`).then(res => res.data).catch(logger.error);
+    return this.iterateMdw('names/active?limit=1000').catch(logger.error);
   }
 
   async getAddressForChainName(name) {

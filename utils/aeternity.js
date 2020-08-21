@@ -297,8 +297,8 @@ class Aeternity {
   }
 
   async claimTips(address, url, trace) {
-    await this.claimTipsOnContract(address, url, trace, this.contractV1)
-    await this.claimTipsOnContract(address, url, trace, this.contractV2)
+    await this.claimTipsOnContract(address, url, trace, this.contractV1).catch(console.error)
+    await this.claimTipsOnContract(address, url, trace, this.contractV2).catch(console.error)
   }
 
   async claimTipsOnContract(address, url, trace, contract) {

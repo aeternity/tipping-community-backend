@@ -22,6 +22,7 @@ module.exports = class TokenCacheLogic {
 
     try {
       await aeternity.getTokenMetaInfoCacheAccounts(req.body.address);
+      TokenCacheLogic.fetchTokenInfos();
       return res.send('OK');
     } catch (e) {
       return res.status(500).send(e.message);

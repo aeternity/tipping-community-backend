@@ -12,6 +12,7 @@ const AsyncTipGeneratorsLogic = require('./asyncTipGeneratorsLogic');
 const cache = require('../utils/cache');
 const { getTipTopics, topicsRegex } = require('../utils/tipTopicUtil');
 const Util = require('../utils/util');
+const TokenCacheLogic = require("./tokenCacheLogic");
 const { Profile } = require('../models');
 
 const searchOptions = {
@@ -33,9 +34,12 @@ module.exports = class CacheLogic {
       await CacheLogic.fetchPrice();
       await aeternity.getOracleState();
       await CacheLogic.findContractEvents();
+      await TokenCacheLogic.fetchTokenInfos();
     };
 
-    await cache.setKeepHot(keepHotFunction);
+    setTimeout(() => {
+      cache.setKeepHot(keepHotFunction);
+    }, 5000);
   }
 
   static async findContractEvents() {

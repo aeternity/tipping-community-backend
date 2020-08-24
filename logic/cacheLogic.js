@@ -173,6 +173,7 @@ module.exports = class CacheLogic {
 
   static async invalidateTips(req, res) {
     await cache.del(['getTips']);
+    await cache.del(['fetchStats']);
     aeternity.getTips(); // just trigger cache update, so follow up requests may have it cached already
     if (res) res.send({ status: 'OK' });
   }

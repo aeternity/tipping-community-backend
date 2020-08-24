@@ -324,7 +324,7 @@ module.exports = class CacheLogic {
         ...CacheLogic.statsForTips(tips),
         by_url: statsByUrl,
       };
-    });
+    }, cache.longCacheTime);
   }
 
   static async deliverStats(req, res) {

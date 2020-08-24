@@ -42,10 +42,6 @@ class Aeternity {
     }
   }
 
-  setCache(cache) {
-    this.cache = cache;
-  }
-
   async networkId() {
     return (await this.client.getNodeInfo()).nodeNetworkId;
   }
@@ -56,59 +52,42 @@ class Aeternity {
         .filter(tx => tx.tx.type === 'ContractCallTx'));
   }
 
-  async transactionEvents(hash) {
-    const fetchTransactionEvents = async () => {
-      const tx = await this.client.tx(hash);
-      const microBlock = await this.client.getMicroBlockHeader(tx.blockHash);
+  async fetchTransactionEvents(hash) {
+    const tx = await this.client.tx(hash);
+    const microBlock = await this.client.getMicroBlockHeader(tx.blockHash);
 
-      const eventsSchema = [
-        { name: 'TipReceived', types: [SOPHIA_TYPES.address, SOPHIA_TYPES.int, SOPHIA_TYPES.string] },
-        { name: 'ReTipReceived', types: [SOPHIA_TYPES.address, SOPHIA_TYPES.int, SOPHIA_TYPES.string] },
-        { name: 'TipWithdrawn', types: [SOPHIA_TYPES.address, SOPHIA_TYPES.int, SOPHIA_TYPES.string] },
-        { name: 'QueryOracle', types: [SOPHIA_TYPES.string, SOPHIA_TYPES.address] },
-        { name: 'CheckPersistClaim', types: [SOPHIA_TYPES.string, SOPHIA_TYPES.address, SOPHIA_TYPES.int] },
-      ];
+    const eventsSchema = [
+      { name: 'TipReceived', types: [SOPHIA_TYPES.address, SOPHIA_TYPES.int, SOPHIA_TYPES.string] },
+      { name: 'ReTipReceived', types: [SOPHIA_TYPES.address, SOPHIA_TYPES.int, SOPHIA_TYPES.string] },
+      { name: 'TipWithdrawn', types: [SOPHIA_TYPES.address, SOPHIA_TYPES.int, SOPHIA_TYPES.string] },
+      { name: 'QueryOracle', types: [SOPHIA_TYPES.string, SOPHIA_TYPES.address] },
+      { name: 'CheckPersistClaim', types: [SOPHIA_TYPES.string, SOPHIA_TYPES.address, SOPHIA_TYPES.int] },
+    ];
 
-      const decodedEvents = decodeEvents(tx.log, { schema: eventsSchema });
+    const decodedEvents = decodeEvents(tx.log, { schema: eventsSchema });
 
-      return decodedEvents.map(decodedEvent => ({
-        event: decodedEvent.name,
-        address: `ak_${decodedEvent.decoded[1]}`,
-        amount: decodedEvent.decoded[2] ? decodedEvent.decoded[2] : null,
-        url: decodedEvent.decoded[0],
-        caller: tx.tx.callerId,
-        nonce: tx.tx.nonce,
-        height: tx.height,
-        hash: tx.hash,
-        time: microBlock.time,
-      }));
-    };
-
-    return this.cache
-      ? this.cache.getOrSet(['transactionEvents', hash], () => fetchTransactionEvents())
-      : fetchTransactionEvents();
+    return decodedEvents.map(decodedEvent => ({
+      event: decodedEvent.name,
+      address: `ak_${decodedEvent.decoded[1]}`,
+      amount: decodedEvent.decoded[2] ? decodedEvent.decoded[2] : null,
+      url: decodedEvent.decoded[0],
+      caller: tx.tx.callerId,
+      nonce: tx.tx.nonce,
+      height: tx.height,
+      hash: tx.hash,
+      time: microBlock.time,
+    }));
   }
 
-  async getOracleState() {
+  async fetchOracleState() {
     if (!this.client) throw new Error('Init sdk first');
-
-    const fetchOracleState = () => this.oracleContract.methods.get_state().then(res => res.decodedResult);
-
-    return this.cache
-      ? this.cache.getOrSet(['oracleState'], () => fetchOracleState(), this.cache.shortCacheTime)
-      : fetchOracleState();
+    return this.oracleContract.methods.get_state().then(res => res.decodedResult);
   }
 
-  async getTips() {
+  async fetchTips() {
     if (!this.client) throw new Error('Init sdk first');
-    const fetchTips = async () => {
-      const state = await this.contract.methods.get_state();
-      return this.getTipsRetips(state.decodedResult);
-    };
-
-    return this.cache
-      ? this.cache.getOrSet(['getTips'], () => fetchTips(), this.cache.shortCacheTime)
-      : fetchTips();
+    const state = await this.contract.methods.get_state();
+    return this.getTipsRetips(state.decodedResult);
   }
 
   getContractSource() {

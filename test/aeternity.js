@@ -29,7 +29,7 @@ describe('Aeternity', () => {
 
   it('it should get the oracle state', async function () {
     this.timeout(30000);
-    const result = await ae.getOracleState();
+    const result = await ae.fetchOracleState();
     result.should.be.an('object');
     result.should.have.property('minimum_amount_of_oracles');
     result.should.have.property('oracle_queries');
@@ -41,7 +41,7 @@ describe('Aeternity', () => {
 
   it('it should get the tips', async function () {
     this.timeout(10000);
-    const result = await ae.getTips();
+    const result = await ae.fetchTips();
     result.should.be.an('array');
     if (result.length > 0) {
       const firstEntry = result[0];

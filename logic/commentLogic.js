@@ -1,7 +1,7 @@
-const aeternity = require('../utils/aeternity');
 const { Comment, Profile } = require('../models');
 const NotificationLogic = require('./notificationLogic');
 const cache = require('../utils/cache');
+const TipLogic = require('./tipLogic');
 const { NOTIFICATION_TYPES } = require('../models/enums/notification');
 
 module.exports = class CommentLogic {
@@ -19,7 +19,7 @@ module.exports = class CommentLogic {
         return res.status(400).send(`Could not find parent comment with id ${parentId}`);
       }
 
-      const relevantTip = (await aeternity.getTips()).find(({ id }) => String(id) === tipId);
+      const relevantTip = await TipLogic.getOne(tipId);
       if (!relevantTip) return res.status(400).send(`Could not find tip with id ${tipId}`);
 
       const entry = await Comment.create({

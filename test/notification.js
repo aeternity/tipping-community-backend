@@ -6,6 +6,7 @@ const { describe, it } = require('mocha');
 const server = require('../server');
 const RetipLogic = require('../logic/retipLogic');
 const TipLogic = require('../logic/tipLogic');
+const { ignoreTipsBefore } = require('../config/config');
 const { publicKey, performSignedGETRequest, performSignedJSONRequest } = require('../utils/testingUtil');
 const {
   Notification, Comment, Tip, Retip,
@@ -57,7 +58,40 @@ describe('Notifications', () => {
       }, { raw: true });
     });
 
+    it('it should not create notifications for TIP_ON_COMMENT if the tip is old', async () => {
+      const fakeData = [
+        {
+          sender: 'ak_tip',
+          title: '#test tip',
+          id: 1,
+          url: `https://superhero.com/tip/1/comment/${createdComment.id}`,
+          retips: [],
+          claim: {
+            unclaimed: true,
+          },
+          timestamp: ignoreTipsBefore - 86400 * 1000,
+        },
+      ];
+
+      await TipLogic.updateTipsDB(fakeData);
+      await RetipLogic.updateRetipsDB(fakeData);
+
+      const emptyArray = await Notification.findAll({
+        where: {
+          type: NOTIFICATION_TYPES.TIP_ON_COMMENT,
+        },
+        raw: true,
+      });
+      emptyArray.should.have.length(0);
+    });
+
     it('it should create notifications for TIP_ON_COMMENT', async () => {
+      // Clear DB so retip appears again as new
+      await Tip.destroy({
+        where: {},
+        truncate: true,
+      });
+
       const fakeData = [
         {
           sender: 'ak_tip',
@@ -68,6 +102,7 @@ describe('Notifications', () => {
           claim: {
             unclaimed: true,
           },
+          timestamp: ignoreTipsBefore + 86400 * 1000,
         },
       ];
 
@@ -103,7 +138,7 @@ describe('Notifications', () => {
           retips: [{
             id: '1',
             sender: 'ak_retip',
-            timestamp: (new Date(2020, 5, 1)).getTime(),
+            timestamp: ignoreTipsBefore - 86400 * 1000,
             claim: {
               unclaimed: true,
             },
@@ -147,7 +182,7 @@ describe('Notifications', () => {
           retips: [{
             id: '1',
             sender: 'ak_retip',
-            timestamp: (new Date(2020, 8, 1)).getTime(),
+            timestamp: ignoreTipsBefore + 86400 * 1000,
             claim: {
               unclaimed: true,
             },
@@ -190,6 +225,7 @@ describe('Notifications', () => {
         id: '1',
         language: null,
         unclaimed: true,
+        sender: 'ak_tip',
       });
 
       const fakeData = [
@@ -248,12 +284,14 @@ describe('Notifications', () => {
         id: '1',
         language: null,
         unclaimed: true,
+        sender: 'ak_tip',
       });
 
       await Retip.create({
         id: '1',
         tipId: '1',
         unclaimed: true,
+        sender: 'ak_retip',
       });
 
       const fakeData = [

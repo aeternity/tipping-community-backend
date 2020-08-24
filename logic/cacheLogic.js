@@ -37,20 +37,24 @@ module.exports = class CacheLogic {
     await CacheLogic.fetchStats();
 
     const keepHotFunction = async () => {
-      await CacheLogic.getTipsAndVerifyLocalInfo();
+      await CacheLogic.getTips();
       await CacheLogic.fetchChainNames();
       await CacheLogic.fetchPrice();
-      await aeternity.getOracleState();
+      await CacheLogic.getOracleState();
       await CacheLogic.findContractEvents();
     };
 
     await cache.init(aeternity, keepHotFunction);
   }
 
+  static async findTransactionEvents(hash) {
+    return cache.getOrSet(['transactionEvents', hash], () => aeternity.fetchTransactionEvents(hash));
+  }
+
   static async findContractEvents() {
     const fetchContractEvents = async () => lock.acquire('fetchContractEvents', async () => {
       const contractTransactions = await aeternity.middlewareContractTransactions();
-      return contractTransactions.map(tx => tx.hash).asyncMap(hash => aeternity.transactionEvents(hash));
+      return contractTransactions.map(tx => tx.hash).asyncMap(hash => CacheLogic.findTransactionEvents(hash));
     });
 
     return cache.getOrSet(['contractEvents'], async () => fetchContractEvents().catch(Logger.error), cache.shortCacheTime);
@@ -65,28 +69,36 @@ module.exports = class CacheLogic {
     );
   }
 
-  static async getTipsAndVerifyLocalInfo() {
-    const tips = await aeternity.getTips();
+  static async getTips() {
+    return cache.getOrSet(['getTips'], async () => {
+      const tips = await aeternity.fetchTips();
+      // Renew Stats
+      await cache.del(['fetchStats']);
 
-    // not await on purpose, just trigger background preview fetch
-    lock.acquire('LinkPreviewLogic.fetchAllLinkPreviews', async () => {
-      const previews = await LinkPreviewLogic.fetchAllLinkPreviews();
-      const tipUrls = [...new Set(tips.map(tip => tip.url))];
-      const previewUrls = [...new Set(previews.map(preview => preview.requestUrl))];
+      // not await on purpose, just trigger background preview fetch
+      lock.acquire('LinkPreviewLogic.fetchAllLinkPreviews', async () => {
+        const previews = await LinkPreviewLogic.fetchAllLinkPreviews();
+        const tipUrls = [...new Set(tips.map(tip => tip.url))];
+        const previewUrls = [...new Set(previews.map(preview => preview.requestUrl))];
 
-      const difference = tipUrls.filter(url => !previewUrls.includes(url));
+        const difference = tipUrls.filter(url => !previewUrls.includes(url));
 
-      await difference.asyncMap(async url => {
-        await LinkPreviewLogic.generatePreview(url).catch(Logger.error);
+        await difference.asyncMap(async url => {
+          await LinkPreviewLogic.generatePreview(url).catch(Logger.error);
+        });
       });
-    });
 
-    lock.acquire('CacheLogic.UpdateTipsAndRetips', async () => {
-      await TipLogic.updateTipsDB(tips);
-      await RetipLogic.updateRetipsDB(tips);
-    });
+      lock.acquire('CacheLogic.UpdateTipsAndRetips', async () => {
+        await TipLogic.updateTipsDB(tips);
+        await RetipLogic.updateRetipsDB(tips);
+      });
 
-    return tips;
+      return tips;
+    }, cache.shortCacheTime);
+  }
+
+  static async getOracleState() {
+    return cache.getOrSet(['oracleState'], () => aeternity.fetchOracleState(), cache.shortCacheTime);
   }
 
   static fetchChainNames() {
@@ -123,7 +135,7 @@ module.exports = class CacheLogic {
 
   static async getAllTips(blacklist = true) {
     const [allTips, tipsPreview, chainNames, commentCounts, blacklistedIds, localTips] = await Promise.all([
-      CacheLogic.getTipsAndVerifyLocalInfo(), LinkPreviewLogic.fetchAllLinkPreviews(), CacheLogic.fetchChainNames(),
+      CacheLogic.getTips(), LinkPreviewLogic.fetchAllLinkPreviews(), CacheLogic.fetchChainNames(),
       CommentLogic.fetchCommentCountForTips(), BlacklistLogic.getBlacklistedIds(), TipLogic.fetchAllLocalTips(),
     ]);
 
@@ -171,14 +183,13 @@ module.exports = class CacheLogic {
 
   static async invalidateTips(req, res) {
     await cache.del(['getTips']);
-    await cache.del(['fetchStats']);
-    aeternity.getTips(); // just trigger cache update, so follow up requests may have it cached already
+    CacheLogic.getTips(); // just trigger cache update, so follow up requests may have it cached already
     if (res) res.send({ status: 'OK' });
   }
 
   static async invalidateOracle(req, res) {
     await cache.del(['oracleState']);
-    aeternity.getOracleState(); // just trigger cache update, so follow up requests may have it cached already
+    CacheLogic.getOracleState(); // just trigger cache update, so follow up requests may have it cached already
     if (res) res.send({ status: 'OK' });
   }
 
@@ -269,7 +280,7 @@ module.exports = class CacheLogic {
   }
 
   static async deliverUserStats(req, res) {
-    const oracleState = await aeternity.getOracleState();
+    const oracleState = await CacheLogic.getOracleState();
     const allTips = await CacheLogic.getAllTips();
     const userTips = allTips.filter(tip => tip.sender === req.query.address);
 
@@ -310,7 +321,7 @@ module.exports = class CacheLogic {
 
   static async fetchStats() {
     return cache.getOrSet(['fetchStats'], async () => {
-      const tips = await aeternity.getTips();
+      const tips = await CacheLogic.getTips();
 
       const groupedByUrl = Util.groupBy(tips, 'url');
       const statsByUrl = Object.keys(groupedByUrl).map(url => ({
@@ -349,7 +360,7 @@ module.exports = class CacheLogic {
   }
 
   static async deliverOracleState(req, res) {
-    res.send(await aeternity.getOracleState());
+    res.send(await CacheLogic.getOracleState());
   }
 
   static async deliverTipTopics(req, res) {

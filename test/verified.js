@@ -5,7 +5,7 @@ const sinon = require('sinon');
 const { describe, it } = require('mocha');
 
 const server = require('../server');
-const ae = require('../utils/aeternity.js');
+const CacheLogic = require('../logic/cacheLogic');
 
 chai.should();
 chai.use(chaiHttp);
@@ -13,7 +13,7 @@ chai.use(chaiHttp);
 describe('Verified', () => {
   describe('Verified API', () => {
     it('it should GET all the verified entries', done => {
-      const stub = sinon.stub(ae, 'getTips').callsFake(() => [
+      const stub = sinon.stub(CacheLogic, 'getTips').callsFake(() => [
         {
           url: 'https://www.test.domain.com',
           claim: {

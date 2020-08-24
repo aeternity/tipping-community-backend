@@ -4,7 +4,9 @@ const chaiHttp = require('chai-http');
 const { describe, it, before } = require('mocha');
 
 const server = require('../server');
-const { Comment, sequelize, Notification } = require('../models');
+const {
+  Comment, sequelize, Notification, Tip, Retip,
+} = require('../models');
 const { ENTITY_TYPES, NOTIFICATION_TYPES } = require('../models/enums/notification');
 const { publicKey, performSignedJSONRequest, shouldBeValidChallengeResponse } = require('../utils/testingUtil');
 const aeternity = require('../utils/aeternity');
@@ -41,6 +43,22 @@ describe('Comments', () => {
       where: {},
       truncate: true,
     });
+
+    await Retip.destroy({
+      where: {},
+      truncate: true,
+    });
+
+    await Tip.destroy({
+      where: {},
+      truncate: true,
+    });
+
+    await Tip.create({
+      id: testData.tipId,
+      sender: testData.author,
+    });
+
     await aeternity.init();
   });
 
@@ -101,7 +119,7 @@ describe('Comments', () => {
             type: NOTIFICATION_TYPES.COMMENT_ON_TIP,
             entityType: ENTITY_TYPES.COMMENT,
             entityId: String(commentId),
-            receiver: 'ak_y87WkN4C4QevzjTuEYHg6XLqiWx3rjfYDFLBmZiqiro5mkRag',
+            receiver: testData.author,
           },
           raw: true,
         }).then(notification => {
@@ -268,7 +286,7 @@ describe('Comments', () => {
               type: NOTIFICATION_TYPES.COMMENT_ON_TIP,
               entityType: ENTITY_TYPES.COMMENT,
               entityId: String(commentId),
-              receiver: 'ak_y87WkN4C4QevzjTuEYHg6XLqiWx3rjfYDFLBmZiqiro5mkRag',
+              receiver: testData.author,
             },
             raw: true,
           }).then(notification => {

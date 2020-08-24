@@ -8,7 +8,8 @@ module.exports = class TipTracing {
   static async getAllTraces(req, res) {
     if (!req.query.id) return res.status(400).send('tip id parameter missing');
     const tipId = req.query.id;
-    const tip = await aeternity.getTips().then(ts => ts.find(t => t.id === tipId));
+    const tip = await CacheLogic.getTips().then(ts => ts.find(t => t.id === tipId));
+    if (!tip) return res.status(404).send('tip not found');
 
     const readFile = uuid => {
       const traceFolder = path.resolve('./traces/');
@@ -31,14 +32,16 @@ module.exports = class TipTracing {
     if (!req.query.id) throw Error('tip id parameter missing');
     const tipId = parseInt(req.query.id, 10);
 
-    const tip = await aeternity.getTips().then(ts => ts.find(t => t.id === tipId));
-    const tips = await aeternity.getTips().then(ts => ts.filter(t => t.url === tip.url));
+    const tip = await CacheLogic.getTips().then(ts => ts.find(t => t.id === tipId));
+    const tips = await CacheLogic.getTips().then(ts => ts.filter(t => t.url === tip.url));
     const urlStats = CacheLogic.statsForTips(tips);
 
-    const oracle = await aeternity.oracleContract.methods.get_state().then(x => x.decodedResult);
+    // Deliberately not cached
+    const oracle = await aeternity.fetchOracleState();
     const oracleClaim = oracle.success_claimed_urls.find(([url]) => url === tip.url);
     const unsafeCheckOracleAnswers = await aeternity.oracleContract.methods.unsafe_check_oracle_answers(tip.url).then(x => x.decodedResult);
 
+    // Deliberately not cached
     const contractTransactions = await aeternity.middlewareContractTransactions();
     const events = await contractTransactions.map(tx => tx.hash)
       .asyncMap(hash => aeternity.transactionEvents(hash))

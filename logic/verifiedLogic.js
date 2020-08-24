@@ -1,10 +1,10 @@
-const ae = require('../utils/aeternity.js');
+const CacheLogic = require('./cacheLogic.js');
 const Logger = require('../utils/logger');
 
 module.exports = class Verified {
   static async getAllClaimedEvents(req, res) {
     try {
-      const tips = await ae.getTips();
+      const tips = await CacheLogic.getTips();
       const allClaimedDomains = [
         ...(new Set(tips
           .filter(({ claim }) => !claim.unclaimed)

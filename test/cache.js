@@ -8,7 +8,7 @@ const server = require('../server');
 const cache = require('../utils/cache');
 const CacheLogic = require('../logic/cacheLogic.js');
 const BlacklistLogic = require('../logic/blacklistLogic.js');
-const ae = require('../utils/aeternity');
+const aeternity = require('../utils/aeternity');
 
 chai.should();
 chai.use(chaiHttp);
@@ -21,7 +21,7 @@ describe('Cache', () => {
     await cache.del(['getChainNames']);
     await cache.del(['fetchStats']);
     await cache.del(['oracleState']);
-    await ae.init();
+    await aeternity.init();
   });
 
   const checkCachedRoute = (route, type, done) => {
@@ -175,16 +175,6 @@ describe('Cache', () => {
       });
     });
 
-    it('it should GET a flagged / blacklisted tip', done => {
-      const stub = sinon.stub(BlacklistLogic, 'getBlacklistedIds').callsFake(() => [0]);
-      chai.request(server).get('/cache/tips').end((err, res) => {
-        res.should.have.status(200);
-        stub.callCount.should.eql(1);
-        stub.restore();
-        done();
-      });
-    });
-
     it('it should not GET a flagged / blacklisted tip when requesting the full list', done => {
       const stub = sinon.stub(BlacklistLogic, 'getBlacklistedIds').callsFake(() => [0]);
       chai.request(server).get('/cache/tips').end((err, res) => {
@@ -212,16 +202,6 @@ describe('Cache', () => {
     it(`it should GET all user stats for a single user in less than ${minimalTimeout}ms`, function (done) {
       this.timeout(minimalTimeout);
       checkCachedRoute('/cache/userStats?address=ak_fUq2NesPXcYZ1CcqBcGC3StpdnQw3iVxMA3YSeCNAwfN4myQk', 'object', done);
-    });
-
-    it('it should GET all cached stats in less than 1000ms', function (done) {
-      this.timeout(1000);
-      checkCachedRoute('/cache/stats', 'object', done);
-    });
-
-    it(`it should GET all cached stats in less than ${minimalTimeout}ms`, function (done) {
-      this.timeout(minimalTimeout);
-      checkCachedRoute('/cache/stats', 'object', done);
     });
 
     it(`it should GET all chainnames cache items in less than ${minimalTimeout}ms`, function (done) {
@@ -263,6 +243,86 @@ describe('Cache', () => {
 
     it('it should invalidate the events cache', done => {
       checkCachedRoute('/cache/invalidate/events', 'object', done);
+    });
+
+    it('it should GET all cached stats', async () => {
+      await cache.del(['fetchStats']);
+      const stub = sinon.stub(CacheLogic, 'getTips').callsFake(() => [
+        {
+          amount: '1000000000000000000',
+          claim_gen: 1,
+          sender: 'ak_tip1',
+          url_id: 0,
+          id: 0,
+          url: 'url1',
+          retips: [],
+          claim: { unclaimed: false, claim_gen: 2, unclaimed_amount: 0 },
+          amount_ae: '1',
+          retip_amount_ae: '0',
+          total_amount: '1',
+          total_unclaimed_amount: '0',
+          total_claimed_amount: '1',
+        },
+        {
+          amount: '1000000000000000000',
+          claim_gen: 2,
+          sender: 'ak_tip2',
+          timestamp: 1589530325248,
+          title: '#test',
+          url_id: 0,
+          id: 0,
+          url: 'https://github.com/thepiwo',
+          topics: ['#test'],
+          retips: [{
+            amount: '1000000000000000000',
+            claim_gen: 2,
+            sender: 'ak_retip1',
+            tip_id: 0,
+            id: 0,
+            claim: { unclaimed: true, claim_gen: 2, unclaimed_amount: 1 },
+            amount_ae: '1',
+          }],
+          claim: { unclaimed: true, claim_gen: 2, unclaimed_amount: 1 },
+          amount_ae: '1',
+          retip_amount_ae: '1',
+          total_amount: '2',
+          total_unclaimed_amount: '1',
+          total_claimed_amount: '1',
+        },
+      ]);
+      const res = await chai.request(server).get('/cache/stats');
+      stub.restore();
+      res.should.have.status(200);
+
+      res.body.should.have.property('tips_length', 2);
+      res.body.should.have.property('retips_length', 1);
+      res.body.should.have.property('total_tips_length', 3);
+      res.body.should.have.property('total_amount', '3');
+      res.body.should.have.property('total_unclaimed_amount', '1');
+      res.body.should.have.property('senders');
+      res.body.senders.should.eql(['ak_tip1', 'ak_tip2', 'ak_retip1']);
+      res.body.should.have.property('senders_length', 3);
+      res.body.should.have.property('by_url');
+      res.body.by_url.should.be.an('Array');
+      res.body.by_url.should.have.length(2);
+    });
+
+    it(`it should GET all cached stats in less than ${minimalTimeout}ms`, function (done) {
+      this.timeout(minimalTimeout);
+      checkCachedRoute('/cache/stats', 'object', done);
+    });
+
+    it('it should update the stats when the tip cache is invalidated', async () => {
+      await cache.del(['getTips']);
+      const stub = sinon.stub(CacheLogic, 'statsForTips').callsFake(() => []);
+      // Fake keep hot
+      await CacheLogic.getTips();
+      // Request stats
+      const res = await chai.request(server).get('/cache/stats');
+      res.should.have.status(200);
+
+      stub.called.should.equal(true);
+      stub.restore();
     });
   });
 });

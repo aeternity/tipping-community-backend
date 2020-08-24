@@ -2,6 +2,7 @@ const {
   Notification, Comment, Retip, Tip,
 } = require('../models');
 const { NOTIFICATION_TYPES, ENTITY_TYPES, NOTIFICATION_STATES } = require('../models/enums/notification');
+const { ignoreTipsBefore } = require('../config/config.js');
 
 module.exports = class NotificationLogic {
   static async sendTypes(req, res) {
@@ -72,8 +73,9 @@ module.exports = class NotificationLogic {
 
   static async handleNewTip(tip) {
     // TIP ON COMMENT
+    // Do not create notifications for rather old tips
     const commentMatch = tip.url.match(/https:\/\/superhero\.com\/tip\/(\d+)\/comment\/(\d+)/);
-    if (commentMatch) {
+    if (commentMatch && tip.timestamp > ignoreTipsBefore) {
       const commentId = commentMatch[2];
       const comment = await Comment.findOne({ where: { id: commentId }, raw: true });
       await NotificationLogic.add[NOTIFICATION_TYPES.TIP_ON_COMMENT](comment.author, tip.id);
@@ -83,8 +85,7 @@ module.exports = class NotificationLogic {
   static async handleNewRetip(retip) {
     // RETIP ON TIP
     // Do not create notifications for rather old retips
-    // 2020, 6, 24 === 24.07.2020
-    if (retip.timestamp > (new Date(2020, 6, 24)).getTime()) {
+    if (retip.timestamp > ignoreTipsBefore) {
       await NotificationLogic.add[NOTIFICATION_TYPES.RETIP_ON_TIP](retip.parentTip.sender, retip.parentTip.id);
     }
   }

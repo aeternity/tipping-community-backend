@@ -6,6 +6,7 @@ const aeternity = require('../utils/aeternity');
 const CacheLogic = require('../logic/cacheLogic.js');
 const TipLogic = require('../logic/tipLogic.js');
 const RetipLogic = require('../logic/retipLogic.js');
+const cache = require('../utils/cache');
 const { TIP_TYPES } = require('../models/enums/tip');
 const { Tip, Retip } = require('../models');
 
@@ -14,23 +15,25 @@ chai.should();
 describe('(Re)Tips', () => {
   describe('Invocations', () => {
     it('should call updateTipsDB on cache renewal', done => {
-      const tipStub = sinon.stub(aeternity, 'getTips').callsFake(() => []);
+      cache.del(['getTips']);
+      const tipStub = sinon.stub(aeternity, 'fetchTips').callsFake(() => []);
       const updateStub = sinon.stub(TipLogic, 'updateTipsDB').callsFake(() => {
         tipStub.restore();
         updateStub.restore();
         done();
       });
-      CacheLogic.getTipsAndVerifyLocalInfo();
+      CacheLogic.getTips();
     });
 
     it('should call updateRetipsDB on cache renewal', done => {
-      const tipStub = sinon.stub(aeternity, 'getTips').callsFake(() => []);
+      cache.del(['getTips']);
+      const tipStub = sinon.stub(aeternity, 'fetchTips').callsFake(() => []);
       const updateRetipsStub = sinon.stub(RetipLogic, 'updateRetipsDB').callsFake(() => {
         tipStub.restore();
         updateRetipsStub.restore();
         done();
       });
-      CacheLogic.getTipsAndVerifyLocalInfo();
+      CacheLogic.getTips();
     });
   });
 
@@ -75,6 +78,7 @@ describe('(Re)Tips', () => {
       tip.should.have.property('language', 'en');
       tip.should.have.property('type', TIP_TYPES.AE_TIP);
       tip.should.have.property('unclaimed', true);
+      tip.should.have.property('sender', 'ak_tip');
     });
 
     it('it should CREATE a claimed tip without retips in db', async () => {
@@ -104,6 +108,7 @@ describe('(Re)Tips', () => {
       tip.should.have.property('language', 'en');
       tip.should.have.property('type', TIP_TYPES.AE_TIP);
       tip.should.have.property('unclaimed', fakeData[0].claim.unclaimed);
+      tip.should.have.property('sender', 'ak_tip');
     });
 
     it('it should CREATE a tip with retips in db', async () => {
@@ -140,6 +145,7 @@ describe('(Re)Tips', () => {
       tip.should.have.property('language', 'en');
       tip.should.have.property('type', TIP_TYPES.AE_TIP);
       tip.should.have.property('unclaimed', fakeData[0].claim.unclaimed);
+      tip.should.have.property('sender', 'ak_tip');
 
       const retip = await Retip.findOne({
         where: {
@@ -150,6 +156,7 @@ describe('(Re)Tips', () => {
       retip.should.have.property('id', fakeData[0].retips[0].id);
       retip.should.have.property('tipId', fakeData[0].id);
       retip.should.have.property('unclaimed', fakeData[0].retips[0].claim.unclaimed);
+      retip.should.have.property('sender', 'ak_retip');
     });
 
     it('it should CREATE retips for an old tip in db', async () => {
@@ -157,6 +164,7 @@ describe('(Re)Tips', () => {
         id: '33',
         language: 'en',
         unclaimed: false,
+        sender: 'ak_tip',
       });
 
       const fakeData = [
@@ -192,6 +200,7 @@ describe('(Re)Tips', () => {
       tip.should.have.property('language', 'en');
       tip.should.have.property('type', TIP_TYPES.AE_TIP);
       tip.should.have.property('unclaimed', fakeData[0].claim.unclaimed);
+      tip.should.have.property('sender', 'ak_tip');
 
       const retip = await Retip.findOne({
         where: {
@@ -202,6 +211,7 @@ describe('(Re)Tips', () => {
       retip.should.have.property('id', fakeData[0].retips[0].id);
       retip.should.have.property('tipId', fakeData[0].id);
       retip.should.have.property('unclaimed', fakeData[0].retips[0].claim.unclaimed);
+      retip.should.have.property('sender', 'ak_retip');
     });
 
     it('it should UPDATE a tips claimed status db', async () => {
@@ -209,6 +219,7 @@ describe('(Re)Tips', () => {
         id: '33',
         language: 'en',
         unclaimed: true,
+        sender: 'ak_tip',
       });
 
       const fakeData = [
@@ -237,6 +248,7 @@ describe('(Re)Tips', () => {
       tip.should.have.property('language', 'en');
       tip.should.have.property('type', TIP_TYPES.AE_TIP);
       tip.should.have.property('unclaimed', fakeData[0].claim.unclaimed);
+      tip.should.have.property('sender', 'ak_tip');
     });
 
     it('it should UPDATE a retips claimed status db', async () => {
@@ -244,11 +256,13 @@ describe('(Re)Tips', () => {
         id: '33',
         language: 'en',
         unclaimed: true,
+        sender: 'ak_tip',
       });
       await Retip.create({
         id: '2',
         tipId: '33',
         unclaimed: true,
+        sender: 'ak_retip',
       });
 
       const fakeData = [
@@ -283,6 +297,7 @@ describe('(Re)Tips', () => {
       tip.should.have.property('language', 'en');
       tip.should.have.property('type', TIP_TYPES.AE_TIP);
       tip.should.have.property('unclaimed', fakeData[0].claim.unclaimed);
+      tip.should.have.property('sender', 'ak_tip');
 
       const retip = await Retip.findOne({
         where: {
@@ -293,6 +308,7 @@ describe('(Re)Tips', () => {
       retip.should.have.property('id', fakeData[0].retips[0].id);
       retip.should.have.property('tipId', fakeData[0].id);
       retip.should.have.property('unclaimed', fakeData[0].retips[0].claim.unclaimed);
+      retip.should.have.property('sender', 'ak_retip');
     });
   });
 });

@@ -1,15 +1,15 @@
 module.exports = (sequelize, DataTypes) => sequelize.define('LinkPreview', {
   // attributes
   requestUrl: {
-    type: DataTypes.STRING,
+    type: DataTypes.TEXT,
     allowNull: false,
   },
   title: {
-    type: DataTypes.STRING,
+    type: DataTypes.TEXT,
     allowNull: true,
   },
   description: {
-    type: DataTypes.STRING,
+    type: DataTypes.TEXT,
     allowNull: true,
   },
   image: {
@@ -17,7 +17,7 @@ module.exports = (sequelize, DataTypes) => sequelize.define('LinkPreview', {
     allowNull: true,
   },
   responseUrl: {
-    type: DataTypes.STRING,
+    type: DataTypes.TEXT,
     allowNull: true,
   },
   lang: {
@@ -29,7 +29,7 @@ module.exports = (sequelize, DataTypes) => sequelize.define('LinkPreview', {
     allowNull: false,
   },
   failReason: {
-    type: DataTypes.STRING,
+    type: DataTypes.TEXT,
     allowNull: true,
   },
 }, {

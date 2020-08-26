@@ -85,12 +85,12 @@ var migrationCommands = function(transaction) {
                         "allowNull": false
                     },
                     "browser": {
-                        "type": Sequelize.STRING,
+                        "type": Sequelize.TEXT,
                         "field": "browser",
                         "allowNull": false
                     },
                     "error": {
-                        "type": Sequelize.STRING,
+                        "type": Sequelize.TEXT,
                         "field": "error",
                         "allowNull": false
                     },
@@ -100,7 +100,7 @@ var migrationCommands = function(transaction) {
                         "allowNull": false
                     },
                     "description": {
-                        "type": Sequelize.STRING,
+                        "type": Sequelize.TEXT,
                         "field": "description",
                         "allowNull": true
                     },
@@ -181,17 +181,17 @@ var migrationCommands = function(transaction) {
                         "allowNull": false
                     },
                     "requestUrl": {
-                        "type": Sequelize.STRING,
+                        "type": Sequelize.TEXT,
                         "field": "requestUrl",
                         "allowNull": false
                     },
                     "title": {
-                        "type": Sequelize.STRING,
+                        "type": Sequelize.TEXT,
                         "field": "title",
                         "allowNull": true
                     },
                     "description": {
-                        "type": Sequelize.STRING,
+                        "type": Sequelize.TEXT,
                         "field": "description",
                         "allowNull": true
                     },
@@ -201,7 +201,7 @@ var migrationCommands = function(transaction) {
                         "allowNull": true
                     },
                     "responseUrl": {
-                        "type": Sequelize.STRING,
+                        "type": Sequelize.TEXT,
                         "field": "responseUrl",
                         "allowNull": true
                     },
@@ -216,7 +216,7 @@ var migrationCommands = function(transaction) {
                         "allowNull": false
                     },
                     "failReason": {
-                        "type": Sequelize.STRING,
+                        "type": Sequelize.TEXT,
                         "field": "failReason",
                         "allowNull": true
                     },
@@ -323,7 +323,7 @@ var migrationCommands = function(transaction) {
                         "allowNull": false
                     },
                     "challenge": {
-                        "type": Sequelize.STRING,
+                        "type": Sequelize.TEXT,
                         "field": "challenge",
                         "allowNull": false
                     },
@@ -349,7 +349,7 @@ var migrationCommands = function(transaction) {
                 "Profiles",
                 {
                     "biography": {
-                        "type": Sequelize.STRING,
+                        "type": Sequelize.TEXT,
                         "field": "biography",
                         "allowNull": true
                     },
@@ -375,7 +375,7 @@ var migrationCommands = function(transaction) {
                         "allowNull": true
                     },
                     "location": {
-                        "type": Sequelize.STRING,
+                        "type": Sequelize.TEXT,
                         "field": "location",
                         "allowNull": true
                     },
@@ -390,7 +390,7 @@ var migrationCommands = function(transaction) {
                         "allowNull": false
                     },
                     "challenge": {
-                        "type": Sequelize.STRING,
+                        "type": Sequelize.TEXT,
                         "field": "challenge",
                         "allowNull": false
                     },
@@ -400,7 +400,7 @@ var migrationCommands = function(transaction) {
                         "allowNull": true
                     },
                     "imageChallenge": {
-                        "type": Sequelize.STRING,
+                        "type": Sequelize.TEXT,
                         "field": "imageChallenge",
                         "allowNull": true
                     },
@@ -476,12 +476,12 @@ var migrationCommands = function(transaction) {
                         "allowNull": false
                     },
                     "url": {
-                        "type": Sequelize.STRING,
+                        "type": Sequelize.TEXT,
                         "field": "url",
                         "allowNull": false
                     },
                     "uuid": {
-                        "type": Sequelize.STRING,
+                        "type": Sequelize.UUID,
                         "field": "uuid",
                         "allowNull": false
                     },
@@ -524,7 +524,7 @@ var migrationCommands = function(transaction) {
                         "allowNull": false
                     },
                     "text": {
-                        "type": Sequelize.STRING,
+                        "type": Sequelize.TEXT,
                         "field": "text",
                         "allowNull": false
                     },
@@ -550,7 +550,7 @@ var migrationCommands = function(transaction) {
                         "allowNull": false
                     },
                     "challenge": {
-                        "type": Sequelize.STRING,
+                        "type": Sequelize.TEXT,
                         "field": "challenge",
                         "allowNull": false
                     },
@@ -577,7 +577,7 @@ var migrationCommands = function(transaction) {
                         "allowNull": false
                     },
                     "hierarchyLevel": {
-                        "type": Sequelize.INTEGER.UNSIGNED,
+                        "type": Sequelize.INTEGER,
                         "field": "hierarchyLevel"
                     }
                 },

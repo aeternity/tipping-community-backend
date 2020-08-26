@@ -1,7 +1,7 @@
 module.exports = (sequelize, DataTypes) => sequelize.define('Profile', {
   // attributes
   biography: {
-    type: DataTypes.STRING,
+    type: DataTypes.TEXT,
     allowNull: true,
   },
   author: {
@@ -22,7 +22,7 @@ module.exports = (sequelize, DataTypes) => sequelize.define('Profile', {
     allowNull: true,
   },
   location: {
-    type: DataTypes.STRING,
+    type: DataTypes.TEXT,
     allowNull: true,
   },
   coverImage: {
@@ -34,7 +34,7 @@ module.exports = (sequelize, DataTypes) => sequelize.define('Profile', {
     allowNull: false,
   },
   challenge: {
-    type: DataTypes.STRING,
+    type: DataTypes.TEXT,
     allowNull: false,
   },
   imageSignature: {
@@ -42,7 +42,7 @@ module.exports = (sequelize, DataTypes) => sequelize.define('Profile', {
     allowNull: true,
   },
   imageChallenge: {
-    type: DataTypes.STRING,
+    type: DataTypes.TEXT,
     allowNull: true,
   },
 }, {

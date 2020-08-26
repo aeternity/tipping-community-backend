@@ -1,11 +1,11 @@
 module.exports = (sequelize, DataTypes) => sequelize.define('Trace', {
   // attributes
   url: {
-    type: DataTypes.STRING,
+    type: DataTypes.TEXT,
     allowNull: false,
   },
   uuid: {
-    type: DataTypes.STRING,
+    type: DataTypes.UUID,
     allowNull: false,
   },
   publicKey: {

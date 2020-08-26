@@ -21,7 +21,7 @@ module.exports = (sequelize, DataTypes) => sequelize.define('Pin', {
     allowNull: false,
   },
   challenge: {
-    type: DataTypes.STRING,
+    type: DataTypes.TEXT,
     allowNull: false,
   },
 }, {

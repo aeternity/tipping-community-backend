@@ -1,6 +1,9 @@
 {
   "development": {
-    "dialect": "sqlite",
-    "storage": "database.sqlite"
+    "dialect": "postgres",
+    "username": "postgres",
+    "password": "postgres",
+    "host": "localhost",
+    "database": "postgres"
   }
 }

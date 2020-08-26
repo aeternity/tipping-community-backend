@@ -9,54 +9,42 @@ module.exports = class NotificationLogic {
   }
 
   static add = {
-    [NOTIFICATION_TYPES.COMMENT_ON_TIP]: async (receiver, commentId) => {
-      Notification.create({
-        receiver,
-        type: NOTIFICATION_TYPES.COMMENT_ON_TIP,
-        entityId: commentId,
-        entityType: ENTITY_TYPES.COMMENT,
-      });
-    },
-    [NOTIFICATION_TYPES.COMMENT_ON_COMMENT]: async (receiver, commentId) => {
-      Notification.create({
-        receiver,
-        type: NOTIFICATION_TYPES.COMMENT_ON_COMMENT,
-        entityId: commentId,
-        entityType: ENTITY_TYPES.COMMENT,
-      });
-    },
-    [NOTIFICATION_TYPES.TIP_ON_COMMENT]: async (receiver, commentId) => {
-      Notification.create({
-        receiver,
-        type: NOTIFICATION_TYPES.TIP_ON_COMMENT,
-        entityId: commentId,
-        entityType: ENTITY_TYPES.TIP,
-      });
-    },
-    [NOTIFICATION_TYPES.RETIP_ON_TIP]: async (receiver, tipId) => {
-      Notification.create({
-        receiver,
-        type: NOTIFICATION_TYPES.RETIP_ON_TIP,
-        entityId: tipId,
-        entityType: ENTITY_TYPES.TIP,
-      });
-    },
-    [NOTIFICATION_TYPES.CLAIM_OF_TIP]: async (receiver, tipId) => {
-      Notification.create({
-        receiver,
-        type: NOTIFICATION_TYPES.CLAIM_OF_TIP,
-        entityId: tipId,
-        entityType: ENTITY_TYPES.TIP,
-      });
-    },
-    [NOTIFICATION_TYPES.CLAIM_OF_RETIP]: async (receiver, tipId) => {
-      Notification.create({
-        receiver,
-        type: NOTIFICATION_TYPES.CLAIM_OF_RETIP,
-        entityId: tipId,
-        entityType: ENTITY_TYPES.TIP,
-      });
-    },
+    [NOTIFICATION_TYPES.COMMENT_ON_TIP]: async (receiver, commentId) => Notification.create({
+      receiver,
+      type: NOTIFICATION_TYPES.COMMENT_ON_TIP,
+      entityId: commentId,
+      entityType: ENTITY_TYPES.COMMENT,
+    }),
+    [NOTIFICATION_TYPES.COMMENT_ON_COMMENT]: async (receiver, commentId) => Notification.create({
+      receiver,
+      type: NOTIFICATION_TYPES.COMMENT_ON_COMMENT,
+      entityId: commentId,
+      entityType: ENTITY_TYPES.COMMENT,
+    }),
+    [NOTIFICATION_TYPES.TIP_ON_COMMENT]: async (receiver, commentId) => Notification.create({
+      receiver,
+      type: NOTIFICATION_TYPES.TIP_ON_COMMENT,
+      entityId: commentId,
+      entityType: ENTITY_TYPES.TIP,
+    }),
+    [NOTIFICATION_TYPES.RETIP_ON_TIP]: async (receiver, tipId) => Notification.create({
+      receiver,
+      type: NOTIFICATION_TYPES.RETIP_ON_TIP,
+      entityId: tipId,
+      entityType: ENTITY_TYPES.TIP,
+    }),
+    [NOTIFICATION_TYPES.CLAIM_OF_TIP]: async (receiver, tipId) => Notification.create({
+      receiver,
+      type: NOTIFICATION_TYPES.CLAIM_OF_TIP,
+      entityId: tipId,
+      entityType: ENTITY_TYPES.TIP,
+    }),
+    [NOTIFICATION_TYPES.CLAIM_OF_RETIP]: async (receiver, tipId) => Notification.create({
+      receiver,
+      type: NOTIFICATION_TYPES.CLAIM_OF_RETIP,
+      entityId: tipId,
+      entityType: ENTITY_TYPES.TIP,
+    }),
   };
 
   static async getForUser(req, res) {

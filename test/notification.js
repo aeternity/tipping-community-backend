@@ -29,6 +29,7 @@ describe('Notifications', () => {
       await Comment.destroy({
         where: {},
         truncate: true,
+        cascade: true,
       });
 
       await Notification.destroy({
@@ -36,14 +37,15 @@ describe('Notifications', () => {
         truncate: true,
       });
 
-      await Tip.destroy({
+      await Retip.destroy({
         where: {},
         truncate: true,
       });
 
-      await Retip.destroy({
+      await Tip.destroy({
         where: {},
         truncate: true,
+        cascade: true,
       });
 
       createdComment = await Comment.create({
@@ -99,6 +101,7 @@ describe('Notifications', () => {
             unclaimed: true,
           },
           retips: [{
+            id: 1,
             sender: 'ak_retip',
             timestamp: (new Date(2020, 5, 1)).getTime(),
             claim: {
@@ -121,6 +124,17 @@ describe('Notifications', () => {
     });
 
     it('it should create notifications for RETIP_ON_TIP', async () => {
+      await Retip.destroy({
+        where: {},
+        truncate: true,
+      });
+
+      await Tip.destroy({
+        where: {},
+        truncate: true,
+        cascade: true,
+      });
+
       const fakeData = [
         {
           sender: 'ak_tip',
@@ -131,6 +145,7 @@ describe('Notifications', () => {
             unclaimed: true,
           },
           retips: [{
+            id: 1,
             sender: 'ak_retip',
             timestamp: (new Date(2020, 8, 1)).getTime(),
             claim: {
@@ -160,14 +175,15 @@ describe('Notifications', () => {
     });
 
     it('it should create notifications for CLAIM_OF_TIP', async () => {
-      await Tip.destroy({
+      await Retip.destroy({
         where: {},
         truncate: true,
       });
 
-      await Retip.destroy({
+      await Tip.destroy({
         where: {},
         truncate: true,
+        cascade: true,
       });
 
       await Tip.create({
@@ -183,6 +199,7 @@ describe('Notifications', () => {
           id: 1,
           url: `https://superhero.com/tip/1/comment/${createdComment.id}`,
           retips: [{
+            id: 1,
             sender: 'ak_retip',
             timestamp: (new Date(2020, 8, 1)).getTime(),
             claim: {
@@ -216,14 +233,15 @@ describe('Notifications', () => {
     });
 
     it('it should create notifications for CLAIM_OF_RETIP', async () => {
-      await Tip.destroy({
+      await Retip.destroy({
         where: {},
         truncate: true,
       });
 
-      await Retip.destroy({
+      await Tip.destroy({
         where: {},
         truncate: true,
+        cascade: true,
       });
 
       await Tip.create({
@@ -265,7 +283,7 @@ describe('Notifications', () => {
         where: {
           type: NOTIFICATION_TYPES.CLAIM_OF_RETIP,
           entityType: ENTITY_TYPES.TIP,
-          entityId: 1,
+          entityId: '1',
           receiver: 'ak_retip',
         },
         raw: true,

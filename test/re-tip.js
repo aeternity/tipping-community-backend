@@ -36,14 +36,15 @@ describe('(Re)Tips', () => {
 
   describe('DB', () => {
     beforeEach(async () => {
-      await Tip.destroy({
+      await Retip.destroy({
         where: {},
         truncate: true,
       });
 
-      await Retip.destroy({
+      await Tip.destroy({
         where: {},
         truncate: true,
+        cascade: true,
       });
     });
 

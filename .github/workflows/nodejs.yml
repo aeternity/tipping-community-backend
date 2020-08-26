@@ -28,6 +28,7 @@ jobs:
         run: |
           docker run --name server-redis -p 6379:6379 -d redis
           docker run --name ipfs_host -p 5001:5001 -d ipfs/go-ipfs
+          docker run --name postgres -p 5432:5432 -e POSTGRES_PASSWORD=postgres -d postgres:latest
           npx sequelize-cli db:migrate
           npm test
         env:

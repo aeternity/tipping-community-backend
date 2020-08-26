@@ -43,7 +43,7 @@ describe('LinkPreview', () => {
         res.body.should.have.property('description');
         res.body.should.have.property('lang');
         res.body.should.have.property('image');
-        res.body.should.have.property('querySucceeded', 1);
+        res.body.should.have.property('querySucceeded', true);
         res.body.should.have.property('createdAt');
         res.body.should.have.property('updatedAt');
         imageUrl = res.body.image;

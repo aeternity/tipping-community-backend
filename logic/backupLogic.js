@@ -9,7 +9,7 @@ module.exports = class BackupLogic {
     const buffer = fs.readFileSync(imagePath);
     const results = await ipfs.addFile(buffer);
     if (!IPFS_TYPES[type]) throw TypeError(`Unknown type: ${type}`);
-    IPFSEntry.create({
+    return IPFSEntry.create({
       type,
       hash: results[0].path,
       reference: publicKey,

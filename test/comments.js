@@ -34,6 +34,7 @@ describe('Comments', () => {
     await Comment.destroy({
       where: {},
       truncate: true,
+      cascade: true,
     });
 
     await Notification.destroy({
@@ -99,7 +100,7 @@ describe('Comments', () => {
           where: {
             type: NOTIFICATION_TYPES.COMMENT_ON_TIP,
             entityType: ENTITY_TYPES.COMMENT,
-            entityId: commentId,
+            entityId: String(commentId),
             receiver: 'ak_y87WkN4C4QevzjTuEYHg6XLqiWx3rjfYDFLBmZiqiro5mkRag',
           },
           raw: true,
@@ -161,7 +162,7 @@ describe('Comments', () => {
         res.should.have.status(200);
         res.body.should.be.an('array');
         res.body.length.should.be.eql(1);
-        res.body[0].should.have.property('count', 1);
+        res.body[0].should.have.property('count', '1');
         res.body[0].should.have.property('tipId', testData.tipId);
         done();
       });
@@ -214,6 +215,7 @@ describe('Comments', () => {
       await Comment.destroy({
         where: {},
         truncate: true,
+        cascade: true,
       });
 
       parentComment = await Comment.create({
@@ -265,7 +267,7 @@ describe('Comments', () => {
             where: {
               type: NOTIFICATION_TYPES.COMMENT_ON_TIP,
               entityType: ENTITY_TYPES.COMMENT,
-              entityId: commentId,
+              entityId: String(commentId),
               receiver: 'ak_y87WkN4C4QevzjTuEYHg6XLqiWx3rjfYDFLBmZiqiro5mkRag',
             },
             raw: true,
@@ -276,7 +278,7 @@ describe('Comments', () => {
               where: {
                 type: NOTIFICATION_TYPES.COMMENT_ON_COMMENT,
                 entityType: ENTITY_TYPES.COMMENT,
-                entityId: commentId,
+                entityId: String(commentId),
                 receiver: 'ak_testing',
               },
               raw: true,

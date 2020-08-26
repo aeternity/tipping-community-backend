@@ -31,7 +31,7 @@ describe('Pinning', () => {
   });
 
   const testData = {
-    entryId: 1,
+    entryId: '1',
     type: 'TIP',
   };
 
@@ -74,7 +74,7 @@ describe('Pinning', () => {
         res.should.have.status(200);
         res.body.should.be.a('array');
         res.body.length.should.be.eql(1);
-        res.body[0].should.have.property('id', testData.entryId);
+        res.body[0].should.have.property('id', parseInt(testData.entryId, 10));
         done();
       });
     });

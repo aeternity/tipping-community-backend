@@ -34,10 +34,12 @@ describe('Profile', () => {
     await Comment.destroy({
       where: {},
       truncate: true,
+      cascade: true,
     });
     await Profile.destroy({
       where: {},
       truncate: true,
+      cascade: true,
     });
     await IPFSEntry.destroy({
       where: {},
@@ -118,19 +120,21 @@ describe('Profile', () => {
   });
 
   describe('Profile Image API', () => {
-    before(done => {
+    before(async () => {
       fs.readdirSync('images')
         .filter(fileName => fileName.includes('ak_'))
         .map(file => fs.unlinkSync(`images/${file}`));
 
-      Profile.destroy({
+      await Profile.destroy({
         where: {},
         truncate: true,
-      }).then(() => Profile.create({
+        cascade: true,
+      });
+      await Profile.create({
         ...testData,
         signature: 'signature',
         challenge: 'challenge',
-      }).then(() => done()));
+      });
     });
 
     const binaryParser = function (res, cb) {
@@ -310,19 +314,21 @@ describe('Profile', () => {
   });
 
   describe('Cover Image API', () => {
-    before(done => {
+    before(async () => {
       fs.readdirSync('images')
         .filter(fileName => fileName.includes('ak_'))
         .map(file => fs.unlinkSync(`images/${file}`));
 
-      Profile.destroy({
+      await Profile.destroy({
         where: {},
         truncate: true,
-      }).then(() => Profile.create({
+        cascade: true,
+      });
+      await Profile.create({
         ...testData,
         signature: 'signature',
         challenge: 'challenge',
-      }).then(() => done()));
+      });
     });
 
     const binaryParser = function (res, cb) {

@@ -17,8 +17,6 @@ const Util = require('../utils/util');
 const { Profile } = require('../models');
 const Logger = require('../utils/logger');
 
-const logger = new Logger('CacheLogic');
-
 const searchOptions = {
   threshold: 0.3,
   includeScore: true,
@@ -55,14 +53,14 @@ module.exports = class CacheLogic {
       return contractTransactions.map(tx => tx.hash).asyncMap(hash => aeternity.transactionEvents(hash));
     };
 
-    return cache.getOrSet(['contractEvents'], async () => fetchContractEvents().catch(logger.error), cache.shortCacheTime);
+    return cache.getOrSet(['contractEvents'], async () => fetchContractEvents().catch(Logger.error), cache.shortCacheTime);
   }
 
   static async fetchPrice() {
     return cache.getOrSet(
       ['fetchPrice'],
       async () => axios.get('https://api.coingecko.com/api/v3/simple/price?ids=aeternity&vs_currencies=usd,eur,cny')
-        .then(res => res.data).catch(logger.error),
+        .then(res => res.data).catch(Logger.error),
       cache.longCacheTime,
     );
   }
@@ -79,7 +77,7 @@ module.exports = class CacheLogic {
       const difference = tipUrls.filter(url => !previewUrls.includes(url));
 
       await difference.asyncMap(async url => {
-        await LinkPreviewLogic.generatePreview(url).catch(logger.error);
+        await LinkPreviewLogic.generatePreview(url).catch(Logger.error);
       });
     });
 

@@ -8,7 +8,6 @@ const { Profile } = require('../models');
 const Logger = require('./logger');
 
 const VERSION = '2-0-0';
-const logger = new Logger('Authentication');
 
 const basicAuth = (req, res, next) => {
   const auth = { login: process.env.AUTHENTICATION_USER, password: process.env.AUTHENTICATION_PASSWORD };
@@ -114,7 +113,7 @@ const signatureAuth = async (req, res, next) => {
       try {
         if (file) fs.unlinkSync(path.resolve(__dirname, '../images/', file.filename));
       } catch (e) {
-        logger.error(`Could not delete file:${e.message}`);
+        Logger.error(`Could not delete file:${e.message}`);
       }
     }
   });
@@ -196,7 +195,7 @@ const signatureAuth = async (req, res, next) => {
         payload,
       });
     } catch (e) {
-      logger.error(e);
+      Logger.error(e);
       return sendError(e.message);
     }
   }

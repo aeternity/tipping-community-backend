@@ -59,7 +59,7 @@ module.exports = class ProfileLogic {
       }
       return ProfileLogic.getSingleItem(req, res);
     } catch (e) {
-      (new Logger('ProfileLogic')).error(e);
+      Logger.error(e);
       return res.status(500).send(e.message);
     }
   }

@@ -5,7 +5,6 @@ const exphbs = require('express-handlebars');
 const cors = require('cors');
 const Logger = require('./utils/logger.js');
 
-const logger = new Logger('main');
 // VIEWS
 app.engine('handlebars', exphbs());
 app.set('view engine', 'handlebars');
@@ -40,7 +39,7 @@ app.use((req, res) => {
 });
 
 app.listen(3000, () => {
-  logger.log('Server started');
+  Logger.log('Server started');
 });
 
 module.exports = app;

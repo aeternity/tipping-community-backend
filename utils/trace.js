@@ -10,11 +10,10 @@ module.exports = class Trace {
     this.data = [];
     this.writeToJSON();
     this.saveToDisk = false;
-    this.logger = new Logger('Trace');
   }
 
   update(update) {
-    this.logger.log({
+    Logger.log({
       msg: 'UPDATED TRACE',
       id: this.id,
       ...update,
@@ -46,7 +45,7 @@ module.exports = class Trace {
   finished(result) {
     this.update({ state: TRACE_STATES.FINISHED, ...result });
     this.writeToJSON();
-    this.logger.log({
+    Logger.log({
       msg: 'FINISHED TRACE',
       id: this.id,
     });

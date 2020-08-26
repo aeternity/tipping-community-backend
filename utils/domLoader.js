@@ -46,7 +46,7 @@ module.exports = class DomLoader {
       await browser.close();
       return { html, url: page.url(), screenshot: screenshot ? filename : null };
     } catch (e) {
-      (new Logger('DomLoader')).error({ err: `Error while crawling ${url}: ${e.message}` });
+      Logger.error({ err: `Error while crawling ${url}: ${e.message}` });
       await browser.close();
       return {
         html: null,

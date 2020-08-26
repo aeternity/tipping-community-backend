@@ -4,8 +4,6 @@ const CacheLogic = require('./cacheLogic');
 const Trace = require('../utils/trace');
 const { TRACE_STATES } = require('../models/enums/trace');
 
-const logger = new Logger('payForTx');
-
 module.exports = class PayForTxLogic {
   static async payForTx(req, res) {
     // Create new trace for each claim
@@ -16,7 +14,7 @@ module.exports = class PayForTxLogic {
 
     // Helper functions
     const sendSuccess = () => {
-      logger.log({
+      Logger.log({
         success: true, url: req.body.url, address: req.body.address, status: 200, message: '',
       });
       trace.update({
@@ -30,7 +28,7 @@ module.exports = class PayForTxLogic {
 
     const sendError = (status, message) => {
       if (!req.body) req.body = {};
-      logger.log({
+      Logger.log({
         success: false, url: req.body.url, address: req.body.address, status, message,
       });
       trace.update({
@@ -67,7 +65,7 @@ module.exports = class PayForTxLogic {
       trace.setMetaData(req.body.url, req.body.address);
       return sendSuccess();
     } catch (e) {
-      logger.error(e);
+      Logger.error(e);
       return sendError(500, e.message);
     }
   }

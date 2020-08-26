@@ -15,7 +15,6 @@ const MIDDLEWARE_URL = process.env.MIDDLEWARE_URL || 'https://mainnet.aeternity.
 class Aeternity {
   constructor() {
     this.init();
-    this.logger = new Logger('Aeternity');
   }
 
   async init() {
@@ -241,7 +240,7 @@ class Aeternity {
   }
 
   async getChainNames() {
-    return axios.get(`${MIDDLEWARE_URL}/middleware/names/active`).then(res => res.data).catch(this.logger.error);
+    return axios.get(`${MIDDLEWARE_URL}/middleware/names/active`).then(res => res.data).catch(Logger.error);
   }
 
   async getAddressForChainName(name) {

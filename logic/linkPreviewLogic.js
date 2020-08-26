@@ -16,7 +16,7 @@ const metascraper = require('metascraper')([
 const { LinkPreview } = require('../models');
 const DomLoader = require('../utils/domLoader.js');
 const cache = require('../utils/cache');
-const logger = new (require('../utils/logger'))('LinkPreviewLogic');
+const Logger = require('../utils/logger');
 
 lngDetector.setLanguageType('iso2');
 
@@ -74,7 +74,7 @@ module.exports = class LinkPreviewLogic {
       const metaData = await sharp(path.resolve(__dirname, '../images', filename)).metadata();
       if (metaData.width < 300 && metaData.height < 200) newUrl = null;
     } catch (e) {
-      logger.error('Could not appropriate fetch image');
+      Logger.error('Could not appropriate fetch image');
     }
 
     // Get Screenshot if needed
@@ -83,9 +83,9 @@ module.exports = class LinkPreviewLogic {
         const { screenshot } = await DomLoader.getScreenshot(requestUrl);
         filename = screenshot;
         newUrl = `/linkpreview/image/${filename}`;
-        logger.log('Got image snapshot preview for', filename);
+        Logger.log('Got image snapshot preview for', filename);
       } catch (e) {
-        logger.error('screen shot api failed as well for ', requestUrl);
+        Logger.error('screen shot api failed as well for ', requestUrl);
       }
     }
 
@@ -100,7 +100,7 @@ module.exports = class LinkPreviewLogic {
           newUrl = `/linkpreview/image/compressed-${filename}`;
         }
       } catch (e) {
-        logger.error('Could not compress image');
+        Logger.error('Could not compress image');
       }
     }
     return newUrl;
@@ -141,7 +141,7 @@ module.exports = class LinkPreviewLogic {
 
       return await LinkPreview.create(data, { raw: true });
     } catch (err) {
-      logger.error(`Crawling ${url} failed with "${err.message}"`);
+      Logger.error(`Crawling ${url} failed with "${err.message}"`);
 
       return LinkPreview.create({
         requestUrl: url,

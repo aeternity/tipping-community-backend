@@ -11,7 +11,7 @@ module.exports = class Verified {
           .map(({ url }) => url)))];
       return res.send(allClaimedDomains);
     } catch (err) {
-      (new Logger('VerifiedLogic')).error(err);
+      Logger.error(err);
       return res.status(500).send(err.message);
     }
   }

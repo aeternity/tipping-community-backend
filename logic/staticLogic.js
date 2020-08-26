@@ -49,7 +49,7 @@ module.exports = class StaticLogic {
     try {
       return res.send(await StaticLogic.getStats());
     } catch (err) {
-      (new Logger('StaticLogic')).error(err);
+      Logger.error(err);
       return res.status(500).send(err.message);
     }
   }

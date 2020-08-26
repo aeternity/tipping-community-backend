@@ -17,7 +17,7 @@ module.exports = class PinLogic {
       });
       return res.send(entry);
     } catch (e) {
-      (new Logger('PinLogic')).error(e);
+      Logger.error(e);
       return res.status(500).send(e.message);
     }
   }

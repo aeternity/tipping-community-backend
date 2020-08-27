@@ -5,11 +5,11 @@ module.exports = (sequelize, DataTypes) => sequelize.define('ErrorReport', {
     allowNull: false,
   },
   browser: {
-    type: DataTypes.STRING,
+    type: DataTypes.TEXT,
     allowNull: false,
   },
   error: {
-    type: DataTypes.STRING,
+    type: DataTypes.TEXT,
     allowNull: false,
   },
   platform: {
@@ -17,7 +17,7 @@ module.exports = (sequelize, DataTypes) => sequelize.define('ErrorReport', {
     allowNull: false,
   },
   description: {
-    type: DataTypes.STRING,
+    type: DataTypes.TEXT,
     allowNull: true,
   },
   time: {

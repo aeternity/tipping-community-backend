@@ -52,6 +52,7 @@ describe('Aeternity', () => {
       firstEntry.should.have.property('title');
       firstEntry.should.have.property('url_id');
       firstEntry.should.have.property('id');
+      firstEntry.id.should.be.an('String');
       firstEntry.should.have.property('url');
       firstEntry.should.have.property('topics');
       firstEntry.should.have.property('retips');

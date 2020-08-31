@@ -201,16 +201,16 @@ class Aeternity {
     };
 
     const findRetips = (tipId, urlId) => state.retips
-      .filter(([, data]) => data.tip_id === tipId).map(([id, data]) => ({
+      .filter(([, data]) => String(data.tip_id) === String(tipId)).map(([id, data]) => ({
         ...data,
-        id,
+        id: String(id),
         claim: findClaimGen(data.claim_gen, urlId),
         amount_ae: Util.atomsToAe(data.amount).toFixed(),
       }));
 
     return state.tips.map(([id, data]) => {
       const tipsData = data;
-      tipsData.id = id;
+      tipsData.id = String(id);
       tipsData.url = findUrl(tipsData.url_id);
       tipsData.topics = [...new Set(tipsData.title.match(topicsRegex))].map(x => x.toLowerCase());
       tipsData.retips = findRetips(id, tipsData.url_id);

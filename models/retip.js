@@ -4,7 +4,7 @@ module.exports = (sequelize, DataTypes) => {
   const Retip = sequelize.define('Retip', {
     // attributes
     id: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.STRING,
       allowNull: false,
       primaryKey: true,
     },

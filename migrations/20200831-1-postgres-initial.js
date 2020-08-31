@@ -23,8 +23,8 @@ var Sequelize = require('sequelize');
 
 var info = {
     "revision": 1,
-    "name": "noname",
-    "created": "2020-08-31T09:57:20.777Z",
+    "name": "initial-postgres",
+    "created": "2020-08-31T12:06:35.069Z",
     "comment": ""
 };
 
@@ -629,7 +629,7 @@ var migrationCommands = function(transaction) {
                 "Retips",
                 {
                     "id": {
-                        "type": Sequelize.INTEGER,
+                        "type": Sequelize.STRING,
                         "field": "id",
                         "primaryKey": true,
                         "allowNull": false

@@ -153,7 +153,7 @@ const signatureAuth = async (req, res, next) => {
         const queueIndex = MemoryQueue.findIndex(item => (item || {}).challenge === req.body.challenge);
         delete MemoryQueue[queueIndex];
         // forward request and merge current body onto existing
-        req.body = { ...req.body, ...body };
+        req.body = { ...{ signature, challenge }, ...body };
         if (files) req.files = files;
         return next();
       }

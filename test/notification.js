@@ -49,7 +49,7 @@ describe('Notifications', () => {
       });
 
       createdComment = await Comment.create({
-        tipId: 1,
+        tipId: '1',
         text: 'Comment',
         author: 'ak_comment',
         signature: 'sig',
@@ -62,7 +62,7 @@ describe('Notifications', () => {
         {
           sender: 'ak_tip',
           title: '#test tip',
-          id: 1,
+          id: '1',
           url: `https://superhero.com/tip/1/comment/${createdComment.id}`,
           retips: [],
           claim: {
@@ -95,13 +95,13 @@ describe('Notifications', () => {
         {
           sender: 'ak_tip_old',
           title: '#test tip',
-          id: 1,
+          id: '1',
           url: `https://superhero.com/tip/1/comment/${createdComment.id}`,
           claim: {
             unclaimed: true,
           },
           retips: [{
-            id: 1,
+            id: '1',
             sender: 'ak_retip',
             timestamp: (new Date(2020, 5, 1)).getTime(),
             claim: {
@@ -139,13 +139,13 @@ describe('Notifications', () => {
         {
           sender: 'ak_tip',
           title: '#test tip',
-          id: 1,
+          id: '1',
           url: `https://superhero.com/tip/1/comment/${createdComment.id}`,
           claim: {
             unclaimed: true,
           },
           retips: [{
-            id: 1,
+            id: '1',
             sender: 'ak_retip',
             timestamp: (new Date(2020, 8, 1)).getTime(),
             claim: {
@@ -187,7 +187,7 @@ describe('Notifications', () => {
       });
 
       await Tip.create({
-        id: 1,
+        id: '1',
         language: null,
         unclaimed: true,
       });
@@ -196,10 +196,10 @@ describe('Notifications', () => {
         {
           sender: 'ak_tip',
           title: '#test tip',
-          id: 1,
+          id: '1',
           url: `https://superhero.com/tip/1/comment/${createdComment.id}`,
           retips: [{
-            id: 1,
+            id: '1',
             sender: 'ak_retip',
             timestamp: (new Date(2020, 8, 1)).getTime(),
             claim: {
@@ -245,14 +245,14 @@ describe('Notifications', () => {
       });
 
       await Tip.create({
-        id: 1,
+        id: '1',
         language: null,
         unclaimed: true,
       });
 
       await Retip.create({
-        id: 1,
-        tipId: 1,
+        id: '1',
+        tipId: '1',
         unclaimed: true,
       });
 
@@ -260,10 +260,10 @@ describe('Notifications', () => {
         {
           sender: 'ak_tip',
           title: '#test tip',
-          id: 1,
+          id: '1',
           url: `https://superhero.com/tip/1/comment/${createdComment.id}`,
           retips: [{
-            id: 1,
+            id: '1',
             sender: 'ak_retip',
             timestamp: (new Date(2020, 8, 1)).getTime(),
             claim: {

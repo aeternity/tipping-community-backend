@@ -202,7 +202,7 @@ describe('Cache', () => {
       chai.request(server).get('/cache/tips?blacklist=false').end((err, res) => {
         res.should.have.status(200);
         const tipIds = res.body.map(tip => tip.id);
-        tipIds.should.contain(0);
+        tipIds.should.contain('0');
         stub.callCount.should.eql(1);
         stub.restore();
         done();

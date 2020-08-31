@@ -492,7 +492,7 @@
                     "allowNull": false,
                     "primaryKey": true,
                     "field": "id",
-                    "seqType": "Sequelize.INTEGER"
+                    "seqType": "Sequelize.STRING"
                 },
                 "unclaimed": {
                     "defaultValue": {

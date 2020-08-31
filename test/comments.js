@@ -82,7 +82,6 @@ describe('Comments', () => {
 
     it('it should CREATE a new comment entry', done => {
       performSignedJSONRequest(server, 'post', '/comment/api', testData).then(({ res, challenge, signature }) => {
-        console.log(res.text);
         res.should.have.status(200);
         res.body.should.be.a('object');
         res.body.should.have.property('id');

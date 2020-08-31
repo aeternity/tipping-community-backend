@@ -4,6 +4,7 @@
     "username": "postgres",
     "password": "postgres",
     "host": "localhost",
-    "database": "postgres"
+    "database": "superhero",
+    "logging": false
   }
 }

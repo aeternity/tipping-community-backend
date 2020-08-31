@@ -53,7 +53,7 @@ describe('(Re)Tips', () => {
         {
           sender: 'ak_tip',
           title: 'test tip in english',
-          id: 10,
+          id: '10',
           url: 'https://superhero.com/',
           retips: [],
           claim: {
@@ -67,11 +67,11 @@ describe('(Re)Tips', () => {
 
       const tip = await Tip.findOne({
         where: {
-          id: 10,
+          id: fakeData[0].id,
         },
       });
 
-      tip.should.have.property('id', 10);
+      tip.should.have.property('id', fakeData[0].id);
       tip.should.have.property('language', 'en');
       tip.should.have.property('type', TIP_TYPES.AE_TIP);
       tip.should.have.property('unclaimed', true);
@@ -82,7 +82,7 @@ describe('(Re)Tips', () => {
         {
           sender: 'ak_tip',
           title: 'test tip in english',
-          id: 50,
+          id: '50',
           url: 'https://superhero.com/',
           retips: [],
           claim: {
@@ -96,14 +96,14 @@ describe('(Re)Tips', () => {
 
       const tip = await Tip.findOne({
         where: {
-          id: 50,
+          id: fakeData[0].id,
         },
       });
 
-      tip.should.have.property('id', 50);
+      tip.should.have.property('id', fakeData[0].id);
       tip.should.have.property('language', 'en');
       tip.should.have.property('type', TIP_TYPES.AE_TIP);
-      tip.should.have.property('unclaimed', false);
+      tip.should.have.property('unclaimed', fakeData[0].claim.unclaimed);
     });
 
     it('it should CREATE a tip with retips in db', async () => {
@@ -111,13 +111,13 @@ describe('(Re)Tips', () => {
         {
           sender: 'ak_tip',
           title: 'test tip in english',
-          id: 33,
+          id: '33',
           url: 'https://superhero.com/',
           claim: {
             unclaimed: true,
           },
           retips: [{
-            id: 4,
+            id: '4',
             sender: 'ak_retip',
             timestamp: (new Date(2020, 8, 1)).getTime(),
             claim: {
@@ -132,24 +132,24 @@ describe('(Re)Tips', () => {
 
       const tip = await Tip.findOne({
         where: {
-          id: 33,
+          id: fakeData[0].id,
         },
       });
 
-      tip.should.have.property('id', 33);
+      tip.should.have.property('id', fakeData[0].id);
       tip.should.have.property('language', 'en');
       tip.should.have.property('type', TIP_TYPES.AE_TIP);
-      tip.should.have.property('unclaimed', true);
+      tip.should.have.property('unclaimed', fakeData[0].claim.unclaimed);
 
       const retip = await Retip.findOne({
         where: {
-          id: 4,
+          id: fakeData[0].retips[0].id,
         },
       });
 
-      retip.should.have.property('id', 4);
-      retip.should.have.property('tipId', 33);
-      retip.should.have.property('unclaimed', true);
+      retip.should.have.property('id', fakeData[0].retips[0].id);
+      retip.should.have.property('tipId', fakeData[0].id);
+      retip.should.have.property('unclaimed', fakeData[0].retips[0].claim.unclaimed);
     });
 
     it('it should CREATE retips for an old tip in db', async () => {
@@ -163,13 +163,13 @@ describe('(Re)Tips', () => {
         {
           sender: 'ak_tip',
           title: '#test tip',
-          id: 33,
+          id: '33',
           url: 'https://superhero.com/',
           claim: {
             unclaimed: false,
           },
           retips: [{
-            id: 4,
+            id: '4',
             sender: 'ak_retip',
             timestamp: (new Date(2020, 8, 1)).getTime(),
             claim: {
@@ -184,24 +184,24 @@ describe('(Re)Tips', () => {
 
       const tip = await Tip.findOne({
         where: {
-          id: '33',
+          id: fakeData[0].id,
         },
       });
 
-      tip.should.have.property('id', 33);
+      tip.should.have.property('id', fakeData[0].id);
       tip.should.have.property('language', 'en');
       tip.should.have.property('type', TIP_TYPES.AE_TIP);
-      tip.should.have.property('unclaimed', false);
+      tip.should.have.property('unclaimed', fakeData[0].claim.unclaimed);
 
       const retip = await Retip.findOne({
         where: {
-          id: '4',
+          id: fakeData[0].retips[0].id,
         },
       });
 
-      retip.should.have.property('id', 4);
-      retip.should.have.property('tipId', 33);
-      retip.should.have.property('unclaimed', true);
+      retip.should.have.property('id', fakeData[0].retips[0].id);
+      retip.should.have.property('tipId', fakeData[0].id);
+      retip.should.have.property('unclaimed', fakeData[0].retips[0].claim.unclaimed);
     });
 
     it('it should UPDATE a tips claimed status db', async () => {
@@ -215,7 +215,7 @@ describe('(Re)Tips', () => {
         {
           sender: 'ak_tip',
           title: '#test tip',
-          id: 33,
+          id: '33',
           url: 'https://superhero.com/',
           claim: {
             unclaimed: false,
@@ -229,25 +229,25 @@ describe('(Re)Tips', () => {
 
       const tip = await Tip.findOne({
         where: {
-          id: '33',
+          id: fakeData[0].id,
         },
       });
 
-      tip.should.have.property('id', 33);
+      tip.should.have.property('id', fakeData[0].id);
       tip.should.have.property('language', 'en');
       tip.should.have.property('type', TIP_TYPES.AE_TIP);
-      tip.should.have.property('unclaimed', false);
+      tip.should.have.property('unclaimed', fakeData[0].claim.unclaimed);
     });
 
     it('it should UPDATE a retips claimed status db', async () => {
       await Tip.create({
-        id: 33,
+        id: '33',
         language: 'en',
         unclaimed: true,
       });
       await Retip.create({
-        id: 2,
-        tipId: 33,
+        id: '2',
+        tipId: '33',
         unclaimed: true,
       });
 
@@ -255,13 +255,13 @@ describe('(Re)Tips', () => {
         {
           sender: 'ak_tip',
           title: '#test tip',
-          id: 33,
+          id: '33',
           url: 'https://superhero.com/',
           claim: {
             unclaimed: false,
           },
           retips: [{
-            id: 2,
+            id: '2',
             sender: 'ak_retip',
             claim: {
               unclaimed: false,
@@ -275,24 +275,24 @@ describe('(Re)Tips', () => {
 
       const tip = await Tip.findOne({
         where: {
-          id: '33',
+          id: fakeData[0].id,
         },
       });
 
-      tip.should.have.property('id', 33);
+      tip.should.have.property('id', fakeData[0].id);
       tip.should.have.property('language', 'en');
       tip.should.have.property('type', TIP_TYPES.AE_TIP);
-      tip.should.have.property('unclaimed', false);
+      tip.should.have.property('unclaimed', fakeData[0].claim.unclaimed);
 
       const retip = await Retip.findOne({
         where: {
-          id: 2,
+          id: fakeData[0].retips[0].id,
         },
       });
 
-      retip.should.have.property('id', 2);
-      retip.should.have.property('tipId', 33);
-      retip.should.have.property('unclaimed', false);
+      retip.should.have.property('id', fakeData[0].retips[0].id);
+      retip.should.have.property('tipId', fakeData[0].id);
+      retip.should.have.property('unclaimed', fakeData[0].retips[0].claim.unclaimed);
     });
   });
 });

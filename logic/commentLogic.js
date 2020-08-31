@@ -13,10 +13,11 @@ module.exports = class CommentLogic {
       if (tipId === null || tipId === undefined || !text || !author || !signature || !challenge) {
         return res.status(400).send('Missing required field');
       }
-
-      const parentComment = typeof parentId !== 'undefined'
+      const parentComment = (typeof parentId !== 'undefined' && parentId !== '')
         ? await Comment.findOne({ where: { id: parentId } }, { raw: true }) : null;
-      if (parentComment === null && typeof parentId !== 'undefined') return res.status(400).send(`Could not find parent comment with id ${parentId}`);
+      if (parentComment === null && typeof parentId !== 'undefined' && parentId !== '') {
+        return res.status(400).send(`Could not find parent comment with id ${parentId}`);
+      }
 
       const relevantTip = (await aeternity.getTips()).find(({ id }) => String(id) === tipId);
       if (!relevantTip) return res.status(400).send(`Could not find tip with id ${tipId}`);
@@ -95,8 +96,7 @@ module.exports = class CommentLogic {
 
   // TODO move to stats
   static async fetchCommentCountForAddress(address) {
-    const result = await Comment.count({ where: { author: address } });
-    return result ? result.toJSON() : 0;
+    return Comment.count({ where: { author: address } });
   }
 
   // TODO move to stats

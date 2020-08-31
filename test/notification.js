@@ -6,7 +6,6 @@ const { describe, it } = require('mocha');
 const server = require('../server');
 const RetipLogic = require('../logic/retipLogic');
 const TipLogic = require('../logic/tipLogic');
-const { ignoreTipsBefore } = require('../config/config');
 const { publicKey, performSignedGETRequest, performSignedJSONRequest } = require('../utils/testingUtil');
 const {
   Notification, Comment, Tip, Retip,
@@ -58,33 +57,6 @@ describe('Notifications', () => {
       }, { raw: true });
     });
 
-    it('it should not create notifications for TIP_ON_COMMENT if the tip is old', async () => {
-      const fakeData = [
-        {
-          sender: 'ak_tip',
-          title: '#test tip',
-          id: 1,
-          url: `https://superhero.com/tip/1/comment/${createdComment.id}`,
-          retips: [],
-          claim: {
-            unclaimed: true,
-          },
-          timestamp: ignoreTipsBefore - 86400 * 1000,
-        },
-      ];
-
-      await TipLogic.updateTipsDB(fakeData);
-      await RetipLogic.updateRetipsDB(fakeData);
-
-      const emptyArray = await Notification.findAll({
-        where: {
-          type: NOTIFICATION_TYPES.TIP_ON_COMMENT,
-        },
-        raw: true,
-      });
-      emptyArray.should.have.length(0);
-    });
-
     it('it should create notifications for TIP_ON_COMMENT', async () => {
       // Clear DB so retip appears again as new
       await Tip.destroy({
@@ -102,7 +74,7 @@ describe('Notifications', () => {
           claim: {
             unclaimed: true,
           },
-          timestamp: ignoreTipsBefore + 86400 * 1000,
+          timestamp: (new Date(2020, 8, 1)).getTime(),
         },
       ];
 
@@ -123,39 +95,6 @@ describe('Notifications', () => {
       createdNotification.should.have.property('entityType', ENTITY_TYPES.TIP);
       createdNotification.should.have.property('entityId', '1');
       createdNotification.should.have.property('type', NOTIFICATION_TYPES.TIP_ON_COMMENT);
-    });
-
-    it('it should not create notifications for RETIP_ON_TIP if the retip is old', async () => {
-      const fakeData = [
-        {
-          sender: 'ak_tip_old',
-          title: '#test tip',
-          id: '1',
-          url: `https://superhero.com/tip/1/comment/${createdComment.id}`,
-          claim: {
-            unclaimed: true,
-          },
-          retips: [{
-            id: '1',
-            sender: 'ak_retip',
-            timestamp: ignoreTipsBefore - 86400 * 1000,
-            claim: {
-              unclaimed: true,
-            },
-          }],
-        },
-      ];
-
-      await TipLogic.updateTipsDB(fakeData);
-      await RetipLogic.updateRetipsDB(fakeData);
-
-      const emptyArray = await Notification.findAll({
-        where: {
-          type: NOTIFICATION_TYPES.RETIP_ON_TIP,
-        },
-        raw: true,
-      });
-      emptyArray.should.have.length(0);
     });
 
     it('it should create notifications for RETIP_ON_TIP', async () => {
@@ -182,7 +121,7 @@ describe('Notifications', () => {
           retips: [{
             id: '1',
             sender: 'ak_retip',
-            timestamp: ignoreTipsBefore + 86400 * 1000,
+            timestamp: (new Date(2020, 8, 1)).getTime(),
             claim: {
               unclaimed: true,
             },

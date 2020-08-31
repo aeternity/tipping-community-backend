@@ -40,7 +40,7 @@ describe('Blacklist', () => {
         .end((err, res) => {
           res.should.have.status(200);
           res.body.should.be.a('object');
-          res.body.should.have.property('tipId', tipId);
+          res.body.should.have.property('tipId', String(tipId));
           res.body.should.have.property('status', 'hidden');
           res.body.should.have.property('createdAt');
           res.body.should.have.property('updatedAt');
@@ -63,7 +63,7 @@ describe('Blacklist', () => {
       }).then(({ res }) => {
         res.should.have.status(200);
         res.body.should.be.a('object');
-        res.body.should.have.property('tipId', tipId + 1);
+        res.body.should.have.property('tipId', String(tipId + 1));
         res.body.should.have.property('flagger', publicKey);
         res.body.should.have.property('status', 'flagged');
         res.body.should.have.property('createdAt');
@@ -76,7 +76,7 @@ describe('Blacklist', () => {
       chai.request(server).get(`/blacklist/api/${tipId}`).end((err, res) => {
         res.should.have.status(200);
         res.body.should.be.a('object');
-        res.body.should.have.property('tipId', tipId);
+        res.body.should.have.property('tipId', String(tipId));
         res.body.should.have.property('status', 'hidden');
         done();
       });
@@ -86,7 +86,7 @@ describe('Blacklist', () => {
       chai.request(server).get(`/blacklist/api/${tipId + 1}`).end((err, res) => {
         res.should.have.status(200);
         res.body.should.be.a('object');
-        res.body.should.have.property('tipId', tipId + 1);
+        res.body.should.have.property('tipId', String(tipId + 1));
         res.body.should.have.property('flagger', publicKey);
         res.body.should.have.property('status', 'flagged');
         res.body.should.have.property('createdAt');

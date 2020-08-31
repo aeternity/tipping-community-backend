@@ -37,7 +37,7 @@ module.exports = class TipLogic {
         return { ...tip, lang };
       });
       await TipLogic.bulkCreate(result.map(({ id, lang, claim }) => ({
-        id,
+        id: String(id),
         language: lang,
         unclaimed: claim.unclaimed,
       })));

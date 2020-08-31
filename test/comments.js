@@ -14,7 +14,7 @@ chai.use(chaiHttp);
 // Our parent block
 describe('Comments', () => {
   const testData = {
-    tipId: 0,
+    tipId: '0',
     text: 'What an awesome website',
     author: publicKey,
   };
@@ -82,6 +82,7 @@ describe('Comments', () => {
 
     it('it should CREATE a new comment entry', done => {
       performSignedJSONRequest(server, 'post', '/comment/api', testData).then(({ res, challenge, signature }) => {
+        console.log(res.text);
         res.should.have.status(200);
         res.body.should.be.a('object');
         res.body.should.have.property('id');

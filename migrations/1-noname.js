@@ -23,8 +23,8 @@ var Sequelize = require('sequelize');
 
 var info = {
     "revision": 1,
-    "name": "postgres-initial",
-    "created": "2020-08-26T08:49:28.903Z",
+    "name": "noname",
+    "created": "2020-08-31T09:57:20.777Z",
     "comment": ""
 };
 
@@ -35,7 +35,7 @@ var migrationCommands = function(transaction) {
                 "BlacklistEntries",
                 {
                     "tipId": {
-                        "type": Sequelize.INTEGER,
+                        "type": Sequelize.STRING,
                         "field": "tipId",
                         "primaryKey": true,
                         "allowNull": false
@@ -426,7 +426,7 @@ var migrationCommands = function(transaction) {
                 "Tips",
                 {
                     "id": {
-                        "type": Sequelize.INTEGER,
+                        "type": Sequelize.STRING,
                         "field": "id",
                         "primaryKey": true,
                         "allowNull": false
@@ -519,7 +519,7 @@ var migrationCommands = function(transaction) {
                         "allowNull": false
                     },
                     "tipId": {
-                        "type": Sequelize.INTEGER,
+                        "type": Sequelize.STRING,
                         "field": "tipId",
                         "allowNull": false
                     },
@@ -650,7 +650,7 @@ var migrationCommands = function(transaction) {
                         "allowNull": false
                     },
                     "tipId": {
-                        "type": Sequelize.INTEGER,
+                        "type": Sequelize.STRING,
                         "field": "tipId",
                         "onUpdate": "CASCADE",
                         "onDelete": "SET NULL",

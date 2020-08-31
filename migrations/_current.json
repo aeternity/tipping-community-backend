@@ -7,7 +7,7 @@
                     "allowNull": false,
                     "primaryKey": true,
                     "field": "tipId",
-                    "seqType": "Sequelize.INTEGER"
+                    "seqType": "Sequelize.STRING"
                 },
                 "status": {
                     "defaultValue": {
@@ -48,7 +48,7 @@
                 "tipId": {
                     "allowNull": false,
                     "field": "tipId",
-                    "seqType": "Sequelize.INTEGER"
+                    "seqType": "Sequelize.STRING"
                 },
                 "text": {
                     "allowNull": false,
@@ -520,7 +520,7 @@
                     "onDelete": "SET NULL",
                     "onUpdate": "CASCADE",
                     "field": "tipId",
-                    "seqType": "Sequelize.INTEGER"
+                    "seqType": "Sequelize.STRING"
                 }
             },
             "indexes": []
@@ -532,7 +532,7 @@
                     "allowNull": false,
                     "primaryKey": true,
                     "field": "id",
-                    "seqType": "Sequelize.INTEGER"
+                    "seqType": "Sequelize.STRING"
                 },
                 "language": {
                     "allowNull": true,

@@ -11,6 +11,7 @@ const del = promisify(client.del).bind(client);
 const cacheKeys = promisify(client.keys).bind(client);
 
 const lock = new AsyncLock({ timeout: 30 * 1000 });
+const lockNoTimeout = new AsyncLock();
 
 const cache = {};
 cache.wsconnection = null;
@@ -90,12 +91,13 @@ cache.del = async keys => {
 };
 
 cache.keepHot = (aeternity, keepHotFunction) => {
-  const keepHotLogic = async () => {
+  const keepHotLogic = async () => lockNoTimeout.acquire('keepHotLogic', async () => {
     const start = new Date().getTime();
     await keepHotFunction();
+
     // eslint-disable-next-line no-console
     console.log('\n  cache keepHot', new Date().getTime() - start, 'ms');
-  };
+  });
 
   keepHotLogic();
   setInterval(keepHotLogic, cache.keepHotInterval);

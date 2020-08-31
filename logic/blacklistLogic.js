@@ -17,8 +17,7 @@ module.exports = class Blacklist {
     try {
       const { tipId } = req.body;
       if (!tipId) return res.status(400).send('Missing required field tipId');
-
-      const entry = await BlacklistEntry.create({ tipId });
+      const entry = await BlacklistEntry.create({ tipId: String(tipId) });
       // Kill stats cache
       await cache.del(['StaticLogic.getStats']);
       return res.send(entry);
@@ -29,16 +28,19 @@ module.exports = class Blacklist {
 
   static async flagTip(req, res) {
     try {
-      const { tipId, author } = req.body;
+      let { tipId } = req.body;
+      const { author } = req.body;
+      // Wallet sends tip as number
+      tipId = String(tipId);
       if (!tipId) return res.status(400).send('Missing required field tipId');
       if (!author) return res.status(400).send('Missing required field author');
-      let existingEntry = await BlacklistEntry.findOne({ where: { tipId }, raw: true });
+      let existingEntry = await BlacklistEntry.findOne({ where: { tipId } });
       if (!existingEntry) {
         existingEntry = await BlacklistEntry.create({ tipId, flagger: author, status: 'flagged' });
         // Kill stats cache
         await cache.del(['StaticLogic.getStats']);
       }
-      return res.send(existingEntry);
+      return res.send(existingEntry.toJSON());
     } catch (e) {
       return res.status(500).send(e.message);
     }
@@ -71,8 +73,8 @@ module.exports = class Blacklist {
   }
 
   static async getSingleItem(req, res) {
-    const result = await BlacklistEntry.findOne({ where: { tipId: req.params.tipId }, raw: true });
-    return result ? res.send(result) : res.sendStatus(404);
+    const result = await BlacklistEntry.findOne({ where: { tipId: req.params.tipId } });
+    return result ? res.send(result.toJSON()) : res.sendStatus(404);
   }
 
   static async getBlacklistedIds() {

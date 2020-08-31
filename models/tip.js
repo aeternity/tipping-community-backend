@@ -3,7 +3,7 @@ const { TIP_TYPES } = require('./enums/tip');
 module.exports = (sequelize, DataTypes) => sequelize.define('Tip', {
   // attributes
   id: {
-    type: DataTypes.INTEGER,
+    type: DataTypes.STRING,
     allowNull: false,
     primaryKey: true,
   },

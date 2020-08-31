@@ -18,7 +18,7 @@ module.exports = class CommentLogic {
         ? await Comment.findOne({ where: { id: parentId } }, { raw: true }) : null;
       if (parentComment === null && typeof parentId !== 'undefined') return res.status(400).send(`Could not find parent comment with id ${parentId}`);
 
-      const relevantTip = (await aeternity.getTips()).find(({ id }) => id === tipId);
+      const relevantTip = (await aeternity.getTips()).find(({ id }) => String(id) === tipId);
       if (!relevantTip) return res.status(400).send(`Could not find tip with id ${tipId}`);
 
       const entry = await Comment.create({
@@ -95,8 +95,8 @@ module.exports = class CommentLogic {
 
   // TODO move to stats
   static async fetchCommentCountForAddress(address) {
-    const result = await Comment.count({ where: { author: address }, raw: true });
-    return result || 0;
+    const result = await Comment.count({ where: { author: address } });
+    return result ? result.toJSON() : 0;
   }
 
   // TODO move to stats
@@ -109,7 +109,7 @@ module.exports = class CommentLogic {
 
   // TODO move to stats
   static fetchCommentCountForTips() {
-    return Comment.count({ group: ['tipId'], raw: true });
+    return Comment.count({ group: ['tipId'] });
   }
 
   // TODO move to stats

@@ -3,7 +3,7 @@ const { BLACKLIST_STATUS } = require('./enums/blacklist');
 module.exports = (sequelize, DataTypes) => sequelize.define('BlacklistEntry', {
   // attributes
   tipId: {
-    type: DataTypes.INTEGER,
+    type: DataTypes.STRING,
     allowNull: false,
     primaryKey: true,
   },

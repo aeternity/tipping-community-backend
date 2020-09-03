@@ -1,0 +1,49 @@
+version: "3.6"
+services:
+  superhero-backend:
+    build: .
+    container_name: superhero-backend
+    ports:
+      - "3000:3000"
+    cap_add:
+      - SYS_ADMIN # required for the browser / link preview crawler
+    depends_on:
+      - redis
+      - postgres
+      - ipfs
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - NODE_URL=https://mainnet.aeternity.io
+      - COMPILER_URL=https://latest.compiler.aepps.com
+      - CONTRACT_ADDRESS=ct_2AfnEfCSZCTEkxL5Yoi4Yfq6fF7YapHRaFKDJK3THMXMBspp5z
+      - ORACLE_CONTRACT_ADDRESS=ct_7wqP18AHzyoqymwGaqQp8G2UpzBCggYiq7CZdJiB71VUsLpR4
+      - MIDDLEWARE_URL=https://mainnet.aeternity.io
+      - IPFS_URL=http://ipfs:5001
+      - PUBLIC_KEY=ak_yrVCHP97UWfCRGMCaojBjdSKuXD3yyC8NkzkReURd4t3jbCQW # use an account with some tokens here
+      - PRIVATE_KEY=f38eecf78a521fcbf34d253b6681f69e0f64d99526d63e18f205e03cf30dd1248117982ba9504170f1f40c66c137c1823244dc7795950a85807793626e69ebce
+      - AUTHENTICATION_USER=user # used for blacklisting & flagging ui, replace with your own credentials
+      - AUTHENTICATION_PASSWORD=password # used for blacklisting & flagging ui, replace with your own credentials
+      - CONTRACT_FILE=NewTippingInterface
+    restart: always
+
+  redis:
+    image: redis
+    hostname: redis
+    restart: unless-stopped
+    container_name: superhero-redis
+
+  postgres:
+    image: postgres
+    hostname: postgres
+    restart: unless-stopped
+    container_name: superhero-postgres
+    environment:
+      - POSTGRES_PASSWORD=postgres # replace with your own credentials
+      - POSTGRES_USER=postgres # replace with your own credentials
+      - POSTGRES_DB=superhero
+
+  ipfs: # this instance will sync with other peers and act as a p2p node, check the ipfs config to avoid that
+    image: ipfs/go-ipfs
+    hostname: ipfs
+    restart: unless-stopped
+    container_name: superhero-ipfs

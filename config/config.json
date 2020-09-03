@@ -3,7 +3,7 @@
     "dialect": "postgres",
     "username": "postgres",
     "password": "postgres",
-    "host": "localhost",
+    "host": "postgres",
     "database": "superhero",
     "logging": false
   }

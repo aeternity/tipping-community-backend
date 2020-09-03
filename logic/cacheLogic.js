@@ -48,10 +48,10 @@ module.exports = class CacheLogic {
   }
 
   static async findContractEvents() {
-    const fetchContractEvents = async () => {
+    const fetchContractEvents = async () => lock.acquire('fetchContractEvents', async () => {
       const contractTransactions = await aeternity.middlewareContractTransactions();
       return contractTransactions.map(tx => tx.hash).asyncMap(hash => aeternity.transactionEvents(hash));
-    };
+    });
 
     return cache.getOrSet(['contractEvents'], async () => fetchContractEvents().catch(Logger.error), cache.shortCacheTime);
   }

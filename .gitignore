@@ -9,3 +9,4 @@ database.sqlite
 /logs/*.log
 images/
 /traces/*.json
+docker-compose.override.yml

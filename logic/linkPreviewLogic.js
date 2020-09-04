@@ -107,15 +107,18 @@ module.exports = class LinkPreviewLogic {
   }
 
   static async createPreviewForUrl(url, crawler) {
+    // VERIFY URL
+    const urlProtocol = url.match(/^[^:]+(?=:\/\/)/);
+    const newUrl = !urlProtocol ? `http://${url}` : url;
+
     try {
-      // VERIFY URL
-      await metascraper({ url });
-      const html = await crawler(url);
-      const result = await metascraper({ url, html });
+      await metascraper({ url: newUrl });
+      const html = await crawler(newUrl);
+      const result = await metascraper({ url: newUrl, html });
       const data = {
         ...result,
         responseUrl: result.url,
-        requestUrl: url,
+        requestUrl: newUrl,
         querySucceeded: (!!result.title && (!!result.description || !!result.image)),
       };
 
@@ -131,20 +134,20 @@ module.exports = class LinkPreviewLogic {
       // Fetch image
       if (data.image) data.image = await LinkPreviewLogic.fetchImage(data.requestUrl, data.image);
 
-      const existingEntry = await LinkPreview.findOne({ where: { requestUrl: url } });
+      const existingEntry = await LinkPreview.findOne({ where: { requestUrl: newUrl } });
 
       if (existingEntry) {
-        return await LinkPreview.update({ ...data, failReason: null }, { where: { requestUrl: url }, raw: true });
+        return await LinkPreview.update({ ...data, failReason: null }, { where: { requestUrl: newUrl }, raw: true });
       }
       // Kill stats cache
       await cache.del(['StaticLogic.getStats']);
 
       return await LinkPreview.create(data, { raw: true });
     } catch (err) {
-      Logger.error(`Crawling ${url} failed with "${err.message}"`);
+      Logger.error(`Crawling ${newUrl} failed with "${err.message}"`);
 
       return LinkPreview.create({
-        requestUrl: url,
+        requestUrl: newUrl,
         querySucceeded: false,
         failReason: err.message ? err.message : err,
       }, { raw: true });

@@ -39,4 +39,10 @@ module.exports = class TokenCacheLogic {
       return acc;
     }, Promise.resolve({})));
   }
+
+  static async invalidateTokenCache(req, res) {
+    await cache.del(['getCacheTokenAccounts', req.params.token]);
+    aeternity.getCacheTokenAccounts(req.params.token); // just trigger cache update, so follow up requests may have it cached already
+    if (res) res.send({ status: 'OK' });
+  }
 };

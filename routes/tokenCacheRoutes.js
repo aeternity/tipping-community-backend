@@ -12,5 +12,7 @@ router.post('/addToken', TokenCacheLogic.indexTokenInfo);
 
 router.get('/balances', TokenCacheLogic.tokenAccountBalance);
 
+router.get('/invalidate/:token', TokenCacheLogic.invalidateTokenCache);
+
 module.exports = router;
 

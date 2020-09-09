@@ -238,6 +238,40 @@ describe('Notifications', () => {
       createdNotification.should.have.property('entityId', '1');
       createdNotification.should.have.property('type', NOTIFICATION_TYPES.CLAIM_OF_RETIP);
     });
+
+    it('it should not crash if tips are resynced', async () => {
+      await Notification.create({
+        type: NOTIFICATION_TYPES.RETIP_ON_TIP,
+        entityType: ENTITY_TYPES.TIP,
+        entityId: '1',
+        receiver: 'ak_tip',
+        sourceType: SOURCE_TYPES.RETIP,
+        sourceId: '1',
+      });
+
+      const fakeData = [
+        {
+          sender: 'ak_tip',
+          title: '#test tip',
+          id: '1',
+          url: `https://superhero.com/tip/1/comment/${createdComment.id}`,
+          retips: [{
+            id: '1',
+            sender: 'ak_retip',
+            timestamp: (new Date(2020, 8, 1)).getTime(),
+            claim: {
+              unclaimed: false,
+            },
+          }],
+          claim: {
+            unclaimed: false,
+          },
+        },
+      ];
+
+      await TipLogic.updateTipsDB(fakeData);
+      await RetipLogic.updateRetipsDB(fakeData);
+    });
   });
 
   describe('Retrieve Notifications', () => {

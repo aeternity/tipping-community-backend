@@ -88,13 +88,33 @@ module.exports = class NotificationLogic {
     if (commentMatch) {
       const commentId = commentMatch[2];
       const comment = await Comment.findOne({ where: { id: commentId }, raw: true });
-      await NotificationLogic.add[NOTIFICATION_TYPES.TIP_ON_COMMENT](comment.author, tip.id, commentId);
+      try {
+        await NotificationLogic.add[NOTIFICATION_TYPES.TIP_ON_COMMENT](comment.author, tip.id, commentId);
+      } catch (e) {
+        if (!e.message.includes('SequelizeUniqueConstraintError')) {
+          // eslint-disable-next-line no-console
+          console.error(e);
+        } else {
+          // eslint-disable-next-line no-console
+          console.warn(`Duplicate notification for TIP_ON_COMMENT the comment ${commentId} on tip ${tip.id}`);
+        }
+      }
     }
   }
 
   static async handleNewRetip(retip) {
     // RETIP ON TIP
-    await NotificationLogic.add[NOTIFICATION_TYPES.RETIP_ON_TIP](retip.parentTip.sender, retip.parentTip.id, retip.id);
+    try {
+      await NotificationLogic.add[NOTIFICATION_TYPES.RETIP_ON_TIP](retip.parentTip.sender, retip.parentTip.id, retip.id);
+    } catch (e) {
+      if (!e.message.includes('SequelizeUniqueConstraintError')) {
+      // eslint-disable-next-line no-console
+        console.error(e);
+      } else {
+        // eslint-disable-next-line no-console
+        console.warn(`Duplicate notification for RETIP_ON_TIP the retip ${retip.parentTip.id} to tip ${retip.parentTip.id}`);
+      }
+    }
   }
 
   static async handleOldTip(tip) {

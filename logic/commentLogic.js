@@ -30,9 +30,9 @@ module.exports = class CommentLogic {
       await cache.del(['StaticLogic.getStats']);
 
       // Create notification
-      await NotificationLogic.add[NOTIFICATION_TYPES.COMMENT_ON_TIP](relevantTip.sender, entry.id);
+      await NotificationLogic.add[NOTIFICATION_TYPES.COMMENT_ON_TIP](relevantTip.sender, entry.id, relevantTip.id);
       if (parentComment !== null) {
-        await NotificationLogic.add[NOTIFICATION_TYPES.COMMENT_ON_COMMENT](parentComment.author, entry.id);
+        await NotificationLogic.add[NOTIFICATION_TYPES.COMMENT_ON_COMMENT](parentComment.author, entry.id, parentComment.id);
       }
 
       return res.send(entry);

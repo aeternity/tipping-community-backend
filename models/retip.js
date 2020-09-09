@@ -12,10 +12,7 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.BOOLEAN,
       defaultValue: true,
     },
-    sender: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
+    sender: { type: DataTypes.STRING },
   }, {
     timestamps: true,
   });

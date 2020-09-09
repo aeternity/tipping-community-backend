@@ -1,7 +1,9 @@
 const {
   Notification, Comment, Retip, Tip,
 } = require('../models');
-const { NOTIFICATION_TYPES, ENTITY_TYPES, NOTIFICATION_STATES } = require('../models/enums/notification');
+const {
+  NOTIFICATION_TYPES, ENTITY_TYPES, NOTIFICATION_STATES, SOURCE_TYPES,
+} = require('../models/enums/notification');
 
 module.exports = class NotificationLogic {
   static async sendTypes(req, res) {
@@ -9,29 +11,37 @@ module.exports = class NotificationLogic {
   }
 
   static add = {
-    [NOTIFICATION_TYPES.COMMENT_ON_TIP]: async (receiver, commentId) => Notification.create({
+    [NOTIFICATION_TYPES.COMMENT_ON_TIP]: async (receiver, commentId, tipId) => Notification.create({
       receiver,
       type: NOTIFICATION_TYPES.COMMENT_ON_TIP,
       entityId: commentId,
       entityType: ENTITY_TYPES.COMMENT,
+      sourceId: tipId,
+      sourceType: SOURCE_TYPES.TIP,
     }),
-    [NOTIFICATION_TYPES.COMMENT_ON_COMMENT]: async (receiver, commentId) => Notification.create({
+    [NOTIFICATION_TYPES.COMMENT_ON_COMMENT]: async (receiver, commentId, parentCommentId) => Notification.create({
       receiver,
       type: NOTIFICATION_TYPES.COMMENT_ON_COMMENT,
       entityId: commentId,
       entityType: ENTITY_TYPES.COMMENT,
+      sourceId: parentCommentId,
+      sourceType: SOURCE_TYPES.COMMENT,
     }),
-    [NOTIFICATION_TYPES.TIP_ON_COMMENT]: async (receiver, commentId) => Notification.create({
+    [NOTIFICATION_TYPES.TIP_ON_COMMENT]: async (receiver, tipId, commentId) => Notification.create({
       receiver,
       type: NOTIFICATION_TYPES.TIP_ON_COMMENT,
-      entityId: commentId,
+      entityId: tipId,
       entityType: ENTITY_TYPES.TIP,
+      sourceId: commentId,
+      sourceType: SOURCE_TYPES.COMMENT,
     }),
-    [NOTIFICATION_TYPES.RETIP_ON_TIP]: async (receiver, tipId) => Notification.create({
+    [NOTIFICATION_TYPES.RETIP_ON_TIP]: async (receiver, tipId, retipId) => Notification.create({
       receiver,
       type: NOTIFICATION_TYPES.RETIP_ON_TIP,
       entityId: tipId,
       entityType: ENTITY_TYPES.TIP,
+      sourceId: retipId,
+      sourceType: SOURCE_TYPES.RETIP,
     }),
     [NOTIFICATION_TYPES.CLAIM_OF_TIP]: async (receiver, tipId) => Notification.create({
       receiver,
@@ -39,11 +49,13 @@ module.exports = class NotificationLogic {
       entityId: tipId,
       entityType: ENTITY_TYPES.TIP,
     }),
-    [NOTIFICATION_TYPES.CLAIM_OF_RETIP]: async (receiver, tipId) => Notification.create({
+    [NOTIFICATION_TYPES.CLAIM_OF_RETIP]: async (receiver, tipId, retipId) => Notification.create({
       receiver,
       type: NOTIFICATION_TYPES.CLAIM_OF_RETIP,
       entityId: tipId,
       entityType: ENTITY_TYPES.TIP,
+      sourceId: retipId,
+      sourceType: SOURCE_TYPES.RETIP,
     }),
   };
 
@@ -76,13 +88,13 @@ module.exports = class NotificationLogic {
     if (commentMatch) {
       const commentId = commentMatch[2];
       const comment = await Comment.findOne({ where: { id: commentId }, raw: true });
-      await NotificationLogic.add[NOTIFICATION_TYPES.TIP_ON_COMMENT](comment.author, tip.id);
+      await NotificationLogic.add[NOTIFICATION_TYPES.TIP_ON_COMMENT](comment.author, tip.id, commentId);
     }
   }
 
   static async handleNewRetip(retip) {
     // RETIP ON TIP
-    await NotificationLogic.add[NOTIFICATION_TYPES.RETIP_ON_TIP](retip.parentTip.sender, retip.parentTip.id);
+    await NotificationLogic.add[NOTIFICATION_TYPES.RETIP_ON_TIP](retip.parentTip.sender, retip.parentTip.id, retip.id);
   }
 
   static async handleOldTip(tip) {
@@ -110,7 +122,7 @@ module.exports = class NotificationLogic {
     });
 
     if (existingRetip.unclaimed && !retip.claim.unclaimed) {
-      await NotificationLogic.add[NOTIFICATION_TYPES.CLAIM_OF_RETIP](retip.sender, retip.parentTip.id);
+      await NotificationLogic.add[NOTIFICATION_TYPES.CLAIM_OF_RETIP](retip.sender, retip.parentTip.id, retip.id);
       await Retip.update({ unclaimed: false }, {
         where: {
           id: retip.id,

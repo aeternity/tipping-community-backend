@@ -26,7 +26,7 @@ describe('Trace', () => {
   describe('TraceLogic API Backend', () => {
     it('it should GET all traces for tipID 0', done => {
       const stub = sinon.stub(CacheLogic, 'getTips').callsFake(async () => [{
-        id: 0,
+        id: '0',
         url: 'https://aeternity.com',
       }]);
       chai.request(server).get('/tracing/backend?id=0').end((err, res) => {

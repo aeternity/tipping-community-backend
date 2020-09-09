@@ -1,4 +1,6 @@
-const { NOTIFICATION_TYPES, NOTIFICATION_STATES, ENTITY_TYPES } = require('./enums/notification');
+const {
+  NOTIFICATION_TYPES, NOTIFICATION_STATES, ENTITY_TYPES, SOURCE_TYPES,
+} = require('./enums/notification');
 
 module.exports = (sequelize, DataTypes) => sequelize.define('Notification', {
   // attributes
@@ -29,6 +31,22 @@ module.exports = (sequelize, DataTypes) => sequelize.define('Notification', {
     type: DataTypes.STRING,
     allowNull: true,
   },
+  sourceType: {
+    type: DataTypes.ENUM({
+      values: Object.values(SOURCE_TYPES),
+    }),
+    allowNull: true,
+  },
+  sourceId: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
 }, {
+  indexes: [
+    {
+      unique: true,
+      fields: ['type', 'entityId', 'entityType', 'receiver', 'sourceType', 'sourceId'],
+    },
+  ],
   timestamps: true,
 });

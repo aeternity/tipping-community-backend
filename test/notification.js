@@ -10,7 +10,9 @@ const { publicKey, performSignedGETRequest, performSignedJSONRequest } = require
 const {
   Notification, Comment, Tip, Retip,
 } = require('../models');
-const { ENTITY_TYPES, NOTIFICATION_TYPES, NOTIFICATION_STATES } = require('../models/enums/notification');
+const {
+  ENTITY_TYPES, NOTIFICATION_TYPES, NOTIFICATION_STATES, SOURCE_TYPES,
+} = require('../models/enums/notification');
 
 chai.should();
 chai.use(chaiHttp);
@@ -25,7 +27,7 @@ describe('Notifications', () => {
 
   describe('Create Notifications', () => {
     let createdComment = null;
-    before(async () => {
+    beforeEach(async () => {
       await Comment.destroy({
         where: {},
         truncate: true,
@@ -58,12 +60,6 @@ describe('Notifications', () => {
     });
 
     it('it should create notifications for TIP_ON_COMMENT', async () => {
-      // Clear DB so retip appears again as new
-      await Tip.destroy({
-        where: {},
-        truncate: true,
-      });
-
       const fakeData = [
         {
           sender: 'ak_tip',
@@ -85,8 +81,10 @@ describe('Notifications', () => {
         where: {
           type: NOTIFICATION_TYPES.TIP_ON_COMMENT,
           entityType: ENTITY_TYPES.TIP,
-          entityId: '1',
-          receiver: 'ak_comment',
+          entityId: fakeData[0].id,
+          receiver: createdComment.author,
+          sourceType: SOURCE_TYPES.COMMENT,
+          sourceId: String(createdComment.id),
         },
         raw: true,
       });
@@ -95,20 +93,11 @@ describe('Notifications', () => {
       createdNotification.should.have.property('entityType', ENTITY_TYPES.TIP);
       createdNotification.should.have.property('entityId', '1');
       createdNotification.should.have.property('type', NOTIFICATION_TYPES.TIP_ON_COMMENT);
+      createdNotification.should.have.property('sourceType', SOURCE_TYPES.COMMENT);
+      createdNotification.should.have.property('sourceId', String(createdComment.id));
     });
 
     it('it should create notifications for RETIP_ON_TIP', async () => {
-      await Retip.destroy({
-        where: {},
-        truncate: true,
-      });
-
-      await Tip.destroy({
-        where: {},
-        truncate: true,
-        cascade: true,
-      });
-
       const fakeData = [
         {
           sender: 'ak_tip',
@@ -149,17 +138,6 @@ describe('Notifications', () => {
     });
 
     it('it should create notifications for CLAIM_OF_TIP', async () => {
-      await Retip.destroy({
-        where: {},
-        truncate: true,
-      });
-
-      await Tip.destroy({
-        where: {},
-        truncate: true,
-        cascade: true,
-      });
-
       await Tip.create({
         id: '1',
         language: null,
@@ -208,17 +186,6 @@ describe('Notifications', () => {
     });
 
     it('it should create notifications for CLAIM_OF_RETIP', async () => {
-      await Retip.destroy({
-        where: {},
-        truncate: true,
-      });
-
-      await Tip.destroy({
-        where: {},
-        truncate: true,
-        cascade: true,
-      });
-
       await Tip.create({
         id: '1',
         language: null,

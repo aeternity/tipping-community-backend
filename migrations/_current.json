@@ -336,6 +336,16 @@
                     "field": "entityId",
                     "seqType": "Sequelize.STRING"
                 },
+                "sourceType": {
+                    "allowNull": true,
+                    "field": "sourceType",
+                    "seqType": "Sequelize.ENUM('COMMENT', 'TIP', 'CLAIM', 'RETIP')"
+                },
+                "sourceId": {
+                    "allowNull": true,
+                    "field": "sourceId",
+                    "seqType": "Sequelize.STRING"
+                },
                 "createdAt": {
                     "allowNull": false,
                     "field": "createdAt",
@@ -347,7 +357,26 @@
                     "seqType": "Sequelize.DATE"
                 }
             },
-            "indexes": []
+            "indexes": {
+                "e9283308f4d6352157fd946ab538bcd623688917": {
+                    "unique": true,
+                    "fields": [
+                        "type",
+                        "entityId",
+                        "entityType",
+                        "receiver",
+                        "sourceType",
+                        "sourceId"
+                    ],
+                    "name": "notifications_type_entity_id_entity_type_receiver_source_type_source_id",
+                    "options": {
+                        "indexName": "notifications_type_entity_id_entity_type_receiver_source_type_source_id",
+                        "name": "notifications_type_entity_id_entity_type_receiver_source_type_source_id",
+                        "indicesType": "UNIQUE",
+                        "type": "UNIQUE"
+                    }
+                }
+            }
         },
         "Pins": {
             "tableName": "Pins",
@@ -501,6 +530,10 @@
                     "field": "unclaimed",
                     "seqType": "Sequelize.BOOLEAN"
                 },
+                "sender": {
+                    "field": "sender",
+                    "seqType": "Sequelize.STRING"
+                },
                 "createdAt": {
                     "allowNull": false,
                     "field": "createdAt",
@@ -546,6 +579,10 @@
                     "allowNull": false,
                     "field": "type",
                     "seqType": "Sequelize.ENUM('AE_TIP', 'TOKEN_TIP', 'DIRECT_AE_TIP', 'DIRECT_TOKEN_TIP')"
+                },
+                "sender": {
+                    "field": "sender",
+                    "seqType": "Sequelize.STRING"
                 },
                 "unclaimed": {
                     "defaultValue": {
@@ -606,5 +643,5 @@
             "indexes": []
         }
     },
-    "revision": 1
+    "revision": 2
 }

@@ -52,6 +52,7 @@ describe('Comments', () => {
     await Tip.destroy({
       where: {},
       truncate: true,
+      cascade: true,
     });
 
     await Tip.create({

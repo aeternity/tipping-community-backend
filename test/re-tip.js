@@ -8,7 +8,7 @@ const TipLogic = require('../logic/tipLogic.js');
 const RetipLogic = require('../logic/retipLogic.js');
 const cache = require('../utils/cache');
 const { TIP_TYPES } = require('../models/enums/tip');
-const { Tip, Retip } = require('../models');
+const { Tip, Retip, Notification } = require('../models');
 
 chai.should();
 
@@ -45,6 +45,12 @@ describe('(Re)Tips', () => {
       });
 
       await Tip.destroy({
+        where: {},
+        truncate: true,
+        cascade: true,
+      });
+
+      await Notification.destroy({
         where: {},
         truncate: true,
         cascade: true,

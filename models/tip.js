@@ -18,10 +18,7 @@ module.exports = (sequelize, DataTypes) => sequelize.define('Tip', {
     defaultValue: TIP_TYPES.AE_TIP,
     allowNull: false,
   },
-  sender: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
+  sender: { type: DataTypes.STRING },
   unclaimed: {
     type: DataTypes.BOOLEAN,
     defaultValue: true,

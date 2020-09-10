@@ -15,7 +15,7 @@ const lock = new AsyncLock();
 const { getTipTopics, topicsRegex } = require('../utils/tipTopicUtil');
 const Util = require('../utils/util');
 const { Profile } = require('../models');
-const Logger = require('../utils/logger');
+const logger = require('../utils/logger')(module);
 
 const searchOptions = {
   threshold: 0.3,
@@ -57,14 +57,14 @@ module.exports = class CacheLogic {
       return contractTransactions.map(tx => tx.hash).asyncMap(hash => CacheLogic.findTransactionEvents(hash));
     });
 
-    return cache.getOrSet(['contractEvents'], async () => fetchContractEvents().catch(Logger.error), cache.shortCacheTime);
+    return cache.getOrSet(['contractEvents'], async () => fetchContractEvents().catch(logger.error), cache.shortCacheTime);
   }
 
   static async fetchPrice() {
     return cache.getOrSet(
       ['fetchPrice'],
       async () => axios.get('https://api.coingecko.com/api/v3/simple/price?ids=aeternity&vs_currencies=usd,eur,cny')
-        .then(res => res.data).catch(Logger.error),
+        .then(res => res.data).catch(logger.error),
       cache.longCacheTime,
     );
   }
@@ -84,7 +84,7 @@ module.exports = class CacheLogic {
         const difference = tipUrls.filter(url => !previewUrls.includes(url));
 
         await difference.asyncMap(async url => {
-          await LinkPreviewLogic.generatePreview(url).catch(Logger.error);
+          await LinkPreviewLogic.generatePreview(url).catch(logger.error);
         });
       });
 

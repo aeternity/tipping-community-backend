@@ -3,7 +3,7 @@ const express = require('express');
 const app = express();
 const exphbs = require('express-handlebars');
 const cors = require('cors');
-const Logger = require('./utils/logger.js');
+const logger = require('./utils/logger')(module);
 
 // VIEWS
 app.engine('handlebars', exphbs());
@@ -38,7 +38,15 @@ app.use((req, res) => {
 });
 
 app.listen(3000, () => {
-  Logger.log('Server started');
+  logger.info('Server started');
 });
+
+process
+  .on('unhandledRejection', (reason, p) => {
+    logger.error(`${reason} Unhandled Rejection at Promise ${p}`);
+  })
+  .on('uncaughtException', err => {
+    logger.error(err);
+  });
 
 module.exports = app;

@@ -76,14 +76,11 @@ describe('Aeternity', () => {
 
   it('it should fail pre-claiming an non existing tip', async function () {
     this.timeout(10000);
-    let error = {};
-    try {
-      await ae.preClaim('not_a_real_account', 'https://probably.not.an.existing.tip', new Trace());
-    } catch (e) {
-      error = e;
-    }
-    error.should.be.an('error');
-    error.message.should.be.equal('No zero amount claims');
+
+    const result = await ae.preClaim('not_a_real_account', 'https://probably.not.an.existing.tip', new Trace());
+
+    result.should.be.a('boolean');
+    result.should.eql(false);
   });
 
   const url = 'https://probably.not.an.existing.tip';

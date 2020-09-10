@@ -1,4 +1,4 @@
-const Logger = require('../utils/logger.js');
+const logger = require('../utils/logger')(module);
 const ae = require('../utils/aeternity.js');
 const CacheLogic = require('./cacheLogic');
 const Trace = require('../utils/trace');
@@ -14,9 +14,7 @@ module.exports = class PayForTxLogic {
 
     // Helper functions
     const sendSuccess = () => {
-      Logger.log({
-        success: true, url: req.body.url, address: req.body.address, status: 200, message: '',
-      });
+      logger.info(`Pre-Claim check success for ${req.body.url} from address ${req.body.address}`);
       trace.update({
         state: TRACE_STATES.REQUEST_ANSWERED,
         answer: 'accepted',
@@ -28,9 +26,7 @@ module.exports = class PayForTxLogic {
 
     const sendError = (status, message) => {
       if (!req.body) req.body = {};
-      Logger.log({
-        success: false, url: req.body.url, address: req.body.address, status, message,
-      });
+      logger.info(`Rejecting claim for ${req.body.url} from ${req.body.address} with reason: ${message}`);
       trace.update({
         state: TRACE_STATES.REQUEST_ANSWERED,
         answer: 'rejected',
@@ -56,16 +52,17 @@ module.exports = class PayForTxLogic {
     // Try to claim
     try {
       // Check sync if properties are okay
-      const result = await ae.checkPreClaim(req.body.address, req.body.url, trace);
+      const result = await ae.getClaimableAmount(req.body.address, req.body.url, trace);
 
       // run claim async
       PayForTxLogic.runAsyncClaim(req.body.address, req.body.url, trace);
 
+      if (result === 0) return sendError(400, 'No zero amount claims');
       if (!result) return sendError(400, 'Claim rejected');
       trace.setMetaData(req.body.url, req.body.address);
       return sendSuccess();
     } catch (e) {
-      Logger.error(e);
+      logger.error(e);
       return sendError(500, e.message);
     }
   }

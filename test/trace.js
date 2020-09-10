@@ -59,7 +59,7 @@ describe('Trace', () => {
           url: 'https://this.is.a.fake.url', // Random URL
         })
         .end((err, res) => {
-          res.should.have.status(500);
+          res.should.have.status(400);
           TraceModel.findAll({ raw: true }).then(results => {
             results.should.have.length(0);
             done();
@@ -68,7 +68,7 @@ describe('Trace', () => {
     });
 
     it('proper request should leave a trace', done => {
-      const stub = sinon.stub(ae, 'checkPreClaim').callsFake(async () => 10);
+      const stub = sinon.stub(ae, 'getClaimableAmount').callsFake(async () => 10);
       chai.request(server).post('/claim/submit')
         .send({
           address: publicKey, // Random PK

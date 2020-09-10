@@ -1,7 +1,7 @@
 const { v4: uuidv4 } = require('uuid');
 const fs = require('fs');
 const { Trace: TraceModel } = require('../models');
-const Logger = require('./logger');
+const logger = require('./logger')(module);
 const { TRACE_STATES } = require('../models/enums/trace');
 
 module.exports = class Trace {
@@ -13,11 +13,7 @@ module.exports = class Trace {
   }
 
   update(update) {
-    Logger.log({
-      msg: 'UPDATED TRACE',
-      id: this.id,
-      ...update,
-    });
+    logger.debug(`Updating trace ${this.id} with data: ${JSON.stringify(update)}`);
     this.data.push(Object.assign(update, { date: Date.now() }));
     if (this.saveToDisk) this.writeToJSON();
   }
@@ -45,9 +41,6 @@ module.exports = class Trace {
   finished(result) {
     this.update({ state: TRACE_STATES.FINISHED, ...result });
     this.writeToJSON();
-    Logger.log({
-      msg: 'FINISHED TRACE',
-      id: this.id,
-    });
+    logger.info(`finished trace ${this.id}`);
   }
 };

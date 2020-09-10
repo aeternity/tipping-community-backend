@@ -49,7 +49,7 @@ describe('Pay for TX', () => {
         address: publicKey,
         url: 'https://complicated.domain.test',
       }).end((err, res) => {
-        res.should.have.status(500);
+        res.should.have.status(400);
         res.body.should.have.property('error', 'No zero amount claims');
         done();
       });

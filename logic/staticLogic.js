@@ -3,7 +3,7 @@ const {
   BlacklistEntry, Comment, LinkPreview, Profile,
 } = require('../models');
 const cache = require('../utils/cache');
-const Logger = require('../utils/logger');
+const logger = require('../utils/logger')(module);
 
 module.exports = class StaticLogic {
   static async getStatsPerModel(Model) {
@@ -49,7 +49,7 @@ module.exports = class StaticLogic {
     try {
       return res.send(await StaticLogic.getStats());
     } catch (err) {
-      Logger.error(err);
+      logger.error(err);
       return res.status(500).send(err.message);
     }
   }

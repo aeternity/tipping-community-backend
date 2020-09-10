@@ -1,7 +1,7 @@
 const { Pin } = require('../models');
 const { PINNED_CONTENT_TYPES } = require('../models/enums/pin');
 const CacheLogic = require('./cacheLogic');
-const Logger = require('../utils/logger');
+const logger = require('../utils/logger')(module);
 
 module.exports = class PinLogic {
   static async addItem(req, res) {
@@ -17,7 +17,7 @@ module.exports = class PinLogic {
       });
       return res.send(entry);
     } catch (e) {
-      Logger.error(e);
+      logger.error(e);
       return res.status(500).send(e.message);
     }
   }

@@ -1,5 +1,5 @@
 const CacheLogic = require('./cacheLogic.js');
-const Logger = require('../utils/logger');
+const logger = require('../utils/logger')(module);
 
 module.exports = class Verified {
   static async getAllClaimedEvents(req, res) {
@@ -11,7 +11,7 @@ module.exports = class Verified {
           .map(({ url }) => url)))];
       return res.send(allClaimedDomains);
     } catch (err) {
-      Logger.error(err);
+      logger.error(err);
       return res.status(500).send(err.message);
     }
   }

@@ -24,6 +24,7 @@ services:
       - AUTHENTICATION_USER=user # used for blacklisting & flagging ui, replace with your own credentials
       - AUTHENTICATION_PASSWORD=password # used for blacklisting & flagging ui, replace with your own credentials
       - CONTRACT_FILE=NewTippingInterface
+      - NODE_ENV=development
       # all optional
       - POSTGRES_PASSWORD=postgres # replace with your own credentials
       - POSTGRES_USER=postgres # replace with your own credentials

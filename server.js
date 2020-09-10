@@ -23,7 +23,6 @@ app.use('/linkpreview', require('./routes/linkPreviewRoutes.js'));
 app.use('/verified', require('./routes/verifiedRoutes.js'));
 app.use('/cache', require('./routes/cacheRoutes.js'));
 app.use('/claim', require('./routes/payForTxRoutes.js'));
-app.use('/logs', require('./routes/loggerRoutes.js'));
 app.use('/static', require('./routes/staticRoutes.js'));
 app.use('/profile', require('./routes/profileRoutes.js'));
 app.use('/errorreport', require('./routes/errorReportRoutes.js'));

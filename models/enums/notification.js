@@ -21,6 +21,7 @@ const SOURCE_TYPES = {
   COMMENT: 'COMMENT',
   TIP: 'TIP',
   RETIP: 'RETIP',
+  CLAIM: 'CLAIM',
 };
 
 module.exports = {

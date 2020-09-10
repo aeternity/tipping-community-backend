@@ -6,7 +6,7 @@ const axios = require('axios');
 const Util = require('./util');
 const { TRACE_STATES } = require('../models/enums/trace');
 const { topicsRegex } = require('./tipTopicUtil');
-const Logger = require('./logger');
+const logger = require('./logger')(module);
 
 const { decodeEvents, SOPHIA_TYPES } = requireESM('@aeternity/aepp-sdk/es/contract/aci/transformation');
 
@@ -99,7 +99,7 @@ class Aeternity {
     return fs.readFileSync(`${__dirname}/OracleServiceInterface.aes`, 'utf-8');
   }
 
-  async checkPreClaim(address, url, trace) {
+  async getClaimableAmount(address, url, trace) {
     trace.update({
       state: TRACE_STATES.STARTED_PRE_CLAIM,
     });
@@ -110,13 +110,13 @@ class Aeternity {
       claimAmount,
     });
 
-    if (claimAmount === 0) throw new Error('No zero amount claims');
-
     return claimAmount;
   }
 
   async preClaim(address, url, trace) {
-    await this.checkPreClaim(address, url, trace);
+    const amount = await this.getClaimableAmount(address, url, trace);
+
+    if (amount === 0) return false;
 
     // pre-claim if necessary (if not already claimed successfully)
     const claimSuccess = await this.contract.methods.check_claim(url, address).then(r => r.decodedResult.success).catch(trace.catchError(false));
@@ -219,7 +219,7 @@ class Aeternity {
   }
 
   async getChainNames() {
-    return axios.get(`${MIDDLEWARE_URL}/middleware/names/active`).then(res => res.data).catch(Logger.error);
+    return axios.get(`${MIDDLEWARE_URL}/middleware/names/active`).then(res => res.data).catch(logger.error);
   }
 
   async getAddressForChainName(name) {

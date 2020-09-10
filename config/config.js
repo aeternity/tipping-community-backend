@@ -1,3 +1,5 @@
+const logger = require('../utils/logger')(module);
+
 module.exports = {
   development: {
     dialect: 'postgres',
@@ -5,6 +7,6 @@ module.exports = {
     password: process.env.POSTGRES_PASSWORD || 'postgres',
     host: process.env.POSTGRES_HOST || 'localhost',
     database: process.env.POSTGRES_DB || 'superhero',
-    logging: false,
+    logging: msg => logger.debug(msg),
   },
 };

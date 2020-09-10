@@ -5,7 +5,7 @@ const path = require('path');
 const urlParser = require('url');
 
 const { Profile } = require('../models');
-const Logger = require('./logger');
+const logger = require('./logger')(module);
 
 const VERSION = '2-0-0';
 
@@ -113,7 +113,7 @@ const signatureAuth = async (req, res, next) => {
       try {
         if (file) fs.unlinkSync(path.resolve(__dirname, '../images/', file.filename));
       } catch (e) {
-        Logger.error(`Could not delete file:${e.message}`);
+        logger.error(`Could not delete file:${e.message}`);
       }
     }
   });
@@ -195,7 +195,7 @@ const signatureAuth = async (req, res, next) => {
         payload,
       });
     } catch (e) {
-      Logger.error(e);
+      logger.error(e);
       return sendError(e.message);
     }
   }

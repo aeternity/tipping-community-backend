@@ -1,6 +1,7 @@
 const redis = require('redis');
 const { promisify } = require('util');
 const AsyncLock = require('async-lock');
+const logger = require('./logger')(module);
 
 if (!process.env.REDIS_URL) throw Error('REDIS_URL is not set');
 
@@ -23,8 +24,7 @@ cache.networkKey = '';
 
 cache.init = async (aeternity, keepHotFunction) => {
   cache.networkKey = await aeternity.networkId();
-  // eslint-disable-next-line no-console
-  console.log(`cache networkKey ${cache.networkKey}`);
+  logger.info(`cache networkKey ${cache.networkKey}`);
   if (process.env.NODE_ENV !== 'test') cache.keepHot(keepHotFunction);
 };
 
@@ -39,25 +39,18 @@ cache.getOrSet = async (keys, asyncFetchData, expire = null) => {
   return lock.acquire(key, async () => {
     const lockedValue = await get(key);
     if (lockedValue) {
-      // eslint-disable-next-line no-console
-      console.log('\n   lock.acquire', key, new Date().getTime() - startLock, 'ms');
+      logger.info(`lock.acquire ${key} ${new Date().getTime() - startLock}ms`);
       return JSON.parse(lockedValue);
     }
 
     const start = new Date().getTime();
     const data = await asyncFetchData();
     cache.set(keys, data, expire);
-    if (new Date().getTime() - start > 50) {
-      // eslint-disable-next-line no-console
-      console.log('\n   cache', key, new Date().getTime() - start, 'ms');
-    } else {
-      process.stdout.write('\'');
-    }
+    logger.info(`cache ${key} ${new Date().getTime() - start}ms`);
 
     return data;
   }).catch(e => {
-    // eslint-disable-next-line no-console
-    console.error(e);
+    logger.error(e);
     return asyncFetchData();
   });
 };
@@ -74,18 +67,15 @@ cache.set = async (keys, data, expire = null) => {
 
 cache.delByPrefix = async prefixes => {
   const prefix = buildKey(prefixes);
-  // eslint-disable-next-line no-console
-  console.log('      cache keys', `${prefix}*`);
+  logger.info(`cache keys ${prefix}*`);
   const rows = await cacheKeys(`${prefix}*`);
-  // eslint-disable-next-line no-console
-  if (rows.length) console.log('      cache delByPrefix', rows);
+  if (rows.length) logger.info(`cache delByPrefix ${rows}`);
   await Promise.all(rows.map(key => del(key)));
 };
 
 cache.del = async keys => {
   const key = buildKey(keys);
-  // eslint-disable-next-line no-console
-  console.log('      cache del', key);
+  logger.info(`cache del ${key}`);
   await del(key);
 };
 
@@ -93,8 +83,7 @@ cache.keepHot = keepHotFunction => {
   const keepHotLogic = async () => lockNoTimeout.acquire('keepHotLogic', async () => {
     const start = new Date().getTime();
     await keepHotFunction();
-    // eslint-disable-next-line no-console
-    console.log('\n  cache keepHot', new Date().getTime() - start, 'ms');
+    logger.info(`cache keepHot ${new Date().getTime() - start}ms`);
   });
 
   keepHotLogic();

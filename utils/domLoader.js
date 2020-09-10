@@ -2,7 +2,7 @@
 const puppeteer = require('puppeteer');
 const { v4: uuidv4 } = require('uuid');
 const path = require('path');
-const Logger = require('./logger');
+const logger = require('./logger')(module);
 
 module.exports = class DomLoader {
   static async getHTMLfromURL(url) {
@@ -46,7 +46,7 @@ module.exports = class DomLoader {
       await browser.close();
       return { html, url: page.url(), screenshot: screenshot ? filename : null };
     } catch (e) {
-      Logger.error({ err: `Error while crawling ${url}: ${e.message}` });
+      logger.error(`Error while crawling ${url}: ${e.message}`);
       await browser.close();
       return {
         html: null,

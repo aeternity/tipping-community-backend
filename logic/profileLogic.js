@@ -1,7 +1,7 @@
 const path = require('path');
 const fs = require('fs');
 
-const Logger = require('../utils/logger');
+const logger = require('../utils/logger')(module);
 const BackupLogic = require('./backupLogic');
 const aeternity = require('../utils/aeternity.js');
 const cache = require('../utils/cache');
@@ -59,7 +59,7 @@ module.exports = class ProfileLogic {
       }
       return ProfileLogic.getSingleItem(req, res);
     } catch (e) {
-      Logger.error(e);
+      logger.error(e);
       return res.status(500).send(e.message);
     }
   }
@@ -91,7 +91,12 @@ module.exports = class ProfileLogic {
   static async getImage(req, res) {
     const result = await Profile.findOne({ where: { author: req.params.author }, raw: true });
     if (!result || !result.image) return res.sendStatus(404);
-    return res.sendFile(path.resolve(__dirname, '../images', result.image));
+    try {
+      return res.sendFile(path.resolve(__dirname, '../images', result.image));
+    } catch (e) {
+      logger.error(e.message);
+      return res.sendStatus(500);
+    }
   }
 
   static async verifyRequest(req, res, next) {

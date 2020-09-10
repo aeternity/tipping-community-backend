@@ -5,6 +5,8 @@ const {
   NOTIFICATION_TYPES, ENTITY_TYPES, NOTIFICATION_STATES, SOURCE_TYPES,
 } = require('../models/enums/notification');
 
+const logger = require('../utils/logger')(module);
+
 module.exports = class NotificationLogic {
   static async sendTypes(req, res) {
     res.send({ NOTIFICATION_TYPES, ENTITY_TYPES, NOTIFICATION_STATES });
@@ -92,11 +94,9 @@ module.exports = class NotificationLogic {
         await NotificationLogic.add[NOTIFICATION_TYPES.TIP_ON_COMMENT](comment.author, tip.id, commentId);
       } catch (e) {
         if (!e.message.includes('SequelizeUniqueConstraintError')) {
-          // eslint-disable-next-line no-console
-          console.error(e);
+          logger.error(e);
         } else {
-          // eslint-disable-next-line no-console
-          console.warn(`Duplicate notification for TIP_ON_COMMENT the comment ${commentId} on tip ${tip.id}`);
+          logger.warn(`Duplicate notification for TIP_ON_COMMENT the comment ${commentId} on tip ${tip.id}`);
         }
       }
     }
@@ -108,11 +108,9 @@ module.exports = class NotificationLogic {
       await NotificationLogic.add[NOTIFICATION_TYPES.RETIP_ON_TIP](retip.parentTip.sender, retip.parentTip.id, retip.id);
     } catch (e) {
       if (!e.message.includes('SequelizeUniqueConstraintError')) {
-      // eslint-disable-next-line no-console
-        console.error(e);
+        logger.error(e);
       } else {
-        // eslint-disable-next-line no-console
-        console.warn(`Duplicate notification for RETIP_ON_TIP the retip ${retip.parentTip.id} to tip ${retip.parentTip.id}`);
+        logger.warn(`Duplicate notification for RETIP_ON_TIP the retip ${retip.parentTip.id} to tip ${retip.parentTip.id}`);
       }
     }
   }

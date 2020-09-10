@@ -49,7 +49,9 @@
     "sequelize": "^5.21.11",
     "sequelize-hierarchy": "^2.0.4",
     "sharp": "^0.25.3",
-    "uuid": "^8.1.0"
+    "uuid": "^8.1.0",
+    "winston": "^3.3.3",
+    "winston-daily-rotate-file": "^4.5.0"
   },
   "devDependencies": {
     "babel-eslint": "^10.1.0",

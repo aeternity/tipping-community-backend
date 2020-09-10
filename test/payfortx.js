@@ -55,16 +55,4 @@ describe('Pay for TX', () => {
       });
     }).timeout(10000);
   });
-
-  describe('Logger tests', () => {
-    it('should return json parsable logs on endpoint', done => {
-      chai.request(server).get('/logs/all')
-        .auth(process.env.AUTHENTICATION_USER, process.env.AUTHENTICATION_PASSWORD)
-        .end((err, res) => {
-          res.should.have.status(200);
-          res.body.should.be.a('array');
-          done();
-        });
-    });
-  });
 });

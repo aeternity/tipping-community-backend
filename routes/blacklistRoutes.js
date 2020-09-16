@@ -6,6 +6,19 @@ const { basicAuth, signatureAuth } = require('../utils/auth.js');
 const router = new Router();
 
 // Open api routes
+/**
+ * @swagger
+ * /blacklist/api:
+ *   get:
+ *     description: Returns all blacklisted items
+ *     produces:
+ *       - application/json
+ *     responses:
+ *       200:
+ *         description: blacklisted tips
+ *         schema:
+ *           $ref: '#/components/schemas/SignatureRequest'
+ */
 router.get('/api', Logic.getAllItems);
 router.get('/api/:tipId', Logic.getSingleItem);
 

@@ -32,6 +32,7 @@
     "esm": "^3.2.25",
     "express": "^4.17.1",
     "express-handlebars": "^5.2.0",
+    "express-oas-generator": "^1.0.27",
     "fuse.js": "^6.4.2",
     "ipfs-http-client": "^44.1.0",
     "languagedetect": "^2.0.0",
@@ -66,6 +67,7 @@
     "eslint-plugin-import": "^2.22.1",
     "mocha": "^8.2.0",
     "sequelize-auto-migrations": "github:scimonster/sequelize-auto-migrations#a063aa6535a3f580623581bf866cef2d609531ba",
-    "sinon": "^9.2.1"
+    "sinon": "^9.2.1",
+    "swagger-jsdoc": "^4.0.0"
   }
 }

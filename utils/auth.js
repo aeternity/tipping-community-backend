@@ -217,7 +217,19 @@ const signatureAuth = async (req, res, next) => {
     }
   }
 };
-
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     SignatureRequest:
+ *       type: object
+ *       required: [ payload, challenge ]
+ *       properties:
+ *         payload:
+ *           type: string
+ *         challenge:
+ *           type: string
+ */
 module.exports = {
   basicAuth,
   signatureAuth,

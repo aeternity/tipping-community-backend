@@ -66,17 +66,33 @@ class Aeternity {
 
     const decodedEvents = decodeEvents(tx.log, { schema: eventsSchema });
 
-    return decodedEvents.map(decodedEvent => ({
-      event: decodedEvent.name,
-      address: `ak_${decodedEvent.decoded[1]}`,
-      amount: decodedEvent.decoded[2] ? decodedEvent.decoded[2] : null,
-      url: decodedEvent.decoded[0],
-      caller: tx.tx.callerId,
-      nonce: tx.tx.nonce,
-      height: tx.height,
-      hash: tx.hash,
-      time: microBlock.time,
-    }));
+    return decodedEvents.map(decodedEvent => {
+      const event = {
+        event: decodedEvent.name,
+        caller: tx.tx.callerId,
+        nonce: tx.tx.nonce,
+        height: tx.height,
+        hash: tx.hash,
+        time: microBlock.time,
+        contract: tx.contractId,
+      };
+      switch (decodedEvent.name) {
+        case 'CheckPersistClaim':
+          event.address = `ak_${decodedEvent.decoded[1]}`;
+          event.amount = decodedEvent.decoded[2] ? decodedEvent.decoded[2] : null;
+          event.url = decodedEvent.decoded[0]; // eslint-disable-line prefer-destructuring
+          break;
+        case 'QueryOracle':
+          event.address = `ak_${decodedEvent.decoded[1]}`;
+          event.url = decodedEvent.decoded[0]; // eslint-disable-line prefer-destructuring
+          break;
+        default:
+          event.address = `ak_${decodedEvent.decoded[0]}`;
+          event.amount = decodedEvent.decoded[1] ? decodedEvent.decoded[1] : null;
+          event.url = decodedEvent.decoded[2]; // eslint-disable-line prefer-destructuring
+      }
+      return event;
+    });
   }
 
   async fetchOracleState() {

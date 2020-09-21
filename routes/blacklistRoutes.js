@@ -17,7 +17,9 @@ const router = new Router();
  *       200:
  *         description: blacklisted tips
  *         schema:
- *           $ref: '#/components/schemas/SignatureRequest'
+ *           oneOf:
+ *            - $ref: '#/components/schemas/SignatureRequest'
+ *            - $ref: '#/components/schemas/BlacklistEntry'
  */
 router.get('/api', Logic.getAllItems);
 router.get('/api/:tipId', Logic.getSingleItem);

@@ -36,4 +36,15 @@ const openAPIJSON = {
   },
 };
 
-fs.writeFileSync('models.json', JSON.stringify(openAPIJSON));
+const swagger = JSON.parse(fs.readFileSync('./swagger.json'));
+const merged = {
+  ...swagger,
+  components: {
+    ...swagger.components,
+    schemas: {
+      ...swagger.components.schemas,
+      ...openAPIJSON.components.schemas,
+    },
+  },
+};
+fs.writeFileSync('./swagger.json', JSON.stringify(merged));

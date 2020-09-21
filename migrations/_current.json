@@ -344,7 +344,7 @@
                 "sourceType": {
                     "allowNull": true,
                     "field": "sourceType",
-                    "seqType": "Sequelize.ENUM('COMMENT', 'TIP', 'CLAIM', 'RETIP')"
+                    "seqType": "Sequelize.ENUM('COMMENT', 'TIP', 'RETIP', 'CLAIM')"
                 },
                 "sourceId": {
                     "allowNull": true,

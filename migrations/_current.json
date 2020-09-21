@@ -318,6 +318,11 @@
                     "field": "receiver",
                     "seqType": "Sequelize.STRING"
                 },
+                "sender": {
+                    "allowNull": true,
+                    "field": "sender",
+                    "seqType": "Sequelize.STRING"
+                },
                 "status": {
                     "allowNull": false,
                     "defaultValue": {
@@ -643,5 +648,5 @@
             "indexes": []
         }
     },
-    "revision": 2
+    "revision": 3
 }

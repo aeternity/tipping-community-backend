@@ -21,6 +21,7 @@ describe('Notifications', () => {
   const testData = {
     receiver: publicKey,
     entityId: 0,
+    sender: 'ak_sender',
     entityType: ENTITY_TYPES.COMMENT,
     type: NOTIFICATION_TYPES.COMMENT_ON_COMMENT,
   };
@@ -83,6 +84,7 @@ describe('Notifications', () => {
           entityType: ENTITY_TYPES.TIP,
           entityId: fakeData[0].id,
           receiver: createdComment.author,
+          sender: fakeData[0].sender,
           sourceType: SOURCE_TYPES.COMMENT,
           sourceId: String(createdComment.id),
         },
@@ -91,6 +93,7 @@ describe('Notifications', () => {
       createdNotification.should.be.a('object');
       createdNotification.should.have.property('receiver', 'ak_comment');
       createdNotification.should.have.property('entityType', ENTITY_TYPES.TIP);
+      createdNotification.should.have.property('sender', fakeData[0].sender);
       createdNotification.should.have.property('entityId', '1');
       createdNotification.should.have.property('type', NOTIFICATION_TYPES.TIP_ON_COMMENT);
       createdNotification.should.have.property('sourceType', SOURCE_TYPES.COMMENT);
@@ -126,13 +129,15 @@ describe('Notifications', () => {
           type: NOTIFICATION_TYPES.RETIP_ON_TIP,
           entityType: ENTITY_TYPES.TIP,
           entityId: '1',
-          receiver: 'ak_tip',
+          receiver: fakeData[0].sender,
+          sender: fakeData[0].retips[0].sender,
         },
         raw: true,
       });
       createdNotification.should.be.a('object');
-      createdNotification.should.have.property('receiver', 'ak_tip');
+      createdNotification.should.have.property('receiver', fakeData[0].sender);
       createdNotification.should.have.property('entityType', ENTITY_TYPES.TIP);
+      createdNotification.should.have.property('sender', fakeData[0].retips[0].sender);
       createdNotification.should.have.property('entityId', '1');
       createdNotification.should.have.property('type', NOTIFICATION_TYPES.RETIP_ON_TIP);
     });
@@ -293,6 +298,7 @@ describe('Notifications', () => {
             res.body.should.be.a('array');
             res.body.should.have.length(1);
             res.body[0].should.have.property('receiver', publicKey);
+            res.body[0].should.have.property('sender', testData.sender);
             res.body[0].should.have.property('entityId', '0');
             res.body[0].should.have.property('entityType', ENTITY_TYPES.COMMENT);
             res.body[0].should.have.property('type', NOTIFICATION_TYPES.COMMENT_ON_COMMENT);

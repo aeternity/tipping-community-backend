@@ -13,32 +13,36 @@ module.exports = class NotificationLogic {
   }
 
   static add = {
-    [NOTIFICATION_TYPES.COMMENT_ON_TIP]: async (receiver, commentId, tipId) => Notification.create({
+    [NOTIFICATION_TYPES.COMMENT_ON_TIP]: async (receiver, sender, commentId, tipId) => Notification.create({
       receiver,
+      sender,
       type: NOTIFICATION_TYPES.COMMENT_ON_TIP,
       entityId: commentId,
       entityType: ENTITY_TYPES.COMMENT,
       sourceId: tipId,
       sourceType: SOURCE_TYPES.TIP,
     }),
-    [NOTIFICATION_TYPES.COMMENT_ON_COMMENT]: async (receiver, commentId, parentCommentId) => Notification.create({
+    [NOTIFICATION_TYPES.COMMENT_ON_COMMENT]: async (receiver, sender, commentId, parentCommentId) => Notification.create({
       receiver,
+      sender,
       type: NOTIFICATION_TYPES.COMMENT_ON_COMMENT,
       entityId: commentId,
       entityType: ENTITY_TYPES.COMMENT,
       sourceId: parentCommentId,
       sourceType: SOURCE_TYPES.COMMENT,
     }),
-    [NOTIFICATION_TYPES.TIP_ON_COMMENT]: async (receiver, tipId, commentId) => Notification.create({
+    [NOTIFICATION_TYPES.TIP_ON_COMMENT]: async (receiver, sender, tipId, commentId) => Notification.create({
       receiver,
+      sender,
       type: NOTIFICATION_TYPES.TIP_ON_COMMENT,
       entityId: tipId,
       entityType: ENTITY_TYPES.TIP,
       sourceId: commentId,
       sourceType: SOURCE_TYPES.COMMENT,
     }),
-    [NOTIFICATION_TYPES.RETIP_ON_TIP]: async (receiver, tipId, retipId) => Notification.create({
+    [NOTIFICATION_TYPES.RETIP_ON_TIP]: async (receiver, sender, tipId, retipId) => Notification.create({
       receiver,
+      sender,
       type: NOTIFICATION_TYPES.RETIP_ON_TIP,
       entityId: tipId,
       entityType: ENTITY_TYPES.TIP,
@@ -91,7 +95,7 @@ module.exports = class NotificationLogic {
       const commentId = commentMatch[2];
       const comment = await Comment.findOne({ where: { id: commentId }, raw: true });
       try {
-        await NotificationLogic.add[NOTIFICATION_TYPES.TIP_ON_COMMENT](comment.author, tip.id, commentId);
+        await NotificationLogic.add[NOTIFICATION_TYPES.TIP_ON_COMMENT](comment.author, tip.sender, tip.id, commentId);
       } catch (e) {
         if (!e.message.includes('SequelizeUniqueConstraintError')) {
           logger.error(e);
@@ -105,7 +109,7 @@ module.exports = class NotificationLogic {
   static async handleNewRetip(retip) {
     // RETIP ON TIP
     try {
-      await NotificationLogic.add[NOTIFICATION_TYPES.RETIP_ON_TIP](retip.parentTip.sender, retip.parentTip.id, retip.id);
+      await NotificationLogic.add[NOTIFICATION_TYPES.RETIP_ON_TIP](retip.parentTip.sender, retip.sender, retip.parentTip.id, retip.id);
     } catch (e) {
       if (!e.message.includes('SequelizeUniqueConstraintError')) {
         logger.error(e);

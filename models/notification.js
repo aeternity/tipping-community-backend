@@ -14,6 +14,10 @@ module.exports = (sequelize, DataTypes) => sequelize.define('Notification', {
     type: DataTypes.STRING,
     allowNull: false,
   },
+  sender: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
   status: {
     type: DataTypes.ENUM({
       values: Object.values(NOTIFICATION_STATES),

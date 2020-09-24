@@ -40,9 +40,12 @@ module.exports = class TipLogic {
         const lang = probability.languages ? probability.languages[0].code : null;
         return { ...tip, lang };
       });
-      await TipLogic.bulkCreate(result.map(({ id, lang, claim, sender, }) => ({
+      await TipLogic.bulkCreate(result.map(({
+        id, lang, claim, sender,
+      }) => ({
         id: String(id),
-        language: lang,sender,
+        language: lang,
+        sender,
         unclaimed: claim ? claim.unclaimed : false,
       })));
     });

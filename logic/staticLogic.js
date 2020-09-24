@@ -54,7 +54,7 @@ module.exports = class StaticLogic {
     }
   }
 
-  static async getGrayList (req, res) {
+  static async getGrayList(req, res) {
     res.send([
       'facebook.com',
       'weibo.com',

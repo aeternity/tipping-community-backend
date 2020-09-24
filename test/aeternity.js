@@ -1,7 +1,9 @@
 // Require the dev-dependencies
 const chai = require('chai');
 const chaiHttp = require('chai-http');
-const { describe, it, before } = require('mocha');
+const {
+  describe, it, beforeEach, afterEach,
+} = require('mocha');
 const sinon = require('sinon');
 
 const ae = require('../utils/aeternity.js');
@@ -13,8 +15,12 @@ chai.use(chaiHttp);
 describe('Aeternity', () => {
   let sandbox;
 
-  before(() => {
+  beforeEach(() => {
     sandbox = sinon.createSandbox();
+  });
+
+  afterEach(() => {
+    sandbox.restore();
   });
 
   it('it should init', async function () {
@@ -72,8 +78,13 @@ describe('Aeternity', () => {
   it('it should fail pre-claiming an non existing tip', async function () {
     this.timeout(10000);
 
-    const result = await ae.preClaim('not_a_real_account', 'https://probably.not.an.existing.tip', new Trace());
+    // CHECK V1
+    let result = await ae.preClaim('not_a_real_account', 'https://probably.not.an.existing.tip', new Trace(), ae.contractV1);
+    result.should.be.a('boolean');
+    result.should.eql(false);
 
+    // CHECK V2
+    result = await ae.preClaim('not_a_real_account', 'https://probably.not.an.existing.tip', new Trace(), ae.contractV2);
     result.should.be.a('boolean');
     result.should.eql(false);
   });
@@ -83,25 +94,29 @@ describe('Aeternity', () => {
 
   it('it should succeed pre-claiming with stubs', async function () {
     this.timeout(10000);
-    const unclaimdForUrl = sandbox.stub(ae.contract.methods, 'unclaimed_for_url').callsFake(async () => ({ decodedResult: 1 }));
-    const checkClaim = sandbox.stub(ae.contract.methods, 'check_claim').callsFake(async () => ({ decodedResult: { success: true } }));
-    await ae.preClaim(address, url, new Trace());
-    unclaimdForUrl.called.should.equal(true);
-    sinon.assert.alwaysCalledWith(unclaimdForUrl, url);
-    checkClaim.called.should.equal(true);
-    sinon.assert.alwaysCalledWith(checkClaim, url, address);
+    const unclaimdForUrlV1 = sandbox.stub(ae.contractV1.methods, 'unclaimed_for_url').callsFake(async () => ({ decodedResult: 1 }));
+    const unclaimdForUrlV2 = sandbox.stub(ae.contractV2.methods, 'unclaimed_for_url').callsFake(async () => ({ decodedResult: 1 }));
+    const checkClaimV1 = sandbox.stub(ae.contractV1.methods, 'check_claim').callsFake(async () => ({ decodedResult: { success: true } }));
+    const checkClaimV2 = sandbox.stub(ae.contractV2.methods, 'check_claim').callsFake(async () => ({ decodedResult: { success: true } }));
+    await ae.preClaim(address, url, new Trace(), ae.contractV1);
+    await ae.preClaim(address, url, new Trace(), ae.contractV2);
+    unclaimdForUrlV1.called.should.equal(true);
+    sinon.assert.alwaysCalledWith(unclaimdForUrlV1, url);
+    unclaimdForUrlV2.called.should.equal(true);
+    sinon.assert.alwaysCalledWith(unclaimdForUrlV2, url);
+    checkClaimV1.called.should.equal(true);
+    sinon.assert.alwaysCalledWith(checkClaimV1, url, address);
+    checkClaimV2.called.should.equal(true);
+    sinon.assert.alwaysCalledWith(checkClaimV2, url, address);
   });
 
-  it('it should allow to claim if all goes well (with stubs)', async function () {
+  it('it should allow to claim if all goes well (with stubs) for V1', async function () {
     this.timeout(10000);
-    const claim = sandbox.stub(ae.contract.methods, 'claim').callsFake(async () => ({ decodedResult: true }));
+    const claimV1 = sandbox.stub(ae.contractV1.methods, 'claim').callsFake(async () => ({ decodedResult: true }));
+    const claimV2 = sandbox.stub(ae.contractV2.methods, 'claim').callsFake(async () => ({ decodedResult: true }));
     const result = await ae.claimTips(address, url, new Trace());
     result.should.equal(true);
-    claim.called.should.equal(true);
-    sinon.assert.alwaysCalledWith(claim, url, address);
-  });
-
-  after(() => {
-    sandbox.restore();
+    claimV1.called.should.equal(true);
+    sinon.assert.alwaysCalledWith(claimV1, url, address);
   });
 });

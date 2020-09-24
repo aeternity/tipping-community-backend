@@ -163,9 +163,14 @@ describe('Cache', () => {
       checkCachedRoute('/cache/oracle', 'object', done);
     });
 
-    it(`it should GET a single tip cache item in less than ${minimalTimeout}ms`, function (done) {
+    it(`it should GET a single V1 tip cache item in less than ${minimalTimeout}ms`, function (done) {
       this.timeout(minimalTimeout);
-      checkCachedRoute('/cache/tip?id=0', 'object', done);
+      checkCachedRoute('/cache/tip?id=0_v1', 'object', done);
+    });
+
+    it(`it should GET a single V2 tip cache item in less than ${minimalTimeout}ms`, function (done) {
+      this.timeout(minimalTimeout);
+      checkCachedRoute('/cache/tip?id=0_v2', 'object', done);
     });
 
     it('it should 404 on a non existing tip', done => {
@@ -192,7 +197,8 @@ describe('Cache', () => {
       chai.request(server).get('/cache/tips?blacklist=false').end((err, res) => {
         res.should.have.status(200);
         const tipIds = res.body.map(tip => tip.id);
-        tipIds.should.contain('0');
+        tipIds.should.contain('0_v1');
+        tipIds.should.contain('0_v2');
         stub.callCount.should.eql(1);
         stub.restore();
         done();
@@ -262,6 +268,12 @@ describe('Cache', () => {
           total_amount: '1',
           total_unclaimed_amount: '0',
           total_claimed_amount: '1',
+          token_total_amount: [
+            { token: 'T1', amount: '1' },
+          ],
+          token_total_unclaimed_amount: [
+            { token: 'T1', amount: '1' },
+          ],
         },
         {
           amount: '1000000000000000000',
@@ -288,6 +300,14 @@ describe('Cache', () => {
           total_amount: '2',
           total_unclaimed_amount: '1',
           total_claimed_amount: '1',
+          token_total_amount: [
+            { token: 'T1', amount: '2' },
+            { token: 'T2', amount: '1' },
+          ],
+          token_total_unclaimed_amount: [
+            { token: 'T1', amount: '1' },
+            { token: 'T2', amount: '1' },
+          ],
         },
       ]);
       const res = await chai.request(server).get('/cache/stats');
@@ -302,6 +322,10 @@ describe('Cache', () => {
       res.body.should.have.property('senders');
       res.body.senders.should.eql(['ak_tip1', 'ak_tip2', 'ak_retip1']);
       res.body.should.have.property('senders_length', 3);
+      res.body.should.have.property('token_total_amount');
+      res.body.should.have.property('token_total_unclaimed_amount');
+      res.body.token_total_amount[0].should.eql({ token: 'T1', amount: '3' });
+      res.body.token_total_unclaimed_amount[0].should.eql({ token: 'T1', amount: '2' });
       res.body.should.have.property('by_url');
       res.body.by_url.should.be.an('Array');
       res.body.by_url.should.have.length(2);

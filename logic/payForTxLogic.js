@@ -57,7 +57,7 @@ module.exports = class PayForTxLogic {
       // run claim async
       PayForTxLogic.runAsyncClaim(req.body.address, req.body.url, trace);
 
-      if (result === 0) return sendError(400, 'No zero amount claims');
+      if (result.isZero()) return sendError(400, 'No zero amount claims');
       if (!result) return sendError(400, 'Claim rejected');
       trace.setMetaData(req.body.url, req.body.address);
       return sendSuccess();

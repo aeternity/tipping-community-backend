@@ -1,12 +1,8 @@
 const { Universal, Node, MemoryAccount } = require('@aeternity/aepp-sdk');
-const fs = require('fs');
 const requireESM = require('esm')(module); // use to handle es6 import/export
 const axios = require('axios');
-const Util = require('./util');
-const { TRACE_STATES } = require('../models/enums/trace');
 const tippingContractUtil = require('tipping-contract/util/tippingContractUtil');
-const { topicsRegex } = require('./tipTopicUtil');
-const logger = require('./logger')(module);
+const BigNumber = require('bignumber.js');
 
 const { decodeEvents, SOPHIA_TYPES } = requireESM('@aeternity/aepp-sdk/es/contract/aci/transformation');
 
@@ -16,6 +12,10 @@ const TIPPING_V2_INTERFACE = require('tipping-contract/Tipping_v2_Interface.aes'
 const ORACLE_SERVICE_INTERFACE = require('tipping-oracle-service/OracleServiceInterface.aes');
 const TOKEN_CONTRACT_INTERFACE = require('aeternity-fungible-token/FungibleTokenFullInterface.aes');
 const TOKEN_REGISTRY = require('token-registry/TokenRegistry.aes');
+const logger = require('./logger')(module);
+const { topicsRegex } = require('./tipTopicUtil');
+const { TRACE_STATES } = require('../models/enums/trace');
+const Util = require('./util');
 
 class Aeternity {
   constructor() {
@@ -46,7 +46,7 @@ class Aeternity {
         ORACLE_SERVICE_INTERFACE,
         { contractAddress: process.env.ORACLE_CONTRACT_ADDRESS },
       );
-      this.tokenRegistry = await this.client.getContractInstance(TOKEN_REGISTRY, {contractAddress: process.env.TOKEN_REGISTRY_ADDRESS});
+      this.tokenRegistry = await this.client.getContractInstance(TOKEN_REGISTRY, { contractAddress: process.env.TOKEN_REGISTRY_ADDRESS });
       this.tokenContracts = {};
     }
   }
@@ -56,17 +56,16 @@ class Aeternity {
   }
 
   async middlewareContractTransactions() {
-    const oldContractTransactions = axios.get(`${MIDDLEWARE_URL}/middleware/contracts/transactions/address/${process.env.CONTRACT_V1_ADDRESS}`)
+    const oldContractTransactionsPromise = axios.get(`${MIDDLEWARE_URL}/middleware/contracts/transactions/address/${process.env.CONTRACT_V1_ADDRESS}`)
       .then(res => res.data.transactions
         .filter(tx => tx.tx.type === 'ContractCallTx'));
 
-    const contractTransactions = axios.get(`${MIDDLEWARE_URL}/middleware/contracts/transactions/address/${process.env.CONTRACT_V2_ADDRESS}`)
+    const contractTransactionsPromise = axios.get(`${MIDDLEWARE_URL}/middleware/contracts/transactions/address/${process.env.CONTRACT_V2_ADDRESS}`)
       .then(res => res.data.transactions
         .filter(tx => tx.tx.type === 'ContractCallTx'));
 
-    return Promise.all([oldContractTransactions, contractTransactions])
-      .then(([oldContractTransactions, contractTransactions]) =>
-        oldContractTransactions.concat(contractTransactions));
+    return Promise.all([oldContractTransactionsPromise, contractTransactionsPromise])
+      .then(([oldContractTransactions, contractTransactions]) => oldContractTransactions.concat(contractTransactions));
   }
 
   async fetchTransactionEvents(hash) {
@@ -94,7 +93,7 @@ class Aeternity {
     const decodedEvents = decodeEvents(tx.log, { schema: eventsSchema });
 
     return decodedEvents.map(decodedEvent => {
-      let event = {
+      const event = {
         event: decodedEvent.name,
         caller: tx.tx.callerId,
         nonce: tx.tx.nonce,
@@ -130,60 +129,57 @@ class Aeternity {
       }
       return event;
     });
-  };
+  }
 
   async fetchOracleState() {
     if (!this.client) throw new Error('Init sdk first');
     return this.oracleContract.methods.get_state().then(res => res.decodedResult);
   }
 
-  static addAdditionalTipsData = (tips) => {
-    return tips.map(tip => {
-      tip.topics = [...new Set(tip.title.match(topicsRegex))].map((x) => x.toLowerCase());
-
-      tip.amount_ae = Util.atomsToAe(tip.amount).toFixed();
-      tip.total_amount_ae = Util.atomsToAe(tip.total_amount).toFixed();
-      tip.total_unclaimed_amount_ae = Util.atomsToAe(tip.total_unclaimed_amount).toFixed();
-      tip.total_claimed_amount_ae = Util.atomsToAe(tip.total_claimed_amount).toFixed();
-
-      tip.retips = tip.retips.map(retip => {
-        retip.amount_ae = Util.atomsToAe(retip.amount).toFixed();
-        return retip;
-      });
-
-      return tip;
-    });
-  };
+  static addAdditionalTipsData = tips => tips.map(tip => ({
+    ...tip,
+    topics: [...new Set(tip.title.match(topicsRegex))].map(x => x.toLowerCase()),
+    amount_ae: Util.atomsToAe(tip.amount).toFixed(),
+    total_amount_ae: Util.atomsToAe(tip.total_amount).toFixed(),
+    total_unclaimed_amount_ae: Util.atomsToAe(tip.total_unclaimed_amount).toFixed(),
+    total_claimed_amount_ae: Util.atomsToAe(tip.total_claimed_amount).toFixed(),
+    retips: tip.retips.map(retip => ({
+      ...retip,
+      amount_ae: Util.atomsToAe(retip.amount).toFixed(),
+    })),
+  }));
 
   async fetchTips() {
     if (!this.client) throw new Error('Init sdk first');
     const fetchV1State = this.contractV1.methods.get_state();
-      const fetchV2State = this.contractV2.methods.get_state();
-    const tips = tippingContractUtil.getTipsRetips(await fetchV1State, await fetchV2State).tips;
+    const fetchV2State = this.contractV2.methods.get_state();
+    const { tips } = tippingContractUtil.getTipsRetips(await fetchV1State, await fetchV2State);
     return Aeternity.addAdditionalTipsData(tips);
   }
 
   getTokenRegistryState = async () => {
-    const fetchData = async () => {
-      return this.tokenRegistry.methods.get_state().then(r => r.decodedResult);
-    }
+    const fetchData = async () => this.tokenRegistry.methods.get_state().then(r => r.decodedResult);
 
-    return this.cache.getOrSet(["getTokenRegistryState"], () => fetchData(), this.cache.shortCacheTime);
+    return this.cache.getOrSet(['getTokenRegistryState'], () => fetchData(), this.cache.shortCacheTime);
   }
 
-  getTokenMetaInfoCacheAccounts = async (address) => {
+  getTokenMetaInfoCacheAccounts = async address => {
     const fetchData = async () => {
-      if (!this.tokenContracts[address]) this.tokenContracts[address] = await this.client.getContractInstance(TOKEN_CONTRACT_INTERFACE, { contractAddress: address });
+      if (!this.tokenContracts[address]) {
+        this.tokenContracts[address] = await this.client.getContractInstance(
+          TOKEN_CONTRACT_INTERFACE, { contractAddress: address },
+        );
+      }
 
       const metaInfo = await this.tokenContracts[address].methods.meta_info().then(r => r.decodedResult).catch(e => {
-        console.warn(e.message);
+        logger.warn(e.message);
         return null;
-      })
+      });
 
       // add token to registry if not added yet
-      const tokenInRegistry = await this.getTokenRegistryState().then(state => state.find(([token, _]) => token === address));
+      const tokenInRegistry = await this.getTokenRegistryState().then(state => state.find(([token]) => token === address));
       if (metaInfo && !tokenInRegistry) await this.tokenRegistry.methods.add_token(address);
-      return metaInfo
+      return metaInfo;
     };
 
     // just trigger cache buildup, no need to await for result
@@ -192,37 +188,40 @@ class Aeternity {
     return this.cache.getOrSet(['getTokenMetaInfo', address], () => fetchData());
   };
 
-  getCacheTokenBalances = async (account) => {
-    const cacheKeys = ["getCacheTokenAccounts.fetchBalances", account];
+  getCacheTokenBalances = async account => {
+    const cacheKeys = ['getCacheTokenAccounts.fetchBalances', account];
     const hasBalanceTokens = await this.cache.get(cacheKeys);
-    return hasBalanceTokens ? hasBalanceTokens : [];
+    return hasBalanceTokens || [];
   }
 
-  getCacheTokenAccounts = async (token) => {
+  getCacheTokenAccounts = async token => {
     const fetchBalances = async () => {
-      if (!this.tokenContracts[token]) this.tokenContracts[token] = await this.client.getContractInstance(TOKEN_CONTRACT_INTERFACE, {contractAddress: token});
+      if (!this.tokenContracts[token]) {
+        this.tokenContracts[token] = await this.client.getContractInstance(
+          TOKEN_CONTRACT_INTERFACE, { contractAddress: token },
+        );
+      }
 
       const balances = await this.tokenContracts[token].methods.balances().then(r => r.decodedResult);
-      balances.asyncMap(async ([account, _]) => {
-        const cacheKeys = ["getCacheTokenAccounts.fetchBalances", account];
+      balances.asyncMap(async ([account]) => {
+        const cacheKeys = ['getCacheTokenAccounts.fetchBalances', account];
         const hasBalanceTokens = await this.cache.get(cacheKeys);
         const updatedBalanceTokens = hasBalanceTokens ? hasBalanceTokens.concat([token]) : [token];
         return this.cache.set(cacheKeys, [...new Set(updatedBalanceTokens)], this.cache.longCacheTime);
       });
 
       return true;
-    }
+    };
 
     // TODO optimize cache generation for account balances
-    return this.cache.getOrSet(["getCacheTokenAccounts", token], () => fetchBalances(), this.cache.shortCacheTime);
+    return this.cache.getOrSet(['getCacheTokenAccounts', token], () => fetchBalances(), this.cache.shortCacheTime);
   }
 
   async checkPreClaimProperties(address, url, trace) {
-    const amountV1 = await this.checkPreClaim(address, url, trace, this.contractV1).catch(console.error)
-    const amountV2 = await this.checkPreClaim(address, url, trace, this.contractV2).catch(console.error)
+    const amountV1 = await this.checkPreClaim(address, url, trace, this.contractV1).catch(logger.error);
+    const amountV2 = await this.checkPreClaim(address, url, trace, this.contractV2).catch(logger.error);
 
-    const claimAmount = new BigNumber(amountV1).plus(amountV2);
-    return claimAmount;
+    return new BigNumber(amountV1).plus(amountV2);
   }
 
   async checkPreClaim(address, url, trace, contract) {
@@ -230,11 +229,9 @@ class Aeternity {
       state: TRACE_STATES.STARTED_PRE_CLAIM,
     });
 
-    const claimAmount = await contract.methods.unclaimed_for_url(url).then(r => {
-      return Array.isArray(r.decodedResult)
-        ? r.decodedResult[1].reduce((acc, cur) => acc.plus(cur[1]), new BigNumber(r.decodedResult[0])).toFixed() //sum token amounts
-        : String(r.decodedResult)
-    }).catch(trace.catchError("0"));
+    const claimAmount = await contract.methods.unclaimed_for_url(url).then(r => (Array.isArray(r.decodedResult)
+      ? r.decodedResult[1].reduce((acc, cur) => acc.plus(cur[1]), new BigNumber(r.decodedResult[0])).toFixed() // sum token amounts
+      : String(r.decodedResult))).catch(trace.catchError('0'));
 
     trace.update({
       state: TRACE_STATES.CLAIM_AMOUNT,
@@ -245,9 +242,9 @@ class Aeternity {
   }
 
   async preClaim(address, url, trace, contract) {
-    const amount = await this.getClaimableAmount(address, url, trace, contract);
+    const amount = await this.checkPreClaimProperties(address, url, trace, contract);
 
-    if (amount === 0) return false;
+    if (amount.isZero()) return false;
 
     // pre-claim if necessary (if not already claimed successfully)
     const claimSuccess = await contract.methods.check_claim(url, address).then(r => r.decodedResult.success).catch(trace.catchError(false));
@@ -288,8 +285,8 @@ class Aeternity {
   }
 
   async claimTips(address, url, trace) {
-    await this.claimTipsOnContract(address, url, trace, this.contractV1).catch(console.error)
-    await this.claimTipsOnContract(address, url, trace, this.contractV2).catch(console.error)
+    return this.claimTipsOnContract(address, url, trace, this.contractV1).catch(logger.error)
+        || this.claimTipsOnContract(address, url, trace, this.contractV2).catch(logger.error);
   }
 
   async claimTipsOnContract(address, url, trace, contract) {
@@ -300,7 +297,7 @@ class Aeternity {
       trace.update({ state: TRACE_STATES.CLAIM_RESULT, tx: result, result: result.decodedResult });
       return result.decodedResult;
     } catch (e) {
-      if (e.message && e.message.includes('NO_ZERO_AMOUNT_PAYOUT')) return null; //ignoring this
+      if (e.message && e.message.includes('NO_ZERO_AMOUNT_PAYOUT')) return null; // ignoring this
       if (e.message && e.message.includes('URL_NOT_EXISTING')) throw new Error(`Could not find any tips for url ${url}`);
       else throw new Error(e);
     }

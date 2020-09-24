@@ -75,8 +75,13 @@ module.exports = {
             return run(null);
         }
     },
-    up: function(queryInterface, Sequelize)
+    up: async function(queryInterface, Sequelize)
     {
+        // DROP NOTIFICATIONS SO ALL ENTRIES CONTAIN A SENDER
+        const transaction = await queryInterface.sequelize.transaction();
+        await queryInterface.sequelize.query('TRUNCATE TABLE "Notifications";', { transaction });
+        await transaction.commit();
+
         return this.execute(queryInterface, Sequelize, migrationCommands);
     },
     down: function(queryInterface, Sequelize)

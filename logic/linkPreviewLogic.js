@@ -107,9 +107,9 @@ module.exports = class LinkPreviewLogic {
   }
 
   static async createPreviewForUrl(url, crawler) {
-    // VERIFY URL
+    // VERIFY URL PROTOCOL
     const urlProtocol = url.match(/^[^:]+(?=:\/\/)/);
-    const newUrl = !urlProtocol ? `http://${url}` : url;
+    const newUrl = (!urlProtocol ? `http://${url}` : url).trim();
 
     try {
       await metascraper({ url: newUrl });

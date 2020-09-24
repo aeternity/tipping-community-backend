@@ -6,7 +6,7 @@
   "scripts": {
     "test": "mocha --exit",
     "benchmark": "node benchmark.js",
-    "db:create": "npx sequelize-cli --config config/config.js db:migrate",
+    "db:create": "npx sequelize-cli --config config/config.js --env development db:migrate",
     "db:makemigrations": "./node_modules/sequelize-auto-migrations/bin/makemigration.js",
     "lint": "eslint .",
     "lint-fix": "eslint --ext .js --fix .",

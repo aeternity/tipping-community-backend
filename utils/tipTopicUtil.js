@@ -18,21 +18,20 @@ const getTipTopics = tips => {
             amount: new BigNumber(acc[topic].amount).plus(tip.total_amount).toFixed(),
             totalScore: acc[topic].totalScore + score,
             count: acc[topic].count + 1,
-            token_amount: tip.token_total_amount.reduce((tokenAcc, tokenTip) => {
-              tokenAcc[tokenTip.token] =
-                tokenAcc[tokenTip.token]
-                  ? new BigNumber(tokenAcc[tokenTip.token]).plus(tokenTip.amount).toFixed()
-                  : new BigNumber(tokenTip.amount).toFixed()
-              return tokenAcc;
-            }, acc[topic].token_amount ? acc[topic].token_amount : {}),
+            token_amount: tip.token_total_amount.reduce((tokenAcc, tokenTip) => ({
+              ...tokenAcc,
+              [tokenTip.token]: tokenAcc[tokenTip.token]
+                ? new BigNumber(tokenAcc[tokenTip.token]).plus(tokenTip.amount).toFixed()
+                : new BigNumber(tokenTip.amount).toFixed(),
+            }), acc[topic].token_amount ? acc[topic].token_amount : {}),
           } : {
             amount: tip.total_amount,
             totalScore: score,
             count: 1,
-            token_amount: tip.token_total_amount.reduce((acc, tokenTip) => {
-              acc[tokenTip.token] = tokenTip.amount
-              return acc;
-            }, {}),
+            token_amount: tip.token_total_amount.reduce((allTokenTipAmounts, tokenTip) => ({
+              ...allTokenTipAmounts,
+              [tokenTip.token]: tokenTip.amount,
+            }), {}),
           };
         }
       });
@@ -53,11 +52,11 @@ const getTipTopics = tips => {
     return [topic, topicData];
   }).sort((a, b) => new BigNumber(b[1].score).minus(a[1].score).toNumber());
 
-  return sortedTopic.slice(0, 10).map(([topic, topicData]) => {
-    topicData.amount_ae = Util.atomsToAe(topicData.amount).toFixed();
-    topicData.token_amount = Object.entries(topicData.token_amount).map(([token, amount]) => ({token, amount}));
-    return [topic, topicData];
-  });
+  return sortedTopic.slice(0, 10).map(([topic, topicData]) => [topic, {
+    ...topicData,
+    amount_ae: Util.atomsToAe(topicData.amount).toFixed(),
+    token_amount: Object.entries(topicData.token_amount).map(([token, amount]) => ({ token, amount })),
+  }]);
 };
 
 module.exports = {

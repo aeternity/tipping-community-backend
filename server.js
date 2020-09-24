@@ -60,5 +60,4 @@ const startup = async () => {
 
 startup();
 
-
 module.exports = app;

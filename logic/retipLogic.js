@@ -33,10 +33,10 @@ module.exports = class RetipLogic {
       await RetipLogic.bulkCreate(
         newReTipIds.map(id => remoteRetips.find(({ id: retipId }) => id === retipId))
           .map(({
-          id, parentTip, claim, sender,
-        }) => ({
-          id, tipId: parentTip.id, unclaimed: claim.unclaimed, sender,
-        })),
+            id, parentTip, claim, sender,
+          }) => ({
+            id, tipId: parentTip.id, unclaimed: claim.unclaimed, sender,
+          })),
       );
     });
   }

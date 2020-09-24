@@ -1,3 +1,7 @@
+const BigNumber = require('bignumber.js');
+const AsyncLock = require('async-lock');
+const Fuse = require('fuse.js');
+const axios = require('axios');
 const aeternity = require('../utils/aeternity.js');
 const LinkPreviewLogic = require('./linkPreviewLogic.js');
 const TipOrderLogic = require('./tiporderLogic');
@@ -7,17 +11,13 @@ const RetipLogic = require('./retipLogic');
 const BlacklistLogic = require('./blacklistLogic');
 const AsyncTipGeneratorsLogic = require('./asyncTipGeneratorsLogic');
 const cache = require('../utils/cache');
-const BigNumber = require('bignumber.js');
-const AsyncLock = require('async-lock');
+
 const lock = new AsyncLock();
-const {getTipTopics, topicsRegex} = require('../utils/tipTopicUtil');
+const { getTipTopics, topicsRegex } = require('../utils/tipTopicUtil');
 const Util = require('../utils/util');
-const TokenCacheLogic = require("./tokenCacheLogic");
-const {Profile} = require('../models');
-const Fuse = require('fuse.js');
-const lngDetector = new (require('languagedetect'));
-lngDetector.setLanguageType('iso2');
-const cld = require('cld');
+const TokenCacheLogic = require('./tokenCacheLogic');
+const { Profile } = require('../models');
+
 const logger = require('../utils/logger')(module);
 
 const searchOptions = {
@@ -63,14 +63,14 @@ module.exports = class CacheLogic {
       return contractTransactions.map(tx => tx.hash).asyncMap(hash => CacheLogic.findTransactionEvents(hash));
     });
 
-    return cache.getOrSet(['contractEvents'], async () => fetchContractEvents().catch(console.error), cache.shortCacheTime);
+    return cache.getOrSet(['contractEvents'], async () => fetchContractEvents().catch(logger.error), cache.shortCacheTime);
   }
 
   static async fetchPrice() {
     return cache.getOrSet(
       ['fetchPrice'],
       async () => axios.get('https://api.coingecko.com/api/v3/simple/price?ids=aeternity&vs_currencies=usd,eur,cny')
-        .then(res => res.data).catch(console.error),
+        .then(res => res.data).catch(logger.error),
       cache.longCacheTime,
     );
   }
@@ -82,30 +82,14 @@ module.exports = class CacheLogic {
       await cache.del(['fetchStats']);
 
       await TipLogic.updateTipsDB(tips);
-    await RetipLogic.updateRetipsDB(tips);
+      await RetipLogic.updateRetipsDB(tips);
 
-    // not await on purpose, just trigger background actions
-    AsyncTipGeneratorsLogic.triggerGeneratePreviews(tips);
-    AsyncTipGeneratorsLogic.triggerLanguageDetection(tips);
+      // not await on purpose, just trigger background actions
+      AsyncTipGeneratorsLogic.triggerGeneratePreviews(tips);
+      AsyncTipGeneratorsLogic.triggerLanguageDetection(tips);
       AsyncTipGeneratorsLogic.triggerGetTokenContractIndex(tips);
       AsyncTipGeneratorsLogic.triggerFetchAllLocalRetips(tips);
-      // not await on purpose, just trigger background preview fetch
-      lock.acquire('LinkPreviewLogic.fetchAllLinkPreviews', async () => {
-        const previews = await LinkPreviewLogic.fetchAllLinkPreviews();
-        const tipUrls = [...new Set(tips.map(tip => tip.url))];
-        const previewUrls = [...new Set(previews.map(preview => preview.requestUrl))];
-
-        const difference = tipUrls.filter(url => !previewUrls.includes(url));
-
-        await difference.asyncMap(async url => {
-          await LinkPreviewLogic.generatePreview(url).catch(logger.error);
-        });
-      });
-      lock.acquire('CacheLogic.UpdateTipsAndRetips', async () => {
-        await TipLogic.updateTipsDB(tips);
-        await RetipLogic.updateRetipsDB(tips);
-      });
-    return tips;
+      return tips;
     }, cache.shortCacheTime);
   }
 
@@ -146,9 +130,9 @@ module.exports = class CacheLogic {
   }
 
   static async getAllTips(blacklist = true) {
-    let [allTips, tipsPreview, chainNames, commentCounts, blacklistedIds, localTips] = await Promise.all([
+    const [allTips, tipsPreview, chainNames, commentCounts, blacklistedIds, localTips] = await Promise.all([
       CacheLogic.getTips(), LinkPreviewLogic.fetchAllLinkPreviews(), CacheLogic.fetchChainNames(),
-      CommentLogic.fetchCommentCountForTips(), BlacklistLogic.getBlacklistedIds(), TipLogic.fetchAllLocalTips()
+      CommentLogic.fetchCommentCountForTips(), BlacklistLogic.getBlacklistedIds(), TipLogic.fetchAllLocalTips(),
     ]);
 
     let tips = allTips;
@@ -364,43 +348,43 @@ module.exports = class CacheLogic {
 
     const retipsLength = tips.reduce((acc, tip) => acc + tip.retips.length, 0);
 
-    const total_amount = tips.reduce((acc, tip) => acc.plus(tip.total_amount), new BigNumber('0')).toFixed();
-    const total_unclaimed_amount = tips.reduce((acc, tip) => acc.plus(tip.total_unclaimed_amount), new BigNumber('0')).toFixed();
-    const total_claimed_amount = tips.reduce((acc, tip) => acc.plus(tip.total_claimed_amount), new BigNumber('0')).toFixed();
+    const totalAmount = tips.reduce((acc, tip) => acc.plus(tip.total_amount), new BigNumber('0')).toFixed();
+    const totalUnclaimedAmount = tips.reduce((acc, tip) => acc.plus(tip.total_unclaimed_amount), new BigNumber('0')).toFixed();
+    const totalClaimedAmount = tips.reduce((acc, tip) => acc.plus(tip.total_claimed_amount), new BigNumber('0')).toFixed();
 
-    const token_total_amount = Object.entries(tips.reduce((acc, tip) => {
+    const tokenTotalAmount = Object.entries(tips.reduce((acc, tip) => {
       tip.token_total_amount.forEach(t => {
         acc[t.token] = acc[t.token]
           ? new BigNumber(acc[t.token]).plus(t.amount).toFixed()
           : new BigNumber(t.amount).toFixed();
-      })
+      });
       return acc;
-    }, {})).map(([token, amount]) => ({token, amount}));
+    }, {})).map(([token, amount]) => ({ token, amount }));
 
-    const token_total_unclaimed_amount = Object.entries(tips.reduce((acc, tip) => {
+    const tokenTotalUnclaimedAmount = Object.entries(tips.reduce((acc, tip) => {
       tip.token_total_unclaimed_amount.forEach(t => {
         acc[t.token] = acc[t.token]
           ? new BigNumber(acc[t.token]).plus(t.amount).toFixed()
           : new BigNumber(t.amount).toFixed();
-      })
+      });
       return acc;
-    }, {})).map(([token, amount]) => ({token, amount}));
+    }, {})).map(([token, amount]) => ({ token, amount }));
 
     return {
       tips_length: tips.length,
       retips_length: retipsLength,
       total_tips_length: tips.length + retipsLength,
 
-      total_amount: total_amount,
-      total_unclaimed_amount: total_unclaimed_amount,
-      total_claimed_amount: total_claimed_amount,
+      total_amount: totalAmount,
+      total_unclaimed_amount: totalUnclaimedAmount,
+      total_claimed_amount: totalClaimedAmount,
 
-      total_amount_ae: Util.atomsToAe(total_amount).toFixed(),
-      total_unclaimed_amount_ae: Util.atomsToAe(total_unclaimed_amount).toFixed(),
-      total_claimed_amount_ae: Util.atomsToAe(total_claimed_amount).toFixed(),
+      total_amount_ae: Util.atomsToAe(totalAmount).toFixed(),
+      total_unclaimed_amount_ae: Util.atomsToAe(totalUnclaimedAmount).toFixed(),
+      total_claimed_amount_ae: Util.atomsToAe(totalClaimedAmount).toFixed(),
 
-      token_total_amount: token_total_amount,
-      token_total_unclaimed_amount: token_total_unclaimed_amount,
+      token_total_amount: tokenTotalAmount,
+      token_total_unclaimed_amount: tokenTotalUnclaimedAmount,
 
       senders,
       senders_length: senders.length,

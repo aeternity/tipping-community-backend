@@ -9,7 +9,6 @@ chai.should();
 chai.use(chaiHttp);
 // Our parent block
 describe('Static Routes', () => {
-
   describe('Stats', () => {
     before(async () => {
       // Test is based on Blacklist model

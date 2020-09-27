@@ -1,6 +1,6 @@
 const aeternity = require('../utils/aeternity.js');
-const AsyncTipGeneratorsLogic = require('./asyncTipGeneratorsLogic');
 const cache = require('../utils/cache');
+const CacheLogic = require('./cacheLogic');
 
 module.exports = class TokenCacheLogic {
   static async init() {
@@ -8,26 +8,16 @@ module.exports = class TokenCacheLogic {
     await cache.init(aeternity, () => {});
   }
 
-  static async fetchTokenInfos() {
-    const fetchData = async () => {
-      const tips = await CacheLogic.getTips();
-      return AsyncTipGeneratorsLogic.triggerGetTokenContractIndex(tips);
-    };
-
-    return cache.getOrSet(['fetchTokenInfos'], () => fetchData(), cache.shortCacheTime);
-  }
-
   static async deliverTokenInfo(req, res) {
-    const tokenInfo = await TokenCacheLogic.fetchTokenInfos();
-    res.send(tokenInfo);
+    res.send(await CacheLogic.getTokenInfos());
   }
 
   static async indexTokenInfo(req, res) {
     if (!req.body.address) return res.status(400).send('address body attribute missing');
 
     try {
-      await aeternity.getTokenMetaInfoCacheAccounts(req.body.address);
-      TokenCacheLogic.fetchTokenInfos();
+      await CacheLogic.getTokenMetaInfo(req.body.address);
+      CacheLogic.getTokenInfos();
       return res.send('OK');
     } catch (e) {
       return res.status(500).send(e.message);
@@ -37,17 +27,28 @@ module.exports = class TokenCacheLogic {
   static async tokenAccountBalance(req, res) {
     if (!req.query.address) return res.status(400).send('address query missing');
 
-    const tokenBalances = await aeternity.getCacheTokenBalances(req.query.address);
+    const tokenBalances = await CacheLogic.getTokenBalances(req.query.address);
     return res.send(await tokenBalances.reduce(async (promiseAcc, address) => {
       const acc = await promiseAcc;
-      acc[address] = await aeternity.getTokenMetaInfoCacheAccounts(address);
+      acc[address] = await CacheLogic.getTokenMetaInfo(address);
       return acc;
     }, Promise.resolve({})));
   }
 
   static async invalidateTokenCache(req, res) {
-    await cache.del(['getCacheTokenAccounts', req.params.token]);
-    aeternity.getCacheTokenAccounts(req.params.token); // just trigger cache update, so follow up requests may have it cached already
+    await cache.del(['getTokenAccounts', req.params.token]);
+    CacheLogic.getTokenAccounts(req.params.token); // just trigger cache update, so follow up requests may have it cached already
     if (res) res.send({ status: 'OK' });
+  }
+
+  static async getTokenMetaInfoAccounts(contractAddress) {
+    const metaInfo = await CacheLogic.getTokenMetaInfo(contractAddress);
+
+    // Update account balances, just trigger, no need to await
+    CacheLogic.getTokenAccounts(contractAddress);
+
+    // add token to registry if not added yet
+    const tokenInRegistry = await CacheLogic.getTokenRegistryState().then(state => state.find(([token]) => token === contractAddress));
+    if (metaInfo && !tokenInRegistry) await aeternity.addTokenToRegistry(contractAddress);
   }
 };

@@ -15,7 +15,6 @@ const cache = require('../utils/cache');
 const lock = new AsyncLock();
 const { getTipTopics, topicsRegex } = require('../utils/tipTopicUtil');
 const Util = require('../utils/util');
-const TokenCacheLogic = require('./tokenCacheLogic');
 const { Profile } = require('../models');
 
 const logger = require('../utils/logger')(module);
@@ -45,7 +44,6 @@ module.exports = class CacheLogic {
       await CacheLogic.fetchPrice();
       await CacheLogic.getOracleState();
       await CacheLogic.findContractEvents();
-      await TokenCacheLogic.fetchTokenInfos();
     };
 
     setTimeout(() => {
@@ -81,16 +79,29 @@ module.exports = class CacheLogic {
       // Renew Stats
       await cache.del(['fetchStats']);
 
-      await TipLogic.updateTipsDB(tips);
-      await RetipLogic.updateRetipsDB(tips);
-
       // not await on purpose, just trigger background actions
       AsyncTipGeneratorsLogic.triggerGeneratePreviews(tips);
       AsyncTipGeneratorsLogic.triggerLanguageDetection(tips);
-      AsyncTipGeneratorsLogic.triggerGetTokenContractIndex(tips);
       AsyncTipGeneratorsLogic.triggerFetchAllLocalRetips(tips);
+      CacheLogic.triggerGetTokenContractIndex(tips);
+
       return tips;
     }, cache.shortCacheTime);
+  }
+
+  static async triggerGetTokenContractIndex(tips) {
+    return lock.acquire('CacheLogic.triggerTokenContractIndex', async () => {
+      const tokenContracts = tips.filter(t => t.token).map(t => t.token);
+      const tokenRegistryContracts = await CacheLogic.getTokenRegistryState()
+        .then(state => state.map(([token]) => token));
+
+      return [...new Set(tokenContracts.concat(tokenRegistryContracts))]
+        .reduce(async (promiseAcc, address) => {
+          const acc = await promiseAcc;
+          acc[address] = await CacheLogic.getTokenMetaInfo(address);
+          return acc;
+        }, Promise.resolve({}));
+    });
   }
 
   static async getOracleState() {
@@ -127,6 +138,43 @@ module.exports = class CacheLogic {
         return acc;
       }, {});
     }, cache.shortCacheTime);
+  }
+
+  static async fetchTokenInfos() {
+    const tips = await CacheLogic.getTips();
+    return CacheLogic.triggerGetTokenContractIndex(tips);
+  }
+
+  static async getTokenInfos() {
+    return cache.getOrSet(['getTokenInfos'], () => CacheLogic.fetchTokenInfos(), cache.shortCacheTime);
+  }
+
+  static async getTokenRegistryState() {
+    return cache.getOrSet(['getTokenRegistryState'], () => aeternity.fetchTokenRegistryState(), cache.shortCacheTime);
+  }
+
+  static async getTokenBalances(account) {
+    const cacheKeys = ['getTokenAccounts.fetchBalances', account];
+    const hasBalanceTokens = await cache.get(cacheKeys);
+    return hasBalanceTokens || [];
+  }
+
+  static async getTokenAccounts(token) {
+    return cache.getOrSet(['getTokenAccounts', token], async () => {
+      const balances = aeternity.fetchTokenAccountBalances(token);
+      // TODO @thepiwo should this be returned? (and therefore awaited)
+      return balances.asyncMap(async ([account]) => {
+        const cacheKeys = ['getTokenAccounts.fetchBalances', account];
+        const hasBalanceTokens = await cache.get(cacheKeys);
+        const updatedBalanceTokens = hasBalanceTokens ? hasBalanceTokens.concat([token]) : [token];
+        return cache.set(cacheKeys, [...new Set(updatedBalanceTokens)], cache.longCacheTime);
+      });
+    }, cache.shortCacheTime);
+  }
+
+  static async getTokenMetaInfo(contractAddress) {
+    // TODO @thepiwo I added short cache time here, does the meta info ever change?
+    return cache.getOrSet(['getTokenMetaInfo'], () => aeternity.fetchTokenMetaInfo(contractAddress), cache.shortCacheTime);
   }
 
   static async getAllTips(blacklist = true) {

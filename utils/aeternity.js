@@ -157,64 +157,34 @@ class Aeternity {
     return Aeternity.addAdditionalTipsData(tips);
   }
 
-  getTokenRegistryState = async () => {
-    const fetchData = async () => this.tokenRegistry.methods.get_state().then(r => r.decodedResult);
-
-    return this.cache.getOrSet(['getTokenRegistryState'], () => fetchData(), this.cache.shortCacheTime);
+  async fetchTokenRegistryState() {
+    return this.tokenRegistry.methods.get_state().then(r => r.decodedResult);
   }
 
-  getTokenMetaInfoCacheAccounts = async address => {
-    const fetchData = async () => {
-      if (!this.tokenContracts[address]) {
-        this.tokenContracts[address] = await this.client.getContractInstance(
-          TOKEN_CONTRACT_INTERFACE, { contractAddress: address },
-        );
-      }
-
-      const metaInfo = await this.tokenContracts[address].methods.meta_info().then(r => r.decodedResult).catch(e => {
-        logger.warn(e.message);
-        return null;
-      });
-
-      // add token to registry if not added yet
-      const tokenInRegistry = await this.getTokenRegistryState().then(state => state.find(([token]) => token === address));
-      if (metaInfo && !tokenInRegistry) await this.tokenRegistry.methods.add_token(address);
-      return metaInfo;
-    };
-
-    // just trigger cache buildup, no need to await for result
-    this.getCacheTokenAccounts(address);
-
-    return this.cache.getOrSet(['getTokenMetaInfo', address], () => fetchData());
-  };
-
-  getCacheTokenBalances = async account => {
-    const cacheKeys = ['getCacheTokenAccounts.fetchBalances', account];
-    const hasBalanceTokens = await this.cache.get(cacheKeys);
-    return hasBalanceTokens || [];
+  async fetchTokenMetaInfo(contractAddress) {
+    if (!this.tokenContracts[contractAddress]) {
+      this.tokenContracts[contractAddress] = await this.client.getContractInstance(
+        TOKEN_CONTRACT_INTERFACE, { contractAddress },
+      );
+    }
+    return this.tokenContracts[contractAddress].methods.meta_info().then(r => r.decodedResult).catch(e => {
+      logger.warn(e.message);
+      return null;
+    });
   }
 
-  getCacheTokenAccounts = async token => {
-    const fetchBalances = async () => {
-      if (!this.tokenContracts[token]) {
-        this.tokenContracts[token] = await this.client.getContractInstance(
-          TOKEN_CONTRACT_INTERFACE, { contractAddress: token },
-        );
-      }
+  async addTokenToRegistry(contractAddress) {
+    return this.tokenRegistry.methods.add_token(contractAddress);
+  }
 
-      const balances = await this.tokenContracts[token].methods.balances().then(r => r.decodedResult);
-      balances.asyncMap(async ([account]) => {
-        const cacheKeys = ['getCacheTokenAccounts.fetchBalances', account];
-        const hasBalanceTokens = await this.cache.get(cacheKeys);
-        const updatedBalanceTokens = hasBalanceTokens ? hasBalanceTokens.concat([token]) : [token];
-        return this.cache.set(cacheKeys, [...new Set(updatedBalanceTokens)], this.cache.longCacheTime);
-      });
-
-      return true;
-    };
-
-    // TODO optimize cache generation for account balances
-    return this.cache.getOrSet(['getCacheTokenAccounts', token], () => fetchBalances(), this.cache.shortCacheTime);
+  // TODO optimize cache generation for account balances
+  async fetchTokenAccountBalances(contractAddress) {
+    if (!this.tokenContracts[contractAddress]) {
+      this.tokenContracts[contractAddress] = await this.client.getContractInstance(
+        TOKEN_CONTRACT_INTERFACE, { contractAddress },
+      );
+    }
+    return this.tokenContracts[contractAddress].methods.balances().then(r => r.decodedResult);
   }
 
   async checkPreClaimProperties(address, url, trace) {
@@ -301,58 +271,6 @@ class Aeternity {
       if (e.message && e.message.includes('URL_NOT_EXISTING')) throw new Error(`Could not find any tips for url ${url}`);
       else throw new Error(e);
     }
-  }
-
-  getTipsRetips(state) {
-    const findUrl = urlId => state.urls.find(([, id]) => urlId === id)[0];
-
-    const findClaimGen = (tipClaimGen, urlId) => {
-      const [, data] = state.claims.find(([id]) => id === urlId);
-
-      return {
-        unclaimed: tipClaimGen > data[0],
-        claim_gen: data[0],
-        unclaimed_amount: data[1],
-      };
-    };
-
-    const findRetips = (tipId, urlId) => state.retips
-      .filter(([, data]) => String(data.tip_id) === String(tipId)).map(([id, data]) => ({
-        ...data,
-        id: String(id),
-        claim: findClaimGen(data.claim_gen, urlId),
-        amount_ae: Util.atomsToAe(data.amount).toFixed(),
-      }));
-
-    return state.tips.map(([id, data]) => {
-      const tipsData = data;
-      tipsData.id = String(id);
-      tipsData.url = findUrl(tipsData.url_id);
-      tipsData.topics = [...new Set(tipsData.title.match(topicsRegex))].map(x => x.toLowerCase());
-      tipsData.retips = findRetips(id, tipsData.url_id);
-      tipsData.claim = findClaimGen(tipsData.claim_gen, tipsData.url_id);
-
-      tipsData.amount_ae = Util.atomsToAe(tipsData.amount).toFixed();
-
-      const retipAmount = tipsData.retips.reduce((acc, retip) => acc.plus(retip.amount), new BigNumber('0')).toFixed();
-
-      tipsData.retip_amount_ae = Util.atomsToAe(retipAmount).toFixed();
-
-      tipsData.total_amount = Util.atomsToAe(new BigNumber(tipsData.amount).plus(retipAmount)).toFixed();
-      tipsData.total_unclaimed_amount = Util.atomsToAe(
-        new BigNumber(tipsData.claim.unclaimed ? tipsData.amount : 0)
-          .plus(tipsData.retips
-            .reduce((acc, retip) => acc.plus(retip.claim.unclaimed ? retip.amount : 0), new BigNumber('0'))).toFixed(),
-      ).toFixed();
-
-      tipsData.total_claimed_amount = Util.atomsToAe(
-        new BigNumber(tipsData.claim.unclaimed ? 0 : tipsData.amount)
-          .plus(tipsData.retips
-            .reduce((acc, retip) => acc.plus(retip.claim.unclaimed ? 0 : retip.amount), new BigNumber('0'))).toFixed(),
-      ).toFixed();
-
-      return tipsData;
-    });
   }
 
   async getChainNames() {

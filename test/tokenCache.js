@@ -1,24 +1,47 @@
 const chai = require('chai');
 const chaiHttp = require('chai-http');
+const {
+  describe, it, before,
+} = require('mocha');
+const sinon = require('sinon');
 const server = require('../server');
+const aeternity = require('../utils/aeternity');
+const CacheLogic = require('../logic/cacheLogic');
+const TokenCacheLogic = require('../logic/tokenCacheLogic');
 
+chai.should();
+chai.use(chaiHttp);
 chai.use(chaiHttp);
 
 describe('Token Cache', () => {
   describe('API', () => {
-    it('it should GET token info', function (done) {
-      this.timeout(30000);
+    before(async () => {
+      await aeternity.init();
+    });
 
+    let sandbox;
+
+    beforeEach(() => {
+      sandbox = sinon.createSandbox();
+    });
+
+    afterEach(() => {
+      sandbox.restore();
+    });
+
+    // TODO create a way better test coverage
+
+    it('it should GET token info', async () => {
+      sandbox.stub(CacheLogic, 'getTips').callsFake(async () => ([]));
       chai.request(server).get('/tokenCache/tokenInfo').end((err, res) => {
         res.should.have.status(200);
         res.body.should.be.a('object');
         res.body.should.have.property('ct_2DQ1vdJdiaNVgh2vUbTTpkPRiT9e2GSx1NxyU7JM9avWqj6dVf');
         res.body.ct_2DQ1vdJdiaNVgh2vUbTTpkPRiT9e2GSx1NxyU7JM9avWqj6dVf.should.be.deep.equal({
           decimals: 18,
-          name: 'Sample Test Token',
-          symbol: 'STT',
+          name: 'SOFIA',
+          symbol: 'SOF',
         });
-        done();
       });
     });
 

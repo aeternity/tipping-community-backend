@@ -4,7 +4,6 @@ const cld = require('cld');
 const LinkPreviewLogic = require('./linkPreviewLogic.js');
 const TipLogic = require('./tipLogic');
 const RetipLogic = require('./retipLogic');
-const aeternity = require('../utils/aeternity.js');
 const logger = require('../utils/logger')(module);
 
 const lock = new AsyncLock();
@@ -44,21 +43,6 @@ module.exports = class AsyncTipGeneratorsLogic {
         id,
         language: lang2,
       })));
-    });
-  }
-
-  static async triggerGetTokenContractIndex(tips) {
-    return lock.acquire('AsyncTipGeneratorsLogic.triggerTokenContractIndex', async () => {
-      const tokenContracts = tips.filter(t => t.token).map(t => t.token);
-      const tokenRegistryContracts = await aeternity.getTokenRegistryState()
-        .then(state => state.map(([token]) => token));
-
-      return [...new Set(tokenContracts.concat(tokenRegistryContracts))]
-        .reduce(async (promiseAcc, address) => {
-          const acc = await promiseAcc;
-          acc[address] = await aeternity.getTokenMetaInfoCacheAccounts(address);
-          return acc;
-        }, Promise.resolve({}));
     });
   }
 

@@ -94,12 +94,10 @@ module.exports = class CacheLogic {
       const tokenRegistryContracts = await CacheLogic.getTokenRegistryState()
         .then(state => state.map(([token]) => token));
 
-      // TODO @thepiwo it seems to me that we get this information already from the registry state, whats the benefit of this?
+      // can be optimized at a later point in time with general refactoring
       return [...new Set(tokenContracts.concat(tokenRegistryContracts))]
         .reduce(async (promiseAcc, address) => {
           const acc = await promiseAcc;
-          // TODO @thepiwo I added balance updates here because we don't trigger it anywhere else
-          CacheLogic.getTokenAccounts(address); // just trigger updates
 
           acc[address] = await CacheLogic.getTokenMetaInfo(address);
           return acc;
@@ -164,21 +162,22 @@ module.exports = class CacheLogic {
 
   static async getTokenAccounts(token) {
     return cache.getOrSet(['getTokenAccounts', token], async () => {
-      // TODO @thepiwo I added an await here
       const balances = await aeternity.fetchTokenAccountBalances(token);
-      // TODO @thepiwo should this be returned? (and therefore awaited)
-      return balances.asyncMap(async ([account]) => {
+      await balances.asyncMap(async ([account]) => {
         const cacheKeys = ['getTokenAccounts.fetchBalances', account];
         const hasBalanceTokens = await cache.get(cacheKeys);
         const updatedBalanceTokens = hasBalanceTokens ? hasBalanceTokens.concat([token]) : [token];
-        return cache.set(cacheKeys, [...new Set(updatedBalanceTokens)], cache.longCacheTime);
+        await cache.set(cacheKeys, [...new Set(updatedBalanceTokens)], cache.longCacheTime);
       });
+
+      return true; // redis can only set cache for defined values, as we just want to cache that we have fetched tokens, just cache true
     }, cache.shortCacheTime);
   }
 
   static async getTokenMetaInfo(contractAddress) {
-    // TODO @thepiwo I added short cache time here, does the meta info ever change?
-    return cache.getOrSet(['getTokenMetaInfo', contractAddress], () => aeternity.fetchTokenMetaInfo(contractAddress), cache.shortCacheTime);
+    CacheLogic.getTokenAccounts(address); // just trigger updates
+
+    return cache.getOrSet(['getTokenMetaInfo', contractAddress], () => aeternity.fetchTokenMetaInfo(contractAddress));
   }
 
   static async getAllTips(blacklist = true) {

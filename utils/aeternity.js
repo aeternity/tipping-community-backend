@@ -177,8 +177,8 @@ class Aeternity {
 
     // add token to registry if its not already there
     if (metaInfo && !tokenInRegistry) {
+      // TODO clear cache here
       await this.addTokenToRegistry(contractAddress);
-      await this.cache.del(['getTokenRegistryState']);
     }
     return metaInfo;
   }

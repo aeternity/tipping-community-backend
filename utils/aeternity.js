@@ -172,13 +172,13 @@ class Aeternity {
       return null;
     });
 
-    // TODO @thepiwo can we use the cache for this?
+    // TODO we can use the cached fetchTokenRegistryState for this
     const tokenInRegistry = await this.fetchTokenRegistryState().then(state => state.find(([token]) => token === contractAddress));
 
     // add token to registry if its not already there
     if (metaInfo && !tokenInRegistry) {
-      // TODO clear cache here
       await this.addTokenToRegistry(contractAddress);
+      // TODO clear getTokenRegistryState cache here
     }
     return metaInfo;
   }

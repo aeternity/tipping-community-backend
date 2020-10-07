@@ -190,7 +190,10 @@ class Aeternity {
 
       // add token to registry if not added yet
       const tokenInRegistry = await this.getTokenRegistryState().then(state => state.find(([token]) => token === address));
-      if (metaInfo && !tokenInRegistry) await this.tokenRegistry.methods.add_token(address);
+      if (metaInfo && !tokenInRegistry) {
+        await this.tokenRegistry.methods.add_token(address);
+        await this.cache.del(['getTokenRegistryState']);
+      }
 
       return metaInfo;
     };

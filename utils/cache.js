@@ -55,7 +55,7 @@ cache.getOrSet = async (keys, asyncFetchData, expire = null) => {
 
     const start = new Date().getTime();
     const data = await asyncFetchData();
-    cache.set(keys, data, expire);
+    await cache.set(keys, data, expire);
     if (new Date().getTime() - start > 50) {
       // eslint-disable-next-line no-console
       console.log('\n   cache', key, new Date().getTime() - start, 'ms');

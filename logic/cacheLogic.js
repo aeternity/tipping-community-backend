@@ -43,6 +43,7 @@ module.exports = class CacheLogic {
       await CacheLogic.fetchPrice();
       await CacheLogic.getOracleState();
       await CacheLogic.findContractEvents();
+      await CacheLogic.getTokenInfos();
     };
 
     setTimeout(() => {

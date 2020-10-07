@@ -167,20 +167,10 @@ class Aeternity {
         TOKEN_CONTRACT_INTERFACE, { contractAddress },
       );
     }
-    const metaInfo = this.tokenContracts[contractAddress].methods.meta_info().then(r => r.decodedResult).catch(e => {
+    return this.tokenContracts[contractAddress].methods.meta_info().then(r => r.decodedResult).catch(e => {
       logger.warn(e.message);
       return null;
     });
-
-    // TODO we can use the cached fetchTokenRegistryState for this
-    const tokenInRegistry = await this.fetchTokenRegistryState().then(state => state.find(([token]) => token === contractAddress));
-
-    // add token to registry if its not already there
-    if (metaInfo && !tokenInRegistry) {
-      await this.addTokenToRegistry(contractAddress);
-      // TODO clear getTokenRegistryState cache here
-    }
-    return metaInfo;
   }
 
   async addTokenToRegistry(contractAddress) {

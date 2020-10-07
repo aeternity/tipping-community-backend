@@ -41,7 +41,7 @@ class Aeternity {
       });
 
       this.contractV1 = await this.client.getContractInstance(TIPPING_V1_INTERFACE, { contractAddress: process.env.CONTRACT_V1_ADDRESS });
-      this.contractV2 = await this.client.getContractInstance(TIPPING_V2_INTERFACE, { contractAddress: process.env.CONTRACT_V2_ADDRESS });
+      //this.contractV2 = await this.client.getContractInstance(TIPPING_V2_INTERFACE, { contractAddress: process.env.CONTRACT_V2_ADDRESS });
       this.oracleContract = await this.client.getContractInstance(
         ORACLE_SERVICE_INTERFACE,
         { contractAddress: process.env.ORACLE_CONTRACT_ADDRESS },
@@ -60,12 +60,14 @@ class Aeternity {
       .then(res => res.data.transactions
         .filter(tx => tx.tx.type === 'ContractCallTx'));
 
-    const contractTransactionsPromise = axios.get(`${MIDDLEWARE_URL}/middleware/contracts/transactions/address/${process.env.CONTRACT_V2_ADDRESS}`)
+    /*const contractTransactionsPromise = axios.get(`${MIDDLEWARE_URL}/middleware/contracts/transactions/address/${process.env.CONTRACT_V2_ADDRESS}`)
       .then(res => res.data.transactions
         .filter(tx => tx.tx.type === 'ContractCallTx'));
 
     return Promise.all([oldContractTransactionsPromise, contractTransactionsPromise])
-      .then(([oldContractTransactions, contractTransactions]) => oldContractTransactions.concat(contractTransactions));
+      .then(([oldContractTransactions, contractTransactions]) => oldContractTransactions.concat(contractTransactions));*/
+
+    return oldContractTransactionsPromise;
   }
 
   async fetchTransactionEvents(hash) {
@@ -152,8 +154,8 @@ class Aeternity {
   async fetchTips() {
     if (!this.client) throw new Error('Init sdk first');
     const fetchV1State = this.contractV1.methods.get_state();
-    const fetchV2State = this.contractV2.methods.get_state();
-    const { tips } = tippingContractUtil.getTipsRetips(await fetchV1State, await fetchV2State);
+    //const fetchV2State = this.contractV2.methods.get_state();
+    const { tips } = tippingContractUtil.getTipsRetips(await fetchV1State);//, await fetchV2State);
     return Aeternity.addAdditionalTipsData(tips);
   }
 
@@ -189,9 +191,9 @@ class Aeternity {
 
   async checkPreClaimProperties(address, url, trace) {
     const amountV1 = await this.checkPreClaim(address, url, trace, this.contractV1).catch(logger.error);
-    const amountV2 = await this.checkPreClaim(address, url, trace, this.contractV2).catch(logger.error);
+    //const amountV2 = await this.checkPreClaim(address, url, trace, this.contractV2).catch(logger.error);
 
-    return new BigNumber(amountV1).plus(amountV2);
+    return new BigNumber(amountV1);//.plus(amountV2);
   }
 
   async checkPreClaim(address, url, trace, contract) {
@@ -255,8 +257,8 @@ class Aeternity {
   }
 
   async claimTips(address, url, trace) {
-    return this.claimTipsOnContract(address, url, trace, this.contractV1).catch(logger.error)
-        || this.claimTipsOnContract(address, url, trace, this.contractV2).catch(logger.error);
+    return this.claimTipsOnContract(address, url, trace, this.contractV1).catch(logger.error);
+    //  || this.claimTipsOnContract(address, url, trace, this.contractV2).catch(logger.error);
   }
 
   async claimTipsOnContract(address, url, trace, contract) {

@@ -30,4 +30,6 @@ router.get('/invalidate/oracle', CacheLogic.invalidateOracle);
 
 router.get('/invalidate/events', CacheLogic.invalidateContractEvents);
 
+router.get('/invalidate/token/:token', CacheLogic.invalidateTokenCache);
+
 module.exports = router;

@@ -31,6 +31,7 @@ const customFormatter = fileName => msg => {
   const prefix = `[${msg.timestamp}] (${fileName}) ${msg.level}:`;
   const logs = [];
   // SEQUELIZE ERRORS
+
   if (msg.sql) {
     logs.push(`${msg.name} (${msg.original.message}) ${splatMsg} `);
     logs.push(`${msg.original.detail} ${splatMsg} `);

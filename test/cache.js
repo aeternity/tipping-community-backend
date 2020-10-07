@@ -251,6 +251,12 @@ describe('Cache', () => {
       checkCachedRoute('/cache/invalidate/events', 'object', done);
     });
 
+    it('it should invalidate the token cache', done => {
+      // Just a random token contract, can be replaced anytime if its not working anymore
+      const tokenAddress = 'ct_MRgnq6YXCi4Bd6CCks1bu8rTUfFmgLEAWWXVi7hSsJA4LZejs';
+      checkCachedRoute(`/cache/invalidate/token/${tokenAddress}`, 'object', done);
+    });
+
     it('it should GET all cached stats', async () => {
       await cache.del(['fetchStats']);
       const stub = sinon.stub(CacheLogic, 'getTips').callsFake(() => [

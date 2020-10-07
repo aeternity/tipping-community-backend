@@ -11,8 +11,8 @@ module.exports = class TokenCacheLogic {
 
     try {
       await CacheLogic.getTokenMetaInfo(req.body.address);
-      await cache.del(['fetchTokenInfos']);
-      CacheLogic.getTokenInfos();
+      await cache.del(['getTokenInfos']);
+      await CacheLogic.getTokenInfos();
       return res.send('OK');
     } catch (e) {
       return res.status(500).send(e.message);

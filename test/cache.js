@@ -21,6 +21,8 @@ describe('Cache', () => {
     await cache.del(['getChainNames']);
     await cache.del(['fetchStats']);
     await cache.del(['oracleState']);
+    await cache.del(['contractEvents']);
+
     await aeternity.init();
   });
 
@@ -229,9 +231,24 @@ describe('Cache', () => {
       checkCachedRoute('/cache/topics', 'array', done);
     });
 
-    it('it should GET all cached events', function (done) {
-      this.timeout(25000);
-      checkCachedRoute('/cache/events', 'array', done);
+    it('it should GET all cached events', done => {
+      const mockData = [
+        {
+          hash: 'th_FzSdUdPzCRDnZeMYkq1AXsH1C9QeZfjXRcXuvhizvWSd3jhRn',
+        },
+        {
+          hash: 'th_JHjHaKSnjvfoZnv2WPtkefDhGMYdE4xsYS2rB6toUerS79NsF',
+        },
+        {
+          hash: 'th_tSqv8WQJ2H37thbLk3PDkGqNGrfVgdziCx2uK5zyUhQoZAxcy',
+        },
+      ];
+
+      const stub = sinon.stub(aeternity, 'middlewareContractTransactions').callsFake(async () => mockData);
+      checkCachedRoute('/cache/events', 'array', () => {
+        stub.restore();
+        done();
+      });
     });
 
     it(`it should GET all cached events in less than ${minimalTimeout}ms`, function (done) {

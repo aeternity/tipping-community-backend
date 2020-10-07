@@ -175,9 +175,20 @@ module.exports = class CacheLogic {
   }
 
   static async getTokenMetaInfo(contractAddress) {
-    CacheLogic.getTokenAccounts(address); // just trigger updates
+    return cache.getOrSet(['getTokenMetaInfo', contractAddress], async () => {
+      const tokenInRegistry = await CacheLogic.getTokenRegistryState().then(state => state.find(([token]) => token === contractAddress));
+      const metaInfo = await aeternity.fetchTokenMetaInfo(contractAddress);
 
-    return cache.getOrSet(['getTokenMetaInfo', contractAddress], () => aeternity.fetchTokenMetaInfo(contractAddress));
+      // Trigger balance updates
+      CacheLogic.getTokenAccounts(contractAddress); // just trigger updates
+
+      // add token to registry if its not already there
+      if (metaInfo && !tokenInRegistry) {
+        await this.addTokenToRegistry(contractAddress);
+        await cache.del(['getTokenRegistryState']);
+      }
+      return metaInfo;
+    });
   }
 
   static async getAllTips(blacklist = true) {

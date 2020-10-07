@@ -33,56 +33,58 @@ describe('Token Cache', () => {
     // TODO create a way better test coverage
 
     it('it should GET token info', async () => {
-      const tokenMetaInfoStub = sandbox.stub(CacheLogic, 'getTokenMetaInfo').callsFake(async () => ({
+      const contractAddress = 'ct_contract';
+      const tokenMetaInfoStub = sandbox.stub(aeternity, 'fetchTokenMetaInfo').callsFake(async () => ({
         decimals: 18,
         name: 'SOFIA',
         symbol: 'SOF',
       }));
       sandbox.stub(CacheLogic, 'getTokenRegistryState').callsFake(async () => [
-        [
-          'ct_contract',
-        ],
+        [contractAddress],
       ]);
       sandbox.stub(CacheLogic, 'getTips').callsFake(async () => []);
       // stub this to avoid errors because ct_contract is not a valid address
       const getTokenAccountsStub = sandbox.stub(CacheLogic, 'getTokenAccounts').callsFake(async () => {});
       // Flush cache to force re-generation
       cache.del(['getTokenInfos']);
+      cache.del(['getTokenMetaInfo', contractAddress]);
       const res = await chai.request(server).get('/tokenCache/tokenInfo');
       res.should.have.status(200);
       res.body.should.be.a('object');
-      res.body.should.have.property('ct_contract');
-      res.body.ct_contract.should.be.deep.equal({
+      res.body.should.have.property(contractAddress);
+      res.body[contractAddress].should.be.deep.equal({
         decimals: 18,
         name: 'SOFIA',
         symbol: 'SOF',
       });
 
       // Check sideffects
-      sinon.assert.calledWith(getTokenAccountsStub, 'ct_contract');
-      sinon.assert.calledWith(tokenMetaInfoStub, 'ct_contract');
+      sinon.assert.calledWith(getTokenAccountsStub, contractAddress);
+      sinon.assert.calledWith(tokenMetaInfoStub, contractAddress);
 
       // Flush dirty cache
       cache.del(['getTokenInfos']);
     });
 
-    it('it should ADD a token to be indexed', done => {
+    it('it should ADD a token to be indexed', async () => {
       const contractAddress = 'ct_2bCbmU7vtsysL4JiUdUZjJJ98LLbJWG1fRtVApBvqSFEM59D6W';
-      const registryStub = sandbox.stub(aeternity, 'fetchTokenRegistryState').callsFake(async () => []);
+      const registryStub = sandbox.stub(CacheLogic, 'getTokenRegistryState').callsFake(async () => []);
       const addTokenStub = sandbox.stub(aeternity, 'addTokenToRegistry').callsFake(async () => true);
+      sandbox.stub(aeternity, 'fetchTokenMetaInfo').callsFake(async () => ({
+        decimals: 18,
+        name: 'SOFIA',
+        symbol: 'SOF',
+      }));
       cache.del(['getTokenMetaInfo', contractAddress]);
-      chai.request(server).post('/tokenCache/addToken')
-        .send({ address: contractAddress })
-        .end((err, res) => {
-          res.should.have.status(200);
-          res.text.should.be.equal('OK');
-          sinon.assert.alwaysCalledWith(addTokenStub, contractAddress);
-          addTokenStub.callCount.should.eql(1);
-          registryStub.callCount.should.eql(1);
-          // clear dirty cache
-          cache.del(['getTokenMetaInfo', contractAddress]);
-          done();
-        });
+      const res = await chai.request(server).post('/tokenCache/addToken')
+        .send({ address: contractAddress });
+      res.should.have.status(200);
+      res.text.should.be.equal('OK');
+      sinon.assert.alwaysCalledWith(addTokenStub, contractAddress);
+      addTokenStub.callCount.should.eql(1);
+      registryStub.callCount.should.eql(1);
+      // clear dirty cache
+      cache.del(['getTokenMetaInfo', contractAddress]);
     });
 
     it('it shouldnt GET token info without address', done => {
@@ -101,21 +103,22 @@ describe('Token Cache', () => {
         symbol: 'OT',
       };
 
-      sandbox.stub(CacheLogic, 'getTokenRegistryState').callsFake(async () => []);
-      sandbox.stub(CacheLogic, 'getTokenMetaInfo').callsFake(async () => metaInfo);
+      sandbox.stub(CacheLogic, 'getTokenRegistryState').callsFake(async () => [[contractAddress], [oldContractAddress]]);
+      sandbox.stub(aeternity, 'fetchTokenMetaInfo').callsFake(async () => metaInfo);
       const getTokenAccountsStub = sandbox.stub(CacheLogic, 'getTokenAccounts').callsFake(async () => []);
       const fetchTokenAccountBalancesStub = sandbox.stub(aeternity, 'fetchTokenAccountBalances').callsFake(async () => []);
+      await cache.del(['getTokenMetaInfo', contractAddress]);
       await CacheLogic.triggerGetTokenContractIndex([{
         token: contractAddress,
       }]);
 
       // Check for balance generation
-      sinon.assert.calledWith(getTokenAccountsStub, contractAddress); // its also called
+      sinon.assert.calledWith(getTokenAccountsStub, contractAddress);
       getTokenAccountsStub.restore();
       fetchTokenAccountBalancesStub.restore();
 
       // Enfore balance regeneration
-      cache.del(['getTokenAccounts', contractAddress]);
+      await cache.del(['getTokenAccounts', contractAddress]);
       // Seed cache with existing token
       await cache.set(['getTokenAccounts.fetchBalances', publicKey], [oldContractAddress]);
       // Simulate new token response

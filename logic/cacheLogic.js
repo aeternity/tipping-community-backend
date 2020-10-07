@@ -260,7 +260,7 @@ module.exports = class CacheLogic {
 
   static async invalidateTokenCache(req, res) {
     await cache.del(['getTokenAccounts', req.params.token]);
-    CacheLogic.getTokenAccounts(req.params.token); // just trigger cache update, so follow up requests may have it cached already
+    await CacheLogic.getTokenAccounts(req.params.token); // wait for cache update to let frontend know data availability
     if (res) res.send({ status: 'OK' });
   }
 

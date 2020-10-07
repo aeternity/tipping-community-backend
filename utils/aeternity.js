@@ -176,7 +176,10 @@ class Aeternity {
     const tokenInRegistry = await this.fetchTokenRegistryState().then(state => state.find(([token]) => token === contractAddress));
 
     // add token to registry if its not already there
-    if (metaInfo && !tokenInRegistry) await this.addTokenToRegistry(contractAddress);
+    if (metaInfo && !tokenInRegistry) {
+      await this.addTokenToRegistry(contractAddress);
+      await this.cache.del(['getTokenRegistryState']);
+    }
     return metaInfo;
   }
 

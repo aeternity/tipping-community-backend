@@ -55,7 +55,7 @@ cache.getOrSet = async (keys, asyncFetchData, expire = null) => {
 
     const start = new Date().getTime();
     const data = await asyncFetchData();
-    cache.set(keys, data, expire);
+    await cache.set(keys, data, expire);
     logger.info(`cache ${key} ${new Date().getTime() - start}ms`);
 
     return data;

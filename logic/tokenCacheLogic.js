@@ -1,4 +1,5 @@
 const CacheLogic = require('./cacheLogic');
+const cache = require('../utils/cache');
 
 module.exports = class TokenCacheLogic {
   static async deliverTokenInfo(req, res) {
@@ -10,6 +11,7 @@ module.exports = class TokenCacheLogic {
 
     try {
       await CacheLogic.getTokenMetaInfo(req.body.address);
+      await cache.del(['fetchTokenInfos']);
       CacheLogic.getTokenInfos();
       return res.send('OK');
     } catch (e) {

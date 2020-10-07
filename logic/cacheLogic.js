@@ -180,11 +180,11 @@ module.exports = class CacheLogic {
       const metaInfo = await aeternity.fetchTokenMetaInfo(contractAddress);
 
       // Trigger balance updates
-      CacheLogic.getTokenAccounts(contractAddress); // just trigger updates
+      CacheLogic.getTokenAccounts(contractAddress);
 
       // add token to registry if its not already there
       if (metaInfo && !tokenInRegistry) {
-        await this.addTokenToRegistry(contractAddress);
+        await aeternity.addTokenToRegistry(contractAddress);
         await cache.del(['getTokenRegistryState']);
       }
       return metaInfo;

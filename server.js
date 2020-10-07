@@ -13,8 +13,8 @@ app.set('view engine', 'handlebars');
 app.use(express.json()); // for parsing application/json
 
 process
-  .on('unhandledRejection', (reason, p) => {
-    logger.error(`${reason} Unhandled Rejection at Promise ${p}`);
+  .on('unhandledRejection', reason => {
+    logger.error(reason);
   })
   .on('uncaughtException', err => {
     logger.error(err);

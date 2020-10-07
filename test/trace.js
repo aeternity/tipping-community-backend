@@ -4,6 +4,7 @@ const chaiHttp = require('chai-http');
 const fs = require('fs');
 const { describe, it, before } = require('mocha');
 const sinon = require('sinon');
+const BigNumber = require('bignumber.js');
 const server = require('../server');
 const ae = require('../utils/aeternity');
 const cache = require('../utils/cache');
@@ -71,7 +72,7 @@ describe('Trace', () => {
     });
 
     it('proper request should leave a trace', done => {
-      const stub = sinon.stub(ae, 'getClaimableAmount').callsFake(async () => 10);
+      const stub = sinon.stub(ae, 'checkPreClaimProperties').callsFake(async () => new BigNumber(10));
       chai.request(server).post('/claim/submit')
         .send({
           address: publicKey, // Random PK

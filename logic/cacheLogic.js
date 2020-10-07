@@ -7,7 +7,6 @@ const LinkPreviewLogic = require('./linkPreviewLogic.js');
 const TipOrderLogic = require('./tiporderLogic');
 const CommentLogic = require('./commentLogic');
 const TipLogic = require('./tipLogic');
-const RetipLogic = require('./retipLogic');
 const BlacklistLogic = require('./blacklistLogic');
 const AsyncTipGeneratorsLogic = require('./asyncTipGeneratorsLogic');
 const cache = require('../utils/cache');
@@ -95,9 +94,13 @@ module.exports = class CacheLogic {
       const tokenRegistryContracts = await CacheLogic.getTokenRegistryState()
         .then(state => state.map(([token]) => token));
 
+      // TODO @thepiwo it seems to me that we get this information already from the registry state, whats the benefit of this?
       return [...new Set(tokenContracts.concat(tokenRegistryContracts))]
         .reduce(async (promiseAcc, address) => {
           const acc = await promiseAcc;
+          // TODO @thepiwo I added balance updates here because we don't trigger it anywhere else
+          CacheLogic.getTokenAccounts(address); // just trigger updates
+
           acc[address] = await CacheLogic.getTokenMetaInfo(address);
           return acc;
         }, Promise.resolve({}));
@@ -161,7 +164,8 @@ module.exports = class CacheLogic {
 
   static async getTokenAccounts(token) {
     return cache.getOrSet(['getTokenAccounts', token], async () => {
-      const balances = aeternity.fetchTokenAccountBalances(token);
+      // TODO @thepiwo I added an await here
+      const balances = await aeternity.fetchTokenAccountBalances(token);
       // TODO @thepiwo should this be returned? (and therefore awaited)
       return balances.asyncMap(async ([account]) => {
         const cacheKeys = ['getTokenAccounts.fetchBalances', account];
@@ -174,7 +178,7 @@ module.exports = class CacheLogic {
 
   static async getTokenMetaInfo(contractAddress) {
     // TODO @thepiwo I added short cache time here, does the meta info ever change?
-    return cache.getOrSet(['getTokenMetaInfo'], () => aeternity.fetchTokenMetaInfo(contractAddress), cache.shortCacheTime);
+    return cache.getOrSet(['getTokenMetaInfo', contractAddress], () => aeternity.fetchTokenMetaInfo(contractAddress), cache.shortCacheTime);
   }
 
   static async getAllTips(blacklist = true) {
@@ -240,6 +244,12 @@ module.exports = class CacheLogic {
   static async invalidateContractEvents(req, res) {
     await cache.del(['contractEvents']);
     CacheLogic.findContractEvents(); // just trigger cache update, so follow up requests may have it cached already
+    if (res) res.send({ status: 'OK' });
+  }
+
+  static async invalidateTokenCache(req, res) {
+    await cache.del(['getTokenAccounts', req.params.token]);
+    CacheLogic.getTokenAccounts(req.params.token); // just trigger cache update, so follow up requests may have it cached already
     if (res) res.send({ status: 'OK' });
   }
 

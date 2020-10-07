@@ -167,10 +167,17 @@ class Aeternity {
         TOKEN_CONTRACT_INTERFACE, { contractAddress },
       );
     }
-    return this.tokenContracts[contractAddress].methods.meta_info().then(r => r.decodedResult).catch(e => {
+    const metaInfo = this.tokenContracts[contractAddress].methods.meta_info().then(r => r.decodedResult).catch(e => {
       logger.warn(e.message);
       return null;
     });
+
+    // TODO @thepiwo can we use the cache for this?
+    const tokenInRegistry = await this.fetchTokenRegistryState().then(state => state.find(([token]) => token === contractAddress));
+
+    // add token to registry if its not already there
+    if (metaInfo && !tokenInRegistry) await this.addTokenToRegistry(contractAddress);
+    return metaInfo;
   }
 
   async addTokenToRegistry(contractAddress) {
@@ -269,7 +276,8 @@ class Aeternity {
     } catch (e) {
       if (e.message && e.message.includes('NO_ZERO_AMOUNT_PAYOUT')) return null; // ignoring this
       if (e.message && e.message.includes('URL_NOT_EXISTING')) throw new Error(`Could not find any tips for url ${url}`);
-      else throw new Error(e);
+      if (e.message && e.message.includes('404: Account not found')) return logger.info(`User ${address} has balance 0`);
+      throw new Error(e);
     }
   }
 

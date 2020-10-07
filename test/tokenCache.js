@@ -7,18 +7,19 @@ const sinon = require('sinon');
 const server = require('../server');
 const aeternity = require('../utils/aeternity');
 const CacheLogic = require('../logic/cacheLogic');
-const TokenCacheLogic = require('../logic/tokenCacheLogic');
+const cache = require('../utils/cache');
+const { publicKey } = require('../utils/testingUtil');
 
 chai.should();
 chai.use(chaiHttp);
 chai.use(chaiHttp);
 
 describe('Token Cache', () => {
+  before(async function () {
+    this.timeout(10000);
+    await aeternity.init();
+  });
   describe('API', () => {
-    before(async () => {
-      await aeternity.init();
-    });
-
     let sandbox;
 
     beforeEach(() => {
@@ -32,24 +33,54 @@ describe('Token Cache', () => {
     // TODO create a way better test coverage
 
     it('it should GET token info', async () => {
-      sandbox.stub(CacheLogic, 'getTips').callsFake(async () => ([]));
-      chai.request(server).get('/tokenCache/tokenInfo').end((err, res) => {
-        res.should.have.status(200);
-        res.body.should.be.a('object');
-        res.body.should.have.property('ct_2DQ1vdJdiaNVgh2vUbTTpkPRiT9e2GSx1NxyU7JM9avWqj6dVf');
-        res.body.ct_2DQ1vdJdiaNVgh2vUbTTpkPRiT9e2GSx1NxyU7JM9avWqj6dVf.should.be.deep.equal({
-          decimals: 18,
-          name: 'SOFIA',
-          symbol: 'SOF',
-        });
+      const tokenMetaInfoStub = sandbox.stub(CacheLogic, 'getTokenMetaInfo').callsFake(async () => ({
+        decimals: 18,
+        name: 'SOFIA',
+        symbol: 'SOF',
+      }));
+      sandbox.stub(CacheLogic, 'getTokenRegistryState').callsFake(async () => [
+        [
+          'ct_contract',
+        ],
+      ]);
+      sandbox.stub(CacheLogic, 'getTips').callsFake(async () => []);
+      // stub this to avoid errors because ct_contract is not a valid address
+      const getTokenAccountsStub = sandbox.stub(CacheLogic, 'getTokenAccounts').callsFake(async () => {});
+      // Flush cache to force re-generation
+      cache.del(['getTokenInfos']);
+      const res = await chai.request(server).get('/tokenCache/tokenInfo');
+      res.should.have.status(200);
+      res.body.should.be.a('object');
+      res.body.should.have.property('ct_contract');
+      res.body.ct_contract.should.be.deep.equal({
+        decimals: 18,
+        name: 'SOFIA',
+        symbol: 'SOF',
       });
+
+      // Check sideffects
+      sinon.assert.calledWith(getTokenAccountsStub, 'ct_contract');
+      sinon.assert.calledWith(tokenMetaInfoStub, 'ct_contract');
+
+      // Flush dirty cache
+      cache.del(['getTokenInfos']);
     });
 
     it('it should ADD a token to be indexed', done => {
+      const contractAddress = 'ct_2bCbmU7vtsysL4JiUdUZjJJ98LLbJWG1fRtVApBvqSFEM59D6W';
+      const registryStub = sandbox.stub(aeternity, 'fetchTokenRegistryState').callsFake(async () => []);
+      const addTokenStub = sandbox.stub(aeternity, 'addTokenToRegistry').callsFake(async () => true);
+      cache.del(['getTokenMetaInfo', contractAddress]);
       chai.request(server).post('/tokenCache/addToken')
-        .send({ address: 'ct_2DQ1vdJdiaNVgh2vUbTTpkPRiT9e2GSx1NxyU7JM9avWqj6dVf' }).end((err, res) => {
+        .send({ address: contractAddress })
+        .end((err, res) => {
           res.should.have.status(200);
           res.text.should.be.equal('OK');
+          sinon.assert.alwaysCalledWith(addTokenStub, contractAddress);
+          addTokenStub.callCount.should.eql(1);
+          registryStub.callCount.should.eql(1);
+          // clear dirty cache
+          cache.del(['getTokenMetaInfo', contractAddress]);
           done();
         });
     });
@@ -61,18 +92,46 @@ describe('Token Cache', () => {
       });
     });
 
-    it('it should GET token balances for address', done => {
-      chai.request(server).get('/tokenCache/balances?address=ak_2VnwoJPQgrXvreUx2L9BVvd9BidWwpu1ASKK1AMre21soEgpRT').end((err, res) => {
-        res.should.have.status(200);
-        res.body.should.be.a('object');
-        res.body.should.have.property('ct_MRgnq6YXCi4Bd6CCks1bu8rTUfFmgLEAWWXVi7hSsJA4LZejs');
-        res.body.ct_MRgnq6YXCi4Bd6CCks1bu8rTUfFmgLEAWWXVi7hSsJA4LZejs.should.be.deep.equal({
-          decimals: 0,
-          name: 'Other Test Token',
-          symbol: 'OT',
-        });
-        done();
-      });
+    it('it should GET token balances for address', async () => {
+      const contractAddress = 'ct_contract';
+      const oldContractAddress = 'ct_contract_with_balance';
+      const metaInfo = {
+        decimals: 0,
+        name: 'Other Test Token',
+        symbol: 'OT',
+      };
+
+      sandbox.stub(CacheLogic, 'getTokenRegistryState').callsFake(async () => []);
+      sandbox.stub(CacheLogic, 'getTokenMetaInfo').callsFake(async () => metaInfo);
+      const getTokenAccountsStub = sandbox.stub(CacheLogic, 'getTokenAccounts').callsFake(async () => []);
+      const fetchTokenAccountBalancesStub = sandbox.stub(aeternity, 'fetchTokenAccountBalances').callsFake(async () => []);
+      await CacheLogic.triggerGetTokenContractIndex([{
+        token: contractAddress,
+      }]);
+
+      // Check for balance generation
+      sinon.assert.calledWith(getTokenAccountsStub, contractAddress); // its also called
+      getTokenAccountsStub.restore();
+      fetchTokenAccountBalancesStub.restore();
+
+      // Enfore balance regeneration
+      cache.del(['getTokenAccounts', contractAddress]);
+      // Seed cache with existing token
+      await cache.set(['getTokenAccounts.fetchBalances', publicKey], [oldContractAddress]);
+      // Simulate new token response
+      sandbox.stub(aeternity, 'fetchTokenAccountBalances').callsFake(() => ([
+        [publicKey, 1000],
+      ]));
+      // Trigger cache update
+      await CacheLogic.getTokenAccounts(contractAddress);
+
+      const res = await chai.request(server).get(`/tokenCache/balances?address=${publicKey}`);
+      res.should.have.status(200);
+      res.body.should.be.a('object');
+      res.body.should.have.property(contractAddress);
+      res.body[contractAddress].should.be.deep.equal(metaInfo);
+      res.body.should.have.property(oldContractAddress);
+      res.body[oldContractAddress].should.be.deep.equal(metaInfo);
     });
   });
 });

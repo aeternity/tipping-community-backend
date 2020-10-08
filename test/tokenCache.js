@@ -43,8 +43,11 @@ describe('Token Cache', () => {
         [contractAddress],
       ]);
       sandbox.stub(CacheLogic, 'getTips').callsFake(async () => []);
+
       // stub this to avoid errors because ct_contract is not a valid address
       const getTokenAccountsStub = sandbox.stub(CacheLogic, 'getTokenAccounts').callsFake(async () => {});
+      sandbox.stub(aeternity, 'addTokenToRegistry').callsFake(async () => {});
+
       // Flush cache to force re-generation
       cache.del(['getTokenInfos']);
       cache.del(['getTokenMetaInfo', contractAddress]);

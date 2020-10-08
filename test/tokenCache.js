@@ -69,6 +69,7 @@ describe('Token Cache', () => {
     it('it should ADD a token to be indexed', async () => {
       const contractAddress = 'ct_2bCbmU7vtsysL4JiUdUZjJJ98LLbJWG1fRtVApBvqSFEM59D6W';
       const registryStub = sandbox.stub(CacheLogic, 'getTokenRegistryState').callsFake(async () => []);
+      const getTokenInfosStub = sandbox.stub(CacheLogic, 'getTokenInfos').callsFake(async () => []);
       const addTokenStub = sandbox.stub(aeternity, 'addTokenToRegistry').callsFake(async () => true);
       sandbox.stub(aeternity, 'fetchTokenMetaInfo').callsFake(async () => ({
         decimals: 18,
@@ -82,7 +83,8 @@ describe('Token Cache', () => {
       res.text.should.be.equal('OK');
       sinon.assert.alwaysCalledWith(addTokenStub, contractAddress);
       addTokenStub.callCount.should.eql(1);
-      registryStub.callCount.should.be.oneOf([2, 3]);
+      registryStub.callCount.should.eql(1);
+      getTokenInfosStub.callCount.should.eql(1);
       // clear dirty cache
       cache.del(['getTokenMetaInfo', contractAddress]);
     });

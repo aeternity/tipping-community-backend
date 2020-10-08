@@ -242,7 +242,7 @@ module.exports = class CacheLogic {
 
   static async invalidateTips(req, res) {
     await cache.del(['getTips']);
-    await CacheLogic.getTips();  // wait for cache update to let frontend know data availability
+    await CacheLogic.getTips(); // wait for cache update to let frontend know data availability
     if (res) res.send({ status: 'OK' });
   }
 

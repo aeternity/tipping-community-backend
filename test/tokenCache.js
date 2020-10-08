@@ -82,7 +82,7 @@ describe('Token Cache', () => {
       res.text.should.be.equal('OK');
       sinon.assert.alwaysCalledWith(addTokenStub, contractAddress);
       addTokenStub.callCount.should.eql(1);
-      registryStub.callCount.should.eql(1);
+      registryStub.callCount.should.be.oneOf([2, 3]);
       // clear dirty cache
       cache.del(['getTokenMetaInfo', contractAddress]);
     });

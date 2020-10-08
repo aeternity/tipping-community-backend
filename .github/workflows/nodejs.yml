@@ -21,9 +21,7 @@ jobs:
         with:
           node-version: 12.x
       - name: Install Dependencies
-        run: |
-          npm --build-from-source install sqlite3
-          npm i
+        run: npm i
       - name: Run Tests
         run: |
           docker run --name server-redis -p 6379:6379 -d redis
@@ -54,8 +52,6 @@ jobs:
         with:
           node-version: 12.x
       - name: Install Dependencies
-        run: |
-          npm --build-from-source install sqlite3
-          npm i
+        run: npm i
       - name: Lint Codebase
         run: npm run lint-ci

@@ -234,13 +234,52 @@ describe('Cache', () => {
     it('it should GET all cached events', done => {
       const mockData = [
         {
-          hash: 'th_FzSdUdPzCRDnZeMYkq1AXsH1C9QeZfjXRcXuvhizvWSd3jhRn',
-        },
-        {
-          hash: 'th_JHjHaKSnjvfoZnv2WPtkefDhGMYdE4xsYS2rB6toUerS79NsF',
-        },
-        {
-          hash: 'th_tSqv8WQJ2H37thbLk3PDkGqNGrfVgdziCx2uK5zyUhQoZAxcy',
+          block_hash: 'mh_2fq2n5muPiZSPuvyQu3YK79zdnYMd6b4Hi2oTk7VuNVJjh5jDH',
+          block_height: 325384,
+          hash: 'th_mrVytfYRrcse1RP7zNX9eSciczCQtqmZXzxzuNdm4TXEZh7oD',
+          micro_index: 0,
+          micro_time: 1602082686948,
+          signatures: [
+            'sg_Ur673FGUiHoBFza9EuvoJgXXDr9NwhEUzhZoqjwufwyC24jTWoSzTiRzHgpYpCVwsabhjMngFKYgPfrA6rF1AYMmViDU',
+          ],
+          tx: {
+            abi_version: 3,
+            amount: 100000000000000000,
+            arguments: [
+              {
+                type: 'int',
+                value: 45,
+              },
+            ],
+            call_data: 'cb_KxEq+mD+G1qjoslB',
+            caller_id: 'ak_y87WkN4C4QevzjTuEYHg6XLqiWx3rjfYDFLBmZiqiro5mkRag',
+            contract_id: 'ct_2Cvbf3NYZ5DLoaNYAU71t67DdXLHeSXhodkSNifhgd7Xsw28Xd',
+            fee: 182220000000000,
+            function: 'retip',
+            gas: 1579000,
+            gas_price: 1000000000,
+            gas_used: 3267,
+            log: [
+              {
+                address: 'ct_2Cvbf3NYZ5DLoaNYAU71t67DdXLHeSXhodkSNifhgd7Xsw28Xd',
+                data: 'cb_aHR0cHM6Ly9naXRodWIuY29tL3RoZXBpd2+QKOcm',
+                topics: [
+                  '48681722754138618263354476717335781731040556347805491032746127333257780314942',
+                  '57639713195292369493552360805284271936076756489947923784567159882221348109905',
+                  '100000000000000000',
+                ],
+              },
+            ],
+            nonce: 917,
+            result: {
+              type: 'unit',
+              value: '',
+            },
+            return_type: 'ok',
+            type: 'ContractCallTx',
+            version: 1,
+          },
+          tx_index: 13883628,
         },
       ];
 

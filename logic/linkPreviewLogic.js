@@ -25,6 +25,11 @@ module.exports = class LinkPreviewLogic {
     return LinkPreview.findAll({ raw: true });
   }
 
+  static async fetchAllUrls() {
+    return LinkPreview.aggregate('requestUrl', 'DISTINCT', { plain: false })
+      .then(results => results.map(preview => preview.DISTINCT));
+  }
+
   // API Functions
   static async getLinkPreview(req, res) {
     const url = req.params.url ? req.params.url : req.query.url;

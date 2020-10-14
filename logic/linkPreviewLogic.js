@@ -112,13 +112,15 @@ module.exports = class LinkPreviewLogic {
     const newUrl = (!urlProtocol ? `http://${url}` : url).trim();
 
     try {
+      // Check if the url is valid
       await metascraper({ url: newUrl });
+      // Crawl the url
       const html = await crawler(newUrl);
       const result = await metascraper({ url: newUrl, html });
       const data = {
         ...result,
         responseUrl: result.url,
-        requestUrl: newUrl,
+        requestUrl: url,
         querySucceeded: (!!result.title && (!!result.description || !!result.image)),
       };
 
@@ -147,7 +149,7 @@ module.exports = class LinkPreviewLogic {
       logger.error(`Crawling ${newUrl} failed with "${err.message}"`);
 
       return LinkPreview.create({
-        requestUrl: newUrl,
+        requestUrl: url,
         querySucceeded: false,
         failReason: err.message ? err.message : err,
       }, { raw: true });

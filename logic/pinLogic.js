@@ -34,7 +34,7 @@ module.exports = class PinLogic {
   }
 
   static async getAllItemsPerUser(req, res) {
-    const tips = await CacheLogic.getAllTips(false);
+    const tips = await CacheLogic.getTips();
     const pins = (await Pin.findAll({ where: { author: req.params.author }, raw: true }))
       .filter(pin => pin.type === PINNED_CONTENT_TYPES.TIP).map(pin => pin.entryId);
     return res.send(tips.filter(({ id }) => pins.includes(String(id))));

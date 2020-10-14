@@ -39,6 +39,7 @@ module.exports = class CacheLogic {
 
     const keepHotFunction = async () => {
       await CacheLogic.getTips();
+      await CacheLogic.getAllTips(true); // only keep the blacklisted cache hot
       await CacheLogic.fetchChainNames();
       await CacheLogic.fetchPrice();
       await CacheLogic.getOracleState();
@@ -188,56 +189,61 @@ module.exports = class CacheLogic {
   }
 
   static async getAllTips(blacklist = true) {
-    const [allTips, tipsPreview, chainNames, commentCounts, blacklistedIds, localTips] = await Promise.all([
-      CacheLogic.getTips(), LinkPreviewLogic.fetchAllLinkPreviews(), CacheLogic.fetchChainNames(),
-      CommentLogic.fetchCommentCountForTips(), BlacklistLogic.getBlacklistedIds(), TipLogic.fetchAllLocalTips(),
-    ]);
+    const keys = ['CacheLogic.getAllTips'].concat(blacklist ? ['blacklisted'] : ['all']);
+    return cache.getOrSet(keys, async () => {
+      const [allTips, tipsPreview, chainNames, commentCounts, blacklistedIds, localTips] = await Promise.all([
+        CacheLogic.getTips(), LinkPreviewLogic.fetchAllLinkPreviews(), CacheLogic.fetchChainNames(),
+        CommentLogic.fetchCommentCountForTips(), BlacklistLogic.getBlacklistedIds(), TipLogic.fetchAllLocalTips(),
+      ]);
 
-    let tips = allTips;
+      let tips = allTips;
 
-    // filter by blacklisted from backend
-    if (blacklist && blacklistedIds) {
-      tips = tips.filter(tip => !blacklistedIds.includes(tip.id));
-    }
+      // filter by blacklisted from backend
+      if (blacklist && blacklistedIds) {
+        tips = tips.filter(tip => !blacklistedIds.includes(tip.id));
+      }
 
-    // add preview to tips from backend
-    if (tipsPreview) {
-      tips = tips.map(tip => {
-        const preview = tipsPreview.find(linkPreview => linkPreview.requestUrl === tip.url);
-        return { ...tip, preview };
-      });
-    }
+      // add preview to tips from backend
+      if (tipsPreview) {
+        tips = tips.map(tip => {
+          const preview = tipsPreview.find(linkPreview => linkPreview.requestUrl === tip.url);
+          return { ...tip, preview };
+        });
+      }
 
-    // add language to tips from backend
-    if (localTips) {
-      tips = tips.map(tip => {
-        const result = localTips.find(localTip => localTip.id === tip.id);
-        return { ...tip, contentLanguage: result ? result.language : null };
-      });
-    }
+      // add language to tips from backend
+      if (localTips) {
+        tips = tips.map(tip => {
+          const result = localTips.find(localTip => localTip.id === tip.id);
+          return { ...tip, contentLanguage: result ? result.language : null };
+        });
+      }
 
-    // add chain names for each tip sender
-    if (chainNames) {
-      tips = tips.map(tip => ({ ...tip, chainName: chainNames[tip.sender] }));
-    }
+      // add chain names for each tip sender
+      if (chainNames) {
+        tips = tips.map(tip => ({ ...tip, chainName: chainNames[tip.sender] }));
+      }
 
-    // add comment count to each tip
-    if (commentCounts) {
-      tips = tips.map(tip => {
-        const result = commentCounts.find(comment => comment.tipId === tip.id);
-        return { ...tip, commentCount: result ? result.count : 0 };
-      });
-    }
+      // add comment count to each tip
+      if (commentCounts) {
+        tips = tips.map(tip => {
+          const result = commentCounts.find(comment => comment.tipId === tip.id);
+          return { ...tip, commentCount: result ? result.count : 0 };
+        });
+      }
 
-    // add score to tips
-    tips = TipOrderLogic.applyTipScoring(tips);
+      // add score to tips
+      tips = TipOrderLogic.applyTipScoring(tips);
 
-    return tips;
+      return tips;
+    }, cache.shortCacheTime);
   }
 
   static async invalidateTips(req, res) {
     await cache.del(['getTips']);
-    await CacheLogic.getTips(); // wait for cache update to let frontend know data availability
+    await cache.del(['CacheLogic.getAllTips', 'blacklisted']);
+    await cache.del(['CacheLogic.getAllTips', 'all']);
+    CacheLogic.getAllTips(); // just trigger cache update, so follow up requests may have it cached already
     if (res) res.send({ status: 'OK' });
   }
 
@@ -341,7 +347,7 @@ module.exports = class CacheLogic {
 
   static async deliverUserStats(req, res) {
     const oracleState = await CacheLogic.getOracleState();
-    const allTips = await CacheLogic.getAllTips();
+    const allTips = await CacheLogic.getTips();
     const userTips = allTips.filter(tip => tip.sender === req.query.address);
 
     const userReTips = allTips.flatMap(tip => tip.retips.filter(retip => retip.sender === req.query.address));
@@ -460,7 +466,7 @@ module.exports = class CacheLogic {
   }
 
   static async deliverTipTopics(req, res) {
-    const tips = await CacheLogic.getAllTips();
+    const tips = await CacheLogic.getTips();
     res.send(getTipTopics(tips));
   }
 };

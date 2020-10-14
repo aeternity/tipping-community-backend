@@ -30,7 +30,10 @@ module.exports = class TipLogic {
 
       // Send appropriate notifications for new tips
       await newTipsIds.asyncMap(id => NotificationLogic.handleNewTip(remoteTips.find(tip => tip.id === id)));
-      await oldTipsIds.asyncMap(id => NotificationLogic.handleOldTip(remoteTips.find(tip => tip.id === id)));
+      await oldTipsIds.asyncMap(id => NotificationLogic.handleOldTip(
+      localTips.find(tip => tip.id === id),
+      remoteTips.find(tip => tip.id === id),
+    ));
 
       const result = await newTipsIds.asyncMap(async id => {
         const tip = remoteTips.find(t => t.id === id);

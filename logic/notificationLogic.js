@@ -119,35 +119,23 @@ module.exports = class NotificationLogic {
     }
   }
 
-  static async handleOldTip(tip) {
-    const existingTip = await Tip.findOne({
-      where: {
-        id: tip.id,
-      },
-    });
-
-    if (existingTip.unclaimed && tip.claim && !tip.claim.unclaimed) {
-      await NotificationLogic.add[NOTIFICATION_TYPES.CLAIM_OF_TIP](tip.sender, tip.id);
+  static async handleOldTip(localTip, remoteTip) {
+    if (localTip.unclaimed && remoteTip.claim && !remoteTip.claim.unclaimed) {
+      await NotificationLogic.add[NOTIFICATION_TYPES.CLAIM_OF_TIP](remoteTip.sender, remoteTip.id);
       await Tip.update({ unclaimed: false }, {
         where: {
-          id: tip.id,
+          id: remoteTip.id,
         },
       });
     }
   }
 
-  static async handleOldRetip(retip) {
-    const existingRetip = await Retip.findOne({
-      where: {
-        id: retip.id,
-      },
-    });
-
-    if (existingRetip.unclaimed && !retip.claim.unclaimed) {
-      await NotificationLogic.add[NOTIFICATION_TYPES.CLAIM_OF_RETIP](retip.sender, retip.parentTip.id, retip.id);
+  static async handleOldRetip(localRetip, remoteRetip) {
+    if (localRetip.unclaimed && !remoteRetip.claim.unclaimed) {
+      await NotificationLogic.add[NOTIFICATION_TYPES.CLAIM_OF_RETIP](remoteRetip.sender, remoteRetip.parentTip.id, remoteRetip.id);
       await Retip.update({ unclaimed: false }, {
         where: {
-          id: retip.id,
+          id: remoteRetip.id,
         },
       });
     }

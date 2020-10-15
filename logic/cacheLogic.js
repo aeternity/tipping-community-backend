@@ -58,6 +58,7 @@ module.exports = class CacheLogic {
       return contractTransactions.asyncMap(tx => aeternity.decodeTransactionEvents(tx));
     });
 
+    // TODO don't use timeouting lock in getOrSet for this
     return cache.getOrSet(['contractEvents'], async () => fetchContractEvents().catch(logger.error), cache.shortCacheTime);
   }
 
@@ -254,7 +255,8 @@ module.exports = class CacheLogic {
   }
 
   static async invalidateContractEvents(req, res) {
-    await cache.del(['contractEvents']);
+    // TODO enable when optimized
+    // await cache.del(['contractEvents']);
     CacheLogic.findContractEvents(); // just trigger cache update, so follow up requests may have it cached already
     if (res) res.send({ status: 'OK' });
   }

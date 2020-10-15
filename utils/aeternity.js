@@ -69,6 +69,7 @@ class Aeternity {
     return result.data;
   }
 
+  // TODO cache in batches
   async middlewareContractTransactions() {
     const oldContractTransactionsPromise = this.iterateMdw(
       `txs/backward/and?contract=${process.env.CONTRACT_V1_ADDRESS}&type=contract_call&limit=1000`,

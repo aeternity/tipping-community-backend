@@ -150,8 +150,34 @@ describe('Cache', () => {
       stub.restore();
     });
 
-    it('it should GET all cache items in less than 200ms', function (done) {
-      this.timeout(200);
+    it('it should not GET a flagged / blacklisted tip when requesting the full list', done => {
+      const stub = sinon.stub(BlacklistLogic, 'getBlacklistedIds').callsFake(() => ['0_v1']);
+      cache.del(['CacheLogic.getAllTips', 'blacklisted']);
+      chai.request(server).get('/cache/tips').end((err, res) => {
+        res.should.have.status(200);
+        const tipIds = res.body.map(({ id }) => id);
+        tipIds.should.not.contain('0_v1');
+        stub.callCount.should.eql(1);
+        stub.restore();
+        done();
+      });
+    });
+
+    it('it should GET a flagged / blacklisted tip when requesting the full list explicitly', done => {
+      const stub = sinon.stub(BlacklistLogic, 'getBlacklistedIds').callsFake(() => ['0_v1']);
+      cache.del(['CacheLogic.getAllTips', 'all']);
+      chai.request(server).get('/cache/tips?blacklist=false').end((err, res) => {
+        res.should.have.status(200);
+        const tipIds = res.body.map(tip => tip.id);
+        tipIds.should.contain('0_v1');
+        stub.callCount.should.eql(1);
+        stub.restore();
+        done();
+      });
+    });
+
+    it(`it should GET all cache items in less than ${minimalTimeout}ms`, function (done) {
+      this.timeout(minimalTimeout);
       checkCachedRoute('/cache/tips', 'array', done);
     });
 
@@ -178,31 +204,6 @@ describe('Cache', () => {
     it('it should 404 on a non existing tip', done => {
       chai.request(server).get('/cache/tip?id=15687651684785').end((err, res) => {
         res.should.have.status(404);
-        done();
-      });
-    });
-
-    it('it should not GET a flagged / blacklisted tip when requesting the full list', done => {
-      const stub = sinon.stub(BlacklistLogic, 'getBlacklistedIds').callsFake(() => [0]);
-      chai.request(server).get('/cache/tips').end((err, res) => {
-        res.should.have.status(200);
-        const tipIds = res.body.map(({ id }) => id);
-        tipIds.should.not.contain(0);
-        stub.callCount.should.eql(1);
-        stub.restore();
-        done();
-      });
-    });
-
-    it('it should GET a flagged / blacklisted tip when requesting the full list explicitly', done => {
-      const stub = sinon.stub(BlacklistLogic, 'getBlacklistedIds').callsFake(() => [1]);
-      chai.request(server).get('/cache/tips?blacklist=false').end((err, res) => {
-        res.should.have.status(200);
-        const tipIds = res.body.map(tip => tip.id);
-        tipIds.should.contain('0_v1');
-        tipIds.should.contain('0_v2');
-        stub.callCount.should.eql(1);
-        stub.restore();
         done();
       });
     });

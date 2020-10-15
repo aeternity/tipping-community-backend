@@ -1,12 +1,10 @@
 const { Universal, Node, MemoryAccount } = require('@aeternity/aepp-sdk');
 const requireESM = require('esm')(module); // use to handle es6 import/export
-const axios = require('axios');
 const tippingContractUtil = require('tipping-contract/util/tippingContractUtil');
 const BigNumber = require('bignumber.js');
 
 const { decodeEvents, SOPHIA_TYPES } = requireESM('@aeternity/aepp-sdk/es/contract/aci/transformation');
 
-const MIDDLEWARE_URL = process.env.MIDDLEWARE_URL || 'https://mainnet.aeternity.io/mdw/';
 const TIPPING_V1_INTERFACE = require('tipping-contract/Tipping_v1_Interface.aes');
 const TIPPING_V2_INTERFACE = require('tipping-contract/Tipping_v2_Interface.aes');
 const ORACLE_SERVICE_INTERFACE = require('tipping-oracle-service/OracleServiceInterface.aes');
@@ -59,29 +57,6 @@ class Aeternity {
 
   async networkId() {
     return (await this.client.getNodeInfo()).nodeNetworkId;
-  }
-
-  async iterateMdw(next) {
-    const result = await axios.get(`${MIDDLEWARE_URL}/${next}`).then(res => res.data);
-    if (result.next) {
-      return result.data.concat(await this.iterateMdw(result.next));
-    }
-    return result.data;
-  }
-
-  // TODO cache in batches
-  async middlewareContractTransactions() {
-    const oldContractTransactionsPromise = this.iterateMdw(
-      `txs/backward/and?contract=${process.env.CONTRACT_V1_ADDRESS}&type=contract_call&limit=1000`,
-    );
-    if (process.env.CONTRACT_V2_ADDRESS) {
-      const contractTransactionsPromise = this.iterateMdw(
-        `txs/backward/and?contract=${process.env.CONTRACT_V2_ADDRESS}&type=contract_call&limit=1000`,
-      );
-      return Promise.all([oldContractTransactionsPromise, contractTransactionsPromise])
-        .then(([oldContractTransactions, contractTransactions]) => oldContractTransactions.concat(contractTransactions));
-    }
-    return oldContractTransactionsPromise;
   }
 
   async decodeTransactionEvents(data) {
@@ -296,10 +271,6 @@ class Aeternity {
       if (e.message && e.message.includes('404: Account not found')) return logger.info(`User ${address} has balance 0`);
       throw new Error(e);
     }
-  }
-
-  async getChainNames() {
-    return this.iterateMdw('names/active?limit=1000').catch(logger.error);
   }
 
   async getAddressForChainName(name) {

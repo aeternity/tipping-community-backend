@@ -14,6 +14,7 @@ const cache = require('../utils/cache');
 const lock = new AsyncLock();
 const { getTipTopics, topicsRegex } = require('../utils/tipTopicUtil');
 const Util = require('../utils/util');
+const MdwLogic = require("./mdwLogic");
 const { Profile } = require('../models');
 
 const logger = require('../utils/logger')(module);
@@ -54,7 +55,7 @@ module.exports = class CacheLogic {
 
   static async findContractEvents() {
     const fetchContractEvents = async () => {
-      const contractTransactions = await aeternity.middlewareContractTransactions();
+      const contractTransactions = await MdwLogic.middlewareContractTransactions();
       return contractTransactions.asyncMap(tx => aeternity.decodeTransactionEvents(tx));
     };
 
@@ -109,7 +110,7 @@ module.exports = class CacheLogic {
 
   static async fetchChainNames() {
     return cache.getOrSet(['fetchChainNames'], async () => {
-      const result = await aeternity.getChainNames();
+      const result = await MdwLogic.getChainNames();
       const allProfiles = await Profile.findAll({ raw: true });
 
       return result.reduce((acc, chainName) => {
@@ -254,8 +255,7 @@ module.exports = class CacheLogic {
   }
 
   static async invalidateContractEvents(req, res) {
-    // TODO enable when optimized
-    // await cache.del(['contractEvents']);
+    await cache.del(['contractEvents']);
     CacheLogic.findContractEvents(); // just trigger cache update, so follow up requests may have it cached already
     if (res) res.send({ status: 'OK' });
   }

@@ -53,13 +53,12 @@ module.exports = class CacheLogic {
   }
 
   static async findContractEvents() {
-    const fetchContractEvents = async () => lock.acquire('fetchContractEvents', async () => {
+    const fetchContractEvents = async () => {
       const contractTransactions = await aeternity.middlewareContractTransactions();
       return contractTransactions.asyncMap(tx => aeternity.decodeTransactionEvents(tx));
-    });
+    };
 
-    // TODO don't use timeouting lock in getOrSet for this
-    return cache.getOrSet(['contractEvents'], async () => fetchContractEvents().catch(logger.error), cache.shortCacheTime);
+    return cache.getOrSet(['contractEvents'], async () => fetchContractEvents().catch(logger.error), cache.shortCacheTime, false);
   }
 
   static async fetchPrice() {

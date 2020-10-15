@@ -40,13 +40,13 @@ cache.get = async keys => {
   return value ? JSON.parse(value) : null;
 };
 
-cache.getOrSet = async (keys, asyncFetchData, expire = null) => {
+cache.getOrSet = async (keys, asyncFetchData, expire = null, timeoutLock = true) => {
   const key = buildKey(keys);
   const value = await get(key);
   if (value) return JSON.parse(value);
 
   const startLock = new Date().getTime();
-  return lock.acquire(key, async () => {
+  return (timeoutLock ? lock : lockNoTimeout).acquire(key, async () => {
     const lockedValue = await get(key);
     if (lockedValue) {
       logger.info(`lock.acquire ${key} ${new Date().getTime() - startLock}ms`);

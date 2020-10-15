@@ -15,7 +15,8 @@ services:
       - REDIS_URL=redis://redis:6379
       - NODE_URL=https://mainnet.aeternity.io
       - COMPILER_URL=https://latest.compiler.aepps.com
-      - CONTRACT_ADDRESS=ct_2AfnEfCSZCTEkxL5Yoi4Yfq6fF7YapHRaFKDJK3THMXMBspp5z
+      - CONTRACT_V1_ADDRESS=ct_2AfnEfCSZCTEkxL5Yoi4Yfq6fF7YapHRaFKDJK3THMXMBspp5z
+      - TOKEN_REGISTRY_ADDRESS=ct_2n76BQCN3zNEjuEvHFNZtgyWPc5zizy47wNrUT3RHP2MrPKhbq
       - ORACLE_CONTRACT_ADDRESS=ct_7wqP18AHzyoqymwGaqQp8G2UpzBCggYiq7CZdJiB71VUsLpR4
       - MIDDLEWARE_URL=https://mainnet.aeternity.io/mdw/
       - IPFS_URL=http://ipfs:5001
@@ -23,7 +24,6 @@ services:
       - PRIVATE_KEY=f38eecf78a521fcbf34d253b6681f69e0f64d99526d63e18f205e03cf30dd1248117982ba9504170f1f40c66c137c1823244dc7795950a85807793626e69ebce
       - AUTHENTICATION_USER=user # used for blacklisting & flagging ui, replace with your own credentials
       - AUTHENTICATION_PASSWORD=password # used for blacklisting & flagging ui, replace with your own credentials
-      - CONTRACT_FILE=NewTippingInterface
       - NODE_ENV=development
       # all optional
       - POSTGRES_PASSWORD=postgres # replace with your own credentials

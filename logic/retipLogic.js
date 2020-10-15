@@ -29,9 +29,9 @@ module.exports = class RetipLogic {
       // Send appropriate notifications for new tips
       await newReTipIds.asyncMap(id => NotificationLogic.handleNewRetip(remoteRetips.find(retip => retip.id === id)));
       await oldReTipIds.asyncMap(id => NotificationLogic.handleOldRetip(
-      localRetips.find(retip => retip.id === id),
-      remoteRetips.find(retip => retip.id === id),
-    ));
+        localRetips.find(retip => retip.id === id),
+        remoteRetips.find(retip => retip.id === id),
+      ));
 
       await RetipLogic.bulkCreate(
         newReTipIds.map(id => remoteRetips.find(({ id: retipId }) => id === retipId))

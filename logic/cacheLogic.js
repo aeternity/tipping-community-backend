@@ -14,7 +14,7 @@ const cache = require('../utils/cache');
 const lock = new AsyncLock();
 const { getTipTopics, topicsRegex } = require('../utils/tipTopicUtil');
 const Util = require('../utils/util');
-const MdwLogic = require("./mdwLogic");
+const MdwLogic = require('./mdwLogic');
 const { Profile } = require('../models');
 
 const logger = require('../utils/logger')(module);
@@ -55,7 +55,8 @@ module.exports = class CacheLogic {
 
   static async findContractEvents() {
     const fetchContractEvents = async () => {
-      const contractTransactions = await MdwLogic.middlewareContractTransactions();
+      const height = await aeternity.client.height();
+      const contractTransactions = await MdwLogic.middlewareContractTransactions(height);
       return contractTransactions.asyncMap(tx => aeternity.decodeTransactionEvents(tx));
     };
 

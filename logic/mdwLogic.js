@@ -1,39 +1,59 @@
 const axios = require('axios');
-const cache = require('../utils/cache');
 const logger = require('../utils/logger')(module);
 
-const LIMIT = 100;
+const LIMIT = 100; // max 1000
+const knownHashes = {};
 
 module.exports = class MdwLogic {
-
   // fetches pages forwards, if no next its the last page, don't cache that
-  static async iterateMdw(next) {
-    const url = `${process.env.MIDDLEWARE_URL}/${next}`
+  static async iterateMdw(next, abortIfHashKnown = false) {
+    const url = `${process.env.MIDDLEWARE_URL}/${next}`;
 
-    const fromCache = await cache.get(['iterateMdw', LIMIT, url]);
-    const result = fromCache || await axios.get(url).then(res => res.data);
+    const result = await axios.get(url).then(res => res.data);
+
+    if (abortIfHashKnown && result.data.some(tx => knownHashes[tx.hash])) return result.data.filter(tx => !knownHashes[tx.hash]);
 
     if (result.next) {
-      if (!fromCache) await cache.set(['iterateMdw', LIMIT, url], result);
-      return result.data.concat(await this.iterateMdw(result.next));
+      return result.data.concat(await this.iterateMdw(result.next, abortIfHashKnown));
     }
     return result.data;
   }
 
-  static async middlewareContractTransactions() {
-    const buildUrl = (contractAddress) => `txs/forward/and?contract=${contractAddress}&type=contract_call&limit=${LIMIT}`
+  static async middlewareContractTransactions(height) {
+    const fetchNonCachedForContract = async contract => {
+      // only get all transactions forwards if none are fetched before
+      if (Object.keys(knownHashes).length === 0) {
+        const txsForward = await this.iterateMdw(`txs/gen/0-${height - 20}?contract=${contract}&type=contract_call&limit=${LIMIT}`);
+        txsForward.forEach(tx => {
+          knownHashes[tx.hash] = tx;
+        });
+      }
 
-    const oldContractTransactionsPromise = this.iterateMdw(buildUrl(process.env.CONTRACT_V1_ADDRESS));
+      // get transactions backwards, abort if we already know any
+      const txsBackward = await this.iterateMdw(`txs/backward?contract=${contract}&type=contract_call&limit=${LIMIT}`, true);
+
+      // cache everything but the latest 100 transactions (in case of forks)
+      if (txsBackward.length >= 100) {
+        txsBackward.splice(100, txsBackward.length).forEach(tx => {
+          knownHashes[tx.hash] = tx;
+        });
+        return txsBackward.splice(0, 100);
+      }
+
+      return [];
+    };
+
+    const nonCached = await fetchNonCachedForContract(process.env.CONTRACT_V1_ADDRESS);
     if (process.env.CONTRACT_V2_ADDRESS) {
-      const contractTransactionsPromise = this.iterateMdw(buildUrl(process.env.CONTRACT_V2_ADDRESS));
-      return Promise.all([oldContractTransactionsPromise, contractTransactionsPromise])
-        .then(([oldContractTransactions, contractTransactions]) => oldContractTransactions.concat(contractTransactions));
+      return Object.values(knownHashes)
+        .concat(nonCached)
+        .concat(await fetchNonCachedForContract(process.env.CONTRACT_V2_ADDRESS));
     }
-    return oldContractTransactionsPromise;
+
+    return Object.values(knownHashes).concat(nonCached);
   }
 
   static async getChainNames() {
     return this.iterateMdw(`names/active?limit=${LIMIT}`).catch(logger.error);
   }
-
 };

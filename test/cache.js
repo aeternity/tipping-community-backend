@@ -8,6 +8,7 @@ const server = require('../server');
 const cache = require('../utils/cache');
 const CacheLogic = require('../logic/cacheLogic.js');
 const BlacklistLogic = require('../logic/blacklistLogic.js');
+const MdwLogic = require('../logic/mdwLogic.js');
 const aeternity = require('../utils/aeternity');
 
 chai.should();
@@ -284,7 +285,7 @@ describe('Cache', () => {
         },
       ];
 
-      const stub = sinon.stub(aeternity, 'middlewareContractTransactions').callsFake(async () => mockData);
+      const stub = sinon.stub(MdwLogic, 'middlewareContractTransactions').callsFake(async () => mockData);
       checkCachedRoute('/cache/events', 'array', () => {
         stub.restore();
         done();

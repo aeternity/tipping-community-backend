@@ -255,6 +255,7 @@ class Aeternity {
       return this.claimTipsOnContract(address, url, trace, this.contractV1).catch(logger.error)
         || this.claimTipsOnContract(address, url, trace, this.contractV2).catch(logger.error);
     }
+
     return this.claimTipsOnContract(address, url, trace, this.contractV1).catch(logger.error);
   }
 
@@ -262,6 +263,7 @@ class Aeternity {
     try {
       const claimSuccess = await this.preClaim(address, url, trace, contract);
       trace.update({ state: TRACE_STATES.FINAL_PRECLAIM_RESULT, claimSuccess });
+      if (!claimSuccess) return null;
       const result = await contract.methods.claim(url, address, false);
       trace.update({ state: TRACE_STATES.CLAIM_RESULT, tx: result, result: result.decodedResult });
       return result.decodedResult;

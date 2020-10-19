@@ -54,12 +54,14 @@ module.exports = class PayForTxLogic {
       // Check sync if properties are okay
       const result = await ae.checkPreClaimProperties(req.body.address, req.body.url, trace);
 
-      // run claim async
-      PayForTxLogic.runAsyncClaim(req.body.address, req.body.url, trace);
-
+      // Verify result
       if (result.isZero()) return sendError(400, 'No zero amount claims');
       if (!result) return sendError(400, 'Claim rejected');
       trace.setMetaData(req.body.url, req.body.address);
+
+      // run claim async
+      PayForTxLogic.runAsyncClaim(req.body.address, req.body.url, trace);
+
       return sendSuccess();
     } catch (e) {
       logger.error(e);

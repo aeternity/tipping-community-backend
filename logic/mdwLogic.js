@@ -33,11 +33,11 @@ module.exports = class MdwLogic {
       const txsBackward = await this.iterateMdw(`txs/backward?contract=${contract}&type=contract_call&limit=${LIMIT}`, true);
 
       // cache everything but the latest 100 transactions (in case of forks)
-      if (txsBackward.length >= 100) {
-        txsBackward.splice(100, txsBackward.length).forEach(tx => {
+      if (txsBackward.length >= (LIMIT - 1)) {
+        txsBackward.splice((LIMIT - 1), txsBackward.length).forEach(tx => {
           knownHashes[tx.hash] = tx;
         });
-        return txsBackward.splice(0, 100);
+        return txsBackward.splice(0, (LIMIT - 1));
       }
 
       return [];

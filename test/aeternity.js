@@ -114,6 +114,7 @@ describe('Aeternity', () => {
 
     it('it should allow to claim if all goes well (with stubs) for V1', async function () {
       this.timeout(10000);
+      sandbox.stub(ae, 'preClaim').callsFake(async () => ({ decodedResult: true }));
       const claimV1 = sandbox.stub(ae.contractV1.methods, 'claim').callsFake(async () => ({ decodedResult: true }));
       const claimV2 = sandbox.stub(ae.contractV2.methods, 'claim').callsFake(async () => ({ decodedResult: true }));
       const result = await ae.claimTips(address, url, new Trace());

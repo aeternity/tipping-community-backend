@@ -9,9 +9,9 @@ module.exports = (sequelize, DataTypes) => sequelize.define('BlacklistEntry', {
   },
   status: {
     type: DataTypes.ENUM({
-      values: BLACKLIST_STATUS,
+      values: Object.values(BLACKLIST_STATUS),
     }),
-    defaultValue: 'hidden',
+    defaultValue: BLACKLIST_STATUS.HIDDEN,
     allowNull: false,
   },
   flagger: {

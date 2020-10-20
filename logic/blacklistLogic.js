@@ -1,5 +1,6 @@
 const cache = require('../utils/cache');
 const { BlacklistEntry } = require('../models');
+const { BLACKLIST_STATUS } = require('../models/enums/blacklist');
 
 module.exports = class Blacklist {
   static async augmentAllItems(allItems) {
@@ -8,8 +9,8 @@ module.exports = class Blacklist {
     });
     return allItems.map(item => ({
       ...item,
-      hidden: blacklist.some(b => b.tipId === item.id && b.status === 'hidden'),
-      flagged: blacklist.some(b => b.tipId === item.id && b.status === 'flagged'),
+      hidden: blacklist.some(b => b.tipId === item.id && b.status === BLACKLIST_STATUS.HIDDEN),
+      flagged: blacklist.some(b => b.tipId === item.id && b.status === BLACKLIST_STATUS.FLAGGED),
     })).sort((a, b) => b.timestamp - a.timestamp);
   }
 
@@ -36,7 +37,7 @@ module.exports = class Blacklist {
       if (!author) return res.status(400).send('Missing required field author');
       let existingEntry = await BlacklistEntry.findOne({ where: { tipId } });
       if (!existingEntry) {
-        existingEntry = await BlacklistEntry.create({ tipId, flagger: author, status: 'flagged' });
+        existingEntry = await BlacklistEntry.create({ tipId, flagger: author, status: BLACKLIST_STATUS.FLAGGED });
         // Kill stats cache
         await cache.del(['StaticLogic.getStats']);
       }
@@ -78,7 +79,7 @@ module.exports = class Blacklist {
   }
 
   static async getBlacklistedIds() {
-    const blacklist = await BlacklistEntry.findAll({ raw: true, where: { status: 'hidden' } });
+    const blacklist = await BlacklistEntry.findAll({ raw: true, where: { status: BLACKLIST_STATUS.HIDDEN } });
     return blacklist.map(b => b.tipId);
   }
 };

@@ -6,6 +6,7 @@ const { describe, it, before } = require('mocha');
 const server = require('../server');
 const { BlacklistEntry } = require('../models');
 const ae = require('../utils/aeternity.js');
+const { BLACKLIST_STATUS } = require('../models/enums/blacklist');
 const { publicKey, performSignedJSONRequest } = require('../utils/testingUtil');
 
 chai.should();
@@ -41,7 +42,7 @@ describe('Blacklist', () => {
           res.should.have.status(200);
           res.body.should.be.a('object');
           res.body.should.have.property('tipId', String(tipId));
-          res.body.should.have.property('status', 'hidden');
+          res.body.should.have.property('status', BLACKLIST_STATUS.HIDDEN);
           res.body.should.have.property('createdAt');
           res.body.should.have.property('updatedAt');
           done();
@@ -65,7 +66,7 @@ describe('Blacklist', () => {
         res.body.should.be.a('object');
         res.body.should.have.property('tipId', String(tipId + 1));
         res.body.should.have.property('flagger', publicKey);
-        res.body.should.have.property('status', 'flagged');
+        res.body.should.have.property('status', BLACKLIST_STATUS.FLAGGED);
         res.body.should.have.property('createdAt');
         res.body.should.have.property('updatedAt');
         done();
@@ -77,7 +78,7 @@ describe('Blacklist', () => {
         res.should.have.status(200);
         res.body.should.be.a('object');
         res.body.should.have.property('tipId', String(tipId));
-        res.body.should.have.property('status', 'hidden');
+        res.body.should.have.property('status', BLACKLIST_STATUS.HIDDEN);
         done();
       });
     });
@@ -88,7 +89,7 @@ describe('Blacklist', () => {
         res.body.should.be.a('object');
         res.body.should.have.property('tipId', String(tipId + 1));
         res.body.should.have.property('flagger', publicKey);
-        res.body.should.have.property('status', 'flagged');
+        res.body.should.have.property('status', BLACKLIST_STATUS.FLAGGED);
         res.body.should.have.property('createdAt');
         res.body.should.have.property('updatedAt');
         done();
@@ -98,7 +99,7 @@ describe('Blacklist', () => {
     it('it should UPDATE the status to flagged via admin auth', done => {
       chai.request(server).put(`/blacklist/api/${tipId}`)
         .send({
-          status: 'flagged',
+          status: BLACKLIST_STATUS.FLAGGED,
         })
         .auth(process.env.AUTHENTICATION_USER, process.env.AUTHENTICATION_PASSWORD)
         .end((err, res) => {
@@ -110,7 +111,7 @@ describe('Blacklist', () => {
     it('it should UPDATE the status to hidden via admin auth', done => {
       chai.request(server).put(`/blacklist/api/${tipId}`)
         .send({
-          status: 'hidden',
+          status: BLACKLIST_STATUS.HIDDEN,
         })
         .auth(process.env.AUTHENTICATION_USER, process.env.AUTHENTICATION_PASSWORD)
         .end((err, res) => {

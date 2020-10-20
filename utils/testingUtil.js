@@ -43,7 +43,7 @@ const performSignedMultipartFormRequest = (server, method, url, field, path, pri
     });
 });
 
-const performSignedJSONRequest = (server, method, url, data, privateKey = null) => new Promise((resolve, reject) => {
+const performSignedJSONRequest = (server, method, url, data = {}, privateKey = null) => new Promise((resolve, reject) => {
   chai.request(server)[method](url)
     .send(data)
     .end((err, res) => {

@@ -144,6 +144,69 @@
             },
             "indexes": []
         },
+        "Consents": {
+            "tableName": "Consents",
+            "schema": {
+                "id": {
+                    "allowNull": false,
+                    "primaryKey": true,
+                    "autoIncrement": true,
+                    "field": "id",
+                    "seqType": "Sequelize.INTEGER"
+                },
+                "author": {
+                    "allowNull": false,
+                    "field": "author",
+                    "seqType": "Sequelize.STRING"
+                },
+                "scope": {
+                    "allowNull": false,
+                    "field": "scope",
+                    "seqType": "Sequelize.STRING"
+                },
+                "status": {
+                    "allowNull": false,
+                    "field": "status",
+                    "seqType": "Sequelize.ENUM('ALLOWED', 'REJECTED')"
+                },
+                "signature": {
+                    "allowNull": false,
+                    "field": "signature",
+                    "seqType": "Sequelize.STRING"
+                },
+                "challenge": {
+                    "allowNull": false,
+                    "field": "challenge",
+                    "seqType": "Sequelize.TEXT"
+                },
+                "createdAt": {
+                    "allowNull": false,
+                    "field": "createdAt",
+                    "seqType": "Sequelize.DATE"
+                },
+                "updatedAt": {
+                    "allowNull": false,
+                    "field": "updatedAt",
+                    "seqType": "Sequelize.DATE"
+                }
+            },
+            "indexes": {
+                "1de71a8f188125b58d0dd67012283ae8ff7f7ec2": {
+                    "unique": true,
+                    "fields": [
+                        "author",
+                        "scope"
+                    ],
+                    "name": "consents_author_scope",
+                    "options": {
+                        "indexName": "consents_author_scope",
+                        "name": "consents_author_scope",
+                        "indicesType": "UNIQUE",
+                        "type": "UNIQUE"
+                    }
+                }
+            }
+        },
         "ErrorReports": {
             "tableName": "ErrorReports",
             "schema": {
@@ -648,5 +711,5 @@
             "indexes": []
         }
     },
-    "revision": 3
+    "revision": 4
 }

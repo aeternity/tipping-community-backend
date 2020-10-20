@@ -1,5 +1,7 @@
-const BLACKLIST_STATUS = ['flagged', 'hidden'];
-
+const BLACKLIST_STATUS = {
+  FLAGGED: 'flagged',
+  HIDDEN: 'hidden',
+};
 module.exports = {
   BLACKLIST_STATUS,
 };

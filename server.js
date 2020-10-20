@@ -41,6 +41,7 @@ app.use('/tracing', require('./routes/tipTracingRoutes.js'));
 app.use('/health', require('./routes/healthRoutes.js'));
 app.use('/pin', require('./routes/pinRoutes.js'));
 app.use('/notification', require('./routes/notificationRoutes.js'));
+app.use('/consent', require('./routes/consentRoutes.js'));
 
 app.use('/images', express.static('./images'));
 

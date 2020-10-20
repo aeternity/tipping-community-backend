@@ -32,10 +32,22 @@ const actions = [
     relevantFields: ['author'],
   },
   {
+    method: 'GET',
+    path: '/consent/ak_',
+    actionName: 'GET_CONSENT',
+    relevantFields: ['author'],
+  },
+  {
     method: 'POST',
     path: '/comment/api/?',
     actionName: 'CREATE_COMMENT',
     relevantFields: ['text', 'tipId', 'author', 'parentId'],
+  },
+  {
+    method: 'POST',
+    path: '/consent/ak_',
+    actionName: 'CREATE_CONSENT',
+    relevantFields: ['author', 'scope', 'status'],
   },
   {
     method: 'POST',
@@ -81,13 +93,18 @@ const actions = [
     path: '/pin/ak_',
     actionName: 'DELETE_PIN',
     relevantFields: ['author', 'entryId', 'type'],
-    getFullEntry: async req => Profile.findOne({ where: { author: req.params.author }, raw: true }),
   },
   {
     method: 'DELETE',
     path: '/comment/api/.*',
     actionName: 'DELETE_COMMENT',
     relevantFields: ['author'],
+  },
+  {
+    method: 'DELETE',
+    path: '/consent/ak_.*',
+    actionName: 'DELETE_PROFILE',
+    relevantFields: [],
   },
   {
     method: 'DELETE',

@@ -168,10 +168,8 @@ describe('Aeternity', () => {
       result.should.be.an('array');
       const [[address, balance]] = result;
       address.should.be.an('string');
-      balance.should.be.an('string');
+      balance.should.be.an('number');
       address.should.contain('ak_');
-      const intBalance = parseInt(balance, 10);
-      intBalance.should.be.greaterThan(0);
     });
   });
 });

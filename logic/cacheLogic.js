@@ -99,6 +99,9 @@ module.exports = class CacheLogic {
         .reduce(async (promiseAcc, address) => {
           const acc = await promiseAcc;
 
+          // Trigger balance updates
+          CacheLogic.getTokenAccounts(address);
+
           acc[address] = await CacheLogic.getTokenMetaInfo(address);
           return acc;
         }, Promise.resolve({}));
@@ -166,20 +169,17 @@ module.exports = class CacheLogic {
         const cacheKeys = ['getTokenAccounts.fetchBalances', account];
         const hasBalanceTokens = await cache.get(cacheKeys);
         const updatedBalanceTokens = hasBalanceTokens ? hasBalanceTokens.concat([token]) : [token];
-        await cache.set(cacheKeys, [...new Set(updatedBalanceTokens)], cache.longCacheTime);
+        await cache.set(cacheKeys, [...new Set(updatedBalanceTokens)]);
       });
 
       return true; // redis can only set cache for defined values, as we just want to cache that we have fetched tokens, just cache true
-    }, cache.shortCacheTime);
+    }, cache.longCacheTime);
   }
 
   static async getTokenMetaInfo(contractAddress) {
     return cache.getOrSet(['getTokenMetaInfo', contractAddress], async () => {
       const tokenInRegistry = await CacheLogic.getTokenRegistryState().then(state => state.find(([token]) => token === contractAddress));
       const metaInfo = await aeternity.fetchTokenMetaInfo(contractAddress);
-
-      // Trigger balance updates
-      CacheLogic.getTokenAccounts(contractAddress);
 
       // add token to registry if its not already there
       if (metaInfo && !tokenInRegistry) {

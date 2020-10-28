@@ -17,6 +17,31 @@ const result = Object.keys(models).map(model => {
   };
 });
 
+const typeMapping = type => {
+  switch (type) {
+    case 'enum':
+    case 'date':
+    case 'text':
+    case 'uuid':
+      return 'string';
+    default:
+      return type;
+  }
+};
+
+const formatMapping = type => {
+  switch (type) {
+    case 'date':
+      return 'date-time';
+    case 'text':
+      return 'text';
+    case 'uuid':
+      return 'uuid';
+    default:
+      return undefined;
+  }
+};
+
 const openAPIJSON = {
   components: {
     schemas: result.reduce((acc, model) => ({
@@ -27,7 +52,8 @@ const openAPIJSON = {
         properties: model.fields.reduce((allProperties, curr) => ({
           ...allProperties,
           [curr.column]: {
-            type: curr.type.toLowerCase(),
+            type: typeMapping(curr.type.toLowerCase()),
+            format: formatMapping(curr.type.toLowerCase()),
             ...(curr.type === 'ENUM') && { enum: curr.values },
           },
         }), {}),

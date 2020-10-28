@@ -223,12 +223,29 @@ const signatureAuth = async (req, res, next) => {
  *   schemas:
  *     SignatureRequest:
  *       type: object
+ *       required: [ challenge, signature ]
+ *       properties:
+ *         challenge:
+ *           type: string
+ *         signature:
+ *           type: string
+ *     SignatureResponse:
+ *       type: object
  *       required: [ payload, challenge ]
  *       properties:
  *         payload:
  *           type: string
  *         challenge:
  *           type: string
+ *   securitySchemes:
+ *     basicAuth:
+ *       type: http
+ *       scheme: basic
+ *     signatureAuth:
+ *       type: apiKey
+ *       in: header
+ *       name: NOT-A-REAL-KEY
+ *       description: This endpoint requires signature authentication. Swagger is insufficient here. Check the docs.
  */
 module.exports = {
   basicAuth,

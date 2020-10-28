@@ -5,7 +5,9 @@ module.exports = {
     version: '1.0.0', // Version (required)
     description: 'A sample API', // Description (optional)
   },
+  servers: [
+    { url: 'http://localhost:3000' }
+  ],
   components: {}, // ADD THIS LINE!!!
-  host: 'localhost:3000', // Host (optional)
-  basePath: '/', // Base path (optional)
+  openapi: '3.0.3'
 };

@@ -80,7 +80,6 @@ module.exports = class CacheLogic {
 
       // not await on purpose, just trigger background actions
       AsyncTipGeneratorsLogic.triggerGeneratePreviews(tips);
-      AsyncTipGeneratorsLogic.triggerLanguageDetection(tips);
       AsyncTipGeneratorsLogic.triggerFetchAllLocalRetips(tips);
       CacheLogic.triggerGetTokenContractIndex(tips);
 

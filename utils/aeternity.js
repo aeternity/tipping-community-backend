@@ -7,6 +7,7 @@ const { decodeEvents, SOPHIA_TYPES } = requireESM('@aeternity/aepp-sdk/es/contra
 
 const TIPPING_V1_INTERFACE = require('tipping-contract/Tipping_v1_Interface.aes');
 const TIPPING_V2_INTERFACE = require('tipping-contract/Tipping_v2_Interface.aes');
+const TIPPING_V3_INTERFACE = require('tipping-contract/Tipping_v3_Interface.aes');
 const ORACLE_SERVICE_INTERFACE = require('tipping-oracle-service/OracleServiceInterface.aes');
 const TOKEN_CONTRACT_INTERFACE = require('aeternity-fungible-token/FungibleTokenFullInterface.aes');
 const TOKEN_REGISTRY = require('token-registry/TokenRegistry.aes');
@@ -44,6 +45,13 @@ class Aeternity {
         logger.info('Starting WITH V2 contract');
       } else {
         logger.info('Starting WITHOUT V2 contract');
+      }
+
+      if (process.env.CONTRACT_V3_ADDRESS) {
+        this.contractV3 = await this.client.getContractInstance(TIPPING_V3_INTERFACE, { contractAddress: process.env.CONTRACT_V3_ADDRESS });
+        logger.info('Starting WITH V3 contract');
+      } else {
+        logger.info('Starting WITHOUT V3 contract');
       }
 
       this.oracleContract = await this.client.getContractInstance(
@@ -141,9 +149,10 @@ class Aeternity {
     if (!this.client) throw new Error('Init sdk first');
     const fetchV1State = this.contractV1.methods.get_state();
 
-    if (process.env.CONTRACT_V2_ADDRESS) {
+    if (process.env.CONTRACT_V2_ADDRESS && process.env.CONTRACT_V3_ADDRESS) {
       const fetchV2State = this.contractV2.methods.get_state();
-      const { tips } = tippingContractUtil.getTipsRetips(await fetchV1State, await fetchV2State);
+      const fetchV3State = this.contractV3.methods.get_state();
+      const { tips } = tippingContractUtil.getTipsRetips(await fetchV1State, await fetchV2State, await fetchV3State);
       return Aeternity.addAdditionalTipsData(tips);
     }
     const { tips } = tippingContractUtil.getTipsRetips(await fetchV1State);

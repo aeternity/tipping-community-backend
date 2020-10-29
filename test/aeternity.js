@@ -166,15 +166,17 @@ describe('Aeternity', () => {
       this.timeout(10000);
       const result = await ae.fetchTokenAccountBalances(tokenContractAddress);
       result.should.be.an('array');
-      const [[address, balance]] = result;
-      address.should.be.an('string');
-      address.should.contain('ak_');
-      if (balance === 0) {
-        balance.should.be.an('number');
-      } else {
-        balance.should.be.an('string');
-        const intBalance = parseInt(balance, 10);
-        intBalance.should.be.greaterThan(0);
+      if (result.length !== 0) {
+        const [[address, balance]] = result;
+        address.should.be.an('string');
+        address.should.contain('ak_');
+        if (balance === 0) {
+          balance.should.be.an('number');
+        } else {
+          balance.should.be.an('string');
+          const intBalance = parseInt(balance, 10);
+          intBalance.should.be.greaterThan(0);
+        }
       }
     });
   });

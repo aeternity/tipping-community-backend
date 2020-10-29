@@ -10,10 +10,10 @@ const router = new Router();
  * @swagger
  * /blacklist/api:
  *   get:
- *     summary: Returns all blacklisted items
+ *     summary: Returns the complete blacklist
  *     responses:
  *       200:
- *         description: Returns all blacklisted items
+ *         description: Returns the complete blacklist
  *         content:
  *           application/json:
  *             schema:
@@ -35,7 +35,7 @@ router.get('/api', Logic.getAllItems);
  *           type: string
  *     responses:
  *       200:
- *         description: blacklisted tips
+ *         description: blacklist status for a tipId
  *         content:
  *           application/json:
  *             schema:

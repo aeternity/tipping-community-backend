@@ -5,16 +5,162 @@ const { signatureAuth } = require('../utils/auth.js');
 const router = new Router();
 
 // Open api routes
+/**
+ * @swagger
+ * /comment/api:
+ *   get:
+ *     summary: Returns all comments
+ *     responses:
+ *       200:
+ *         description: Returns all comments
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Comment'
+ */
 router.get('/api/', CommentLogic.getAllItems);
+/**
+ * @swagger
+ * /comment/api/{id}:
+ *   get:
+ *     summary: Returns a single comment
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: comment id in the backend
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Returns a single comment
+ *         content:
+ *           application/json:
+ *             schema:
+ *              $ref: '#/components/schemas/Comment'
+ */
 router.get('/api/:id', CommentLogic.getSingleItem);
+/**
+ * @swagger
+ * /comment/api/tip/{id}:
+ *   get:
+ *     summary: Returns all comments for single tip
+ *     parameters:
+ *       - in: path
+ *         name: tipId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Returns all comments for single tip
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Comment'
+ */
 router.get('/api/tip/:tipId', CommentLogic.getAllItemsForThread);
+/**
+ * @swagger
+ * /comment/api/author/{author}:
+ *   get:
+ *     summary: Returns all comments for single author
+ *     parameters:
+ *       - in: path
+ *         name: author
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Returns all comments for single author
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Comment'
+ */
 router.get('/api/author/:author', CommentLogic.getAllItemsForAuthor);
 
 // Count routes
+/**
+ * @swagger
+ * /comment/count/tips/:
+ *   get:
+ *     summary: Returns the count of comments for all tips
+ *     responses:
+ *       200:
+ *         description: Returns the count of comments for all tips
+ *         content:
+ *           application/json:
+ *             schema:
+ *              type: array
+ *              items:
+ *                type: object
+ *                properties:
+ *                  tipId:
+ *                    type: string
+ *                  count:
+ *                    type: integer
+ *
+ */
 router.get('/count/tips/', CommentLogic.getCommentCountForTips);
+/**
+ * @swagger
+ * /comment/count/author/:
+ *   get:
+ *     summary: Returns the count of comments for all tips
+ *     parameters:
+ *       - in: path
+ *         name: author
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Returns the count of comments for all tips
+ *         content:
+ *           application/json:
+ *             schema:
+ *              type: object
+ *              properties:
+ *                author:
+ *                  type: string
+ *                count:
+ *                  type: integer
+ */
 router.get('/count/author/:author', CommentLogic.getCommentCountForAddress);
 
 // Restricted api routes
+/**
+ * @swagger
+ * /comment/count/author/:
+ *   post:
+ *     summary: Returns the count of comments for all tips
+ *     parameters:
+ *       - in: path
+ *         name: author
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Returns the count of comments for all tips
+ *         content:
+ *           application/json:
+ *             schema:
+ *              type: object
+ *              properties:
+ *                author:
+ *                  type: string
+ *                count:
+ *                  type: integer
+ */
 router.post('/api', signatureAuth, CommentLogic.addItem);
 router.delete('/api/:id', signatureAuth, CommentLogic.verifyAuthor, CommentLogic.removeItem);
 

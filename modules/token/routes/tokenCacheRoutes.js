@@ -73,4 +73,6 @@ router.post('/addToken', TokenCacheLogic.indexTokenInfo);
  */
 router.get('/balances', TokenCacheLogic.tokenAccountBalance);
 
+router.get('/wordRegistry', TokenCacheLogic.wordRegistry);
+
 module.exports = router;

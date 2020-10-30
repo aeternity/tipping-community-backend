@@ -13,6 +13,7 @@ const ORACLE_SERVICE_INTERFACE = require('tipping-oracle-service/OracleServiceIn
 const TOKEN_CONTRACT_INTERFACE = require('aeternity-fungible-token/FungibleTokenFullInterface.aes');
 const TOKEN_REGISTRY = require('token-registry/TokenRegistry.aes');
 const WORD_REGISTRY_INTERFACE = require('wordbazaar-contracts/WordRegistry.aes');
+const WORD_SALE_INTERFACE = require('wordbazaar-contracts/TokenSale.aes');
 const logger = require('../../../utils/logger')(module);
 const { topicsRegex } = require('../utils/tipTopicUtil');
 const { TRACE_STATES } = require('../../payfortx/constants/traceStates');
@@ -68,6 +69,7 @@ class Aeternity {
 
       this.tokenRegistry = await this.client.getContractInstance(TOKEN_REGISTRY, { contractAddress: process.env.TOKEN_REGISTRY_ADDRESS });
       this.tokenContracts = {};
+      this.wordSaleContracts = {};
     }
   }
 
@@ -140,6 +142,21 @@ class Aeternity {
     return this.wordRegistryContract.methods.get_state().then(res => res.decodedResult);
   }
 
+  async wordSaleTokenAddress(contractAddress) {
+    await this.initWordSaleContractIfUnknown(contractAddress);
+    return this.wordSaleContracts[contractAddress].methods.get_token().then(res => res.decodedResult);
+  }
+
+  async wordSalePrice(contractAddress) {
+    await this.initWordSaleContractIfUnknown(contractAddress);
+    return this.wordSaleContracts[contractAddress].methods.prices().then(res => res.decodedResult);
+  }
+
+  async fungibleTokenTotalSupply(contractAddress) {
+    await this.initTokenContractIfUnknown(contractAddress);
+    return this.tokenContracts[contractAddress].methods.total_supply().then(res => res.decodedResult);
+  }
+
   async fetchOracleState() {
     if (!this.client) throw new Error('Init sdk first');
     return this.oracleContract.methods.get_state().then(res => res.decodedResult).catch(e => {
@@ -185,12 +202,25 @@ class Aeternity {
     });
   }
 
-  async fetchTokenMetaInfo(contractAddress) {
+  async initWordSaleContractIfUnknown(contractAddress) {
+    if (!this.wordSaleContracts[contractAddress]) {
+      this.wordSaleContracts[contractAddress] = await this.client.getContractInstance(
+        WORD_SALE_INTERFACE, { contractAddress },
+      );
+    }
+  }
+
+  async initTokenContractIfUnknown(contractAddress) {
     if (!this.tokenContracts[contractAddress]) {
       this.tokenContracts[contractAddress] = await this.client.getContractInstance(
         TOKEN_CONTRACT_INTERFACE, { contractAddress },
       );
     }
+  }
+
+  async fetchTokenMetaInfo(contractAddress) {
+    await this.initTokenContractIfUnknown(contractAddress);
+
     return this.tokenContracts[contractAddress].methods.meta_info().then(r => r.decodedResult).catch(e => {
       logger.error(e.message);
       Sentry.captureException(e);
@@ -208,11 +238,8 @@ class Aeternity {
 
   // TODO optimize cache generation for account balances
   async fetchTokenAccountBalances(contractAddress) {
-    if (!this.tokenContracts[contractAddress]) {
-      this.tokenContracts[contractAddress] = await this.client.getContractInstance(
-        TOKEN_CONTRACT_INTERFACE, { contractAddress },
-      );
-    }
+    await this.initTokenContractIfUnknown(contractAddress);
+
     return this.tokenContracts[contractAddress].methods.balances()
       .then(r => r.decodedResult)
       .catch(e => {

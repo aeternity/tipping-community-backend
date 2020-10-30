@@ -111,6 +111,22 @@ module.exports = class CacheLogic {
     return cache.getOrSet(['wordRegistryData'], () => aeternity.fetchWordRegistryData(), cache.shortCacheTime);
   }
 
+  static async wordSaleDetails(address) {
+    const tokenAddress = await cache.getOrSet(['wordSaleTokenAddress', address],
+      () => aeternity.wordSaleTokenAddress(address));
+    const [buy, sell] = await cache.getOrSet(['wordSalePrice', address],
+      () => aeternity.wordSalePrice(address), cache.shortCacheTime);
+    const totalSupply = await cache.getOrSet(['fungibleTokenTotalSupply', tokenAddress],
+      () => aeternity.fungibleTokenTotalSupply(tokenAddress), cache.shortCacheTime);
+
+    return {
+      tokenAddress: tokenAddress,
+      totalSupply: totalSupply,
+      buyPrice: 1 / buy,
+      sellPrice: 1 / sell,
+    };
+  }
+
   static async getOracleState() {
     return cache.getOrSet(['oracleState'], () => aeternity.fetchOracleState(), cache.shortCacheTime);
   }

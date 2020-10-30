@@ -75,4 +75,6 @@ router.get('/balances', TokenCacheLogic.tokenAccountBalance);
 
 router.get('/wordRegistry', TokenCacheLogic.wordRegistry);
 
+router.get('/wordSale', TokenCacheLogic.wordSaleDetails);
+
 module.exports = router;

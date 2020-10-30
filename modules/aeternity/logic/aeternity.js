@@ -12,6 +12,7 @@ const TIPPING_V3_INTERFACE = require('tipping-contract/Tipping_v3_Interface.aes'
 const ORACLE_SERVICE_INTERFACE = require('tipping-oracle-service/OracleServiceInterface.aes');
 const TOKEN_CONTRACT_INTERFACE = require('aeternity-fungible-token/FungibleTokenFullInterface.aes');
 const TOKEN_REGISTRY = require('token-registry/TokenRegistry.aes');
+const WORD_REGISTRY_INTERFACE = require('wordbazaar-contracts/WordRegistry.aes');
 const logger = require('../../../utils/logger')(module);
 const { topicsRegex } = require('../utils/tipTopicUtil');
 const { TRACE_STATES } = require('../../payfortx/constants/traceStates');
@@ -59,6 +60,12 @@ class Aeternity {
         ORACLE_SERVICE_INTERFACE,
         { contractAddress: process.env.ORACLE_CONTRACT_ADDRESS },
       );
+
+      this.wordRegistryContract = await this.client.getContractInstance(
+        WORD_REGISTRY_INTERFACE,
+        { contractAddress: process.env.WORD_REGISTRY_CONTRACT },
+      );
+
       this.tokenRegistry = await this.client.getContractInstance(TOKEN_REGISTRY, { contractAddress: process.env.TOKEN_REGISTRY_ADDRESS });
       this.tokenContracts = {};
     }
@@ -126,6 +133,11 @@ class Aeternity {
       }
       return event;
     });
+  }
+
+  async fetchWordRegistryData() {
+    if (!this.client) throw new Error('Init sdk first');
+    return this.wordRegistryContract.methods.get_state().then(res => res.decodedResult);
   }
 
   async fetchOracleState() {

@@ -107,6 +107,10 @@ module.exports = class CacheLogic {
     });
   }
 
+  static async getWordRegistryData() {
+    return cache.getOrSet(['wordRegistryData'], () => aeternity.fetchWordRegistryData(), cache.shortCacheTime);
+  }
+
   static async getOracleState() {
     return cache.getOrSet(['oracleState'], () => aeternity.fetchOracleState(), cache.shortCacheTime);
   }

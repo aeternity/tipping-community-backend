@@ -29,4 +29,8 @@ module.exports = class TokenCacheLogic {
       return acc;
     }, Promise.resolve({})));
   }
+
+  static async wordRegistry(req, res) {
+    return res.send(await CacheLogic.getWordRegistryData());
+  }
 };

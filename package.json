@@ -62,7 +62,8 @@
     "token-registry": "github:thepiwo/token-registry",
     "uuid": "^8.3.1",
     "winston": "^3.3.3",
-    "winston-daily-rotate-file": "^4.5.0"
+    "winston-daily-rotate-file": "^4.5.0",
+    "wordbazaar-contracts": "github:aeternity/wordbazaar-contracts#voting"
   },
   "devDependencies": {
     "babel-eslint": "^10.1.0",

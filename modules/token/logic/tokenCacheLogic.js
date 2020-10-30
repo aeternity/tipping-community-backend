@@ -33,4 +33,10 @@ module.exports = class TokenCacheLogic {
   static async wordRegistry(req, res) {
     return res.send(await CacheLogic.getWordRegistryData());
   }
+
+  static async wordSaleDetails(req, res) {
+    if (!req.query.address) return res.status(400).send('address query missing');
+
+    return res.send(await CacheLogic.wordSaleDetails(req.query.address));
+  }
 };

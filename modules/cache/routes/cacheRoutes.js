@@ -320,4 +320,8 @@ router.get('/invalidate/events', CacheLogic.invalidateContractEvents);
  */
 router.get('/invalidate/token/:token', CacheLogic.invalidateTokenCache);
 
+router.get('/invalidate/wordSale/:wordSale', CacheLogic.invalidateWordSaleCache);
+
+router.get('/invalidate/wordRegistry', CacheLogic.invalidateWordRegistryCache);
+
 module.exports = router;

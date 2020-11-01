@@ -286,6 +286,22 @@ module.exports = class CacheLogic {
     if (res) res.send({ status: 'OK' });
   }
 
+  static async invalidateWordRegistryCache(req, res) {
+    await cache.del(['wordRegistryData']);
+    await CacheLogic.getWordRegistryData(); // wait for cache update to let frontend know data availability
+    if (res) res.send({ status: 'OK' });
+  }
+
+  static async invalidateWordSaleCache(req, res) {
+    const tokenAddress = await cache.getOrSet(['wordSaleTokenAddress', req.params.wordSale],
+      () => aeternity.wordSaleTokenAddress(address));
+
+    await cache.del(['wordSalePrice', req.params.wordSale]);
+    await cache.del(['fungibleTokenTotalSupply', tokenAddress]);
+    await CacheLogic.wordSaleDetails(req.params.wordSale); // wait for cache update to let frontend know data availability
+    if (res) res.send({ status: 'OK' });
+  }
+
   static async deliverTip(req, res) {
     const tips = await CacheLogic.getAllTips(false);
     const result = tips.find(tip => tip.id === req.query.id);

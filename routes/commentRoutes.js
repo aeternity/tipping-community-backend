@@ -44,7 +44,7 @@ router.get('/api/', CommentLogic.getAllItems);
 router.get('/api/:id', CommentLogic.getSingleItem);
 /**
  * @swagger
- * /comment/api/tip/{id}:
+ * /comment/api/tip/{tipId}:
  *   get:
  *     summary: Returns all comments for single tip
  *     parameters:
@@ -112,7 +112,7 @@ router.get('/api/author/:author', CommentLogic.getAllItemsForAuthor);
 router.get('/count/tips/', CommentLogic.getCommentCountForTips);
 /**
  * @swagger
- * /comment/count/author/:
+ * /comment/count/author/{author}:
  *   get:
  *     summary: Returns the count of comments for all tips
  *     parameters:
@@ -139,29 +139,50 @@ router.get('/count/author/:author', CommentLogic.getCommentCountForAddress);
 // Restricted api routes
 /**
  * @swagger
- * /comment/count/author/:
+ * /comment/api/:
  *   post:
- *     summary: Returns the count of comments for all tips
+ *     summary: Add a new comment
+ *     security:
+ *       - signatureAuth: []
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             oneOf:
+ *               - $ref: '#/components/schemas/Comment'
+ *               - $ref: '#/components/schemas/SignatureRequest'
+ *     responses:
+ *       200:
+ *         description: Add a new comment
+ *         content:
+ *           application/json:
+ *             schema:
+ *               oneOf:
+ *                - $ref: '#/components/schemas/Comment'
+ *                - $ref: '#/components/schemas/SignatureResponse'
+ */
+router.post('/api', signatureAuth, CommentLogic.addItem);
+/**
+ * @swagger
+ * /comment/api/{commentId}:
+ *   delete:
+ *     summary: Delete a comment
+ *     security:
+ *       - signatureAuth: []
  *     parameters:
  *       - in: path
- *         name: author
+ *         name: commentId
  *         required: true
  *         schema:
  *           type: string
  *     responses:
  *       200:
- *         description: Returns the count of comments for all tips
+ *         description: Delete a comment
  *         content:
  *           application/json:
  *             schema:
- *              type: object
- *              properties:
- *                author:
- *                  type: string
- *                count:
- *                  type: integer
+ *               $ref: '#/components/schemas/SignatureResponse'
  */
-router.post('/api', signatureAuth, CommentLogic.addItem);
 router.delete('/api/:id', signatureAuth, CommentLogic.verifyAuthor, CommentLogic.removeItem);
 
 module.exports = router;

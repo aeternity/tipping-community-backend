@@ -8,7 +8,7 @@ const router = new Router();
  * @swagger
  * /notifications/{notificationId}:
  *   get:
- *     summary: Update a single notifications
+ *     summary: Get all notifications for a single user
  *     security:
  *       - signatureAuth: []
  *     parameters:
@@ -45,7 +45,7 @@ router.get('/user/:author', signatureAuth, NotificationLogic.getForUser);
 /**
  * @swagger
  * /notifications/{notificationId}:
- *   get:
+ *   post:
  *     summary: Update a single notifications
  *     security:
  *       - signatureAuth: []

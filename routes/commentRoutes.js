@@ -114,7 +114,7 @@ router.get('/count/tips/', CommentLogic.getCommentCountForTips);
  * @swagger
  * /comment/count/author/{author}:
  *   get:
- *     summary: Returns the count of comments for all tips
+ *     summary: Returns the count of comments for a single user
  *     parameters:
  *       - in: path
  *         name: author
@@ -123,7 +123,7 @@ router.get('/count/tips/', CommentLogic.getCommentCountForTips);
  *           type: string
  *     responses:
  *       200:
- *         description: Returns the count of comments for all tips
+ *         description: Returns the count of comments for a single user
  *         content:
  *           application/json:
  *             schema:

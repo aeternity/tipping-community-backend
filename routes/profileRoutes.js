@@ -16,7 +16,56 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 // Open api routes
+/**
+ * @swagger
+ * /profile/{author}:
+ *   get:
+ *     summary: Returns a profile for a single user
+ *     parameters:
+ *       - in: path
+ *         name: author
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Returns a profile for a single user
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Profile'
+ */
 router.get('/:author', ProfileLogic.getSingleItem);
+/**
+ * @swagger
+ * /profile/{author}:
+ *   post:
+ *     summary: Creates / Updates a profile
+ *     parameters:
+ *       - in: path
+ *         name: author
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - in: body
+ *     requestBody:
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             $ref: '#/components/schemas/Profile'
+ *         application/json:
+ *          schema:
+ *            $ref: '#/components/schemas/SignatureRequest'
+ *     responses:
+ *       200:
+ *         description: Creates / Updates a profile
+ *         content:
+ *           application/json:
+ *             schema:
+ *               oneOf:
+ *                 - $ref: '#/components/schemas/Profile'
+ *                 - $ref: '#/components/schemas/SignatureRequest'
+ */
 router.post(
   '/:author',
   upload.fields([{ name: 'image', maxCount: 1 }, { name: 'coverImage', maxCount: 1 }]),
@@ -26,9 +75,59 @@ router.post(
 );
 
 // Image routes
+/**
+ * @swagger
+ * /profile/image/{author}:
+ *   get:
+ *     summary: Returns a link preview image
+ *     parameters:
+ *       - in: path
+ *         name: author
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Returns a profile image
+ *         content:
+ *           image/png:
+ *             schema:
+ *               type: string
+ *               format: binary
+ */
 router.get('/image/:author', ProfileLogic.getImage);
 
 // Legacy routes
+/**
+ * @swagger
+ * /profile/image/{author}:
+ *   post:
+ *     deprecated: true
+ *     summary: Creates / Updates a profile
+ *     parameters:
+ *       - in: path
+ *         name: author
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             $ref: '#/components/schemas/Profile'
+ *         application/json:
+ *          schema:
+ *            $ref: '#/components/schemas/SignatureRequest'
+ *     responses:
+ *       200:
+ *         description: Creates / Updates a profile
+ *         content:
+ *           application/json:
+ *             schema:
+ *               oneOf:
+ *                 - $ref: '#/components/schemas/Profile'
+ *                 - $ref: '#/components/schemas/SignatureRequest'
+ */
 router.post(
   '/image/:author',
   upload.fields([{ name: 'image', maxCount: 1 }, { name: 'coverImage', maxCount: 1 }]),
@@ -36,12 +135,58 @@ router.post(
   ProfileLogic.verifyRequest,
   ProfileLogic.upsertProfile,
 );
+/**
+ * @swagger
+ * /profile/image/{author}:
+ *   delete:
+ *     deprecated: true
+ *     summary: Creates / Updates a profile
+ *     parameters:
+ *       - in: path
+ *         name: author
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Creates / Updates a profile
+ *         content:
+ *           application/json:
+ *             schema:
+ *               oneOf:
+ *                 - $ref: '#/components/schemas/Profile'
+ *                 - $ref: '#/components/schemas/SignatureRequest'
+ */
 router.delete(
   '/image/:author',
   signatureAuth,
   ProfileLogic.verifyRequest,
   ProfileLogic.deleteImage,
 );
+/**
+ * @swagger
+ * /profile/:
+ *   post:
+ *     deprecated: true
+ *     summary: Creates / Updates a profile
+ *     requestBody:
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             $ref: '#/components/schemas/Profile'
+ *         application/json:
+ *          schema:
+ *            $ref: '#/components/schemas/SignatureRequest'
+ *     responses:
+ *       200:
+ *         description: Creates / Updates a profile
+ *         content:
+ *           application/json:
+ *             schema:
+ *               oneOf:
+ *                 - $ref: '#/components/schemas/Profile'
+ *                 - $ref: '#/components/schemas/SignatureRequest'
+ */
 router.post(
   '/',
   upload.fields([{ name: 'image', maxCount: 1 }, { name: 'coverImage', maxCount: 1 }]),

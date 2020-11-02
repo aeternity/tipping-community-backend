@@ -47,7 +47,6 @@ router.get('/:author', ProfileLogic.getSingleItem);
  *         required: true
  *         schema:
  *           type: string
- *       - in: body
  *     requestBody:
  *       content:
  *         multipart/form-data:

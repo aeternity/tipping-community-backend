@@ -6,7 +6,7 @@ module.exports = {
     description: 'A sample API', // Description (optional)
   },
   servers: [
-    { url: 'http://localhost:3000' }
+    { url: 'https://raendom-backend.z52da5wt.xyz' }
   ],
   components: {}, // ADD THIS LINE!!!
   openapi: '3.0.3'

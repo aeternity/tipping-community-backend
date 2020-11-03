@@ -43,7 +43,7 @@ app.use('/pin', require('./routes/pinRoutes.js'));
 app.use('/notification', require('./routes/notificationRoutes.js'));
 app.use('/consent', require('./routes/consentRoutes.js'));
 
-app.use('/images', express.static('./images'));
+app.use('/images', require('./routes/imageRoutes.js'));
 
 app.use((req, res) => {
   res.sendStatus(404);

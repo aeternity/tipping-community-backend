@@ -10,3 +10,4 @@ database.sqlite
 images/
 /traces/*.json
 docker-compose.override.yml
+swagger.json

@@ -10,7 +10,8 @@
     "db:makemigrations": "./node_modules/sequelize-auto-migrations/bin/makemigration.js",
     "lint": "eslint .",
     "lint-fix": "eslint --ext .js --fix .",
-    "lint-ci": "eslint --ext .js --max-warnings=0 ."
+    "lint-ci": "eslint --ext .js --max-warnings=0 .",
+    "swagger:create": "swagger-jsdoc -d .swaggerDef.js ./utils/*.js ./routes/*.js &&  node ./cli/generateDefinitionFromModels.js"
   },
   "repository": {
     "type": "git",
@@ -24,6 +25,7 @@
   "homepage": "https://github.com/aeternity/tipping-community-backend#readme",
   "dependencies": {
     "@aeternity/aepp-sdk": "^7.7.0",
+    "aeternity-fungible-token": "github:mradkov/aeternity-fungible-token",
     "async-lock": "^1.2.4",
     "axios": "latest",
     "bignumber.js": "^9.0.1",
@@ -32,7 +34,6 @@
     "esm": "^3.2.25",
     "express": "^4.17.1",
     "express-handlebars": "^5.2.0",
-    "express-oas-generator": "^1.0.27",
     "fuse.js": "^6.4.2",
     "ipfs-http-client": "^44.1.0",
     "languagedetect": "^2.0.0",
@@ -47,13 +48,13 @@
     "pg-hstore": "^2.3.3",
     "puppeteer": "^5.4.1",
     "redis": "^3.0.2",
-    "tipping-contract": "github:aeternity/tipping-contract#develop",
-    "tipping-oracle-service": "github:aeternity/tipping-oracle-service",
-    "token-registry": "github:thepiwo/token-registry",
-    "aeternity-fungible-token": "github:mradkov/aeternity-fungible-token",
     "sequelize": "^5.22.3",
     "sequelize-hierarchy": "^2.0.4",
     "sharp": "^0.26.2",
+    "swagger-ui-express": "^4.1.4",
+    "tipping-contract": "github:aeternity/tipping-contract#develop",
+    "tipping-oracle-service": "github:aeternity/tipping-oracle-service",
+    "token-registry": "github:thepiwo/token-registry",
     "uuid": "^8.3.1",
     "winston": "^3.3.3",
     "winston-daily-rotate-file": "^4.5.0"

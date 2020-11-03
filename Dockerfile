@@ -38,6 +38,9 @@ RUN chown -R pptruser:pptruser /app
 # Run everything after as non-privileged user.
 USER pptruser
 
+# Create swagger file
+RUN npm run swagger:create
+
 EXPOSE 3000
 
 CMD npm run db:create; node server.js

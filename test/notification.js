@@ -335,27 +335,4 @@ describe('Notifications', () => {
         });
     });
   });
-
-  describe('Static Types', () => {
-    before(async () => {
-      await Notification.destroy({
-        where: {},
-        truncate: true,
-      });
-    });
-
-    it('it should GET all static notification types', done => {
-      chai.request(server).get('/notification/static/types').end((err, res) => {
-        res.should.have.status(200);
-        res.body.should.be.a('object');
-        res.body.should.have.property('ENTITY_TYPES');
-        res.body.should.have.property('NOTIFICATION_TYPES');
-        res.body.should.have.property('NOTIFICATION_STATES');
-        res.body.ENTITY_TYPES.should.deep.equal(ENTITY_TYPES);
-        res.body.NOTIFICATION_TYPES.should.deep.equal(NOTIFICATION_TYPES);
-        res.body.NOTIFICATION_STATES.should.deep.equal(NOTIFICATION_STATES);
-        done();
-      });
-    });
-  });
 });

@@ -1,4 +1,5 @@
 const express = require('express');
+const path = require('path');
 
 const router = new express.Router();
 
@@ -31,6 +32,6 @@ const router = new express.Router();
  *               type: string
  *               format: binary
  */
-router.get('/', express.static('./images'));
+router.use('/', express.static(path.resolve('./images/')));
 
 module.exports = router;

@@ -33,13 +33,14 @@ RUN apk del --no-cache \
 
 COPY . /app
 
+RUN npm run swagger:create
+
 RUN chown -R pptruser:pptruser /app
 
 # Run everything after as non-privileged user.
 USER pptruser
 
 # Create swagger file
-RUN npm run swagger:create
 
 EXPOSE 3000
 

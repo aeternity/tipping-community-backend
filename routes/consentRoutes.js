@@ -6,8 +6,17 @@ const router = new Router();
 
 /**
  * @swagger
+ * tags:
+ * - name: "consent"
+ *   description: "Consent storage for third party rich media integrations"
+ */
+
+/**
+ * @swagger
  * /consent/{author}:
  *   get:
+ *     tags:
+ *       - consent
  *     summary: Returns all consent domains for a user
  *     security:
  *       - signatureAuth: []
@@ -34,6 +43,8 @@ router.get('/:author', signatureAuth, ConsentLogic.getAllItemsForUser);
  * @swagger
  * /consent/{author}/{scope}:
  *   get:
+ *     tags:
+ *       - consent
  *     summary: Returns an item for a given user & scope
  *     security:
  *       - signatureAuth: []
@@ -64,6 +75,8 @@ router.get('/:author/:scope', signatureAuth, ConsentLogic.getSingleItem);
  * @swagger
  * /consent/{author}/{scope}:
  *   post:
+ *     tags:
+ *       - consent
  *     summary: Update consent settings for a given user & scope
  *     security:
  *       - signatureAuth: []
@@ -100,6 +113,8 @@ router.post('/:author/:scope', signatureAuth, ConsentLogic.upsertItem);
  * @swagger
  * /consent/{author}/{scope}:
  *   delete:
+ *     tags:
+ *       - consent
  *     summary: Remove consent settings for a given user & scope
  *     security:
  *       - signatureAuth: []

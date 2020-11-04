@@ -3,11 +3,19 @@ const Logic = require('../logic/verifiedLogic.js');
 
 const router = new Router();
 
-// Open api routes
+/**
+ * @swagger
+ * tags:
+ * - name: "verified"
+ *   description: "A dynamic list of successfully claimed urls"
+ */
+
 /**
  * @swagger
  * /verified/:
  *   get:
+ *     tags:
+ *       - verified
  *     summary: Returns a list of domains where claiming tips has already worked
  *     responses:
  *       200:

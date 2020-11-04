@@ -3,11 +3,19 @@ const NotificationLogic = require('../logic/notificationLogic.js');
 const { signatureAuth } = require('../utils/auth.js');
 
 const router = new Router();
+/**
+ * @swagger
+ * tags:
+ * - name: "notifications"
+ *   description: "Notifications for user / system actions on superhero"
+ */
 
 /**
  * @swagger
  * /notifications/{notificationId}:
  *   get:
+ *     tags:
+ *       - notifications
  *     summary: Get all notifications for a single user
  *     security:
  *       - signatureAuth: []
@@ -46,6 +54,8 @@ router.get('/user/:author', signatureAuth, NotificationLogic.getForUser);
  * @swagger
  * /notifications/{notificationId}:
  *   post:
+ *     tags:
+ *       - notifications
  *     summary: Update a single notifications
  *     security:
  *       - signatureAuth: []

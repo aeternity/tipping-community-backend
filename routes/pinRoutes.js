@@ -4,11 +4,19 @@ const { signatureAuth } = require('../utils/auth.js');
 
 const router = new Router();
 
-// Open api routes
+/**
+ * @swagger
+ * tags:
+ * - name: "pin"
+ *   description: "Pinning Tips to a users profile"
+ */
+
 /**
  * @swagger
  * /pin/{author}:
  *   get:
+ *     tags:
+ *       - pin
  *     summary: Returns all pinned tips for a single user
  *     parameters:
  *       - in: path
@@ -33,6 +41,8 @@ router.get('/:author', Logic.getAllItemsPerUser);
  * @swagger
  * /pin/{author}:
  *   post:
+ *     tags:
+ *       - pin
  *     summary: Add a pin to a users profile
  *     security:
  *       - signatureAuth: []
@@ -69,6 +79,8 @@ router.post('/:author', signatureAuth, Logic.addItem);
  * @swagger
  * /pin/{author}:
  *   delete:
+ *     tags:
+ *       - pin
  *     summary: Remove a pin from a users profile (body requires entryId + type)
  *     security:
  *       - signatureAuth: []

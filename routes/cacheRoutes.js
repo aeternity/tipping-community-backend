@@ -5,11 +5,20 @@ const router = new Router();
 
 CacheLogic.init(); // calls init
 
+/**
+ * @swagger
+ * tags:
+ * - name: "cache"
+ *   description: "Caching blockchain information"
+ */
+
 // Open api routes
 /**
  * @swagger
  * /cache/tip:
  *   get:
+ *     tags:
+ *       - cache
  *     summary: Returns a single tip
  *     parameters:
  *       - in: query
@@ -30,6 +39,8 @@ router.get('/tip', CacheLogic.deliverTip);
  * @swagger
  * /cache/tips:
  *   get:
+ *     tags:
+ *       - cache
  *     summary: Returns an array of tips
  *     parameters:
  *       - in: query
@@ -82,6 +93,8 @@ router.get('/tips', CacheLogic.deliverTips);
  * @swagger
  * /cache/stats:
  *   get:
+ *     tags:
+ *       - cache
  *     summary: Returns aggregated stats for superhero
  *     responses:
  *       200:
@@ -97,6 +110,8 @@ router.get('/stats', CacheLogic.deliverStats);
  * @swagger
  * /cache/userStats:
  *   get:
+ *     tags:
+ *       - cache
  *     summary: Returns aggregated stats for a single address
  *     parameters:
  *       - in: query
@@ -118,6 +133,8 @@ router.get('/userStats', CacheLogic.deliverUserStats);
  * @swagger
  * /cache/chainNames:
  *   get:
+ *     tags:
+ *       - cache
  *     summary: Returns all registered chainnames
  *     responses:
  *       200:
@@ -134,6 +151,8 @@ router.get('/chainNames', CacheLogic.deliverChainNames);
  * @swagger
  * /cache/price:
  *   get:
+ *     tags:
+ *       - cache
  *     summary: Returns price for ae to usd, eur & cny
  *     responses:
  *       200:
@@ -161,6 +180,8 @@ router.get('/price', CacheLogic.deliverPrice);
  * @swagger
  * /cache/oracle:
  *   get:
+ *     tags:
+ *       - cache
  *     summary: Returns the current state of the oracle contract
  *     responses:
  *       200:
@@ -175,6 +196,8 @@ router.get('/oracle', CacheLogic.deliverOracleState);
  * @swagger
  * /cache/topics:
  *   get:
+ *     tags:
+ *       - cache
  *     summary: Returns an scored list of all tip topics
  *     responses:
  *       200:
@@ -198,6 +221,8 @@ router.get('/topics', CacheLogic.deliverTipTopics);
  * @swagger
  * /cache/events:
  *   get:
+ *     tags:
+ *       - cache
  *     summary: Returns all chain events related to the tipping contracts
  *     parameters:
  *       - in: query
@@ -233,6 +258,8 @@ router.get('/events', CacheLogic.deliverContractEvents);
  * @swagger
  * /cache/invalidate/tips:
  *   get:
+ *     tags:
+ *       - cache
  *     summary: Invalidates the tip cache
  *     responses:
  *       200:
@@ -243,6 +270,8 @@ router.get('/invalidate/tips', CacheLogic.invalidateTips);
  * @swagger
  * /cache/invalidate/oracle:
  *   get:
+ *     tags:
+ *       - cache
  *     summary: Invalidates the oracle contract state cache
  *     responses:
  *       200:
@@ -253,13 +282,32 @@ router.get('/invalidate/oracle', CacheLogic.invalidateOracle);
  * @swagger
  * /cache/invalidate/events:
  *   get:
+ *     tags:
+ *       - cache
  *     summary: Invalidates the chain events cache
  *     responses:
  *       200:
  *         description: OK
  */
 router.get('/invalidate/events', CacheLogic.invalidateContractEvents);
-
+/**
+ * @swagger
+ * /cache/invalidate/token/{token}:
+ *   get:
+ *     tags:
+ *       - cache
+ *     summary: Invalidates the chain events cache
+ *     parameters:
+ *       - in: path
+ *         name: token
+ *         schema:
+ *           type: string
+ *         description: The token contract address that the cache should be invalidated for
+ *         required: true
+ *     responses:
+ *       200:
+ *         description: OK
+ */
 router.get('/invalidate/token/:token', CacheLogic.invalidateTokenCache);
 
 module.exports = router;

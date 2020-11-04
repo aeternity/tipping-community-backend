@@ -15,11 +15,19 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
-// Open api routes
+/**
+ * @swagger
+ * tags:
+ * - name: "profile"
+ *   description: "User Profiles"
+ */
+
 /**
  * @swagger
  * /profile/{author}:
  *   get:
+ *     tags:
+ *       - profile
  *     summary: Returns a profile for a single user
  *     parameters:
  *       - in: path
@@ -40,6 +48,8 @@ router.get('/:author', ProfileLogic.getSingleItem);
  * @swagger
  * /profile/{author}:
  *   post:
+ *     tags:
+ *       - profile
  *     summary: Creates / Updates a profile
  *     parameters:
  *       - in: path
@@ -78,6 +88,8 @@ router.post(
  * @swagger
  * /profile/image/{author}:
  *   get:
+ *     tags:
+ *       - profile
  *     summary: Returns a link preview image
  *     parameters:
  *       - in: path
@@ -101,6 +113,8 @@ router.get('/image/:author', ProfileLogic.getImage);
  * @swagger
  * /profile/image/{author}:
  *   post:
+ *     tags:
+ *       - profile
  *     deprecated: true
  *     summary: Creates / Updates a profile
  *     parameters:
@@ -138,6 +152,8 @@ router.post(
  * @swagger
  * /profile/image/{author}:
  *   delete:
+ *     tags:
+ *       - profile
  *     deprecated: true
  *     summary: Creates / Updates a profile
  *     parameters:
@@ -166,6 +182,8 @@ router.delete(
  * @swagger
  * /profile/:
  *   post:
+ *     tags:
+ *       - profile
  *     deprecated: true
  *     summary: Creates / Updates a profile
  *     requestBody:

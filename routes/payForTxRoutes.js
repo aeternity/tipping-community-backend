@@ -3,11 +3,19 @@ const PayForTxLogic = require('../logic/payForTxLogic.js');
 
 const router = new Router();
 
-// Open api routes
+/**
+ * @swagger
+ * tags:
+ * - name: "payfortx"
+ *   description: "Transaction relay service"
+ */
+
 /**
  * @swagger
  * /payfortx/submit:
  *   post:
+ *     tags:
+ *       - payfortx
  *     summary: submit a claim transaction to the oracles
  *     requestBody:
  *       content:

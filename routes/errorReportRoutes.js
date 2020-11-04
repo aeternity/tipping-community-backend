@@ -3,12 +3,19 @@ const Logic = require('../logic/errorReportLogic.js');
 const { basicAuth } = require('../utils/auth.js');
 
 const router = new Router();
-
+/**
+ * @swagger
+ * tags:
+ * - name: "errorreport"
+ *   description: "Stores error reports from the wallet"
+ */
 // View routes
 /**
  * @swagger
  * /errorreport/:
  *   get:
+ *     tags:
+ *       - errorreport
  *     summary: Gets all reported errors
  *     security:
  *       - basicAuth: []
@@ -29,6 +36,8 @@ router.get('/', basicAuth, Logic.getAllItems);
  * @swagger
  * /errorreport/:
  *   post:
+ *     tags:
+ *       - errorreport
  *     summary: Add a new error report
  *     requestBody:
  *       content:

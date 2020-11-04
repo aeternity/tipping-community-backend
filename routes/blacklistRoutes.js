@@ -5,11 +5,20 @@ const { basicAuth, signatureAuth } = require('../utils/auth.js');
 
 const router = new Router();
 
+/**
+ * @swagger
+ * tags:
+ * - name: "blacklist"
+ *   description: "Flagging / Removing tips from the feed"
+ */
+
 // Open api routes
 /**
  * @swagger
  * /blacklist/api:
  *   get:
+ *     tags:
+ *       - blacklist
  *     summary: Returns the complete blacklist
  *     responses:
  *       200:
@@ -26,6 +35,8 @@ router.get('/api', Logic.getAllItems);
  * @swagger
  * /blacklist/api/{tipId}:
  *   get:
+ *     tags:
+ *       - blacklist
  *     summary: Returns blacklist status for a tipId
  *     parameters:
  *       - in: path
@@ -48,6 +59,8 @@ router.get('/api/:tipId', Logic.getSingleItem);
  * @swagger
  * /blacklist/:
  *   get:
+ *     tags:
+ *       - blacklist
  *     summary: Returns Userinterface to flag / unflag / remove tips
  *     security:
  *       - basicAuth: []
@@ -68,6 +81,8 @@ router.get('/', basicAuth, async (req, res) => res.render('admin', {
  * @swagger
  * /blacklist/api:
  *   post:
+ *     tags:
+ *       - blacklist
  *     summary: Adds tip to blacklist
  *     security:
  *       - basicAuth: []
@@ -89,6 +104,8 @@ router.post('/api', basicAuth, Logic.addItem);
  * @swagger
  * /blacklist/api/{tipId}:
  *   put:
+ *     tags:
+ *       - blacklist
  *     summary: Updates status of blacklisted tip
  *     security:
  *       - basicAuth: []
@@ -116,6 +133,8 @@ router.put('/api/:tipId', basicAuth, Logic.updateItem);
  * @swagger
  * /blacklist/api/{tipId}:
  *   delete:
+ *     tags:
+ *       - blacklist
  *     summary: Removes tip from blacklist
  *     security:
  *       - basicAuth: []
@@ -136,6 +155,8 @@ router.delete('/api/:tipId', basicAuth, Logic.removeItem);
  * @swagger
  * /blacklist/api/wallet:
  *   post:
+ *     tags:
+ *       - blacklist
  *     summary: Adds tip to blacklist
  *     security:
  *       - signatureAuth: []

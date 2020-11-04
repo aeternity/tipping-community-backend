@@ -2,12 +2,19 @@ const { Router } = require('express');
 const Logic = require('../logic/linkPreviewLogic.js');
 
 const router = new Router();
+/**
+ * @swagger
+ * tags:
+ * - name: "linkpreview"
+ *   description: "Server generated link previews for tips"
+ */
 
-// Open api routes
 /**
  * @swagger
  * /linkpreview/:
  *   get:
+ *     tags:
+ *       - linkpreview
  *     summary: Returns a link preview
  *     parameters:
  *       - in: query
@@ -29,6 +36,8 @@ router.get('/', Logic.getLinkPreview);
  * @swagger
  * /linkpreview/{url}:
  *   get:
+ *     tags:
+ *       - linkpreview
  *     summary: Returns a link preview
  *     parameters:
  *       - in: path
@@ -50,6 +59,8 @@ router.get('/:url', Logic.getLinkPreview);
  * @swagger
  * /linkpreview/image/{filename}:
  *   get:
+ *     tags:
+ *       - linkpreview
  *     summary: Returns a link preview image
  *     parameters:
  *       - in: path

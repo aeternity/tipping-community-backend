@@ -3,12 +3,19 @@ const CommentLogic = require('../logic/commentLogic.js');
 const { signatureAuth } = require('../utils/auth.js');
 
 const router = new Router();
-
+/**
+ * @swagger
+ * tags:
+ * - name: "comment"
+ *   description: "Comments on tips"
+ */
 // Open api routes
 /**
  * @swagger
  * /comment/api:
  *   get:
+ *     tags:
+ *       - comment
  *     summary: Returns all comments
  *     responses:
  *       200:
@@ -25,6 +32,8 @@ router.get('/api/', CommentLogic.getAllItems);
  * @swagger
  * /comment/api/{id}:
  *   get:
+ *     tags:
+ *       - comment
  *     summary: Returns a single comment
  *     parameters:
  *       - in: path
@@ -46,6 +55,8 @@ router.get('/api/:id', CommentLogic.getSingleItem);
  * @swagger
  * /comment/api/tip/{tipId}:
  *   get:
+ *     tags:
+ *       - comment
  *     summary: Returns all comments for single tip
  *     parameters:
  *       - in: path
@@ -68,6 +79,8 @@ router.get('/api/tip/:tipId', CommentLogic.getAllItemsForThread);
  * @swagger
  * /comment/api/author/{author}:
  *   get:
+ *     tags:
+ *       - comment
  *     summary: Returns all comments for single author
  *     parameters:
  *       - in: path
@@ -92,6 +105,8 @@ router.get('/api/author/:author', CommentLogic.getAllItemsForAuthor);
  * @swagger
  * /comment/count/tips/:
  *   get:
+ *     tags:
+ *       - comment
  *     summary: Returns the count of comments for all tips
  *     responses:
  *       200:
@@ -114,6 +129,8 @@ router.get('/count/tips/', CommentLogic.getCommentCountForTips);
  * @swagger
  * /comment/count/author/{author}:
  *   get:
+ *     tags:
+ *       - comment
  *     summary: Returns the count of comments for a single user
  *     parameters:
  *       - in: path
@@ -141,6 +158,8 @@ router.get('/count/author/:author', CommentLogic.getCommentCountForAddress);
  * @swagger
  * /comment/api/:
  *   post:
+ *     tags:
+ *       - comment
  *     summary: Add a new comment
  *     security:
  *       - signatureAuth: []
@@ -166,6 +185,8 @@ router.post('/api', signatureAuth, CommentLogic.addItem);
  * @swagger
  * /comment/api/{commentId}:
  *   delete:
+ *     tags:
+ *       - comment
  *     summary: Delete a comment
  *     security:
  *       - signatureAuth: []

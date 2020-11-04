@@ -2,11 +2,19 @@ const express = require('express');
 
 const router = new express.Router();
 
-// Open api routes
+/**
+ * @swagger
+ * tags:
+ * - name: "images"
+ *   description: "Static image endpoint"
+ */
+
 /**
  * @swagger
  * /images/{filename}:
  *   get:
+ *     tags:
+ *       - images
  *     summary: returns an image
  *     parameters:
  *       - in: path

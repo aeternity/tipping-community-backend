@@ -2,12 +2,19 @@ const { Router } = require('express');
 const HealthLogic = require('../logic/healthLogic.js');
 
 const router = new Router();
+/**
+ * @swagger
+ * tags:
+ * - name: "health"
+ *   description: "Asses the health of the backend"
+ */
 
-// Open api routes
 /**
  * @swagger
  * /health/backend:
  *   get:
+ *     tags:
+ *       - health
  *     summary: Returns health states of all backend service areas
  *     responses:
  *       200:

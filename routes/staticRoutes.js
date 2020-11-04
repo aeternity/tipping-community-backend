@@ -3,15 +3,23 @@ const StaticLogic = require('../logic/staticLogic.js');
 
 const router = new Router();
 
-// Open api routes
+/**
+ * @swagger
+ * tags:
+ * - name: "static"
+ *   description: "Various endpoints"
+ */
+
 /**
  * @swagger
  * /static/stats:
  *   get:
- *     summary: Returns aggregated stats over timeperiodes
+ *     tags:
+ *       - static
+ *     summary: Returns aggregated stats over time periods
  *     responses:
  *       200:
- *         description: Returns aggregated stats over timeperiodes
+ *         description: Returns aggregated stats over time periods
  *         content:
  *           application/json:
  *             schema:
@@ -75,6 +83,8 @@ router.get('/stats', StaticLogic.deliverStats);
  * @swagger
  * /static/wallet/graylist:
  *   get:
+ *     tags:
+ *       - static
  *     summary: Returns a list of domains where claiming tips can be troublesome
  *     responses:
  *       200:

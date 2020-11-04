@@ -3,11 +3,19 @@ const TipTracing = require('../logic/tipTracingLogic.js');
 
 const router = new Router();
 
-// Open api routes
+/**
+ * @swagger
+ * tags:
+ * - name: "tiptracing"
+ *   description: "Debugging information for claiming tips"
+ */
+
 /**
  * @swagger
  * /tracing/backend:
  *   get:
+ *     tags:
+ *       - tiptracing
  *     summary: Returns all traces for a given tipid
  *     parameters:
  *       - in: query
@@ -29,6 +37,8 @@ router.get('/backend', TipTracing.getAllTraces);
  * @swagger
  * /tracing/blockchain:
  *   get:
+ *     tags:
+ *       - tiptracing
  *     summary: Returns all traces for a given tipid
  *     parameters:
  *       - in: query

@@ -3,11 +3,19 @@ const TokenCacheLogic = require('../logic/tokenCacheLogic.js');
 
 const router = new Router();
 
-// Open api routes
+/**
+ * @swagger
+ * tags:
+ * - name: "tokencache"
+ *   description: "Caching AEX-9 token meta information and balances"
+ */
+
 /**
  * @swagger
  * /tokenCache/tokenInfo:
  *   get:
+ *     tags:
+ *       - tokencache
  *     summary: Returns a list of all tokens
  *     responses:
  *       200:
@@ -25,6 +33,8 @@ router.get('/tokenInfo', TokenCacheLogic.deliverTokenInfo);
  * @swagger
  * /tokenCache/addToken:
  *   post:
+ *     tags:
+ *       - tokencache
  *     summary: Add a token to be indexed
  *     requestBody:
  *       content:
@@ -44,6 +54,8 @@ router.post('/addToken', TokenCacheLogic.indexTokenInfo);
  * @swagger
  * /tokenCache/balances:
  *   get:
+ *     tags:
+ *       - tokencache
  *     summary: Get token balances for an address
  *     parameters:
  *       - in: query

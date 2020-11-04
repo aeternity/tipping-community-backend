@@ -1,5 +1,6 @@
 const express = require('express');
 const swaggerUi = require('swagger-ui-express');
+const fs = require('fs');
 
 const app = express();
 const exphbs = require('express-handlebars');
@@ -7,7 +8,6 @@ const cors = require('cors');
 const logger = require('./utils/logger')(module);
 const aeternity = require('./utils/aeternity');
 const cache = require('./utils/cache');
-const swaggerDocument = require('./swagger.json');
 
 // VIEWS
 app.engine('handlebars', exphbs());
@@ -48,7 +48,9 @@ app.use('/consent', require('./routes/consentRoutes.js'));
 app.use('/images', require('./routes/imageRoutes.js'));
 
 // expose api docs
-app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+if (fs.existsSync('./swagger.json')) {
+  app.use('/docs', swaggerUi.serve, swaggerUi.setup(JSON.parse(fs.readFileSync('./swagger.json'))));
+}
 
 app.use((req, res) => {
   res.sendStatus(404);

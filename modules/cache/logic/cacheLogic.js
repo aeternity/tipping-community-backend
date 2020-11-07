@@ -119,12 +119,15 @@ module.exports = class CacheLogic {
       () => aeternity.wordSalePrice(address), cache.shortCacheTime);
     const totalSupply = await cache.getOrSet(['fungibleTokenTotalSupply', tokenAddress],
       () => aeternity.fungibleTokenTotalSupply(tokenAddress), cache.shortCacheTime);
+    const spread = await cache.getOrSet(['wordSaleSpread', address],
+      () => aeternity.wordSaleSpread(address), cache.shortCacheTime);
 
     return {
       tokenAddress: tokenAddress,
       totalSupply: totalSupply,
       buyPrice: 1 / buy,
       sellPrice: 1 / sell,
+      spread: spread
     };
   }
 

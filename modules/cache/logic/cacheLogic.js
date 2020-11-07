@@ -113,21 +113,23 @@ module.exports = class CacheLogic {
   }
 
   static async wordSaleDetails(address) {
-    const tokenAddress = await cache.getOrSet(['wordSaleTokenAddress', address],
+    const tokenAddress = cache.getOrSet(['wordSaleTokenAddress', address],
       () => aeternity.wordSaleTokenAddress(address));
-    const [buy, sell] = await cache.getOrSet(['wordSalePrice', address],
+    const totalSupply = cache.getOrSet(['fungibleTokenTotalSupply', await tokenAddress],
+      async () => aeternity.fungibleTokenTotalSupply(await tokenAddress), cache.shortCacheTime);
+
+    const price = cache.getOrSet(['wordSalePrice', address],
       () => aeternity.wordSalePrice(address), cache.shortCacheTime);
-    const totalSupply = await cache.getOrSet(['fungibleTokenTotalSupply', tokenAddress],
-      () => aeternity.fungibleTokenTotalSupply(tokenAddress), cache.shortCacheTime);
-    const spread = await cache.getOrSet(['wordSaleSpread', address],
+    const spread = cache.getOrSet(['wordSaleSpread', address],
       () => aeternity.wordSaleSpread(address), cache.shortCacheTime);
 
+    const [buy, sell] = await price;
     return {
-      tokenAddress: tokenAddress,
-      totalSupply: totalSupply,
+      tokenAddress: await tokenAddress,
+      totalSupply: await totalSupply,
       buyPrice: 1 / buy,
       sellPrice: 1 / sell,
-      spread: spread
+      spread: await spread
     };
   }
 

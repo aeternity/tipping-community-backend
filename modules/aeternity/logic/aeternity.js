@@ -152,6 +152,11 @@ class Aeternity {
     return this.wordSaleContracts[contractAddress].methods.prices().then(res => res.decodedResult);
   }
 
+  async wordSaleSpread(contractAddress) {
+    await this.initWordSaleContractIfUnknown(contractAddress);
+    return this.wordSaleContracts[contractAddress].methods.spread().then(res => res.decodedResult);
+  }
+
   async fungibleTokenTotalSupply(contractAddress) {
     await this.initTokenContractIfUnknown(contractAddress);
     return this.tokenContracts[contractAddress].methods.total_supply().then(res => res.decodedResult);

@@ -44,12 +44,13 @@ module.exports = class TipLogic {
         return { ...tip, lang };
       });
       await TipLogic.bulkCreate(result.map(({
-        id, lang, claim, sender,
+        id, lang, claim, sender, media,
       }) => ({
         id: String(id),
         language: lang,
         sender,
         unclaimed: claim ? claim.unclaimed : false,
+        media: media || [],
       })));
     });
   }

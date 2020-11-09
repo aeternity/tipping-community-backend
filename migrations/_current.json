@@ -640,6 +640,11 @@
                     "field": "language",
                     "seqType": "Sequelize.STRING"
                 },
+                "media": {
+                    "allowNull": true,
+                    "field": "media",
+                    "seqType": "Sequelize.ARRAY(Sequelize.STRING)"
+                },
                 "type": {
                     "defaultValue": {
                         "value": "AE_TIP"
@@ -711,5 +716,5 @@
             "indexes": []
         }
     },
-    "revision": 4
+    "revision": 5
 }

@@ -11,6 +11,10 @@ module.exports = (sequelize, DataTypes) => sequelize.define('Tip', {
     type: DataTypes.STRING,
     allowNull: true,
   },
+  media: {
+    type: DataTypes.ARRAY(DataTypes.STRING),
+    allowNull: true,
+  },
   type: {
     type: DataTypes.ENUM({
       values: Object.values(TIP_TYPES),

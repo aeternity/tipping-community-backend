@@ -14,6 +14,11 @@ chai.should();
 
 describe('(Re)Tips', () => {
   describe('Invocations', () => {
+    before(async function () {
+      this.timeout(10000);
+      await aeternity.init();
+    });
+
     it('should call updateTipsDB on cache renewal', done => {
       cache.del(['getTips']);
       const tipStub = sinon.stub(aeternity, 'fetchTips').callsFake(() => []);
@@ -87,6 +92,38 @@ describe('(Re)Tips', () => {
       tip.should.have.property('sender', 'ak_tip');
     });
 
+    it('it should CREATE an tip with and without media in the db', async () => {
+      const fakeData = [
+        {
+          sender: 'ak_tip',
+          title: 'test tip in english',
+          id: '10',
+          url: 'https://superhero.com/',
+          retips: [],
+          media: ['http://test'],
+          claim: {
+            unclaimed: true,
+          },
+        },
+      ];
+
+      await TipLogic.updateTipsDB(fakeData);
+      await RetipLogic.updateRetipsDB(fakeData);
+
+      const tip = await Tip.findOne({
+        where: {
+          id: fakeData[0].id,
+        },
+      });
+
+      tip.should.have.property('id', fakeData[0].id);
+      tip.should.have.property('language', 'en');
+      tip.should.have.property('type', TIP_TYPES.AE_TIP);
+      tip.should.have.property('unclaimed', true);
+      tip.media.should.deep.equal(['http://test']);
+      tip.should.have.property('sender', 'ak_tip');
+    });
+
     it('it should CREATE a claimed tip without retips in db', async () => {
       const fakeData = [
         {
@@ -113,6 +150,7 @@ describe('(Re)Tips', () => {
       tip.should.have.property('id', fakeData[0].id);
       tip.should.have.property('language', 'en');
       tip.should.have.property('type', TIP_TYPES.AE_TIP);
+      tip.media.should.deep.equal([]);
       tip.should.have.property('unclaimed', fakeData[0].claim.unclaimed);
       tip.should.have.property('sender', 'ak_tip');
     });

@@ -95,28 +95,28 @@ describe('Cache', () => {
     it('it should GET all cache items with language filters', async () => {
       const stub = sinon.stub(CacheLogic, 'getAllTips').callsFake(() => [
         {
-          id: 1,
+          id: '1_v1',
           contentLanguage: 'en',
           preview: {
             lang: 'en',
           },
         },
         {
-          id: 2,
+          id: '2_v1',
           contentLanguage: null,
           preview: {
             lang: 'en',
           },
         },
         {
-          id: 3,
+          id: '3_v1',
           contentLanguage: 'zh',
           preview: {
             lang: 'en',
           },
         },
         {
-          id: 4,
+          id: '4_v1',
           contentLanguage: 'zh',
           preview: {
             lang: 'zh',
@@ -129,7 +129,7 @@ describe('Cache', () => {
       resLanguageEN.should.have.status(200);
       resLanguageEN.body.should.be.a('array');
       resLanguageEN.body.should.have.length(2);
-      resLanguageEN.body[0].id.should.equal(1);
+      resLanguageEN.body[0].id.should.equal('1_v1');
       stub.callCount.should.eql(1);
 
       // filter by chinese lang
@@ -137,7 +137,7 @@ describe('Cache', () => {
       resLanguageZH.should.have.status(200);
       resLanguageZH.body.should.be.a('array');
       resLanguageZH.body.should.have.length(1);
-      resLanguageZH.body[0].id.should.equal(4);
+      resLanguageZH.body[0].id.should.equal('4_v1');
       stub.callCount.should.eql(2);
 
       // filter by chinese lang
@@ -145,7 +145,50 @@ describe('Cache', () => {
       resLanguageZHEN.should.have.status(200);
       resLanguageZHEN.body.should.be.a('array');
       resLanguageZHEN.body.should.have.length(4);
-      resLanguageZHEN.body[0].id.should.equal(1);
+      resLanguageZHEN.body[0].id.should.equal('1_v1');
+      stub.callCount.should.eql(3);
+
+      stub.restore();
+    });
+
+    it('it should GET all cache items with contractVersion filters', async () => {
+      const stub = sinon.stub(CacheLogic, 'getAllTips').callsFake(() => [
+        {
+          id: '1_v1',
+        },
+        {
+          id: '2_v1',
+        },
+        {
+          id: '3_v2',
+        },
+        {
+          id: '4_v3',
+        },
+      ]);
+
+      // filter by v1
+      const resV1 = await chai.request(server).get('/cache/tips?contractVersion=v1');
+      resV1.should.have.status(200);
+      resV1.body.should.be.a('array');
+      resV1.body.should.have.length(2);
+      resV1.body[0].id.should.equal('1_v1');
+      stub.callCount.should.eql(1);
+
+      // filter by v2
+      const resV2 = await chai.request(server).get('/cache/tips?contractVersion=v2');
+      resV2.should.have.status(200);
+      resV2.body.should.be.a('array');
+      resV2.body.should.have.length(1);
+      resV2.body[0].id.should.equal('3_v2');
+      stub.callCount.should.eql(2);
+
+      // filter by v2 + v3
+      const resV2V3 = await chai.request(server).get('/cache/tips?contractVersion=v2&contractVersion=v3');
+      resV2V3.should.have.status(200);
+      resV2V3.body.should.be.a('array');
+      resV2V3.body.should.have.length(2);
+      resV2V3.body[0].id.should.equal('3_v2');
       stub.callCount.should.eql(3);
 
       stub.restore();

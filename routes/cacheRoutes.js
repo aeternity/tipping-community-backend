@@ -77,6 +77,16 @@ router.get('/tip', CacheLogic.deliverTip);
  *         schema:
  *           type: integer
  *         description: page number
+ *       - in: query
+ *         name: contractVersion
+ *         required: false
+ *         schema:
+ *           type: string
+ *           enum:
+ *             - v1
+ *             - v2
+ *             - v3
+ *         description: use this parameter once or more times to only include tips from certain contract versions in your request
  *     responses:
  *       200:
  *         description: Returns an array of tips

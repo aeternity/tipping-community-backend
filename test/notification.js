@@ -52,7 +52,7 @@ describe('Notifications', () => {
       });
 
       createdComment = await Comment.create({
-        tipId: '1',
+        tipId: '1_v1',
         text: 'Comment',
         author: 'ak_comment',
         signature: 'sig',
@@ -65,8 +65,8 @@ describe('Notifications', () => {
         {
           sender: 'ak_tip',
           title: '#test tip',
-          id: '1',
-          url: `https://superhero.com/tip/1/comment/${createdComment.id}`,
+          id: '1_v1',
+          url: `https://superhero.com/tip/1_v1/comment/${createdComment.id}`,
           retips: [],
           claim: {
             unclaimed: true,
@@ -94,7 +94,7 @@ describe('Notifications', () => {
       createdNotification.should.have.property('receiver', 'ak_comment');
       createdNotification.should.have.property('entityType', ENTITY_TYPES.TIP);
       createdNotification.should.have.property('sender', fakeData[0].sender);
-      createdNotification.should.have.property('entityId', '1');
+      createdNotification.should.have.property('entityId', fakeData[0].id);
       createdNotification.should.have.property('type', NOTIFICATION_TYPES.TIP_ON_COMMENT);
       createdNotification.should.have.property('sourceType', SOURCE_TYPES.COMMENT);
       createdNotification.should.have.property('sourceId', String(createdComment.id));
@@ -105,13 +105,13 @@ describe('Notifications', () => {
         {
           sender: 'ak_tip',
           title: '#test tip',
-          id: '1',
-          url: `https://superhero.com/tip/1/comment/${createdComment.id}`,
+          id: '1_v1',
+          url: `https://superhero.com/tip/1_v1/comment/${createdComment.id}`,
           claim: {
             unclaimed: true,
           },
           retips: [{
-            id: '1',
+            id: '1_v1',
             sender: 'ak_retip',
             timestamp: (new Date(2020, 8, 1)).getTime(),
             claim: {
@@ -128,7 +128,7 @@ describe('Notifications', () => {
         where: {
           type: NOTIFICATION_TYPES.RETIP_ON_TIP,
           entityType: ENTITY_TYPES.TIP,
-          entityId: '1',
+          entityId: fakeData[0].id,
           receiver: fakeData[0].sender,
           sender: fakeData[0].retips[0].sender,
         },
@@ -138,13 +138,13 @@ describe('Notifications', () => {
       createdNotification.should.have.property('receiver', fakeData[0].sender);
       createdNotification.should.have.property('entityType', ENTITY_TYPES.TIP);
       createdNotification.should.have.property('sender', fakeData[0].retips[0].sender);
-      createdNotification.should.have.property('entityId', '1');
+      createdNotification.should.have.property('entityId', fakeData[0].id);
       createdNotification.should.have.property('type', NOTIFICATION_TYPES.RETIP_ON_TIP);
     });
 
     it('it should create notifications for CLAIM_OF_TIP', async () => {
       await Tip.create({
-        id: '1',
+        id: '1_v1',
         language: null,
         unclaimed: true,
         sender: 'ak_tip',
@@ -154,10 +154,10 @@ describe('Notifications', () => {
         {
           sender: 'ak_tip',
           title: '#test tip',
-          id: '1',
-          url: `https://superhero.com/tip/1/comment/${createdComment.id}`,
+          id: '1_v1',
+          url: `https://superhero.com/tip/1_v1/comment/${createdComment.id}`,
           retips: [{
-            id: '1',
+            id: '1_v1',
             sender: 'ak_retip',
             timestamp: (new Date(2020, 8, 1)).getTime(),
             claim: {
@@ -177,30 +177,30 @@ describe('Notifications', () => {
         where: {
           type: NOTIFICATION_TYPES.CLAIM_OF_TIP,
           entityType: ENTITY_TYPES.TIP,
-          entityId: '1',
+          entityId: '1_v1',
           receiver: 'ak_tip',
         },
         raw: true,
       });
 
       createdNotification.should.be.a('object');
-      createdNotification.should.have.property('receiver', 'ak_tip');
+      createdNotification.should.have.property('receiver', fakeData[0].sender);
       createdNotification.should.have.property('entityType', ENTITY_TYPES.TIP);
-      createdNotification.should.have.property('entityId', '1');
+      createdNotification.should.have.property('entityId', fakeData[0].id);
       createdNotification.should.have.property('type', NOTIFICATION_TYPES.CLAIM_OF_TIP);
     });
 
     it('it should create notifications for CLAIM_OF_RETIP', async () => {
       await Tip.create({
-        id: '1',
+        id: '1_v1',
         language: null,
         unclaimed: true,
         sender: 'ak_tip',
       });
 
       await Retip.create({
-        id: '1',
-        tipId: '1',
+        id: '1_v1',
+        tipId: '1_v1',
         unclaimed: true,
         sender: 'ak_retip',
       });
@@ -209,10 +209,10 @@ describe('Notifications', () => {
         {
           sender: 'ak_tip',
           title: '#test tip',
-          id: '1',
+          id: '1_v1',
           url: `https://superhero.com/tip/1/comment/${createdComment.id}`,
           retips: [{
-            id: '1',
+            id: '1_v1',
             sender: 'ak_retip',
             timestamp: (new Date(2020, 8, 1)).getTime(),
             claim: {
@@ -232,15 +232,15 @@ describe('Notifications', () => {
         where: {
           type: NOTIFICATION_TYPES.CLAIM_OF_RETIP,
           entityType: ENTITY_TYPES.TIP,
-          entityId: '1',
+          entityId: '1_v1',
           receiver: 'ak_retip',
         },
         raw: true,
       });
       createdNotification.should.be.a('object');
-      createdNotification.should.have.property('receiver', 'ak_retip');
+      createdNotification.should.have.property('receiver', fakeData[0].retips[0].sender);
       createdNotification.should.have.property('entityType', ENTITY_TYPES.TIP);
-      createdNotification.should.have.property('entityId', '1');
+      createdNotification.should.have.property('entityId', fakeData[0].id);
       createdNotification.should.have.property('type', NOTIFICATION_TYPES.CLAIM_OF_RETIP);
     });
 
@@ -248,20 +248,20 @@ describe('Notifications', () => {
       await Notification.create({
         type: NOTIFICATION_TYPES.RETIP_ON_TIP,
         entityType: ENTITY_TYPES.TIP,
-        entityId: '1',
+        entityId: '1_v1',
         receiver: 'ak_tip',
         sourceType: SOURCE_TYPES.RETIP,
-        sourceId: '1',
+        sourceId: '1_v1',
       });
 
       const fakeData = [
         {
           sender: 'ak_tip',
           title: '#test tip',
-          id: '1',
-          url: `https://superhero.com/tip/1/comment/${createdComment.id}`,
+          id: '1_v1',
+          url: `https://superhero.com/tip/1_v1/comment/${createdComment.id}`,
           retips: [{
-            id: '1',
+            id: '1_v1',
             sender: 'ak_retip',
             timestamp: (new Date(2020, 8, 1)).getTime(),
             claim: {

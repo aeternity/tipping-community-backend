@@ -233,14 +233,14 @@ class Aeternity {
           // Increase interval counter in the beginning
           intervalCounter++;
           try {
-            if ((await contract.methods.check_claim(url, address)).decodedResult.success) {
-              clearInterval(interval);
-              return resolve();
-            }
-
             if (intervalCounter > 20) {
               clearInterval(interval);
               return reject(Error('check_claim interval timeout'));
+            }
+
+            if ((await contract.methods.check_claim(url, address)).decodedResult.success) {
+              clearInterval(interval);
+              return resolve();
             }
           } catch (e) {
             if (!e.message.includes('MORE_ORACLE_ANSWERS_REQUIRED')) {

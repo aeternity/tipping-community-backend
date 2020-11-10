@@ -230,14 +230,22 @@ class Aeternity {
         let interval = null;
 
         const checkPreClaimFinished = async () => {
-          if ((await contract.methods.check_claim(url, address)).decodedResult.success) {
-            clearInterval(interval);
-            return resolve();
-          }
+          // Increase interval counter in the beginning
+          intervalCounter++;
+          try {
+            if ((await contract.methods.check_claim(url, address)).decodedResult.success) {
+              clearInterval(interval);
+              return resolve();
+            }
 
-          if (intervalCounter++ > 20) {
-            clearInterval(interval);
-            return reject(Error('check_claim interval timeout'));
+            if (intervalCounter > 20) {
+              clearInterval(interval);
+              return reject(Error('check_claim interval timeout'));
+            }
+          } catch (e) {
+            if (!e.message.includes('MORE_ORACLE_ANSWERS_REQUIRED')) {
+              logger.error(e);
+            }
           }
           return null;
         };

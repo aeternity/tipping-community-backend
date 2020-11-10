@@ -77,6 +77,7 @@ const performSignedGETRequest = (server, url, privateKey = null) => new Promise(
 
 module.exports = {
   publicKey,
+  secretKey,
   signChallenge,
   shouldBeValidChallengeResponse,
   performSignedJSONRequest,

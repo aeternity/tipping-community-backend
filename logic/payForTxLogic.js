@@ -85,4 +85,25 @@ module.exports = class PayForTxLogic {
       });
     }
   }
+
+  static async postForUser(req, res) {
+    const sendError = (status, message) => res.status(status).send({ error: message });
+
+    if (!req.body.title) return sendError(400, 'title not found in body');
+    if (!req.body.author) return sendError(400, 'author not found in body');
+    if (!req.body.signature) return sendError(400, 'signature not found in body');
+    if (!ae || !ae.client) return sendError(500, 'sdk not initialized yet');
+    const {
+      title, media, author, signature: signatureInHex,
+    } = req.body;
+
+    const signature = Uint8Array.from(Buffer.from(signatureInHex, 'hex'));
+
+    try {
+      const tx = await ae.postTipToV3(title, media, author, signature);
+      return res.send({ tx });
+    } catch (e) {
+      return sendError(500, e.message);
+    }
+  }
 };

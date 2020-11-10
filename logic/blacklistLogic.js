@@ -21,6 +21,7 @@ module.exports = class Blacklist {
       const entry = await BlacklistEntry.create({ tipId: String(tipId) });
       // Kill stats cache
       await cache.del(['StaticLogic.getStats']);
+      await cache.del(['CacheLogic.getAllTips', 'blacklisted']);
       return res.send(entry);
     } catch (e) {
       return res.status(500).send(e.message);
@@ -40,6 +41,7 @@ module.exports = class Blacklist {
         existingEntry = await BlacklistEntry.create({ tipId, flagger: author, status: BLACKLIST_STATUS.FLAGGED });
         // Kill stats cache
         await cache.del(['StaticLogic.getStats']);
+        await cache.del(['CacheLogic.getAllTips', 'blacklisted']);
       }
       return res.send(existingEntry.toJSON());
     } catch (e) {
@@ -66,6 +68,7 @@ module.exports = class Blacklist {
         tipId: req.params.tipId,
       },
     });
+    await cache.del(['CacheLogic.getAllTips', 'blacklisted']);
     return result === 1 ? res.sendStatus(200) : res.sendStatus(404);
   }
 

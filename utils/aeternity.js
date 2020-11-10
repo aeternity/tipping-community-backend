@@ -295,6 +295,10 @@ class Aeternity {
   async getAddressForChainName(name) {
     return this.client.aensQuery(name).catch(() => null);
   }
+
+  async postTipToV3(title, media = [], author, signature) {
+    return this.contractV3.methods.post_without_tip_sig(title, media, author, signature);
+  }
 }
 
 const ae = new Aeternity();

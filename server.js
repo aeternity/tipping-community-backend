@@ -36,6 +36,7 @@ app.use('/verified', require('./routes/verifiedRoutes.js'));
 app.use('/cache', require('./routes/cacheRoutes.js'));
 app.use('/tokenCache', require('./routes/tokenCacheRoutes.js'));
 app.use('/claim', require('./routes/payForTxRoutes.js'));
+app.use('/payfortx', require('./routes/payForTxRoutes.js'));
 app.use('/static', require('./routes/staticRoutes.js'));
 app.use('/profile', require('./routes/profileRoutes.js'));
 app.use('/errorreport', require('./routes/errorReportRoutes.js'));

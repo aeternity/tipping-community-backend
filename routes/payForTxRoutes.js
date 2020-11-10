@@ -12,7 +12,7 @@ const router = new Router();
 
 /**
  * @swagger
- * /payfortx/submit:
+ * /claim/submit:
  *   post:
  *     tags:
  *       - payfortx
@@ -41,5 +41,42 @@ const router = new Router();
  *                  format: uuid
  */
 router.post('/submit', PayForTxLogic.payForTx);
+
+/**
+ * @swagger
+ * /payfortx/post:
+ *   post:
+ *     tags:
+ *       - payfortx
+ *     summary: submit a post transaction for the v3 contract
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               author:
+ *                 type: string
+ *               title:
+ *                 type: string
+ *                 format: url
+ *               media:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *               signature:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: result of the post
+ *         content:
+ *           application/json:
+ *             schema:
+ *              type: object
+ *              properties:
+ *                tx:
+ *                  type: object
+ */
+router.post('/post', PayForTxLogic.postForUser);
 
 module.exports = router;

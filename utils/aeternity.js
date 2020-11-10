@@ -148,14 +148,9 @@ class Aeternity {
   async fetchTips() {
     if (!this.client) throw new Error('Init sdk first');
     const fetchV1State = this.contractV1.methods.get_state();
-
-    if (process.env.CONTRACT_V2_ADDRESS && process.env.CONTRACT_V3_ADDRESS) {
-      const fetchV2State = this.contractV2.methods.get_state();
-      const fetchV3State = this.contractV3.methods.get_state();
-      const { tips } = tippingContractUtil.getTipsRetips(await fetchV1State, await fetchV2State, await fetchV3State);
-      return Aeternity.addAdditionalTipsData(tips);
-    }
-    const { tips } = tippingContractUtil.getTipsRetips(await fetchV1State);
+    const fetchV2State = process.env.CONTRACT_V2_ADDRESS ? this.contractV2.methods.get_state() : Promise.resolve([]);
+    const fetchV3State = process.env.CONTRACT_V3_ADDRESS ? this.contractV3.methods.get_state() : Promise.resolve([]);
+    const { tips } = tippingContractUtil.getTipsRetips(await fetchV1State, await fetchV2State, await fetchV3State);
     return Aeternity.addAdditionalTipsData(tips);
   }
 

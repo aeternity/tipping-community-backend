@@ -1,3 +1,6 @@
+const { Crypto } = require('@aeternity/aepp-sdk');
+const tippingContractUtil = require('tipping-contract/util/tippingContractUtil');
+
 const logger = require('../utils/logger')(module);
 const ae = require('../utils/aeternity.js');
 const CacheLogic = require('./cacheLogic');
@@ -98,6 +101,12 @@ module.exports = class PayForTxLogic {
     } = req.body;
 
     const signature = Uint8Array.from(Buffer.from(signatureInHex, 'hex'));
+
+    const hash = Crypto.hash(tippingContractUtil.postWithoutTippingString(title, media));
+    const verified = Crypto.verifyPersonalMessage(hash, signature, Crypto.decodeBase58Check(author.substr(3)));
+    if (!verified) {
+      return sendError(401, 'The signature does not match the public key or the content');
+    }
 
     try {
       const tx = await ae.postTipToV3(title, media, author, signature);

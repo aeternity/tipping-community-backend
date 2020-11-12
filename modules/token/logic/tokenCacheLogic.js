@@ -39,4 +39,10 @@ module.exports = class TokenCacheLogic {
 
     return res.send(await CacheLogic.wordSaleDetails(req.query.address));
   }
+
+  static async wordSaleVotesDetails(req, res) {
+    if (!req.query.address) return res.status(400).send('address query missing');
+
+    return res.send(await CacheLogic.wordSaleVotesDetails(req.query.address));
+  }
 };

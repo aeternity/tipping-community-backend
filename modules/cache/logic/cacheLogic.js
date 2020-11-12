@@ -133,6 +133,49 @@ module.exports = class CacheLogic {
     };
   }
 
+  static async wordSaleVotesDetails(address) {
+    const votes = await cache.getOrSet(['wordSaleVotes', address],
+      () => aeternity.wordSaleVotes(address), cache.shortCacheTime);
+
+    return Promise.all(votes.map(([id, vote]) => CacheLogic.wordSaleVoteInfo(id, vote[1], vote[0], address)));
+  }
+
+  static async wordSaleVoteInfo(id, vote, alreadyApplied, sale) {
+    const state = cache.getOrSet(['wordSaleVoteState', vote],
+      () => aeternity.wordSaleVoteState(vote), cache.shortCacheTime);
+
+    const voteTimeout = cache.getOrSet(['wordSaleVoteTimeout', sale],
+      () => aeternity.wordSaleVoteTimeout(sale));
+
+    const height = aeternity.client.height();
+
+    const votedFor = (await state).vote_state.find(([s]) => s)[1];
+    const votedAgainst = (await state).vote_state.find(([s]) => !s)[1];
+    const ifAgainstZero = votedFor === 0 ? 0 : 100;
+    const votedPositive = new BigNumber(votedFor)
+      .dividedBy(new BigNumber(votedFor).plus(votedAgainst)).times(100).toFixed(0);
+
+    const tokenAddress = cache.getOrSet(['wordSaleTokenAddress', sale],
+      () => aeternity.wordSaleTokenAddress(sale));
+
+    const totalSupply = cache.getOrSet(['fungibleTokenTotalSupply', await tokenAddress],
+      async () => aeternity.fungibleTokenTotalSupply(await tokenAddress), cache.shortCacheTime);
+
+    return {
+      id,
+      alreadyApplied,
+      voteAddress: vote,
+      subject: (await state).metadata.subject,
+      timeouted: ((await state).close_height + voteTimeout) < (await height),
+      closeHeight: (await state).close_height,
+      voteAccounts: (await state).vote_accounts,
+      hasSpread: new BigNumber(this.spread).isGreaterThan(0),
+      isClosed: (await height) >= (await state).close_height,
+      votePercent: votedAgainst !== 0 ? votedPositive : ifAgainstZero,
+      stakePercent: new BigNumber(votedFor).dividedBy(await totalSupply).times(100).toFixed(0),
+    };
+  }
+
   static async getOracleState() {
     return cache.getOrSet(['oracleState'], () => aeternity.fetchOracleState(), cache.shortCacheTime);
   }
@@ -295,6 +338,17 @@ module.exports = class CacheLogic {
   static async invalidateWordRegistryCache(req, res) {
     await cache.del(['wordRegistryData']);
     await CacheLogic.getWordRegistryData(); // wait for cache update to let frontend know data availability
+    if (res) res.send({ status: 'OK' });
+  }
+
+  static async invalidateWordSaleVotesCache(req, res) {
+    await cache.del(['wordSaleVotes', req.params.wordSale]);
+    await CacheLogic.wordSaleVotesDetails(req.params.wordSale); // wait for cache update to let frontend know data availability
+    if (res) res.send({ status: 'OK' });
+  }
+
+  static async invalidateWordSaleVoteStateCache(req, res) {
+    await cache.del(['wordSaleVoteState', req.params.vote]);
     if (res) res.send({ status: 'OK' });
   }
 

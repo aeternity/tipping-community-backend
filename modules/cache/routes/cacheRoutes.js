@@ -324,4 +324,8 @@ router.get('/invalidate/wordSale/:wordSale', CacheLogic.invalidateWordSaleCache)
 
 router.get('/invalidate/wordRegistry', CacheLogic.invalidateWordRegistryCache);
 
+router.get('/invalidate/wordSaleVotes/:wordSale', CacheLogic.invalidateWordSaleVotesCache);
+
+router.get('/invalidate/wordSaleVoteState/:vote', CacheLogic.invalidateWordSaleVoteStateCache);
+
 module.exports = router;

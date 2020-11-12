@@ -14,6 +14,8 @@ const TOKEN_CONTRACT_INTERFACE = require('aeternity-fungible-token/FungibleToken
 const TOKEN_REGISTRY = require('token-registry/TokenRegistry.aes');
 const WORD_REGISTRY_INTERFACE = require('wordbazaar-contracts/WordRegistry.aes');
 const WORD_SALE_INTERFACE = require('wordbazaar-contracts/TokenSale.aes');
+const TOKEN_VOTING_CONTRACT = require('wordbazaar-contracts/TokenVoting.aes');
+
 const logger = require('../../../utils/logger')(module);
 const { topicsRegex } = require('../utils/tipTopicUtil');
 const { TRACE_STATES } = require('../../payfortx/constants/traceStates');
@@ -68,8 +70,10 @@ class Aeternity {
       );
 
       this.tokenRegistry = await this.client.getContractInstance(TOKEN_REGISTRY, { contractAddress: process.env.TOKEN_REGISTRY_ADDRESS });
+
       this.tokenContracts = {};
       this.wordSaleContracts = {};
+      this.tokenVotingContracts = {};
     }
   }
 
@@ -157,6 +161,21 @@ class Aeternity {
     return this.wordSaleContracts[contractAddress].methods.spread().then(res => res.decodedResult);
   }
 
+  async wordSaleVotes(contractAddress) {
+    await this.initWordSaleContractIfUnknown(contractAddress);
+    return this.wordSaleContracts[contractAddress].methods.votes().then(res => res.decodedResult);
+  }
+
+  async wordSaleVoteTimeout(contractAddress) {
+    await this.initWordSaleContractIfUnknown(contractAddress);
+    return this.wordSaleContracts[contractAddress].methods.vote_timeout().then(res => res.decodedResult);
+  }
+
+  async wordSaleVoteState(contractAddress) {
+    await this.initTokenVotingContractIfUnknown(contractAddress);
+    return this.tokenVotingContracts[contractAddress].methods.get_state().then(res => res.decodedResult);
+  }
+
   async fungibleTokenTotalSupply(contractAddress) {
     await this.initTokenContractIfUnknown(contractAddress);
     return this.tokenContracts[contractAddress].methods.total_supply().then(res => res.decodedResult);
@@ -207,6 +226,13 @@ class Aeternity {
     });
   }
 
+  async initTokenVotingContractIfUnknown(contractAddress) {
+    if (!this.tokenVotingContracts[contractAddress]) {
+      this.tokenVotingContracts[contractAddress] = await this.client.getContractInstance(
+        TOKEN_VOTING_CONTRACT, { contractAddress },
+      );
+    }
+  }
   async initWordSaleContractIfUnknown(contractAddress) {
     if (!this.wordSaleContracts[contractAddress]) {
       this.wordSaleContracts[contractAddress] = await this.client.getContractInstance(

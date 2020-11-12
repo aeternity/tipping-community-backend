@@ -161,18 +161,20 @@ module.exports = class CacheLogic {
     const totalSupply = cache.getOrSet(['fungibleTokenTotalSupply', await tokenAddress],
       async () => aeternity.fungibleTokenTotalSupply(await tokenAddress), cache.shortCacheTime);
 
+    const stakePercent = (await totalSupply) ? new BigNumber(votedFor).dividedBy(await totalSupply).times(100).toFixed(0) : '0';
+
     return {
       id,
       alreadyApplied,
       voteAddress: vote,
       subject: (await state).metadata.subject,
-      timeouted: ((await state).close_height + voteTimeout) < (await height),
+      timeouted: ((await state).close_height + (await voteTimeout)) < (await height),
       closeHeight: (await state).close_height,
       voteAccounts: (await state).vote_accounts,
-      hasSpread: new BigNumber(this.spread).isGreaterThan(0),
       isClosed: (await height) >= (await state).close_height,
+      isSuccess: new BigNumber(stakePercent).isGreaterThan(50),
       votePercent: votedAgainst !== 0 ? votedPositive : ifAgainstZero,
-      stakePercent: new BigNumber(votedFor).dividedBy(await totalSupply).times(100).toFixed(0),
+      stakePercent:stakePercent,
     };
   }
 

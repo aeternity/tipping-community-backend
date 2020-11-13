@@ -282,7 +282,6 @@ module.exports = class CacheLogic {
 
     if (req.query.contractVersion) {
       const contractVersions = Array.isArray(req.query.contractVersion) ? req.query.contractVersion : [req.query.contractVersion];
-      console.log(contractVersions);
       tips = tips.filter(tip => contractVersions.includes((tip.id.split('_')[1] ? tip.id.split('_')[1] : 'v1')));
     }
 

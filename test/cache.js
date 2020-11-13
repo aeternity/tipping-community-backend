@@ -262,7 +262,8 @@ describe('Cache', () => {
       checkCachedRoute('/cache/chainnames', 'object', done);
     });
 
-    it('it should GET the cached price', done => {
+    it('it should GET the cached price', function (done) {
+      this.timeout(10000);
       checkCachedRoute('/cache/price', 'object', done);
     });
 

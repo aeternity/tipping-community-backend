@@ -67,6 +67,7 @@ describe('Pay for TX', () => {
     });
 
     it('it should post a contract without', async function () {
+      if (!ae.contractV3) this.skip();
       this.timeout(20000);
 
       const testData = {

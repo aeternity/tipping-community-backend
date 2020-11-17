@@ -94,34 +94,63 @@ describe('Aeternity', () => {
     const url = 'https://probably.not.an.existing.tip';
     const address = 'ak_YCwfWaW5ER6cRsG9Jg4KMyVU59bQkt45WvcnJJctQojCqBeG2';
 
-    it('it should succeed pre-claiming with stubs', async function () {
+    it('it should succeed pre-claiming with V1 stubs', async function () {
       this.timeout(10000);
       const unclaimdForUrlV1 = sandbox.stub(ae.contractV1.methods, 'unclaimed_for_url').callsFake(async () => ({ decodedResult: 1 }));
-      const unclaimdForUrlV2 = sandbox.stub(ae.contractV2.methods, 'unclaimed_for_url').callsFake(async () => ({ decodedResult: 1 }));
       const checkClaimV1 = sandbox.stub(ae.contractV1.methods, 'check_claim').callsFake(async () => ({ decodedResult: { success: true } }));
-      const checkClaimV2 = sandbox.stub(ae.contractV2.methods, 'check_claim').callsFake(async () => ({ decodedResult: { success: true } }));
       await ae.preClaim(address, url, new Trace(), ae.contractV1);
-      await ae.preClaim(address, url, new Trace(), ae.contractV2);
       unclaimdForUrlV1.called.should.equal(true);
       sinon.assert.alwaysCalledWith(unclaimdForUrlV1, url);
-      unclaimdForUrlV2.called.should.equal(true);
-      sinon.assert.alwaysCalledWith(unclaimdForUrlV2, url);
       checkClaimV1.called.should.equal(true);
       sinon.assert.alwaysCalledWith(checkClaimV1, url, address);
-      checkClaimV2.called.should.equal(true);
-      sinon.assert.alwaysCalledWith(checkClaimV2, url, address);
+    });
+
+    it('it should succeed pre-claiming with V1 + V2 stubs', async function () {
+      this.timeout(10000);
+      if (ae.contractV2) {
+        const unclaimdForUrlV1 = sandbox.stub(ae.contractV1.methods, 'unclaimed_for_url').callsFake(async () => ({ decodedResult: 1 }));
+        const unclaimdForUrlV2 = sandbox.stub(ae.contractV2.methods, 'unclaimed_for_url').callsFake(async () => ({ decodedResult: 1 }));
+        const checkClaimV1 = sandbox.stub(ae.contractV1.methods, 'check_claim').callsFake(async () => ({ decodedResult: { success: true } }));
+        const checkClaimV2 = sandbox.stub(ae.contractV2.methods, 'check_claim').callsFake(async () => ({ decodedResult: { success: true } }));
+        await ae.preClaim(address, url, new Trace(), ae.contractV1);
+        await ae.preClaim(address, url, new Trace(), ae.contractV2);
+        unclaimdForUrlV1.called.should.equal(true);
+        sinon.assert.alwaysCalledWith(unclaimdForUrlV1, url);
+        unclaimdForUrlV2.called.should.equal(true);
+        sinon.assert.alwaysCalledWith(unclaimdForUrlV2, url);
+        checkClaimV1.called.should.equal(true);
+        sinon.assert.alwaysCalledWith(checkClaimV1, url, address);
+        checkClaimV2.called.should.equal(true);
+        sinon.assert.alwaysCalledWith(checkClaimV2, url, address);
+      } else {
+        this.skip();
+      }
     });
 
     it('it should allow to claim if all goes well (with stubs) for V1', async function () {
       this.timeout(10000);
       sandbox.stub(ae, 'preClaim').callsFake(async () => ({ decodedResult: true }));
       const claimV1 = sandbox.stub(ae.contractV1.methods, 'claim').callsFake(async () => ({ decodedResult: true }));
-      const claimV2 = sandbox.stub(ae.contractV2.methods, 'claim').callsFake(async () => ({ decodedResult: true }));
       const result = await ae.claimTips(address, url, new Trace());
       result.should.equal(true);
       claimV1.called.should.equal(true);
-      claimV2.called.should.equal(false); // no need to claim V2 if V1 is claimable
       sinon.assert.alwaysCalledWith(claimV1, url, address);
+    });
+
+    it('it should allow to claim if all goes well (with stubs) for V1 + V2', async function () {
+      this.timeout(10000);
+      if (ae.contractV2) {
+        sandbox.stub(ae, 'preClaim').callsFake(async () => ({ decodedResult: true }));
+        const claimV1 = sandbox.stub(ae.contractV1.methods, 'claim').callsFake(async () => ({ decodedResult: true }));
+        const claimV2 = sandbox.stub(ae.contractV2.methods, 'claim').callsFake(async () => ({ decodedResult: true }));
+        const result = await ae.claimTips(address, url, new Trace());
+        result.should.equal(true);
+        claimV1.called.should.equal(true);
+        claimV2.called.should.equal(false); // no need to claim V2 if V1 is claimable
+        sinon.assert.alwaysCalledWith(claimV1, url, address);
+      } else {
+        this.skip();
+      }
     });
   });
 

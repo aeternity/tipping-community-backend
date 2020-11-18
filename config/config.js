@@ -1,3 +1,6 @@
+/**
+ * Config file used only by sequelize
+ */
 const logger = require('../utils/logger')(module);
 
 module.exports = {

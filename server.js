@@ -1,6 +1,8 @@
 const express = require('express');
 const swaggerUi = require('swagger-ui-express');
 const fs = require('fs');
+const Sentry = require('@sentry/node');
+const Tracing = require('@sentry/tracing');
 
 const app = express();
 const exphbs = require('express-handlebars');
@@ -9,6 +11,31 @@ const logger = require('./utils/logger')(module);
 const aeternity = require('./utils/aeternity');
 const cache = require('./utils/cache');
 
+// SENTRY
+if (process.env.SENTRY_URL) {
+  Sentry.init({
+    dsn: process.env.SENTRY_URL,
+    integrations: [
+      // enable HTTP calls tracing
+      new Sentry.Integrations.Http({ tracing: true }),
+      // enable Express.js middleware tracing
+      new Tracing.Integrations.Express({ app }),
+    ],
+    // We recommend adjusting this value in production, or using tracesSampler
+    // for finer control
+    tracesSampleRate: 1.0,
+  });
+
+  // RequestHandler creates a separate execution context using domains, so that every
+  // transaction/span/breadcrumb is attached to its own Hub instance
+  app.use(Sentry.Handlers.requestHandler({
+    user: false,
+    ip: false,
+    request: ['headers', 'method', 'query_string', 'url'],
+  }));
+  // TracingHandler creates a trace for every incoming request
+  app.use(Sentry.Handlers.tracingHandler());
+}
 // VIEWS
 app.engine('handlebars', exphbs());
 app.set('view engine', 'handlebars');
@@ -53,6 +80,20 @@ if (fs.existsSync('./swagger.json')) {
   app.use('/docs', swaggerUi.serve, swaggerUi.setup(JSON.parse(fs.readFileSync('./swagger.json'))));
 }
 
+if (process.env.SENTRY_URL) {
+  // log errors that come from controllers
+  app.use(Sentry.Handlers.errorHandler());
+}
+
+// catch errors
+app.use((err, req, res, next) => {
+  if (res.headersSent) {
+    return next(err);
+  }
+  return res.status(500).send({ error: err });
+});
+
+// catch 404
 app.use((req, res) => {
   res.sendStatus(404);
 });

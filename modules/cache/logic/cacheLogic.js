@@ -162,13 +162,14 @@ module.exports = class CacheLogic {
       async () => aeternity.fungibleTokenTotalSupply(await tokenAddress), cache.shortCacheTime);
 
     const stakePercent = (await totalSupply) ? new BigNumber(votedFor).dividedBy(await totalSupply).times(100).toFixed(0) : '0';
-
+    const timeoutHeight = (await state).close_height + (await voteTimeout)
     return {
       id,
       alreadyApplied,
       voteAddress: vote,
       subject: (await state).metadata.subject,
-      timeouted: ((await state).close_height + (await voteTimeout)) < (await height),
+      timeouted: timeoutHeight < (await height),
+      timeoutHeight: timeoutHeight,
       closeHeight: (await state).close_height,
       voteAccounts: (await state).vote_accounts,
       isClosed: (await height) >= (await state).close_height,
@@ -359,6 +360,7 @@ module.exports = class CacheLogic {
       () => aeternity.wordSaleTokenAddress(address));
 
     await cache.del(['wordSalePrice', req.params.wordSale]);
+    await cache.del(['wordSaleSpread', req.params.wordSale]);
     await cache.del(['fungibleTokenTotalSupply', tokenAddress]);
     await CacheLogic.wordSaleDetails(req.params.wordSale); // wait for cache update to let frontend know data availability
     if (res) res.send({ status: 'OK' });

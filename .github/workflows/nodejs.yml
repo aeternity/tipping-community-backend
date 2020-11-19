@@ -54,3 +54,20 @@ jobs:
         run: npm i
       - name: Lint Codebase
         run: npm run lint-ci
+
+  docs:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@master
+      - name: Use Node.js 14.x
+        uses: actions/setup-node@v1
+        with:
+          node-version: 14.x
+      - name: Install Dependencies
+        run: npm i
+      - name: Create Swagger File
+        run: npm run swagger:create
+      - name: Lint Swagger File
+        run: npx @redocly/openapi-cli lint swagger.json --format stylish

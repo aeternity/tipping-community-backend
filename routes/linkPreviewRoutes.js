@@ -11,7 +11,7 @@ const router = new Router();
 
 /**
  * @swagger
- * /linkpreview/:
+ * /linkpreview:
  *   get:
  *     tags:
  *       - linkpreview

@@ -12,7 +12,7 @@ const router = new Router();
 
 /**
  * @swagger
- * /verified/:
+ * /verified:
  *   get:
  *     tags:
  *       - verified

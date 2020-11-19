@@ -1,12 +1,17 @@
+const packageJson = require('./package.json')
 module.exports = {
   info: {
-    // API informations (required)
-    title: 'Superhero Backend Docs', // Title (required)
-    version: '1.0.0', // Version (required)
+    title: 'Superhero Backend Docs',
+    version: packageJson.version,
+    description: 'The backend to superhero.com',
+    license:     {
+      name: 'ISC',
+      url: 'https://opensource.org/licenses/ISC'
+    }
   },
   servers: [
     { url: 'https://raendom-backend.z52da5wt.xyz' }
   ],
-  components: {}, // ADD THIS LINE!!!
+  components: {}, // REQUIRED
   openapi: '3.0.3'
 };

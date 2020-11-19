@@ -12,7 +12,7 @@ const router = new Router();
 // View routes
 /**
  * @swagger
- * /errorreport/:
+ * /errorreport:
  *   get:
  *     tags:
  *       - errorreport
@@ -34,7 +34,7 @@ router.get('/', basicAuth, Logic.getAllItems);
 // Restricted api routes
 /**
  * @swagger
- * /errorreport/:
+ * /errorreport:
  *   post:
  *     tags:
  *       - errorreport

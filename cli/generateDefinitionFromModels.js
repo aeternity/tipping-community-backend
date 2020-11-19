@@ -55,6 +55,7 @@ const openAPIJSON = {
             type: typeMapping(curr.type.toLowerCase()),
             format: formatMapping(curr.type.toLowerCase()),
             ...(curr.type === 'ENUM') && { enum: curr.values },
+            ...(curr.type === 'ARRAY') && { items: { type: 'string' } },
           },
         }), {}),
       },

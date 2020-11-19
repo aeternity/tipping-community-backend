@@ -180,7 +180,7 @@ router.delete(
 );
 /**
  * @swagger
- * /profile/:
+ * /profile:
  *   post:
  *     tags:
  *       - profile

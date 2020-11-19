@@ -30,14 +30,14 @@ const router = new Router();
 router.get('/api/', CommentLogic.getAllItems);
 /**
  * @swagger
- * /comment/api/{id}:
+ * /comment/api/{commentId}:
  *   get:
  *     tags:
  *       - comment
  *     summary: Returns a single comment
  *     parameters:
  *       - in: path
- *         name: id
+ *         name: commentId
  *         required: true
  *         description: comment id in the backend
  *         schema:
@@ -103,7 +103,7 @@ router.get('/api/author/:author', CommentLogic.getAllItemsForAuthor);
 // Count routes
 /**
  * @swagger
- * /comment/count/tips/:
+ * /comment/count/tips:
  *   get:
  *     tags:
  *       - comment
@@ -156,7 +156,7 @@ router.get('/count/author/:author', CommentLogic.getCommentCountForAddress);
 // Restricted api routes
 /**
  * @swagger
- * /comment/api/:
+ * /comment/api:
  *   post:
  *     tags:
  *       - comment

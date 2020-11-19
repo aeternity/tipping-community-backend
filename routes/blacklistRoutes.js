@@ -57,7 +57,7 @@ router.get('/api/:tipId', Logic.getSingleItem);
 // View routes
 /**
  * @swagger
- * /blacklist/:
+ * /blacklist:
  *   get:
  *     tags:
  *       - blacklist

@@ -23,7 +23,7 @@ if (process.env.SENTRY_URL) {
     ],
     // We recommend adjusting this value in production, or using tracesSampler
     // for finer control
-    tracesSampleRate: 1.0,
+    tracesSampleRate: 0.003,
   });
 
   // RequestHandler creates a separate execution context using domains, so that every

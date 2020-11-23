@@ -39,7 +39,7 @@ services:
     container_name: superhero-redis
 
   postgres:
-    image: postgres
+    image: postgres:12
     hostname: postgres
     restart: unless-stopped
     container_name: superhero-postgres

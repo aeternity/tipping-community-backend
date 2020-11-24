@@ -54,6 +54,7 @@
     "puppeteer": "^5.5.0",
     "redis": "^3.0.2",
     "rsmq": "^0.12.2",
+    "rxjs": "^6.6.3",
     "sequelize": "^5.22.3",
     "sequelize-hierarchy": "^2.0.4",
     "sharp": "^0.26.3",

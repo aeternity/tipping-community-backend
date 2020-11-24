@@ -49,11 +49,32 @@ module.exports = class LinkPreviewLogic {
 
   // General Functions
   static async generatePreview(url) {
+    // VERIFY URL PROTOCOL
+    const urlProtocol = url.match(/^[^:]+(?=:\/\/)/);
+    const newUrl = (!urlProtocol ? `http://${url}` : url).trim();
+
     // Try easy version first
-    let queryResult = await LinkPreviewLogic.createPreviewForUrl(url, LinkPreviewLogic.querySimpleCustomCrawler);
+    let data = await LinkPreviewLogic.createPreviewForUrl(newUrl, LinkPreviewLogic.querySimpleCustomCrawler);
     // if it fails try more costly version
-    if (!queryResult.querySucceeded) queryResult = LinkPreviewLogic.createPreviewForUrl(url, LinkPreviewLogic.queryCostlyCustomCrawler);
-    return queryResult;
+    if (!data.querySucceeded) data = await LinkPreviewLogic.createPreviewForUrl(newUrl, LinkPreviewLogic.queryCostlyCustomCrawler);
+
+    const existingEntry = await LinkPreview.findOne({ where: { requestUrl: url } });
+
+    if (existingEntry) {
+      return LinkPreview.update({
+        ...data,
+        ...data.querySucceeded && { failReason: null },
+        requestUrl: url,
+      }, { where: { requestUrl: url }, raw: true });
+    }
+
+    // Kill stats cache
+    await cache.del(['StaticLogic.getStats']);
+
+    return LinkPreview.create({
+      ...data,
+      requestUrl: url,
+    }, { raw: true });
   }
 
   static async fetchImage(requestUrl, imageUrl) {
@@ -112,16 +133,12 @@ module.exports = class LinkPreviewLogic {
   }
 
   static async createPreviewForUrl(url, crawler) {
-    // VERIFY URL PROTOCOL
-    const urlProtocol = url.match(/^[^:]+(?=:\/\/)/);
-    const newUrl = (!urlProtocol ? `http://${url}` : url).trim();
-
     try {
       // Check if the url is valid
-      await metascraper({ url: newUrl });
+      await metascraper({ url });
       // Crawl the url
-      const html = await crawler(newUrl);
-      const result = await metascraper({ url: newUrl, html });
+      const html = await crawler(url);
+      const result = await metascraper({ url, html });
       const data = {
         ...result,
         responseUrl: result.url,
@@ -141,23 +158,15 @@ module.exports = class LinkPreviewLogic {
       // Fetch image
       if (data.image) data.image = await LinkPreviewLogic.fetchImage(data.requestUrl, data.image);
 
-      const existingEntry = await LinkPreview.findOne({ where: { requestUrl: newUrl } });
-
-      if (existingEntry) {
-        return await LinkPreview.update({ ...data, failReason: null }, { where: { requestUrl: newUrl }, raw: true });
-      }
-      // Kill stats cache
-      await cache.del(['StaticLogic.getStats']);
-
-      return await LinkPreview.create(data, { raw: true });
+      return data;
     } catch (err) {
-      logger.error(`Crawling ${newUrl} failed with "${err.message}"`);
+      logger.error(`Crawling ${url} failed with "${err.message}"`);
 
-      return LinkPreview.create({
+      return {
         requestUrl: url,
         querySucceeded: false,
         failReason: err.message ? err.message : err,
-      }, { raw: true });
+      };
     }
   }
 

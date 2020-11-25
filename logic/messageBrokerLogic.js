@@ -5,11 +5,13 @@ const broker = {
   async init() {
     // Setup all queues
     await Promise.all(Object.values(MESSAGE_QUEUES).map(qname => queue.createQueue(qname).catch(e => console.error(e))));
+  },
 
+  async setupForwarding(sourceQueueName, targetQueues) {
     // SETUP LOGIC
-    queue.subscribe(MESSAGE_QUEUES.PARENT, message => {
-      queue.sendMessage(MESSAGE_QUEUES.CHILD, message.message);
-      queue.deleteMessage(MESSAGE_QUEUES.PARENT, message.id);
+    queue.subscribe(sourceQueueName, async message => {
+      await Promise.all(targetQueues.map(targetQueueName => queue.sendMessage(targetQueueName, message.message)));
+      await queue.deleteMessage(MESSAGE_QUEUES.PARENT, message.id);
     });
   },
 };

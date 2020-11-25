@@ -8,8 +8,8 @@ const app = express();
 const exphbs = require('express-handlebars');
 const cors = require('cors');
 const logger = require('./utils/logger')(module);
-const aeternity = require('./utils/aeternity');
-const cache = require('./utils/cache');
+const aeternity = require('./modules/aeternity/logic/aeternity');
+const cache = require('./modules/cache/utils/cache');
 
 // SENTRY
 if (process.env.SENTRY_URL) {
@@ -58,24 +58,24 @@ app.use(cors({
 }));
 
 // ROUTES
-app.use('/blacklist', require('./routes/blacklistRoutes.js'));
-app.use('/comment', require('./routes/commentRoutes.js'));
-app.use('/linkpreview', require('./routes/linkPreviewRoutes.js'));
-app.use('/verified', require('./routes/verifiedRoutes.js'));
-app.use('/cache', require('./routes/cacheRoutes.js'));
-app.use('/tokenCache', require('./routes/tokenCacheRoutes.js'));
-app.use('/claim', require('./routes/payForTxRoutes.js'));
-app.use('/payfortx', require('./routes/payForTxRoutes.js'));
-app.use('/static', require('./routes/staticRoutes.js'));
-app.use('/profile', require('./routes/profileRoutes.js'));
-app.use('/errorreport', require('./routes/errorReportRoutes.js'));
-app.use('/tracing', require('./routes/tipTracingRoutes.js'));
-app.use('/health', require('./routes/healthRoutes.js'));
-app.use('/pin', require('./routes/pinRoutes.js'));
-app.use('/notification', require('./routes/notificationRoutes.js'));
-app.use('/consent', require('./routes/consentRoutes.js'));
+app.use('/blacklist', require('./modules/blacklist/routes/blacklistRoutes.js'));
+app.use('/comment', require('./modules/comment/routes/commentRoutes.js'));
+app.use('/linkpreview', require('./modules/linkPreview/routes/linkPreviewRoutes.js'));
+app.use('/verified', require('./modules/domains/routes/verifiedRoutes.js'));
+app.use('/cache', require('./modules/cache/routes/cacheRoutes.js'));
+app.use('/tokenCache', require('./modules/token/routes/tokenCacheRoutes.js'));
+app.use('/claim', require('./modules/payfortx/routes/payForTxRoutes.js'));
+app.use('/payfortx', require('./modules/payfortx/routes/payForTxRoutes.js'));
+app.use('/static', require('./modules/domains/routes/staticRoutes.js'));
+app.use('/profile', require('./modules/profile/routes/profileRoutes.js'));
+app.use('/errorreport', require('./modules/errorReport/routes/errorReportRoutes.js'));
+app.use('/tracing', require('./modules/payfortx/routes/tipTracingRoutes.js'));
+app.use('/health', require('./modules/health/routes/healthRoutes.js'));
+app.use('/pin', require('./modules/pin/routes/pinRoutes.js'));
+app.use('/notification', require('./modules/notification/routes/notificationRoutes.js'));
+app.use('/consent', require('./modules/consent/routes/consentRoutes.js'));
 
-app.use('/images', require('./routes/imageRoutes.js'));
+app.use('/images', require('./modules/media/routes/imageRoutes.js'));
 
 // expose api docs
 if (fs.existsSync('./swagger.json')) {

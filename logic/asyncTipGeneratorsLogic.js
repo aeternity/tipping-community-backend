@@ -1,8 +1,8 @@
 const AsyncLock = require('async-lock');
 
-const LinkPreviewLogic = require('./linkPreviewLogic.js');
-const TipLogic = require('./tipLogic');
-const RetipLogic = require('./retipLogic');
+const LinkPreviewLogic = require('../modules/linkPreview/logic/linkPreviewLogic.js');
+const TipLogic = require('../modules/tip/logic/tipLogic');
+const RetipLogic = require('../modules/tip/logic/retipLogic');
 const logger = require('../utils/logger')(module);
 
 const lock = new AsyncLock();

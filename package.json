@@ -4,7 +4,7 @@
   "description": "",
   "main": "server.js",
   "scripts": {
-    "test": "mocha --exit",
+    "test": "mocha modules/**/tests/*.js --exit",
     "benchmark": "node benchmark.js",
     "db:create": "npx sequelize-cli --config config/config.js --env development db:migrate",
     "db:makemigrations": "./node_modules/sequelize-auto-migrations/bin/makemigration.js",
@@ -37,6 +37,7 @@
     "express": "^4.17.1",
     "express-handlebars": "^5.2.0",
     "fuse.js": "^6.4.2",
+    "glob": "^7.1.6",
     "ipfs-http-client": "^44.1.0",
     "languagedetect": "^2.0.0",
     "metascraper": "^5.14.18",

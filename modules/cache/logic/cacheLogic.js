@@ -46,7 +46,7 @@ module.exports = class CacheLogic {
       await CacheLogic.getOracleState();
       await CacheLogic.findContractEvents();
       await CacheLogic.getTokenInfos();
-      await CacheLogic.getWordRegistryData();
+      await CacheLogic.wordSaleDetailsByToken(); // keeps hot even if undefined is passed as argument
     };
 
     setTimeout(() => {
@@ -125,12 +125,19 @@ module.exports = class CacheLogic {
 
     const [buy, sell] = await price;
     return {
+      wordSaleAddress: address,
       tokenAddress: await tokenAddress,
       totalSupply: await totalSupply,
       buyPrice: 1 / buy,
       sellPrice: 1 / sell,
       spread: await spread
     };
+  }
+
+  static async wordSaleDetailsByToken(address) {
+    const wordRegistryData = await CacheLogic.getWordRegistryData();
+    const wordDetails = await wordRegistryData.tokens.asyncMap(([_, wordSale]) => CacheLogic.wordSaleDetails(wordSale));
+    return wordDetails.find(sale => sale.tokenAddress === address);
   }
 
   static async wordSaleVotesDetails(address) {

@@ -77,6 +77,8 @@ router.get('/wordRegistry', TokenCacheLogic.wordRegistry);
 
 router.get('/wordSale', TokenCacheLogic.wordSaleDetails);
 
+router.get('/wordSaleByToken', TokenCacheLogic.wordSaleDetailsByToken);
+
 router.get('/wordSaleVotesDetails', TokenCacheLogic.wordSaleVotesDetails);
 
 module.exports = router;

@@ -3,6 +3,10 @@ const path = require('path');
 const { IMAGE_DIRECTORY } = require('../constants/paths');
 
 class ImageLogic {
+  constructor() {
+    if (!fs.existsSync(IMAGE_DIRECTORY)) fs.mkdirSync(IMAGE_DIRECTORY);
+  }
+
   readImage(filename) {
     return fs.readFileSync(path.join(IMAGE_DIRECTORY, filename));
   }

@@ -16,6 +16,7 @@ const metascraper = require('metascraper')([
 const { LinkPreview } = require('../../../models');
 const DomLoader = require('../utils/domLoader');
 const cache = require('../../cache/utils/cache');
+const imageLogic = require('../../media/logic/imageLogic');
 const logger = require('../../../utils/logger')(module);
 
 lngDetector.setLanguageType('iso2');
@@ -88,7 +89,7 @@ module.exports = class LinkPreviewLogic {
 
     try {
       const response = await axios.get(imageUrl, { responseType: 'stream' });
-      const writer = response.data.pipe(fs.createWriteStream(path.resolve(__dirname, '../images', filename)));
+      const writer = response.data.pipe(fs.createWriteStream(imageLogic.getImagePath(filename)));
       await new Promise((resolve, reject) => {
         writer.on('finish', resolve);
         writer.on('error', reject);
@@ -97,7 +98,7 @@ module.exports = class LinkPreviewLogic {
       newUrl = `/linkpreview/image/${filename}`;
 
       // Image too small
-      const metaData = await sharp(path.resolve(__dirname, '../images', filename)).metadata();
+      const metaData = await sharp(imageLogic.getImagePath(filename)).metadata();
       if (metaData.width < 300 && metaData.height < 200) newUrl = null;
     } catch (e) {
       logger.error('Could not appropriate fetch image');
@@ -118,11 +119,11 @@ module.exports = class LinkPreviewLogic {
     // Reduce image size
     if (newUrl) {
       try {
-        const metaData = await sharp(path.resolve(__dirname, '../images', filename)).metadata();
+        const metaData = await sharp(imageLogic.getImagePath(filename)).metadata();
         if (metaData.width > 500 || metaData.height > 300) {
-          await sharp(path.resolve(__dirname, '../images', filename))
+          await sharp(imageLogic.getImagePath(filename))
             .resize({ width: 500, height: 300, fit: 'inside' })
-            .toFile(path.resolve(__dirname, '../images', `compressed-${filename}`));
+            .toFile(imageLogic.getImagePath(`compressed-${filename}`));
           newUrl = `/linkpreview/image/compressed-${filename}`;
         }
       } catch (e) {

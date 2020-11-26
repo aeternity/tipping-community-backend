@@ -1,8 +1,7 @@
 const { verifyPersonalMessage, decodeBase58Check, hash } = require('@aeternity/aepp-sdk').Crypto;
 const { v4: uuidv4 } = require('uuid');
-const fs = require('fs');
-const path = require('path');
 const urlParser = require('url');
+const imageLogic = require('../../media/logic/imageLogic');
 
 const { Profile } = require('../../../models');
 const logger = require('../../../utils/logger')(module);
@@ -128,7 +127,7 @@ const signatureAuth = async (req, res, next) => {
     if (timestamp < Date.now() - 5 * 60 * 1000) {
       delete MemoryQueue[index];
       try {
-        if (file) fs.unlinkSync(path.resolve(__dirname, '../images/', file.filename));
+        if (file) imageLogic.deleteImage(file.filename);
       } catch (e) {
         logger.error(`Could not delete file:${e.message}`);
       }
@@ -189,7 +188,7 @@ const signatureAuth = async (req, res, next) => {
       const { actionName, relevantFields, getFullEntry } = action;
       const existingEntry = getFullEntry ? await getFullEntry(req) : {};
       const files = req.files ? Object.keys(req.files).reduce((acc, curr) => {
-        acc[curr] = hash(fs.readFileSync(path.resolve(__dirname, '../images/', req.files[curr][0].filename))).toString('hex');
+        acc[curr] = hash(imageLogic.readImage(req.files[curr][0].filename)).toString('hex');
         return acc;
       }, {}) : {};
       const mergedObject = {

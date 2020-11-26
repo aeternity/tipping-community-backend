@@ -354,7 +354,8 @@ describe('Cache', () => {
       checkCachedRoute('/cache/invalidate/events', 'object', done);
     });
 
-    it('it should invalidate the token cache', done => {
+    it('it should invalidate the token cache', function (done) {
+      this.timeout(5000);
       // Just a random token contract, can be replaced anytime if its not working anymore
       const tokenAddress = 'ct_MRgnq6YXCi4Bd6CCks1bu8rTUfFmgLEAWWXVi7hSsJA4LZejs';
       checkCachedRoute(`/cache/invalidate/token/${tokenAddress}`, 'object', done);

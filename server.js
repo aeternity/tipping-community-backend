@@ -3,6 +3,7 @@ const swaggerUi = require('swagger-ui-express');
 const fs = require('fs');
 const Sentry = require('@sentry/node');
 const Tracing = require('@sentry/tracing');
+const path = require('path');
 
 const app = express();
 const exphbs = require('express-handlebars');
@@ -39,6 +40,8 @@ if (process.env.SENTRY_URL) {
 // VIEWS
 app.engine('handlebars', exphbs());
 app.set('view engine', 'handlebars');
+app.set('views', path.join(__dirname, './modules/blacklist/views'));
+// MIDDLWARES
 app.use(express.json()); // for parsing application/json
 
 process

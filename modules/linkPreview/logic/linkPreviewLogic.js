@@ -41,13 +41,6 @@ module.exports = class LinkPreviewLogic {
     return res.send(await LinkPreviewLogic.fetchAllLinkPreviews());
   }
 
-  static async getImage(req, res) {
-    if (!req.params.filename) return res.sendStatus(404);
-    const filepath = path.resolve(__dirname, '../images', req.params.filename.replace('/linkpreview/image', ''));
-    if (!fs.existsSync(filepath)) return res.sendStatus(404);
-    return res.sendFile(filepath);
-  }
-
   // General Functions
   static async generatePreview(url) {
     // VERIFY URL PROTOCOL
@@ -95,7 +88,7 @@ module.exports = class LinkPreviewLogic {
         writer.on('error', reject);
       });
 
-      newUrl = `/linkpreview/image/${filename}`;
+      newUrl = `/images/${filename}`;
 
       // Image too small
       const metaData = await sharp(imageLogic.getImagePath(filename)).metadata();
@@ -109,7 +102,7 @@ module.exports = class LinkPreviewLogic {
       try {
         const { screenshot } = await DomLoader.getScreenshot(requestUrl);
         filename = screenshot;
-        newUrl = `/linkpreview/image/${filename}`;
+        newUrl = `/images/${filename}`;
         logger.info(`Got image snapshot preview for ${filename}`);
       } catch (e) {
         logger.error(`screen shot api failed as well for ${requestUrl}`);
@@ -124,7 +117,7 @@ module.exports = class LinkPreviewLogic {
           await sharp(imageLogic.getImagePath(filename))
             .resize({ width: 500, height: 300, fit: 'inside' })
             .toFile(imageLogic.getImagePath(`compressed-${filename}`));
-          newUrl = `/linkpreview/image/compressed-${filename}`;
+          newUrl = `/images/compressed-${filename}`;
         }
       } catch (e) {
         logger.error('Could not compress image');

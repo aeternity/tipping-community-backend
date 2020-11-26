@@ -1,7 +1,7 @@
 // load dom from url
 const puppeteer = require('puppeteer');
 const { v4: uuidv4 } = require('uuid');
-const path = require('path');
+const imageLogic = require('../../media/logic/imageLogic');
 const logger = require('../../../utils/logger')(module);
 
 module.exports = class DomLoader {
@@ -41,7 +41,7 @@ module.exports = class DomLoader {
         throw new Error('Got caught on login.php');
       }
       const filename = `preview-${uuidv4()}.jpg`;
-      if (screenshot) await page.screenshot({ path: path.resolve(__dirname, '../images', filename) });
+      if (screenshot) await page.screenshot({ path: imageLogic.getImagePath(filename) });
       const html = await page.content();
       await browser.close();
       return { html, url: page.url(), screenshot: screenshot ? filename : null };

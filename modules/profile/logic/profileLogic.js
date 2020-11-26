@@ -1,10 +1,8 @@
-const path = require('path');
-const fs = require('fs');
-
 const logger = require('../../../utils/logger')(module);
 const BackupLogic = require('../../backup/logic/backupLogic');
 const aeternity = require('../../aeternity/logic/aeternity');
 const cache = require('../../cache/utils/cache');
+const imageLogic = require('../../media/logic/imageLogic');
 const { Profile } = require('../../../models');
 const { IPFS_TYPES } = require('../../backup/constants/ipfsTypes');
 
@@ -34,8 +32,8 @@ module.exports = class ProfileLogic {
           signature,
           challenge,
         }, { where: { author } });
-        if (image && existing.image && existing.image !== image[0].filename) fs.unlinkSync(`images/${existing.image}`);
-        if (coverImage && existing.coverImage && existing.coverImage !== coverImage[0].filename) fs.unlinkSync(`images/${existing.coverImage}`);
+        if (image && existing.image && existing.image !== image[0].filename) imageLogic.deleteImage(existing.image);
+        if (coverImage && existing.coverImage && existing.coverImage !== coverImage[0].filename) imageLogic.deleteImage(existing.coverImage);
       } else {
         await Profile.create({
           author,
@@ -52,10 +50,10 @@ module.exports = class ProfileLogic {
         await cache.del(['StaticLogic.getStats']);
       }
       if (image && image[0].filename !== null) {
-        await BackupLogic.backupImageToIPFS(`images/${image[0].filename}`, author, IPFS_TYPES.PROFILE_IMAGE);
+        await BackupLogic.backupImageToIPFS(image[0].filename, author, IPFS_TYPES.PROFILE_IMAGE);
       }
       if (coverImage && coverImage[0].filename !== null) {
-        await BackupLogic.backupImageToIPFS(`images/${coverImage[0].filename}`, author, IPFS_TYPES.COVER_IMAGE);
+        await BackupLogic.backupImageToIPFS(coverImage[0].filename, author, IPFS_TYPES.COVER_IMAGE);
       }
       return ProfileLogic.getSingleItem(req, res);
     } catch (e) {
@@ -79,7 +77,7 @@ module.exports = class ProfileLogic {
   static async deleteImage(req, res) {
     const result = await Profile.findOne({ where: { author: req.params.author }, raw: true });
     if (!result || !result.image) return res.sendStatus(404);
-    fs.unlinkSync(`images/${result.image}`);
+    imageLogic.deleteImage(result.image);
     await Profile.update({
       image: null,
       imageSignature: null,
@@ -92,7 +90,7 @@ module.exports = class ProfileLogic {
     const result = await Profile.findOne({ where: { author: req.params.author }, raw: true });
     if (!result || !result.image) return res.sendStatus(404);
     try {
-      return res.sendFile(path.resolve(__dirname, '../images', result.image));
+      return res.sendFile(imageLogic.getImagePath(result.image));
     } catch (e) {
       logger.error(e.message);
       return res.sendStatus(500);

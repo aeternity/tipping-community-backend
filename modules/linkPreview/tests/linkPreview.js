@@ -60,6 +60,15 @@ describe('LinkPreview', () => {
       });
     });
 
+    it('it get an image for aeternity.com from the legacy API', done => {
+      chai.request(server).get(imageUrl.replace('/images/', '/linkpreview/image/')).end((err, res) => {
+        res.should.have.status(200);
+        res.should.have.header('content-type');
+        res.should.have.header('content-length');
+        done();
+      });
+    });
+
     it('it should fail on none cached urls', done => {
       chai.request(server).get(`/linkpreview?url=${encodeURIComponent('https://domain.test')}`).end((err, res) => {
         res.should.have.status(404);

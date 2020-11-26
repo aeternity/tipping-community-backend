@@ -15,6 +15,7 @@ const router = new Router();
  *   get:
  *     tags:
  *       - linkpreview
+ *     deprecated: true
  *     summary: Returns a link preview
  *     parameters:
  *       - in: query
@@ -38,6 +39,7 @@ router.get('/', Logic.getLinkPreview);
  *   get:
  *     tags:
  *       - linkpreview
+ *     deprecated: true
  *     summary: Returns a link preview
  *     parameters:
  *       - in: path
@@ -61,6 +63,7 @@ router.get('/:url', Logic.getLinkPreview);
  *   get:
  *     tags:
  *       - linkpreview
+ *     deprecated: true
  *     summary: Returns a link preview image
  *     parameters:
  *       - in: path
@@ -78,6 +81,6 @@ router.get('/:url', Logic.getLinkPreview);
  *               type: string
  *               format: binary
  */
-router.get('/image/:filename', Logic.getImage);
+router.get('/image/:filename', (req, res) => res.redirect(301, `/images/${req.params.filename}`));
 
 module.exports = router;

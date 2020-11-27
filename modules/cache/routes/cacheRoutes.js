@@ -139,6 +139,7 @@ router.get('/stats', CacheLogic.deliverStats);
  *               type: object
  */
 router.get('/userStats', CacheLogic.deliverUserStats);
+
 /**
  * @swagger
  * /cache/chainNames:
@@ -157,6 +158,7 @@ router.get('/userStats', CacheLogic.deliverUserStats);
  *                 type: object
  */
 router.get('/chainNames', CacheLogic.deliverChainNames);
+
 /**
  * @swagger
  * /cache/price:
@@ -186,6 +188,7 @@ router.get('/chainNames', CacheLogic.deliverChainNames);
  *                       format: float
  */
 router.get('/price', CacheLogic.deliverPrice);
+
 /**
  * @swagger
  * /cache/oracle:
@@ -202,6 +205,7 @@ router.get('/price', CacheLogic.deliverPrice);
  *               type: object
  */
 router.get('/oracle', CacheLogic.deliverOracleState);
+
 /**
  * @swagger
  * /cache/topics:
@@ -227,6 +231,7 @@ router.get('/oracle', CacheLogic.deliverOracleState);
  *                     type: integer
  */
 router.get('/topics', CacheLogic.deliverTipTopics);
+
 /**
  * @swagger
  * /cache/events:
@@ -264,6 +269,7 @@ router.get('/topics', CacheLogic.deliverTipTopics);
  *                 type: object
  */
 router.get('/events', CacheLogic.deliverContractEvents);
+
 /**
  * @swagger
  * /cache/invalidate/tips:
@@ -276,6 +282,7 @@ router.get('/events', CacheLogic.deliverContractEvents);
  *         description: OK
  */
 router.get('/invalidate/tips', CacheLogic.invalidateTips);
+
 /**
  * @swagger
  * /cache/invalidate/oracle:
@@ -288,6 +295,7 @@ router.get('/invalidate/tips', CacheLogic.invalidateTips);
  *         description: OK
  */
 router.get('/invalidate/oracle', CacheLogic.invalidateOracle);
+
 /**
  * @swagger
  * /cache/invalidate/events:
@@ -300,6 +308,7 @@ router.get('/invalidate/oracle', CacheLogic.invalidateOracle);
  *         description: OK
  */
 router.get('/invalidate/events', CacheLogic.invalidateContractEvents);
+
 /**
  * @swagger
  * /cache/invalidate/token/{token}:
@@ -320,12 +329,77 @@ router.get('/invalidate/events', CacheLogic.invalidateContractEvents);
  */
 router.get('/invalidate/token/:token', CacheLogic.invalidateTokenCache);
 
+/**
+ * @swagger
+ * /cache/invalidate/wordSale/{wordSale}:
+ *   get:
+ *     tags:
+ *       - cache
+ *     summary: Invalidates the word sale cache
+ *     parameters:
+ *       - in: path
+ *         name: wordSale
+ *         schema:
+ *           type: string
+ *         description: The word sale contract address that the cache should be invalidated for
+ *         required: true
+ *     responses:
+ *       200:
+ *         description: OK
+ */
 router.get('/invalidate/wordSale/:wordSale', CacheLogic.invalidateWordSaleCache);
 
+/**
+ * @swagger
+ * /cache/invalidate/wordRegistry:
+ *   get:
+ *     tags:
+ *       - cache
+ *     summary: Invalidates the word registry cache
+ *     responses:
+ *       200:
+ *         description: OK
+ */
 router.get('/invalidate/wordRegistry', CacheLogic.invalidateWordRegistryCache);
 
+/**
+ * @swagger
+ * /cache/invalidate/wordSaleVotes/{wordSale}:
+ *   get:
+ *     tags:
+ *       - cache
+ *     summary: Invalidates the word sale votes cache
+ *     parameters:
+ *       - in: path
+ *         name: wordSale
+ *         schema:
+ *           type: string
+ *         description: The word sale contract address that the cache should be invalidated for
+ *         required: true
+ *     responses:
+ *       200:
+ *         description: OK
+ */
 router.get('/invalidate/wordSaleVotes/:wordSale', CacheLogic.invalidateWordSaleVotesCache);
 
+/**
+ * @swagger
+ * /cache/invalidate/wordSaleVoteState/{vote}:
+ *   get:
+ *     tags:
+ *       - cache
+ *     summary: Invalidates the word sale single vote cache
+ *     parameters:
+ *       - in: path
+ *         name: vote
+ *         schema:
+ *           type: string
+ *         description: The word sale vote contract address that the cache should be invalidated for
+ *         required: true
+ *     responses:
+ *       200:
+ *         description: OK
+ */
 router.get('/invalidate/wordSaleVoteState/:vote', CacheLogic.invalidateWordSaleVoteStateCache);
 
 module.exports = router;

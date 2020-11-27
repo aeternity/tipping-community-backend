@@ -73,12 +73,90 @@ router.post('/addToken', TokenCacheLogic.indexTokenInfo);
  */
 router.get('/balances', TokenCacheLogic.tokenAccountBalance);
 
+/**
+ * @swagger
+ * /tokenCache/wordRegistry:
+ *   get:
+ *     tags:
+ *       - tokencache
+ *     summary: Get word registry overview
+ *     responses:
+ *       200:
+ *         description: OK
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ */
 router.get('/wordRegistry', TokenCacheLogic.wordRegistry);
 
+/**
+ * @swagger
+ * /tokenCache/wordSale:
+ *   get:
+ *     tags:
+ *       - tokencache
+ *     summary: Get word sale details for address
+ *     parameters:
+ *       - in: query
+ *         required: true
+ *         schema:
+ *           type: string
+ *         name: address
+ *     responses:
+ *       200:
+ *         description: OK
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ */
 router.get('/wordSale', TokenCacheLogic.wordSaleDetails);
 
+/**
+ * @swagger
+ * /tokenCache/wordSaleByToken:
+ *   get:
+ *     tags:
+ *       - tokencache
+ *     summary: Get word sale details for token address
+ *     parameters:
+ *       - in: query
+ *         required: true
+ *         schema:
+ *           type: string
+ *         name: address
+ *     responses:
+ *       200:
+ *         description: OK
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ */
 router.get('/wordSaleByToken', TokenCacheLogic.wordSaleDetailsByToken);
 
+/**
+ * @swagger
+ * /tokenCache/wordSaleVotesDetails:
+ *   get:
+ *     tags:
+ *       - tokencache
+ *     summary: Get word sale vote details for address
+ *     parameters:
+ *       - in: query
+ *         required: true
+ *         schema:
+ *           type: string
+ *         name: address
+ *     responses:
+ *       200:
+ *         description: OK
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ */
 router.get('/wordSaleVotesDetails', TokenCacheLogic.wordSaleVotesDetails);
 
 module.exports = router;

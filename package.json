@@ -11,7 +11,7 @@
     "lint": "eslint .",
     "lint-fix": "eslint --ext .js --fix .",
     "lint-ci": "eslint --ext .js --max-warnings=0 .",
-    "swagger:create": "npx swagger-jsdoc -d .swaggerDef.js ./modules/**/*.js && node ./cli/generateDefinitionFromModels.js"
+    "swagger:create": "npx swagger-jsdoc@5 -d .swaggerDef.js ./modules/**/*.js && node ./cli/generateDefinitionFromModels.js"
   },
   "repository": {
     "type": "git",
@@ -71,7 +71,6 @@
     "eslint-plugin-import": "^2.22.1",
     "mocha": "^8.2.0",
     "sequelize-auto-migrations": "github:scimonster/sequelize-auto-migrations#a063aa6535a3f580623581bf866cef2d609531ba",
-    "sinon": "^9.2.1",
-    "swagger-jsdoc": "^4.0.0"
+    "sinon": "^9.2.1"
   }
 }

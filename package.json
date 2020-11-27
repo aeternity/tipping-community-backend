@@ -11,7 +11,7 @@
     "lint": "eslint .",
     "lint-fix": "eslint --ext .js --fix .",
     "lint-ci": "eslint --ext .js --max-warnings=0 .",
-    "swagger:create": "npx swagger-jsdoc -d .swaggerDef.js ./utils/*.js ./routes/*.js && node ./cli/generateDefinitionFromModels.js"
+    "swagger:create": "npx swagger-jsdoc -d .swaggerDef.js ./modules/**/*.js && node ./cli/generateDefinitionFromModels.js"
   },
   "repository": {
     "type": "git",

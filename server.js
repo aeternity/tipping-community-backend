@@ -11,8 +11,8 @@ const cors = require('cors');
 const logger = require('./utils/logger')(module);
 const aeternity = require('./modules/aeternity/logic/aeternity');
 const cache = require('./modules/cache/utils/cache');
-const broker = require('./logic/messageBrokerLogic');
-const queue = require('./utils/queue');
+const broker = require('./modules/queue/logic/messageBrokerLogic');
+const queue = require('./modules/queue/logic/queueLogic');
 const { MESSAGE_QUEUES } = require('./models/enums/queues');
 // SENTRY
 if (process.env.SENTRY_URL) {

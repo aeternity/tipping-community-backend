@@ -1,7 +1,7 @@
 const RedisSMQ = require('rsmq');
 const { Subject } = require('rxjs');
-const logger = require('./logger')(module);
-const { MESSAGE_QUEUES } = require('../models/enums/queues');
+const logger = require('../../../utils/logger')(module);
+const { MESSAGE_QUEUES } = require('../../../models/enums/queues');
 
 const rsmq = new RedisSMQ({ host: process.env.REDIS_HOST, port: process.env.REDIS_PORT || 6379, ns: 'rsmq' });
 
@@ -47,6 +47,6 @@ class MessageQueue {
   async deleteMessage(qname, id) { return rsmq.deleteMessageAsync({ qname, id }); }
 }
 
-const queue = new MessageQueue();
+const queueLogic = new MessageQueue();
 
-module.exports = queue;
+module.exports = queueLogic;

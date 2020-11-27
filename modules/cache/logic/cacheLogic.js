@@ -130,13 +130,13 @@ module.exports = class CacheLogic {
       totalSupply: await totalSupply,
       buyPrice: 1 / buy,
       sellPrice: 1 / sell,
-      spread: await spread
+      spread: await spread,
     };
   }
 
   static async wordSaleDetailsByToken(address) {
     const wordRegistryData = await CacheLogic.getWordRegistryData();
-    const wordDetails = await wordRegistryData.tokens.asyncMap(([_, wordSale]) => CacheLogic.wordSaleDetails(wordSale));
+    const wordDetails = await wordRegistryData.tokens.asyncMap(([, wordSale]) => CacheLogic.wordSaleDetails(wordSale));
     return wordDetails.find(sale => sale.tokenAddress === address);
   }
 
@@ -169,20 +169,20 @@ module.exports = class CacheLogic {
       async () => aeternity.fungibleTokenTotalSupply(await tokenAddress), cache.shortCacheTime);
 
     const stakePercent = (await totalSupply) ? new BigNumber(votedFor).dividedBy(await totalSupply).times(100).toFixed(0) : '0';
-    const timeoutHeight = (await state).close_height + (await voteTimeout)
+    const timeoutHeight = (await state).close_height + (await voteTimeout);
     return {
       id,
       alreadyApplied,
       voteAddress: vote,
       subject: (await state).metadata.subject,
       timeouted: timeoutHeight < (await height),
-      timeoutHeight: timeoutHeight,
+      timeoutHeight,
       closeHeight: (await state).close_height,
       voteAccounts: (await state).vote_accounts,
       isClosed: (await height) >= (await state).close_height,
       isSuccess: new BigNumber(stakePercent).isGreaterThan(50),
       votePercent: votedAgainst !== 0 ? votedPositive : ifAgainstZero,
-      stakePercent:stakePercent,
+      stakePercent,
     };
   }
 
@@ -364,7 +364,7 @@ module.exports = class CacheLogic {
 
   static async invalidateWordSaleCache(req, res) {
     const tokenAddress = await cache.getOrSet(['wordSaleTokenAddress', req.params.wordSale],
-      () => aeternity.wordSaleTokenAddress(address));
+      () => aeternity.wordSaleTokenAddress(req.params.wordSale));
 
     await cache.del(['wordSalePrice', req.params.wordSale]);
     await cache.del(['wordSaleSpread', req.params.wordSale]);

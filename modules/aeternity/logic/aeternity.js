@@ -233,6 +233,7 @@ class Aeternity {
       );
     }
   }
+
   async initWordSaleContractIfUnknown(contractAddress) {
     if (!this.wordSaleContracts[contractAddress]) {
       this.wordSaleContracts[contractAddress] = await this.client.getContractInstance(

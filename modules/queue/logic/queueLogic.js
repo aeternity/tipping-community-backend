@@ -47,8 +47,6 @@ class MessageQueue {
     }
     const openQueues = await rsmq.listQueuesAsync();
     if (!openQueues.includes(qname)) {
-      // TODO remove
-      await rsmq.deleteQueueAsync({ qname });
       await rsmq.createQueueAsync({ qname, vt: 60 * 10 }); // 10 Minutes message receive timeout
     }
   }
@@ -75,6 +73,12 @@ class MessageQueue {
   async sendMessage(qname, message) { return rsmq.sendMessageAsync({ qname, message }); }
 
   async deleteMessage(qname, id) { return rsmq.deleteMessageAsync({ qname, id }); }
+
+  async resetAll() {
+    const openQueues = await rsmq.listQueuesAsync();
+    await Promise.all(openQueues.map(qname => rsmq.deleteQueueAsync({ qname })));
+    await this.init();
+  }
 }
 
 const queueLogic = new MessageQueue();

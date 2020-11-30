@@ -9,11 +9,6 @@ const app = express();
 const exphbs = require('express-handlebars');
 const cors = require('cors');
 const logger = require('./utils/logger')(module);
-const aeternity = require('./modules/aeternity/logic/aeternity');
-const cache = require('./modules/cache/utils/cache');
-const broker = require('./modules/queue/logic/messageBrokerLogic');
-const queue = require('./modules/queue/logic/queueLogic');
-const { MESSAGE_QUEUES } = require('./models/enums/queues');
 // SENTRY
 if (process.env.SENTRY_URL) {
   Sentry.init({
@@ -104,25 +99,5 @@ app.use((err, req, res, next) => {
 app.use((req, res) => {
   res.sendStatus(404);
 });
-
-// first initialize aeternity sdk and cache before starting server
-const startup = async () => {
-  await queue.init();
-  await broker.init();
-  await aeternity.init();
-  await cache.init(aeternity);
-
-  queue.subscribe(MESSAGE_QUEUES.CHILD, message => {
-    queue.deleteMessage(MESSAGE_QUEUES.CHILD, message.id);
-  });
-
-  await queue.sendMessage(MESSAGE_QUEUES.PARENT, 'test');
-
-  app.listen(3000, () => {
-    logger.info('Server started');
-  });
-};
-
-startup();
 
 module.exports = app;

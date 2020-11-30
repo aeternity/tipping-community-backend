@@ -4,7 +4,6 @@ const chaiHttp = require('chai-http');
 const { describe, it } = require('mocha');
 
 const server = require('../../../server');
-const RetipLogic = require('../../tip/logic/retipLogic');
 const TipLogic = require('../../tip/logic/tipLogic');
 const { publicKey, performSignedGETRequest, performSignedJSONRequest } = require('../../../utils/testingUtil');
 const {
@@ -76,7 +75,7 @@ describe('Notifications', () => {
       ];
 
       await TipLogic.updateTipsDB(fakeData);
-      await RetipLogic.updateRetipsDB(fakeData);
+      await TipLogic.updateRetipsDB(fakeData);
 
       const createdNotification = await Notification.findOne({
         where: {
@@ -122,7 +121,7 @@ describe('Notifications', () => {
       ];
 
       await TipLogic.updateTipsDB(fakeData);
-      await RetipLogic.updateRetipsDB(fakeData);
+      await TipLogic.updateRetipsDB(fakeData);
 
       const createdNotification = await Notification.findOne({
         where: {
@@ -171,7 +170,7 @@ describe('Notifications', () => {
       ];
 
       await TipLogic.updateTipsDB(fakeData);
-      await RetipLogic.updateRetipsDB(fakeData);
+      await TipLogic.updateRetipsDB(fakeData);
 
       const createdNotification = await Notification.findOne({
         where: {
@@ -226,7 +225,7 @@ describe('Notifications', () => {
       ];
 
       await TipLogic.updateTipsDB(fakeData);
-      await RetipLogic.updateRetipsDB(fakeData);
+      await TipLogic.updateRetipsDB(fakeData);
 
       const createdNotification = await Notification.findOne({
         where: {
@@ -275,7 +274,7 @@ describe('Notifications', () => {
       ];
 
       await TipLogic.updateTipsDB(fakeData);
-      await RetipLogic.updateRetipsDB(fakeData);
+      await TipLogic.updateRetipsDB(fakeData);
     });
   });
 

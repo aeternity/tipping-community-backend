@@ -5,7 +5,6 @@ const sinon = require('sinon');
 const aeternity = require('../../aeternity/logic/aeternity');
 const CacheLogic = require('../../cache/logic/cacheLogic');
 const TipLogic = require('../logic/tipLogic');
-const RetipLogic = require('../logic/retipLogic');
 const cache = require('../../cache/utils/cache');
 const { TIP_TYPES } = require('../constants/tipTypes');
 const { Tip, Retip, Notification } = require('../../../models');
@@ -33,7 +32,7 @@ describe('(Re)Tips', () => {
     it('should call updateRetipsDB on cache renewal', done => {
       cache.del(['getTips']);
       const tipStub = sinon.stub(aeternity, 'fetchTips').callsFake(() => []);
-      const updateRetipsStub = sinon.stub(RetipLogic, 'updateRetipsDB').callsFake(() => {
+      const updateRetipsStub = sinon.stub(TipLogic, 'updateRetipsDB').callsFake(() => {
         tipStub.restore();
         updateRetipsStub.restore();
         done();
@@ -77,7 +76,7 @@ describe('(Re)Tips', () => {
       ];
 
       await TipLogic.updateTipsDB(fakeData);
-      await RetipLogic.updateRetipsDB(fakeData);
+      await TipLogic.updateRetipsDB(fakeData);
 
       const tip = await Tip.findOne({
         where: {
@@ -108,7 +107,7 @@ describe('(Re)Tips', () => {
       ];
 
       await TipLogic.updateTipsDB(fakeData);
-      await RetipLogic.updateRetipsDB(fakeData);
+      await TipLogic.updateRetipsDB(fakeData);
 
       const tip = await Tip.findOne({
         where: {
@@ -139,7 +138,7 @@ describe('(Re)Tips', () => {
       ];
 
       await TipLogic.updateTipsDB(fakeData);
-      await RetipLogic.updateRetipsDB(fakeData);
+      await TipLogic.updateRetipsDB(fakeData);
 
       const tip = await Tip.findOne({
         where: {
@@ -177,7 +176,7 @@ describe('(Re)Tips', () => {
       ];
 
       await TipLogic.updateTipsDB(fakeData);
-      await RetipLogic.updateRetipsDB(fakeData);
+      await TipLogic.updateRetipsDB(fakeData);
 
       const tip = await Tip.findOne({
         where: {
@@ -232,7 +231,7 @@ describe('(Re)Tips', () => {
       ];
 
       await TipLogic.updateTipsDB(fakeData);
-      await RetipLogic.updateRetipsDB(fakeData);
+      await TipLogic.updateRetipsDB(fakeData);
 
       const tip = await Tip.findOne({
         where: {
@@ -280,7 +279,7 @@ describe('(Re)Tips', () => {
       ];
 
       await TipLogic.updateTipsDB(fakeData);
-      await RetipLogic.updateRetipsDB(fakeData);
+      await TipLogic.updateRetipsDB(fakeData);
 
       const tip = await Tip.findOne({
         where: {
@@ -329,7 +328,7 @@ describe('(Re)Tips', () => {
       ];
 
       await TipLogic.updateTipsDB(fakeData);
-      await RetipLogic.updateRetipsDB(fakeData);
+      await TipLogic.updateRetipsDB(fakeData);
 
       const tip = await Tip.findOne({
         where: {

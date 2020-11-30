@@ -1,6 +1,5 @@
 // Require the dev-dependencies
 const chai = require('chai');
-const chaiHttp = require('chai-http');
 const {
   describe, it, beforeEach, afterEach,
 } = require('mocha');
@@ -9,8 +8,7 @@ const sinon = require('sinon');
 const ae = require('../logic/aeternity');
 const Trace = require('../../payfortx/logic/traceLogic');
 
-const should = chai.should();
-chai.use(chaiHttp);
+chai.should();
 // Our parent block
 describe('Aeternity', () => {
   describe('Init', () => {

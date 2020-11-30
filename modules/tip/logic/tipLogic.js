@@ -4,11 +4,24 @@ const CacheLogic = require('../../cache/logic/cacheLogic');
 
 const { Tip, Retip } = require('../../../models');
 const NotificationLogic = require('../../notification/logic/notificationLogic');
+const queue = require('../../queue/logic/queueLogic');
+const { MESSAGES, MESSAGE_QUEUES } = require('../../queue/constants/queue');
 
 const lock = new AsyncLock();
 
-module.exports = class TipLogic {
-  static async fetchAllLocalTips() {
+class TipLogic {
+  constructor() {
+    queue.subscribeToMessage(MESSAGE_QUEUES.TIPS, MESSAGES.TIPS.COMMANDS.UPDATE_DB, async message => {
+      await this.updateTipsDB();
+      await queue.deleteMessage(MESSAGE_QUEUES.TIPS, message.id);
+    });
+    queue.subscribeToMessage(MESSAGE_QUEUES.RETIPS, MESSAGES.RETIPS.COMMANDS.UPDATE_DB, async message => {
+      await this.updateRetipsDB();
+      await queue.deleteMessage(MESSAGE_QUEUES.RETIPS, message.id);
+    });
+  }
+
+  async fetchAllLocalTips() {
     return Tip.findAll({ raw: true });
   }
 

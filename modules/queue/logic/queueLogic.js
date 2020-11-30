@@ -1,15 +1,26 @@
+const { filter } = require('rxjs/operators');
+
 const RedisSMQ = require('rsmq');
 const { Subject } = require('rxjs');
 const logger = require('../../../utils/logger')(module);
-const { MESSAGE_QUEUES } = require('../../../models/enums/queues');
+const { MESSAGE_QUEUES } = require('../constants/queue');
 
 const rsmq = new RedisSMQ({ host: process.env.REDIS_HOST, port: process.env.REDIS_PORT || 6379, ns: 'rsmq' });
 
 class MessageQueue {
   queues = [];
 
-  init() {
+  constructor() {
+    // Setup all queues
     this.interval = setInterval(() => this.notifySubscriber(), 100);
+    // Create initial subjects
+    Object.values(MESSAGE_QUEUES).map(qname => this.initQueueSubject(qname));
+    logger.info('All MQs registered locally');
+  }
+
+  async init() {
+    await Promise.all(Object.values(MESSAGE_QUEUES).map(qname => this.createQueue(qname).catch(e => console.error(e))));
+    logger.info('All MQs registered on redis');
   }
 
   notifySubscriber() {
@@ -19,18 +30,26 @@ class MessageQueue {
     });
   }
 
-  async createQueue(qname) {
-    if (!Object.values(MESSAGE_QUEUES).includes(qname)) throw new Error(`Queue name ${qname} is not a valid queue name. Update the enums.`);
-
-    const openQueues = await rsmq.listQueuesAsync();
-    if (!openQueues.includes(qname)) {
-      await rsmq.createQueueAsync({ qname });
-    }
+  initQueueSubject(qname) {
     if (!this.queues.map(queue => queue.name).includes(qname)) {
       this.queues.push({
         name: qname,
         subject: new Subject(),
       });
+      this.registerDebugListener(qname);
+    }
+  }
+
+  async createQueue(qname) {
+    if (!Object.values(MESSAGE_QUEUES).includes(qname)) throw new Error(`Queue name ${qname} is not a valid queue name. Update the enums.`);
+    if (!this.queues.map(queue => queue.name).includes(qname)) {
+      this.initQueueSubject(qname);
+    }
+    const openQueues = await rsmq.listQueuesAsync();
+    if (!openQueues.includes(qname)) {
+      // TODO remove
+      await rsmq.deleteQueueAsync({ qname });
+      await rsmq.createQueueAsync({ qname, vt: 60 * 10 }); // 10 Minutes message receive timeout
     }
   }
 
@@ -38,6 +57,17 @@ class MessageQueue {
     const selectedQueue = this.queues.find(queue => queue.name === qname);
     if (!selectedQueue) throw new Error(`Queue ${qname} not found. Subscription impossible.`);
     return selectedQueue.subject.subscribe({ next: callback });
+  }
+
+  subscribeToMessage(qname, requestedMessage, callback) {
+    const selectedQueue = this.queues.find(queue => queue.name === qname);
+    if (!selectedQueue) throw new Error(`Queue ${qname} not found. Subscription impossible.`);
+    return selectedQueue.subject.pipe(filter(({ message }) => message === requestedMessage)).subscribe({ next: callback });
+  }
+
+  registerDebugListener(qname) {
+    logger.debug(`SUBSCRIBING TO: "${qname}"`);
+    this.subscribe(qname, message => logger.debug(`NEW MESSAGE: { message: ${message.message}, id: ${message.id} }`));
   }
 
   async receiveMessage(qname) { return rsmq.receiveMessageAsync({ qname }); }

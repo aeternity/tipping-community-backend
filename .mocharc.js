@@ -38,6 +38,7 @@ process.env = {
   CONTRACT_V3_ADDRESS: 'ct_WscpdLQf6ZZxoVqrsEwUwmuAEdzEkJii5W5TzG84rVgHeK6BW'
 }
 
+// GENERATE KEYPAIR
 const Crypto = require('@aeternity/aepp-sdk').Crypto;
 const { secretKey, publicKey } = Crypto.generateKeyPair();
 
@@ -46,3 +47,7 @@ process.env = {
   PRIVATE_KEY: secretKey,
   PUBLIC_KEY: publicKey,
 };
+
+// RESET ALL QUEUES
+const queue = require('./modules/queue/logic/queueLogic')
+queue.resetAll()

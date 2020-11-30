@@ -17,40 +17,66 @@ const { LinkPreview } = require('../../../models');
 const DomLoader = require('../utils/domLoader');
 const cache = require('../../cache/utils/cache');
 const imageLogic = require('../../media/logic/imageLogic');
+const { MESSAGE_QUEUES, MESSAGES } = require('../../queue/constants/queue');
+const queue = require('../../queue/logic/queueLogic');
+const CacheLogic = require('../../cache/logic/cacheLogic');
+
 const logger = require('../../../utils/logger')(module);
 
 lngDetector.setLanguageType('iso2');
 
-module.exports = class LinkPreviewLogic {
-  static async fetchAllLinkPreviews() {
+class LinkPreviewLogic {
+  constructor() {
+    queue.subscribeToMessage(MESSAGE_QUEUES.LINKPREVIEW, MESSAGES.LINKPREVIEW.COMMANDS.UPDATE_DB,
+      () => this.updateLinkpreviewDatabase());
+  }
+
+  async fetchAllLinkPreviews() {
     return LinkPreview.findAll({ raw: true });
   }
 
-  static async fetchAllUrls() {
+  async fetchAllUrls() {
     return LinkPreview.aggregate('requestUrl', 'DISTINCT', { plain: false })
       .then(results => results.map(preview => preview.DISTINCT));
   }
 
+  async updateLinkpreviewDatabase() {
+    const tips = await CacheLogic.getTips();
+    const previews = await this.fetchAllUrls();
+    const tipUrls = [...new Set(tips.filter(tip => tip.url).map(tip => tip.url))];
+
+    const difference = tipUrls.filter(url => !previews.includes(url));
+
+    await difference.asyncMap(async url => {
+      await this.generatePreview(url).catch(logger.error);
+    });
+
+    if (difference.length > 0) {
+      queue.sendMessage(MESSAGE_QUEUES.LINKPREVIEW, MESSAGES.LINKPREVIEW.EVENTS.CREATED_NEW_PREVIEWS);
+      await cache.del(['StaticLogic.getStats']);
+    }
+  }
+
   // API Functions
-  static async getLinkPreview(req, res) {
+  async getLinkPreview(req, res) {
     const url = req.params.url ? req.params.url : req.query.url;
     if (url) {
       const result = await LinkPreview.findOne({ where: { requestUrl: url }, raw: true });
       return result ? res.send(result) : res.sendStatus(404);
     }
-    return res.send(await LinkPreviewLogic.fetchAllLinkPreviews());
+    return res.send(await this.fetchAllLinkPreviews());
   }
 
   // General Functions
-  static async generatePreview(url) {
+  async generatePreview(url) {
     // VERIFY URL PROTOCOL
     const urlProtocol = url.match(/^[^:]+(?=:\/\/)/);
     const newUrl = (!urlProtocol ? `http://${url}` : url).trim();
 
     // Try easy version first
-    let data = await LinkPreviewLogic.createPreviewForUrl(newUrl, LinkPreviewLogic.querySimpleCustomCrawler);
+    let data = await this.createPreviewForUrl(newUrl, this.querySimpleCustomCrawler);
     // if it fails try more costly version
-    if (!data.querySucceeded) data = await LinkPreviewLogic.createPreviewForUrl(newUrl, LinkPreviewLogic.queryCostlyCustomCrawler);
+    if (!data.querySucceeded) data = await this.createPreviewForUrl(newUrl, this.queryCostlyCustomCrawler);
 
     const existingEntry = await LinkPreview.findOne({ where: { requestUrl: url } });
 
@@ -62,16 +88,13 @@ module.exports = class LinkPreviewLogic {
       }, { where: { requestUrl: url }, raw: true });
     }
 
-    // Kill stats cache
-    await cache.del(['StaticLogic.getStats']);
-
     return LinkPreview.create({
       ...data,
       requestUrl: url,
     }, { raw: true });
   }
 
-  static async fetchImage(requestUrl, imageUrl) {
+  async fetchImage(requestUrl, imageUrl) {
     let newUrl = null;
 
     // Get Ext name
@@ -126,7 +149,7 @@ module.exports = class LinkPreviewLogic {
     return newUrl;
   }
 
-  static async createPreviewForUrl(url, crawler) {
+  async createPreviewForUrl(url, crawler) {
     try {
       // Check if the url is valid
       await metascraper({ url });
@@ -150,7 +173,7 @@ module.exports = class LinkPreviewLogic {
       data.description = data.description ? data.description.replace(/<(.|\n)*?>/g, '') : data.description;
 
       // Fetch image
-      if (data.image) data.image = await LinkPreviewLogic.fetchImage(data.requestUrl, data.image);
+      if (data.image) data.image = await this.fetchImage(data.requestUrl, data.image);
 
       return data;
     } catch (err) {
@@ -164,7 +187,7 @@ module.exports = class LinkPreviewLogic {
     }
   }
 
-  static async querySimpleCustomCrawler(url) {
+  async querySimpleCustomCrawler(url) {
     return (await axios.get(url, {
       headers: {
         'Accept-Language': 'en-US',
@@ -172,7 +195,10 @@ module.exports = class LinkPreviewLogic {
     })).data;
   }
 
-  static async queryCostlyCustomCrawler(url) {
+  async queryCostlyCustomCrawler(url) {
     return (await DomLoader.getHTMLfromURL(url) || {}).html;
   }
-};
+}
+
+const linkPreviewLogic = new LinkPreviewLogic();
+module.exports = linkPreviewLogic;

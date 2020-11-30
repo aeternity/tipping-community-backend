@@ -1,40 +1,22 @@
 const BigNumber = require('bignumber.js');
 const AsyncLock = require('async-lock');
-const Fuse = require('fuse.js');
 const axios = require('axios');
 const aeternity = require('../../aeternity/logic/aeternity');
-const LinkPreviewLogic = require('../../linkPreview/logic/linkPreviewLogic');
-const TipOrderLogic = require('../../tip/logic/tiporderLogic');
 const CommentLogic = require('../../comment/logic/commentLogic');
-const TipLogic = require('../../tip/logic/tipLogic');
-const BlacklistLogic = require('../../blacklist/logic/blacklistLogic');
-const AsyncTipGeneratorsLogic = require('../../../logic/asyncTipGeneratorsLogic');
 const cache = require('../utils/cache');
+const queue = require('../../queue/logic/queueLogic');
 
 const lock = new AsyncLock();
-const { getTipTopics, topicsRegex } = require('../../aeternity/utils/tipTopicUtil');
+const { getTipTopics } = require('../../aeternity/utils/tipTopicUtil');
 const Util = require('../../aeternity/utils/util');
 const MdwLogic = require('../../aeternity/logic/mdwLogic');
+const { MESSAGES, MESSAGE_QUEUES } = require('../../queue/constants/queue');
 const { Profile } = require('../../../models');
 
 const logger = require('../../../utils/logger')(module);
 
-const searchOptions = {
-  threshold: 0.3,
-  includeScore: true,
-  shouldSort: false,
-  keys: ['title', 'chainName', 'sender', 'preview.description', 'preview.title', 'url', 'topics'],
-};
-
 module.exports = class CacheLogic {
-  constructor() {
-    CacheLogic.init();
-  }
-
   static async init() {
-    // Run once so the db is synced initially without getting triggered every 5 seconds
-    await aeternity.init();
-
     // INIT ONCE
     await CacheLogic.fetchStats();
 
@@ -78,10 +60,7 @@ module.exports = class CacheLogic {
       // Renew Stats
       await cache.del(['fetchStats']);
 
-      // not await on purpose, just trigger background actions
-      AsyncTipGeneratorsLogic.triggerGeneratePreviews(tips);
-      AsyncTipGeneratorsLogic.triggerFetchAllLocalRetips(tips);
-      CacheLogic.triggerGetTokenContractIndex(tips);
+      await queue.sendMessage(MESSAGE_QUEUES.CACHE, MESSAGES.CACHE.EVENTS.RENEWED_TIPS);
 
       return tips;
     }, cache.shortCacheTime);
@@ -189,57 +168,6 @@ module.exports = class CacheLogic {
     });
   }
 
-  static async getAllTips(blacklist = true) {
-    const keys = ['CacheLogic.getAllTips'].concat(blacklist ? ['blacklisted'] : ['all']);
-    return cache.getOrSet(keys, async () => {
-      const [allTips, tipsPreview, chainNames, commentCounts, blacklistedIds, localTips] = await Promise.all([
-        CacheLogic.getTips(), LinkPreviewLogic.fetchAllLinkPreviews(), CacheLogic.fetchChainNames(),
-        CommentLogic.fetchCommentCountForTips(), BlacklistLogic.getBlacklistedIds(), TipLogic.fetchAllLocalTips(),
-      ]);
-
-      let tips = allTips;
-
-      // filter by blacklisted from backend
-      if (blacklist && blacklistedIds) {
-        tips = tips.filter(tip => !blacklistedIds.includes(tip.id));
-      }
-
-      // add preview to tips from backend
-      if (tipsPreview) {
-        tips = tips.map(tip => {
-          const preview = tipsPreview.find(linkPreview => linkPreview.requestUrl === tip.url);
-          return { ...tip, preview };
-        });
-      }
-
-      // add language to tips from backend
-      if (localTips) {
-        tips = tips.map(tip => {
-          const result = localTips.find(localTip => localTip.id === tip.id);
-          return { ...tip, contentLanguage: result ? result.language : null };
-        });
-      }
-
-      // add chain names for each tip sender
-      if (chainNames) {
-        tips = tips.map(tip => ({ ...tip, chainName: chainNames[tip.sender] }));
-      }
-
-      // add comment count to each tip
-      if (commentCounts) {
-        tips = tips.map(tip => {
-          const result = commentCounts.find(comment => comment.tipId === tip.id);
-          return { ...tip, commentCount: result ? result.count : 0 };
-        });
-      }
-
-      // add score to tips
-      tips = TipOrderLogic.applyTipScoring(tips);
-
-      return tips;
-    }, cache.shortCacheTime);
-  }
-
   static async invalidateTips(req, res) {
     await cache.del(['getTips']);
     await cache.del(['CacheLogic.getAllTips', 'blacklisted']);
@@ -264,74 +192,6 @@ module.exports = class CacheLogic {
     await cache.del(['getTokenAccounts', req.params.token]);
     await CacheLogic.getTokenAccounts(req.params.token); // wait for cache update to let frontend know data availability
     if (res) res.send({ status: 'OK' });
-  }
-
-  static async deliverTip(req, res) {
-    const tips = await CacheLogic.getAllTips(false);
-    const result = tips.find(tip => tip.id === req.query.id);
-    return result ? res.send(result) : res.sendStatus(404);
-  }
-
-  static async deliverTips(req, res) {
-    const limit = 30;
-    let tips = await CacheLogic.getAllTips(req.query.blacklist !== 'false');
-
-    if (req.query.address) {
-      tips = tips.filter(tip => tip.sender === req.query.address);
-    }
-
-    if (req.query.contractVersion) {
-      const contractVersions = Array.isArray(req.query.contractVersion) ? req.query.contractVersion : [req.query.contractVersion];
-      tips = tips.filter(tip => contractVersions.includes((tip.id.split('_')[1] ? tip.id.split('_')[1] : 'v1')));
-    }
-
-    if (req.query.search) {
-      let searchTips = tips;
-
-      // if topics exist, only show topics
-      const searchTopics = req.query.search.match(topicsRegex);
-      if (searchTopics) {
-        searchTips = tips.filter(tip => searchTopics.every(topic => tip.topics.includes(topic)));
-      }
-
-      // otherwise fuzzy search all content
-      if (searchTopics === null || searchTips.length === 0) {
-        // TODO consider indexing
-        searchTips = new Fuse(tips, searchOptions).search(req.query.search).map(result => {
-          const tip = result.item;
-          tip.searchScore = result.item.score;
-          return tip;
-        });
-      }
-
-      tips = searchTips;
-    }
-    if (req.query.language) {
-      const requestedLanguages = req.query.language.split('|');
-      tips = tips.filter(tip => tip.preview && requestedLanguages.includes(tip.preview.lang)
-        && (!tip.contentLanguage || requestedLanguages.includes(tip.contentLanguage)));
-    }
-
-    if (req.query.ordering) {
-      switch (req.query.ordering) {
-        case 'hot':
-          tips.sort((a, b) => b.score - a.score);
-          break;
-        case 'latest':
-          tips.sort((a, b) => b.timestamp - a.timestamp);
-          break;
-        case 'highest':
-          tips.sort((a, b) => new BigNumber(b.total_amount).minus(a.total_amount).toNumber());
-          break;
-        default:
-      }
-    }
-
-    if (req.query.page) {
-      tips = tips.slice((req.query.page - 1) * limit, req.query.page * limit);
-    }
-
-    res.send(tips);
   }
 
   static async deliverContractEvents(req, res) {

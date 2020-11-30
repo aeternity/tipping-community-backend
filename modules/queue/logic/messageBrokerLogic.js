@@ -1,17 +1,34 @@
-const { MESSAGE_QUEUES } = require('../../../models/enums/queues');
+const { MESSAGE_QUEUES, MESSAGES } = require('../constants/queue');
 const queue = require('./queueLogic');
 
 class MessageBroker {
   async init() {
-    // Setup all queues
-    await Promise.all(Object.values(MESSAGE_QUEUES).map(qname => queue.createQueue(qname).catch(e => console.error(e))));
+    // S: UPDATE TIPS CACHE
+    // T: UPDATE TIPS DB
+    // T: UPDATE RETIPS DB
+    this.setupForwarding({
+      queueName: MESSAGE_QUEUES.CACHE,
+      message: MESSAGES.CACHE.EVENTS.RENEWED_TIPS,
+    }, [
+      { queueName: MESSAGE_QUEUES.TIPS, message: MESSAGES.TIPS.COMMANDS.UPDATE_DB },
+      { queueName: MESSAGE_QUEUES.RETIPS, message: MESSAGES.RETIPS.COMMANDS.UPDATE_DB },
+    ]);
+
+    // S: UPDATE TIPS DB
+    // T: UPDATE LINKPREVIEWS
+    this.setupForwarding({
+      queueName: MESSAGE_QUEUES.TIPS,
+      message: MESSAGES.TIPS.EVENTS.CREATED_NEW_LOCAL_TIPS,
+    }, [
+      { queueName: MESSAGE_QUEUES.LINKPREVIEW, message: MESSAGES.LINKPREVIEW.COMMANDS.UPDATE_DB },
+    ]);
   }
 
-  async setupForwarding(sourceQueueName, targetQueues) {
+  setupForwarding(source, targets) {
     // SETUP LOGIC
-    queue.subscribe(sourceQueueName, async message => {
-      await Promise.all(targetQueues.map(targetQueueName => queue.sendMessage(targetQueueName, message.message)));
-      await queue.deleteMessage(targetQueues, message.id);
+    queue.subscribeToMessage(source.queueName, source.message, async message => {
+      await Promise.all(targets.map(({ queueName, message: newMessage }) => queue.sendMessage(queueName, newMessage)));
+      await queue.deleteMessage(source.queueName, message.id);
     });
   }
 }

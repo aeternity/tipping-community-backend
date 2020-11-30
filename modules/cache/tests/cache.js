@@ -10,6 +10,7 @@ const CacheLogic = require('../logic/cacheLogic');
 const BlacklistLogic = require('../../blacklist/logic/blacklistLogic');
 const MdwLogic = require('../../aeternity/logic/mdwLogic');
 const aeternity = require('../../aeternity/logic/aeternity');
+const cacheAggregatorLogic = require('../logic/cacheAggregatorLogic');
 
 chai.should();
 chai.use(chaiHttp);
@@ -43,7 +44,7 @@ describe('Cache', () => {
     });
 
     it('it should GET all cache items with filters', async () => {
-      const stub = sinon.stub(CacheLogic, 'getAllTips').callsFake(() => [
+      const stub = sinon.stub(cacheAggregatorLogic, 'getAllTips').callsFake(() => [
         {
           sender: 'ak_y87WkN4C4QevzjTuEYHg6XLqiWx3rjfYDFLBmZiqiro5mkRag',
           title: '#test tip',
@@ -93,7 +94,7 @@ describe('Cache', () => {
     });
 
     it('it should GET all cache items with language filters', async () => {
-      const stub = sinon.stub(CacheLogic, 'getAllTips').callsFake(() => [
+      const stub = sinon.stub(cacheAggregatorLogic, 'getAllTips').callsFake(() => [
         {
           id: '1_v1',
           contentLanguage: 'en',
@@ -152,7 +153,7 @@ describe('Cache', () => {
     });
 
     it('it should GET all cache items with contractVersion filters', async () => {
-      const stub = sinon.stub(CacheLogic, 'getAllTips').callsFake(() => [
+      const stub = sinon.stub(cacheAggregatorLogic, 'getAllTips').callsFake(() => [
         {
           id: '1_v1',
         },

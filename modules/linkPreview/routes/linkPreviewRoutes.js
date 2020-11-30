@@ -1,5 +1,5 @@
 const { Router } = require('express');
-const Logic = require('../logic/linkPreviewLogic');
+const linkPreviewLogic = require('../logic/linkPreviewLogic');
 
 const router = new Router();
 /**
@@ -32,7 +32,7 @@ const router = new Router();
  *             schema:
  *              $ref: '#/components/schemas/LinkPreview'
  */
-router.get('/', Logic.getLinkPreview);
+router.get('/', linkPreviewLogic.getLinkPreview);
 /**
  * @swagger
  * /linkpreview/{url}:
@@ -56,7 +56,7 @@ router.get('/', Logic.getLinkPreview);
  *             schema:
  *              $ref: '#/components/schemas/LinkPreview'
  */
-router.get('/:url', Logic.getLinkPreview);
+router.get('/:url', linkPreviewLogic.getLinkPreview);
 /**
  * @swagger
  * /linkpreview/image/{filename}:

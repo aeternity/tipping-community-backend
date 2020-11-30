@@ -3,7 +3,7 @@ const { promisify } = require('util');
 const AsyncLock = require('async-lock');
 const logger = require('../../../utils/logger')(module);
 
-if (!process.env.REDIS_HOST) throw Error('REDIS_URL is not set');
+if (!process.env.REDIS_HOST) throw Error('REDIS_HOST is not set');
 
 const client = redis.createClient(`redis://${process.env.REDIS_HOST}:${process.env.REDIS_PORT || 6379}`);
 const get = promisify(client.get).bind(client);

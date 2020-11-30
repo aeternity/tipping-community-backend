@@ -1,9 +1,12 @@
 const { Router } = require('express');
+const BigNumber = require('bignumber.js');
+const Fuse = require('fuse.js');
 const CacheLogic = require('../logic/cacheLogic');
+const cacheAggregatorLogic = require('../logic/cacheAggregatorLogic');
+const { topicsRegex } = require('../../aeternity/utils/tipTopicUtil');
+const { searchOptions } = require('../constants/searchOptions');
 
 const router = new Router();
-
-CacheLogic.init(); // calls init
 
 /**
  * @swagger
@@ -33,7 +36,11 @@ CacheLogic.init(); // calls init
  *             schema:
  *               $ref: '#/components/schemas/Tip'
  */
-router.get('/tip', CacheLogic.deliverTip);
+router.get('/tip', async (req, res) => {
+  const tips = await CacheLogic.getAllTips(false);
+  const result = tips.find(tip => tip.id === req.query.id);
+  return result ? res.send(result) : res.sendStatus(404);
+});
 
 /**
  * @swagger
@@ -97,7 +104,67 @@ router.get('/tip', CacheLogic.deliverTip);
  *               items:
  *                 $ref: '#/components/schemas/Tip'
  */
-router.get('/tips', CacheLogic.deliverTips);
+router.get('/tips', async (req, res) => {
+  const limit = 30;
+  let tips = await cacheAggregatorLogic.getAllTips(req.query.blacklist !== 'false');
+
+  if (req.query.address) {
+    tips = tips.filter(tip => tip.sender === req.query.address);
+  }
+
+  if (req.query.contractVersion) {
+    const contractVersions = Array.isArray(req.query.contractVersion) ? req.query.contractVersion : [req.query.contractVersion];
+    tips = tips.filter(tip => contractVersions.includes((tip.id.split('_')[1] ? tip.id.split('_')[1] : 'v1')));
+  }
+
+  if (req.query.search) {
+    let searchTips = tips;
+
+    // if topics exist, only show topics
+    const searchTopics = req.query.search.match(topicsRegex);
+    if (searchTopics) {
+      searchTips = tips.filter(tip => searchTopics.every(topic => tip.topics.includes(topic)));
+    }
+
+    // otherwise fuzzy search all content
+    if (searchTopics === null || searchTips.length === 0) {
+      // TODO consider indexing
+      searchTips = new Fuse(tips, searchOptions).search(req.query.search).map(result => {
+        const tip = result.item;
+        tip.searchScore = result.item.score;
+        return tip;
+      });
+    }
+
+    tips = searchTips;
+  }
+  if (req.query.language) {
+    const requestedLanguages = req.query.language.split('|');
+    tips = tips.filter(tip => tip.preview && requestedLanguages.includes(tip.preview.lang)
+      && (!tip.contentLanguage || requestedLanguages.includes(tip.contentLanguage)));
+  }
+
+  if (req.query.ordering) {
+    switch (req.query.ordering) {
+      case 'hot':
+        tips.sort((a, b) => b.score - a.score);
+        break;
+      case 'latest':
+        tips.sort((a, b) => b.timestamp - a.timestamp);
+        break;
+      case 'highest':
+        tips.sort((a, b) => new BigNumber(b.total_amount).minus(a.total_amount).toNumber());
+        break;
+      default:
+    }
+  }
+
+  if (req.query.page) {
+    tips = tips.slice((req.query.page - 1) * limit, req.query.page * limit);
+  }
+
+  res.send(tips);
+});
 
 /**
  * @swagger

@@ -22,10 +22,6 @@ const { TRACE_STATES } = require('../../payfortx/constants/traceStates');
 const Util = require('../utils/util');
 
 class Aeternity {
-  constructor() {
-    this.init();
-  }
-
   async init() {
     if (!this.client) {
       this.client = await Universal({

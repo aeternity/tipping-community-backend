@@ -11,6 +11,9 @@ const BlacklistLogic = require('../../blacklist/logic/blacklistLogic');
 const MdwLogic = require('../../aeternity/logic/mdwLogic');
 const aeternity = require('../../aeternity/logic/aeternity');
 const cacheAggregatorLogic = require('../logic/cacheAggregatorLogic');
+const { MESSAGES } = require('../../queue/constants/queue');
+const { MESSAGE_QUEUES } = require('../../queue/constants/queue');
+const queue = require('../../queue/logic/queueLogic');
 
 chai.should();
 chai.use(chaiHttp);
@@ -37,10 +40,22 @@ describe('Cache', () => {
   };
   const minimalTimeout = 200;
 
+  describe('Keep Hot', () => {
+    it('should update the cache (keep hot simulation)', async function () {
+      this.timeout(15000);
+      const messageStub = sinon.stub(queue, 'sendMessage').callsFake(async () => {});
+      await CacheLogic.getTips();
+      sinon.assert.calledWith(messageStub, MESSAGE_QUEUES.CACHE, MESSAGES.CACHE.EVENTS.RENEWED_TIPS);
+      messageStub.restore();
+    });
+  });
+
   describe('API', () => {
     it('it should GET all cache items', function (done) {
-      this.timeout(5000);
+      this.timeout(15000);
+      const messageStub = sinon.stub(queue, 'sendMessage').callsFake(async () => {});
       checkCachedRoute('/cache/tips', 'array', done);
+      messageStub.restore();
     });
 
     it('it should GET all cache items with filters', async () => {
@@ -452,7 +467,9 @@ describe('Cache', () => {
       await cache.del(['getTips']);
       const stub = sinon.stub(CacheLogic, 'statsForTips').callsFake(() => []);
       // Fake keep hot
+      const messageStub = sinon.stub(queue, 'sendMessage').callsFake(async () => {});
       await CacheLogic.getTips();
+      messageStub.restore();
       // Request stats
       const res = await chai.request(server).get('/cache/stats');
       res.should.have.status(200);

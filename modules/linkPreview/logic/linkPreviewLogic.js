@@ -28,7 +28,10 @@ lngDetector.setLanguageType('iso2');
 class LinkPreviewLogic {
   constructor() {
     queue.subscribeToMessage(MESSAGE_QUEUES.LINKPREVIEW, MESSAGES.LINKPREVIEW.COMMANDS.UPDATE_DB,
-      () => this.updateLinkpreviewDatabase());
+      async message => {
+        await this.updateLinkpreviewDatabase();
+        await queue.deleteMessage(MESSAGE_QUEUES.LINKPREVIEW, message.id);
+      });
   }
 
   async fetchAllLinkPreviews() {
@@ -55,16 +58,6 @@ class LinkPreviewLogic {
       queue.sendMessage(MESSAGE_QUEUES.LINKPREVIEW, MESSAGES.LINKPREVIEW.EVENTS.CREATED_NEW_PREVIEWS);
       await cache.del(['StaticLogic.getStats']);
     }
-  }
-
-  // API Functions
-  async getLinkPreview(req, res) {
-    const url = req.params.url ? req.params.url : req.query.url;
-    if (url) {
-      const result = await LinkPreview.findOne({ where: { requestUrl: url }, raw: true });
-      return result ? res.send(result) : res.sendStatus(404);
-    }
-    return res.send(await this.fetchAllLinkPreviews());
   }
 
   // General Functions

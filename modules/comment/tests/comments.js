@@ -23,7 +23,8 @@ describe('Comments', () => {
 
   let commentId = null;
 
-  before(async () => { // Before all tests we empty the database once
+  before(async function () { // Before all tests we empty the database once
+    this.timeout(10000);
     await sequelize.models.Commentancestor.destroy({
       where: {},
       truncate: true,

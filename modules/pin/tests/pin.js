@@ -7,7 +7,7 @@ const server = require('../../../server');
 
 const { Pin } = require('../../../models');
 const { publicKey, signChallenge, performSignedJSONRequest } = require('../../../utils/testingUtil');
-const CacheLogic = require('../../cache/logic/cacheLogic');
+const cacheAggregatorLogic = require('../../cache/logic/cacheAggregatorLogic');
 
 chai.should();
 chai.use(chaiHttp);
@@ -19,7 +19,7 @@ describe('Pinning', () => {
       where: {},
       truncate: true,
     });
-    stub = sinon.stub(CacheLogic, 'getAllTips').callsFake(() => [
+    stub = sinon.stub(cacheAggregatorLogic, 'getAllTips').callsFake(() => [
       {
         id: 1,
         url: 'https://www.test.domain.com',

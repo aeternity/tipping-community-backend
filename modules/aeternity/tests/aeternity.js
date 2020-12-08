@@ -13,7 +13,7 @@ chai.should();
 describe('Aeternity', () => {
   describe('Init', () => {
     it('it should init', async function () {
-      this.timeout(10000);
+      this.timeout(20000);
       await ae.init();
     });
 
@@ -84,7 +84,7 @@ describe('Aeternity', () => {
       result.should.eql(false);
 
       // CHECK V2
-      result = await ae.preClaim('not_a_real_account', 'https://probably.not.an.existing.tip', new Trace(), ae.contractV2);
+      result = await ae.preClaim('not_a_real_acdcount', 'https://probably.not.an.existing.tip', new Trace(), ae.contractV2);
       result.should.be.a('boolean');
       result.should.eql(false);
     });

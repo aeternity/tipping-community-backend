@@ -1,6 +1,7 @@
 const { MESSAGE_QUEUES, MESSAGES } = require('../constants/queue');
 const queue = require('./queueLogic');
 
+// TODO TEST
 class MessageBroker {
   async init() {
     // S: UPDATE TIPS CACHE

@@ -7,6 +7,7 @@ const { MESSAGE_QUEUES } = require('../constants/queue');
 
 const rsmq = new RedisSMQ({ host: process.env.REDIS_HOST, port: process.env.REDIS_PORT || 6379, ns: 'rsmq' });
 
+// TODO TEST
 class MessageQueue {
   queues = [];
 
@@ -19,7 +20,7 @@ class MessageQueue {
   }
 
   async init() {
-    await Promise.all(Object.values(MESSAGE_QUEUES).map(qname => this.createQueue(qname).catch(e => console.error(e))));
+    await Promise.all(Object.values(MESSAGE_QUEUES).map(qname => this.createQueue(qname).catch(e => logger.error(e))));
     logger.info('All MQs registered on redis');
   }
 

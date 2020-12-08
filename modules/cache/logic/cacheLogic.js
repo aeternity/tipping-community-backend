@@ -168,30 +168,22 @@ module.exports = class CacheLogic {
     });
   }
 
-  static async invalidateTips(req, res) {
+  static async invalidateTipsCache() {
     await cache.del(['getTips']);
     await cache.del(['CacheLogic.getAllTips', 'blacklisted']);
     await cache.del(['CacheLogic.getAllTips', 'all']);
-    CacheLogic.getAllTips(); // just trigger cache update, so follow up requests may have it cached already
-    if (res) res.send({ status: 'OK' });
   }
 
-  static async invalidateOracle(req, res) {
+  static async invalidateOracle() {
     await cache.del(['oracleState']);
-    CacheLogic.getOracleState(); // just trigger cache update, so follow up requests may have it cached already
-    if (res) res.send({ status: 'OK' });
   }
 
-  static async invalidateContractEvents(req, res) {
+  static async invalidateContractEvents() {
     await cache.del(['contractEvents']);
-    CacheLogic.findContractEvents(); // just trigger cache update, so follow up requests may have it cached already
-    if (res) res.send({ status: 'OK' });
   }
 
-  static async invalidateTokenCache(req, res) {
-    await cache.del(['getTokenAccounts', req.params.token]);
-    await CacheLogic.getTokenAccounts(req.params.token); // wait for cache update to let frontend know data availability
-    if (res) res.send({ status: 'OK' });
+  static async invalidateTokenCache(tokenContractAddress) {
+    await cache.del(['getTokenAccounts', tokenContractAddress]);
   }
 
   static async deliverContractEvents(req, res) {

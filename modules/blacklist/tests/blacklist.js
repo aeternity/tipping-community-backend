@@ -2,12 +2,14 @@
 const chai = require('chai');
 const chaiHttp = require('chai-http');
 const { describe, it, before } = require('mocha');
+const sinon = require('sinon');
 
 const server = require('../../../server');
 const { BlacklistEntry } = require('../../../models');
 const ae = require('../../aeternity/logic/aeternity');
 const { BLACKLIST_STATUS } = require('../constants/blacklistStates');
 const { publicKey, performSignedJSONRequest } = require('../../../utils/testingUtil');
+const CacheLogic = require('../../cache/logic/cacheLogic');
 
 chai.should();
 chai.use(chaiHttp);
@@ -33,6 +35,7 @@ describe('Blacklist', () => {
     });
 
     it('it should CREATE a new blacklist entry via admin auth', done => {
+      const stub = sinon.stub(CacheLogic, 'getTips').callsFake(() => [{ id: tipId }]);
       chai.request(server).post('/blacklist/api')
         .auth(process.env.AUTHENTICATION_USER, process.env.AUTHENTICATION_PASSWORD)
         .send({
@@ -45,6 +48,7 @@ describe('Blacklist', () => {
           res.body.should.have.property('status', BLACKLIST_STATUS.HIDDEN);
           res.body.should.have.property('createdAt');
           res.body.should.have.property('updatedAt');
+          stub.restore();
           done();
         });
     });

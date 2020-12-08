@@ -18,7 +18,7 @@ module.exports = class CommentLogic {
         return res.status(400).send(`Could not find parent comment with id ${parentId}`);
       }
 
-      const relevantTip = await Tip.findOne(tipId);
+      const relevantTip = await Tip.findOne({ where: { id: tipId } }, { raw: true });
       if (!relevantTip) return res.status(400).send(`Could not find tip with id ${tipId}`);
 
       const entry = await Comment.create({

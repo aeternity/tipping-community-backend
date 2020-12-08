@@ -37,7 +37,7 @@ const router = new Router();
  *               $ref: '#/components/schemas/Tip'
  */
 router.get('/tip', async (req, res) => {
-  const tips = await CacheLogic.getAllTips(false);
+  const tips = await cacheAggregatorLogic.getAllTips(false);
   const result = tips.find(tip => tip.id === req.query.id);
   return result ? res.send(result) : res.sendStatus(404);
 });
@@ -342,7 +342,11 @@ router.get('/events', CacheLogic.deliverContractEvents);
  *       200:
  *         description: OK
  */
-router.get('/invalidate/tips', CacheLogic.invalidateTips);
+router.get('/invalidate/tips', async (req, res) => {
+  await CacheLogic.invalidateTipsCache();
+  cacheAggregatorLogic.getAllTips(); // just trigger cache update, so follow up requests may have it cached already
+  if (res) res.send({ status: 'OK' });
+});
 /**
  * @swagger
  * /cache/invalidate/oracle:
@@ -354,7 +358,11 @@ router.get('/invalidate/tips', CacheLogic.invalidateTips);
  *       200:
  *         description: OK
  */
-router.get('/invalidate/oracle', CacheLogic.invalidateOracle);
+router.get('/invalidate/oracle', async (req, res) => {
+  await CacheLogic.invalidateOracle();
+  CacheLogic.getOracleState(); // just trigger cache update, so follow up requests may have it cached already
+  if (res) res.send({ status: 'OK' });
+});
 /**
  * @swagger
  * /cache/invalidate/events:
@@ -366,7 +374,11 @@ router.get('/invalidate/oracle', CacheLogic.invalidateOracle);
  *       200:
  *         description: OK
  */
-router.get('/invalidate/events', CacheLogic.invalidateContractEvents);
+router.get('/invalidate/events', async (req, res) => {
+  await CacheLogic.invalidateContractEvents();
+  CacheLogic.findContractEvents(); // just trigger cache update, so follow up requests may have it cached already
+  if (res) res.send({ status: 'OK' });
+});
 /**
  * @swagger
  * /cache/invalidate/token/{token}:
@@ -385,6 +397,10 @@ router.get('/invalidate/events', CacheLogic.invalidateContractEvents);
  *       200:
  *         description: OK
  */
-router.get('/invalidate/token/:token', CacheLogic.invalidateTokenCache);
+router.get('/invalidate/token/:token', async (req, res) => {
+  CacheLogic.invalidateTokenCache(req.params.token);
+  await CacheLogic.getTokenAccounts(req.params.token); // wait for cache update to let frontend know data availability
+  if (res) res.send({ status: 'OK' });
+});
 
 module.exports = router;

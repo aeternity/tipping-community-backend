@@ -1,5 +1,4 @@
 const { Router } = require('express');
-const linkPreviewLogic = require('../logic/linkPreviewLogic');
 
 const router = new Router();
 /**
@@ -9,54 +8,6 @@ const router = new Router();
  *   description: "Server generated link previews for tips"
  */
 
-/**
- * @swagger
- * /linkpreview:
- *   get:
- *     tags:
- *       - linkpreview
- *     deprecated: true
- *     summary: Returns a link preview
- *     parameters:
- *       - in: query
- *         name: url
- *         required: true
- *         description: url you wish to obtain a preview for
- *         schema:
- *           type: string
- *     responses:
- *       200:
- *         description: Returns a link preview
- *         content:
- *           application/json:
- *             schema:
- *              $ref: '#/components/schemas/LinkPreview'
- */
-router.get('/', linkPreviewLogic.getLinkPreview);
-/**
- * @swagger
- * /linkpreview/{url}:
- *   get:
- *     tags:
- *       - linkpreview
- *     deprecated: true
- *     summary: Returns a link preview
- *     parameters:
- *       - in: path
- *         name: url
- *         required: true
- *         description: url you wish to obtain a preview for
- *         schema:
- *           type: string
- *     responses:
- *       200:
- *         description: Returns a link preview
- *         content:
- *           application/json:
- *             schema:
- *              $ref: '#/components/schemas/LinkPreview'
- */
-router.get('/:url', linkPreviewLogic.getLinkPreview);
 /**
  * @swagger
  * /linkpreview/image/{filename}:

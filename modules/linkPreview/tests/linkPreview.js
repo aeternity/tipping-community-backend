@@ -3,9 +3,12 @@ const chai = require('chai');
 const chaiHttp = require('chai-http');
 const fs = require('fs');
 const { describe, it, before } = require('mocha');
+const sinon = require('sinon');
 const server = require('../../../server');
 const { LinkPreview } = require('../../../models');
-const LinkPreviewLogic = require('../logic/linkPreviewLogic');
+const linkPreviewLogic = require('../logic/linkPreviewLogic');
+const { MESSAGES, MESSAGE_QUEUES } = require('../../queue/constants/queue');
+const queue = require('../../queue/logic/queueLogic');
 
 chai.should();
 chai.use(chaiHttp);
@@ -19,36 +22,38 @@ describe('LinkPreview', () => {
       where: {},
       truncate: true,
     });
-    await LinkPreviewLogic.generatePreview(requestUrl);
   });
 
   describe('LinkPreview API', () => {
-    it('it should GET all the linkpreview entries (empty)', done => {
-      chai.request(server).get('/linkpreview/').end((err, res) => {
-        res.should.have.status(200);
-        res.body.should.be.a('array');
-        done();
-      });
-    });
-
     let imageUrl;
 
-    it('it get link preview for aeternity.com', done => {
-      chai.request(server).get(`/linkpreview?url=${encodeURIComponent(requestUrl)}`).end((err, res) => {
-        res.should.have.status(200);
-        res.body.should.be.a('object');
-        res.body.should.have.property('id');
-        res.body.should.have.property('requestUrl', requestUrl);
-        res.body.should.have.property('title');
-        res.body.should.have.property('description');
-        res.body.should.have.property('lang');
-        res.body.should.have.property('image');
-        res.body.should.have.property('querySucceeded', true);
-        res.body.should.have.property('createdAt');
-        res.body.should.have.property('updatedAt');
-        imageUrl = res.body.image;
+    it('it get link preview for aeternity.com', async () => {
+      const dbResult = await linkPreviewLogic.generatePreview(requestUrl);
+      const preview = dbResult.toJSON();
+      preview.should.have.property('id');
+      preview.should.have.property('description', 'æternity is a public open source smart contract platform.');
+      preview.should.have.property('image');
+      preview.image.should.contain('/images/preview');
+      preview.should.have.property('lang', 'en');
+      preview.should.have.property('title', 'æternity - a blockchain for scalable, secure and decentralized æpps');
+      preview.should.have.property('url', 'https://aeternity.com');
+      preview.should.have.property('requestUrl', requestUrl);
+      preview.should.have.property('responseUrl', 'https://aeternity.com');
+      preview.should.have.property('querySucceeded', true);
+      preview.should.have.property('updatedAt');
+      preview.should.have.property('createdAt');
+      preview.should.have.property('failReason', null);
+      imageUrl = preview.image;
+    });
+
+    it('it should call the update function when receiving a mq item', done => {
+      const updateMock = sinon.stub(linkPreviewLogic, 'updateLinkpreviewDatabase').callsFake(async () => {});
+      queue.sendMessage(MESSAGE_QUEUES.LINKPREVIEW, MESSAGES.LINKPREVIEW.COMMANDS.UPDATE_DB);
+      setTimeout(() => {
+        updateMock.callCount.should.eql(1);
+        updateMock.restore();
         done();
-      });
+      }, 500);
     });
 
     it('it get an image for aeternity.com', done => {

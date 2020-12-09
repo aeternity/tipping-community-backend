@@ -5,6 +5,11 @@ const MESSAGE_QUEUES = {
   LINKPREVIEW: 'LINKPREVIEW',
 };
 
+if (process.env.NODE_ENV === 'test') {
+  MESSAGE_QUEUES.TEST = 'TEST';
+  MESSAGE_QUEUES.TEST_2 = 'TEST_2';
+}
+
 // TODO verify that events are correctly phrased or build automatic correction tool
 const MESSAGES = {
   CACHE: {
@@ -37,6 +42,26 @@ const MESSAGES = {
     },
   },
 };
+
+if (process.env.NODE_ENV === 'test') {
+  MESSAGES.TEST = {
+    COMMANDS: {
+      TEST_COMMAND: 'TEST.COMMANDS.TEST_COMMAND',
+      TEST_COMMAND_2: 'TEST.COMMANDS.TEST_COMMAND_2',
+    },
+    EVENTS: {
+      TEST_EVENT: 'TEST.EVENTS.TEST_EVENT',
+    },
+  };
+  MESSAGES.TEST_2 = {
+    COMMANDS: {
+      TEST_COMMAND: 'TEST_2.COMMANDS.TEST_COMMAND',
+    },
+    EVENTS: {
+      TEST_EVENT: 'TEST_2.EVENTS.TEST_EVENT',
+    },
+  };
+}
 
 module.exports = {
   MESSAGE_QUEUES,

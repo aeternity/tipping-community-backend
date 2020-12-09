@@ -44,7 +44,8 @@ describe('IPFS', () => {
       firstResult.should.have.property('size', size + 256);
     });
 
-    it('it should allow file pinning', async () => {
+    it('it should allow file pinning', async function () {
+      this.timeout(10000);
       await ipfs.pinFile(path);
       const pinned = await ipfs.getPinnedFiles();
       const foundResult = pinned.find(pinnedFile => pinnedFile.cid.toString() === path);

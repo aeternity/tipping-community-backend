@@ -52,4 +52,4 @@ process.env = {
 
 // RESET ALL QUEUES
 const queue = require('./modules/queue/logic/queueLogic')
-queue.resetAll()
+queue.clearRedisQueues().then(() => queue.init())

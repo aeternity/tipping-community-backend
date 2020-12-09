@@ -38,7 +38,7 @@ if (process.env.SENTRY_URL) {
 app.engine('handlebars', exphbs());
 app.set('view engine', 'handlebars');
 app.set('views', path.join(__dirname, './modules/blacklist/views'));
-// MIDDLWARES
+// MIDDLEWARES
 app.use(express.json()); // for parsing application/json
 
 process

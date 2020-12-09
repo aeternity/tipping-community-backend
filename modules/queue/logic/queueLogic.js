@@ -3,7 +3,7 @@ const { filter } = require('rxjs/operators');
 const RedisSMQ = require('rsmq');
 const { Subject } = require('rxjs');
 const logger = require('../../../utils/logger')(module);
-const { MESSAGE_QUEUES } = require('../constants/queue');
+const { MESSAGE_QUEUES, MESSAGES } = require('../constants/queue');
 
 const rsmq = new RedisSMQ({ host: process.env.REDIS_HOST, port: process.env.REDIS_PORT || 6379, ns: 'rsmq' });
 
@@ -43,9 +43,7 @@ class MessageQueue {
 
   async createQueue(qname) {
     if (!Object.values(MESSAGE_QUEUES).includes(qname)) throw new Error(`Queue name ${qname} is not a valid queue name. Update the enums.`);
-    if (!this.queues.map(queue => queue.name).includes(qname)) {
-      this.initQueueSubject(qname);
-    }
+    this.initQueueSubject(qname);
     const openQueues = await rsmq.listQueuesAsync();
     if (!openQueues.includes(qname)) {
       await rsmq.createQueueAsync({ qname, vt: 60 * 10 }); // 10 Minutes message receive timeout
@@ -71,13 +69,34 @@ class MessageQueue {
 
   async receiveMessage(qname) { return rsmq.receiveMessageAsync({ qname }); }
 
-  async sendMessage(qname, message) { return rsmq.sendMessageAsync({ qname, message }); }
+  async sendMessage(qname, message) {
+    const [messageQueueName, messageQueueType, messageQueueAction] = message.split('.');
+    if (!messageQueueName || !messageQueueType || !messageQueueAction) {
+      throw new Error(`Message ${message} does not follow required pattern QUEUE.TYPE.ACTION`);
+    }
+    if (messageQueueName !== qname) {
+      throw new Error(`Queue name in message ${message} does not match queue name ${qname}`);
+    }
+    if (!MESSAGES[qname][messageQueueType]) {
+      throw new Error(`Message type ${messageQueueType} is unknown in queue ${qname}`);
+    }
+    if (!MESSAGES[qname][messageQueueType][messageQueueAction]) {
+      throw new Error(`Message action ${messageQueueAction} is unknown in queue ${qname} with message type ${messageQueueType}`);
+    }
+    return rsmq.sendMessageAsync({ qname, message });
+  }
 
   async deleteMessage(qname, id) { return rsmq.deleteMessageAsync({ qname, id }); }
 
-  async resetAll() {
+  async clearRedisQueues() {
     const openQueues = await rsmq.listQueuesAsync();
     await Promise.all(openQueues.map(qname => rsmq.deleteQueueAsync({ qname })));
+  }
+
+  async resetAll() {
+    await this.clearRedisQueues();
+    this.queues.map(queue => queue.subject.complete());
+    this.queues = [];
     await this.init();
   }
 }

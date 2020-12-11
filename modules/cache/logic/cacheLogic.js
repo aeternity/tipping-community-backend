@@ -113,24 +113,23 @@ module.exports = class CacheLogic {
   }
 
   static async wordSaleDetails(address) {
-    const tokenAddress = cache.getOrSet(['wordSaleTokenAddress', address],
-      () => aeternity.wordSaleTokenAddress(address));
-    const totalSupply = cache.getOrSet(['fungibleTokenTotalSupply', await tokenAddress],
-      async () => aeternity.fungibleTokenTotalSupply(await tokenAddress), cache.shortCacheTime);
+    const wordSaleState = await cache.getOrSet(['wordSaleState', address],
+      () => aeternity.wordSaleState(address));
+    const totalSupply = cache.getOrSet(['fungibleTokenTotalSupply', wordSaleState.token],
+      async () => aeternity.fungibleTokenTotalSupply(wordSaleState.token), cache.shortCacheTime);
 
     const price = cache.getOrSet(['wordSalePrice', address],
       () => aeternity.wordSalePrice(address), cache.shortCacheTime);
-    const spread = cache.getOrSet(['wordSaleSpread', address],
-      () => aeternity.wordSaleSpread(address), cache.shortCacheTime);
 
     const [buy, sell] = await price;
     return {
       wordSaleAddress: address,
-      tokenAddress: await tokenAddress,
+      tokenAddress: wordSaleState.token,
       totalSupply: await totalSupply,
       buyPrice: buy,
       sellPrice: sell,
-      spread: await spread,
+      spread: wordSaleState.spread,
+      description: wordSaleState.description,
     };
   }
 
@@ -367,7 +366,7 @@ module.exports = class CacheLogic {
       () => aeternity.wordSaleTokenAddress(req.params.wordSale));
 
     await cache.del(['wordSalePrice', req.params.wordSale]);
-    await cache.del(['wordSaleSpread', req.params.wordSale]);
+    await cache.del(['wordSaleState', req.params.wordSale]);
     await cache.del(['fungibleTokenTotalSupply', tokenAddress]);
     await CacheLogic.wordSaleDetails(req.params.wordSale); // wait for cache update to let frontend know data availability
     if (res) res.send({ status: 'OK' });

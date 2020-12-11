@@ -151,14 +151,14 @@ class Aeternity {
     return this.wordSaleContracts[contractAddress].methods.get_token().then(res => res.decodedResult);
   }
 
+  async wordSaleState(contractAddress) {
+    await this.initWordSaleContractIfUnknown(contractAddress);
+    return this.wordSaleContracts[contractAddress].methods.get_state().then(res => res.decodedResult);
+  }
+
   async wordSalePrice(contractAddress) {
     await this.initWordSaleContractIfUnknown(contractAddress);
     return this.wordSaleContracts[contractAddress].methods.prices().then(res => res.decodedResult);
-  }
-
-  async wordSaleSpread(contractAddress) {
-    await this.initWordSaleContractIfUnknown(contractAddress);
-    return this.wordSaleContracts[contractAddress].methods.spread().then(res => res.decodedResult);
   }
 
   async wordSaleVotes(contractAddress) {

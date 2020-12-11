@@ -1,7 +1,5 @@
 'use strict';
 
-var Sequelize = require('sequelize');
-
 /**
  * Actions summary:
  *
@@ -16,79 +14,17 @@ var info = {
     "comment": ""
 };
 
-var migrationCommands = function(transaction) {
-    return [{
-        fn: "changeColumn",
-        params: [
-            "Notifications",
-            "status",
-            {
-                "type": Sequelize.ENUM('CREATED', 'PEEKED', 'READ'),
-                "field": "status",
-                "defaultValue": "CREATED",
-                "allowNull": false
-            },
-            {
-                transaction: transaction
-            }
-        ]
-    }];
-};
-var rollbackCommands = function(transaction) {
-    return [{
-        fn: "changeColumn",
-        params: [
-            "Notifications",
-            "status",
-            {
-                "type": Sequelize.ENUM('CREATED', 'READ'),
-                "field": "status",
-                "defaultValue": "CREATED",
-                "allowNull": false
-            },
-            {
-                transaction: transaction
-            }
-        ]
-    }];
-};
-
 module.exports = {
     pos: 0,
     useTransaction: true,
-    execute: function(queryInterface, Sequelize, _commands)
+    up: function(queryInterface)
     {
-        var index = this.pos;
-        function run(transaction) {
-            const commands = _commands(transaction);
-            return new Promise(function(resolve, reject) {
-                function next() {
-                    if (index < commands.length)
-                    {
-                        let command = commands[index];
-                        console.log("[#"+index+"] execute: " + command.fn);
-                        index++;
-                        queryInterface[command.fn].apply(queryInterface, command.params).then(next, reject);
-                    }
-                    else
-                        resolve();
-                }
-                next();
-            });
-        }
-        if (this.useTransaction) {
-            return queryInterface.sequelize.transaction(run);
-        } else {
-            return run(null);
-        }
+      return queryInterface.sequelize.query(`ALTER TYPE "enum_Notifications_status" ADD VALUE 'PEEKED'`);
     },
-    up: function(queryInterface, Sequelize)
+    down: function(queryInterface)
     {
-        return this.execute(queryInterface, Sequelize, migrationCommands);
-    },
-    down: function(queryInterface, Sequelize)
-    {
-        return this.execute(queryInterface, Sequelize, rollbackCommands);
+      const query = `DELETE FROM pg_enum WHERE enumlabel = 'PEEKED' AND enumtypid = ( SELECT oid FROM pg_type WHERE typname = 'enum_Notifications_status')`;
+      return queryInterface.sequelize.query(query);
     },
     info: info
 };

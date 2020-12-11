@@ -52,7 +52,7 @@ router.get('/user/:author', signatureAuth, NotificationLogic.getForUser);
 
 /**
  * @swagger
- * /notifications/:
+ * /notifications:
  *   post:
  *     tags:
  *       - notifications

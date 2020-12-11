@@ -72,4 +72,4 @@ jobs:
       - name: Create Swagger File
         run: npm run swagger:create
       - name: Lint Swagger File
-        run: npx @redocly/openapi-cli lint swagger.json --format stylish
+        run: npm run swagger:lint

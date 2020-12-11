@@ -310,15 +310,17 @@ describe('Notifications', () => {
   });
   describe('Modify Notifications', () => {
     let createdNotification;
+    let createdNotification2;
     before(async () => {
       await Notification.destroy({
         where: {},
         truncate: true,
       });
       createdNotification = await Notification.create(testData);
+      createdNotification2 = await Notification.create(testData);
     });
 
-    it('it should MODIFY a single notifications for a user', done => {
+    it('it should MODIFY a single notification for a user', done => {
       performSignedJSONRequest(server, 'post', `/notification/${createdNotification.id}`, {
         author: publicKey,
         status: NOTIFICATION_STATES.READ,
@@ -331,6 +333,38 @@ describe('Notifications', () => {
           res.body.should.have.property('entityType', ENTITY_TYPES.COMMENT);
           res.body.should.have.property('type', NOTIFICATION_TYPES.COMMENT_ON_COMMENT);
           res.body.should.have.property('status', NOTIFICATION_STATES.READ);
+          done();
+        });
+    });
+
+    it('it should MODIFY a batch of notifications for a user', done => {
+      performSignedJSONRequest(server, 'post', '/notification/', {
+        author: publicKey,
+        status: NOTIFICATION_STATES.CREATED,
+        ids: [createdNotification.id, createdNotification2.id],
+      })
+        .then(async ({ res }) => {
+          res.should.have.status(200);
+          res.body.should.have.length(2);
+          res.body.should.contain(createdNotification.id);
+          res.body.should.contain(createdNotification2.id);
+          const dbNotification = await Notification.findOne({
+            where: {
+              id: createdNotification.id,
+            },
+            raw: true,
+          });
+          dbNotification.should.be.a('object');
+          dbNotification.should.have.property('status', NOTIFICATION_STATES.CREATED);
+
+          const dbNotification2 = await Notification.findOne({
+            where: {
+              id: createdNotification2.id,
+            },
+            raw: true,
+          });
+          dbNotification2.should.be.a('object');
+          dbNotification2.should.have.property('status', NOTIFICATION_STATES.CREATED);
           done();
         });
     });

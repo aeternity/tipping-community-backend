@@ -50,9 +50,15 @@ const actions = [
   },
   {
     method: 'POST',
-    path: '/notification/?',
+    path: /\/notification\/\d+/,
     actionName: 'MODIFY_NOTIFICATION',
     relevantFields: ['author', 'status'],
+  },
+  {
+    method: 'POST',
+    path: /\/notification\/?$/,
+    actionName: 'MODIFY_NOTIFICATION',
+    relevantFields: ['author', 'status', 'ids'],
   },
   {
     method: 'POST',

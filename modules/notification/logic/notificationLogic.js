@@ -88,6 +88,11 @@ module.exports = class NotificationLogic {
     }
   }
 
+  static async bulkUpdateNotificationStatus(ids, status) {
+    const results = await Notification.findAll({ where: { id: ids } });
+    return Notification.bulkCreate(results.map(notification => ({ ...notification.toJSON(), status })), { updateOnDuplicate: ['status'] });
+  }
+
   static async handleNewTip(tip) {
     // TIP ON COMMENT
     const commentMatch = tip.url && tip.url.match(/https:\/\/superhero\.com\/tip\/(\d+(?:_v\d+)?)\/comment\/(\d+)/);

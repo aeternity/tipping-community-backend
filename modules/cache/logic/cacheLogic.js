@@ -128,8 +128,8 @@ module.exports = class CacheLogic {
       wordSaleAddress: address,
       tokenAddress: await tokenAddress,
       totalSupply: await totalSupply,
-      buyPrice: 1 / buy,
-      sellPrice: 1 / sell,
+      buyPrice: buy,
+      sellPrice: sell,
       spread: await spread,
     };
   }

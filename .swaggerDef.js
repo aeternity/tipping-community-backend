@@ -10,7 +10,7 @@ module.exports = {
     }
   },
   servers: [
-    { url: 'https://raendom-backend.z52da5wt.xyz' }
+    { description: "Testnet Server", url: 'https://testnet.superhero.aeternity.art' }
   ],
   components: {}, // REQUIRED
   openapi: '3.0.3'

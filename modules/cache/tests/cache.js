@@ -446,7 +446,8 @@ describe('Cache', () => {
       checkCachedRoute('/cache/stats', 'object', done);
     });
 
-    it('it should update the stats when the tip cache is invalidated', async () => {
+    it('it should update the stats when the tip cache is invalidated', async function () {
+      this.timeout(10000);
       await cache.del(['getTips']);
       const stub = sinon.stub(CacheLogic, 'statsForTips').callsFake(() => []);
       // Fake keep hot

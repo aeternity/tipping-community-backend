@@ -29,7 +29,7 @@ process.env = {
   REDIS_URL: 'redis://localhost:6379',
   IPFS_URL: 'http://localhost:5001',
   ORACLE_CONTRACT_ADDRESS: 'ct_2PbBVGroJ2G618tHbWEWRrrxxf1BAn7Qt7BoNcLh3LqsSck8Lu',
-  MIDDLEWARE_URL: 'https://testnet.aeternity.io/mdw/',
+  MIDDLEWARE_URL: 'https://testnet.aeternity.io/mdw',
   TOKEN_REGISTRY_ADDRESS: 'ct_2Ga3mNT8er2zYjGKx7tJggn9nVnYt5UzmH9x9irRV4ayg4sfLL',
   CONTRACT_V1_ADDRESS: 'ct_2Cvbf3NYZ5DLoaNYAU71t67DdXLHeSXhodkSNifhgd7Xsw28Xd',
   CONTRACT_V2_ADDRESS: 'ct_2ZEoCKcqXkbz2uahRrsWeaPooZs9SdCv6pmC4kc55rD4MhqYSu',

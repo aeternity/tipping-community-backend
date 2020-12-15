@@ -19,7 +19,7 @@ services:
       - CONTRACT_V3_ADDRESS=ct_2Hyt9ZxzXra5NAzhePkRsDPDWppoatVD7CtHnUoHVbuehwR8Nb
       - TOKEN_REGISTRY_ADDRESS=ct_2n76BQCN3zNEjuEvHFNZtgyWPc5zizy47wNrUT3RHP2MrPKhbq
       - ORACLE_CONTRACT_ADDRESS=ct_7wqP18AHzyoqymwGaqQp8G2UpzBCggYiq7CZdJiB71VUsLpR4
-      - MIDDLEWARE_URL=https://mainnet.aeternity.io/mdw/
+      - MIDDLEWARE_URL=https://mainnet.aeternity.io/mdw
       - IPFS_URL=http://ipfs:5001
       - PUBLIC_KEY=ak_yrVCHP97UWfCRGMCaojBjdSKuXD3yyC8NkzkReURd4t3jbCQW # use an account with some tokens here
       - PRIVATE_KEY=f38eecf78a521fcbf34d253b6681f69e0f64d99526d63e18f205e03cf30dd1248117982ba9504170f1f40c66c137c1823244dc7795950a85807793626e69ebce

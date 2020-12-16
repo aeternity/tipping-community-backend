@@ -43,7 +43,10 @@ module.exports = class TokenCacheLogic {
   static async wordSaleDetailsByToken(req, res) {
     if (!req.query.address) return res.status(400).send('address query missing');
 
-    return res.send(await CacheLogic.wordSaleDetailsByToken(req.query.address));
+    const data = await CacheLogic.wordSaleDetailsByToken(req.query.address);
+    if (!data) return res.status(404).send('no word sale information for address');
+
+    return res.send(data);
   }
 
   static async wordSaleVotesDetails(req, res) {

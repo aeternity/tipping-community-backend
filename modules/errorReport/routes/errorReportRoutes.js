@@ -31,7 +31,6 @@ const router = new Router();
  */
 router.get('/', basicAuth, Logic.getAllItems);
 
-// Restricted api routes
 /**
  * @swagger
  * /errorreport:

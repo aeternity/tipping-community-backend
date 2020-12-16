@@ -129,7 +129,10 @@ class Aeternity {
 
   async fetchOracleState() {
     if (!this.client) throw new Error('Init sdk first');
-    return this.oracleContract.methods.get_state().then(res => res.decodedResult);
+    return this.oracleContract.methods.get_state().then(res => res.decodedResult).catch(e => {
+      logger.error(e.message);
+      return [];
+    });
   }
 
   static addAdditionalTipsData = tips => tips.map(tip => ({
@@ -147,15 +150,23 @@ class Aeternity {
 
   async fetchTips() {
     if (!this.client) throw new Error('Init sdk first');
-    const fetchV1State = this.contractV1.methods.get_state();
-    const fetchV2State = process.env.CONTRACT_V2_ADDRESS ? this.contractV2.methods.get_state() : Promise.resolve(null);
-    const fetchV3State = process.env.CONTRACT_V3_ADDRESS ? this.contractV3.methods.get_state() : Promise.resolve(null);
-    const { tips } = tippingContractUtil.getTipsRetips(...[await fetchV1State, await fetchV2State, await fetchV3State].filter(state => state));
-    return Aeternity.addAdditionalTipsData(tips);
+    try {
+      const fetchV1State = this.contractV1.methods.get_state();
+      const fetchV2State = process.env.CONTRACT_V2_ADDRESS ? this.contractV2.methods.get_state() : Promise.resolve(null);
+      const fetchV3State = process.env.CONTRACT_V3_ADDRESS ? this.contractV3.methods.get_state() : Promise.resolve(null);
+      const { tips } = tippingContractUtil.getTipsRetips(...[await fetchV1State, await fetchV2State, await fetchV3State].filter(state => state));
+      return Aeternity.addAdditionalTipsData(tips);
+    } catch (e) {
+      logger.error(e.message);
+      return [];
+    }
   }
 
   async fetchTokenRegistryState() {
-    return this.tokenRegistry.methods.get_state().then(r => r.decodedResult);
+    return this.tokenRegistry.methods.get_state().then(r => r.decodedResult).catch(e => {
+      logger.error(e.message);
+      return [];
+    });
   }
 
   async fetchTokenMetaInfo(contractAddress) {
@@ -165,13 +176,16 @@ class Aeternity {
       );
     }
     return this.tokenContracts[contractAddress].methods.meta_info().then(r => r.decodedResult).catch(e => {
-      logger.warn(e.message);
+      logger.error(e.message);
       return null;
     });
   }
 
   async addTokenToRegistry(contractAddress) {
-    return this.tokenRegistry.methods.add_token(contractAddress);
+    return this.tokenRegistry.methods.add_token(contractAddress).catch(e => {
+      logger.error(e.message);
+      return [];
+    });
   }
 
   // TODO optimize cache generation for account balances
@@ -181,7 +195,12 @@ class Aeternity {
         TOKEN_CONTRACT_INTERFACE, { contractAddress },
       );
     }
-    return this.tokenContracts[contractAddress].methods.balances().then(r => r.decodedResult);
+    return this.tokenContracts[contractAddress].methods.balances()
+      .then(r => r.decodedResult)
+      .catch(e => {
+        logger.error(e.message);
+        return null;
+      });
   }
 
   async checkPreClaimProperties(address, url, trace) {

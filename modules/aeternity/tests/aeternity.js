@@ -9,7 +9,7 @@ const sinon = require('sinon');
 const ae = require('../logic/aeternity');
 const Trace = require('../../payfortx/logic/traceLogic');
 
-chai.should();
+const should = chai.should();
 chai.use(chaiHttp);
 // Our parent block
 describe('Aeternity', () => {
@@ -153,7 +153,6 @@ describe('Aeternity', () => {
       }
     });
   });
-
   describe('Tokens', () => {
     let sandbox;
     let tokenContractAddress;
@@ -207,6 +206,67 @@ describe('Aeternity', () => {
           intBalance.should.be.greaterThan(0);
         }
       }
+    });
+  });
+  describe('Resilience', () => {
+    before(async function () {
+      this.timeout(10000);
+      await ae.init();
+    });
+    it('should handle a non responding compiler during runtime', async function () {
+      this.timeout(10000);
+      ae.client.selectedNode.instance.url = 'https://localhost';
+      const staticStub = sinon.stub(ae.client, 'contractCallStatic').callsFake(() => { throw new Error('NETWORK ERROR'); });
+      const callStub = sinon.stub(ae.client, 'contractCall').callsFake(() => { throw new Error('NETWORK ERROR'); });
+      const tips = await ae.fetchTips();
+      tips.should.be.an('array');
+      tips.should.have.length(0);
+      const tokenBalances = await ae.fetchTokenAccountBalances('ct_2bCbmU7vtsysL4JiUdUZjJJ98LLbJWG1fRtVApBvqSFEM59D6W');
+      should.equal(tokenBalances, null);
+      const trace = new Trace();
+      const preClaim = await ae.checkPreClaimProperties('ak_test', 'http://test', trace);
+      should.equal(preClaim.toFixed(0), '0');
+
+      const registryState = await ae.fetchTokenRegistryState();
+      registryState.should.be.an('array');
+      registryState.should.have.length(0);
+
+      staticStub.restore();
+      callStub.restore();
+    });
+
+    it('should crash for a non responding node on startup', async function () {
+      this.timeout(10000);
+      const originalUrl = process.env.NODE_URL;
+      process.env.NODE_URL = 'https://localhost';
+      ae.client = null;
+      let error = null;
+      try {
+        await ae.init();
+      } catch (e) {
+        error = e.message;
+      }
+      error.should.contain('connect ECONNREFUSED 127.0.0.1:443');
+      process.env.NODE_URL = originalUrl;
+    });
+    it('should crash for a non responding compiler on startup', async function () {
+      this.timeout(10000);
+      const originalUrl = process.env.COMPILER_URL;
+      process.env.COMPILER_URL = 'https://localhost';
+      ae.client = null;
+      let error = null;
+      try {
+        await ae.init();
+      } catch (e) {
+        error = e.message;
+      }
+      error.should.contain('Compiler not defined');
+      process.env.COMPILER_URL = originalUrl;
+    });
+    after(async function () {
+      this.timeout(10000);
+      ae.client = null;
+      await ae.init();
     });
   });
 });

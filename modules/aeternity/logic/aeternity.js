@@ -13,8 +13,8 @@ const ORACLE_SERVICE_INTERFACE = require('tipping-oracle-service/OracleServiceIn
 const TOKEN_CONTRACT_INTERFACE = require('aeternity-fungible-token/FungibleTokenFullInterface.aes');
 const TOKEN_REGISTRY = require('token-registry/TokenRegistry.aes');
 const WORD_REGISTRY_INTERFACE = require('wordbazaar-contracts/WordRegistry.aes');
-const WORD_SALE_INTERFACE = require('wordbazaar-contracts/TokenSale.aes');
-const TOKEN_VOTING_CONTRACT = require('wordbazaar-contracts/TokenVoting.aes');
+const WORD_SALE_INTERFACE = require('wordbazaar-contracts/TokenSaleInterface.aes');
+const TOKEN_VOTING_CONTRACT = require('wordbazaar-contracts/TokenVotingInterface.aes');
 
 const logger = require('../../../utils/logger')(module);
 const { topicsRegex } = require('../utils/tipTopicUtil');

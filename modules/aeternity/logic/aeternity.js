@@ -11,8 +11,8 @@ const TIPPING_V2_INTERFACE = require('tipping-contract/Tipping_v2_Interface.aes'
 const TIPPING_V3_INTERFACE = require('tipping-contract/Tipping_v3_Interface.aes');
 const ORACLE_SERVICE_INTERFACE = require('tipping-oracle-service/OracleServiceInterface.aes');
 const TOKEN_CONTRACT_INTERFACE = require('aeternity-fungible-token/FungibleTokenFullInterface.aes');
-const TOKEN_REGISTRY = require('token-registry/TokenRegistry.aes');
-const WORD_REGISTRY_INTERFACE = require('wordbazaar-contracts/WordRegistry.aes');
+const TOKEN_REGISTRY = require('token-registry/TokenRegistryInterface.aes');
+const WORD_REGISTRY_INTERFACE = require('wordbazaar-contracts/WordRegistryInterface.aes');
 const WORD_SALE_INTERFACE = require('wordbazaar-contracts/TokenSaleInterface.aes');
 const TOKEN_VOTING_CONTRACT = require('wordbazaar-contracts/TokenVotingInterface.aes');
 

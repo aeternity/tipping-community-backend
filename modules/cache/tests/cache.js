@@ -54,8 +54,10 @@ describe('Cache', () => {
     it('it should GET all cache items', function (done) {
       this.timeout(15000);
       const messageStub = sinon.stub(queue, 'sendMessage').callsFake(async () => {});
-      checkCachedRoute('/cache/tips', 'array', done);
-      messageStub.restore();
+      checkCachedRoute('/cache/tips', 'array', () => {
+        messageStub.restore();
+        done();
+      });
     });
 
     it('it should GET all cache items with filters', async () => {
@@ -272,6 +274,17 @@ describe('Cache', () => {
     it(`it should GET all user stats for a single user in less than ${minimalTimeout}ms`, function (done) {
       this.timeout(minimalTimeout);
       checkCachedRoute('/cache/userStats?address=ak_fUq2NesPXcYZ1CcqBcGC3StpdnQw3iVxMA3YSeCNAwfN4myQk', 'object', done);
+    });
+
+    it('it should GET all chainnames cache items ', done => {
+      cache.del(['fetchChainNames']).then(() => {
+        const messageStub = sinon.stub(queue, 'sendMessage').callsFake(async () => {});
+        checkCachedRoute('/cache/chainnames', 'object', () => {
+          sinon.assert.calledWith(messageStub, MESSAGE_QUEUES.CACHE, MESSAGES.CACHE.EVENTS.RENEWED_CHAINNAMES);
+          messageStub.restore();
+          done();
+        });
+      });
     });
 
     it(`it should GET all chainnames cache items in less than ${minimalTimeout}ms`, function (done) {

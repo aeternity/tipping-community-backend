@@ -59,7 +59,7 @@
     "swagger-ui-express": "^4.1.5",
     "tipping-contract": "github:aeternity/tipping-contract#develop",
     "tipping-oracle-service": "github:aeternity/tipping-oracle-service",
-    "token-registry": "github:thepiwo/token-registry",
+    "token-registry": "github:aeternity/token-registry",
     "uuid": "^8.3.1",
     "winston": "^3.3.3",
     "winston-daily-rotate-file": "^4.5.0",

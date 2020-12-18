@@ -61,9 +61,7 @@ module.exports = class CacheLogic {
       const tips = await aeternity.fetchTips();
       // Renew Stats
       await cache.del(['fetchStats']);
-
       await queue.sendMessage(MESSAGE_QUEUES.CACHE, MESSAGES.CACHE.EVENTS.RENEWED_TIPS);
-
       return tips;
     }, cache.shortCacheTime);
   }
@@ -240,7 +238,11 @@ module.exports = class CacheLogic {
   }
 
   static async fetchChainNames() {
-    return cache.getOrSet(['fetchChainNames'], async () => MdwLogic.getChainNames(), cache.shortCacheTime);
+    return cache.getOrSet(['fetchChainNames'], async () => {
+      const chainNames = await MdwLogic.getChainNames();
+      await queue.sendMessage(MESSAGE_QUEUES.CACHE, MESSAGES.CACHE.EVENTS.RENEWED_CHAINNAMES);
+      return chainNames;
+    }, cache.shortCacheTime);
   }
 
   static async fetchTokenInfos() {

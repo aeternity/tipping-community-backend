@@ -3,6 +3,7 @@ const BackupLogic = require('../../backup/logic/backupLogic');
 const aeternity = require('../../aeternity/logic/aeternity');
 const cache = require('../../cache/utils/cache');
 const imageLogic = require('../../media/logic/imageLogic');
+const CacheLogic = require('../../cache/logic/cacheLogic');
 const { Profile } = require('../../../models');
 const { IPFS_TYPES } = require('../../backup/constants/ipfsTypes');
 
@@ -55,22 +56,48 @@ module.exports = class ProfileLogic {
       if (coverImage && coverImage[0].filename !== null) {
         await BackupLogic.backupImageToIPFS(coverImage[0].filename, author, IPFS_TYPES.COVER_IMAGE);
       }
-      return ProfileLogic.getSingleItem(req, res);
+      return res.send(ProfileLogic.updateProfileForExternalAnswer(await ProfileLogic.getSingleItem(author)));
     } catch (e) {
       logger.error(e);
       return res.status(500).send(e.message);
     }
   }
 
-  static async getSingleItem(req, res) {
-    const author = req.body.author ? req.body.author : req.params.author;
+  // TODO run this via message queue when chain names are updated
+  static async verifyPreferredChainName(chainNames, profile) {
+    if (profile.preferredChainName && (
+      !chainNames[profile.author] || !chainNames[profile.author].includes(profile.preferredChainName)
+    )) {
+      await Profile.update({ preferredChainName: null }, { where: { author: profile.author } });
+      return { ...profile, preferredChainName: null };
+    }
+    return profile;
+  }
+
+  static async getSingleItem(author) {
     let result = await Profile.findOne({ where: { author } });
-    if (!result) return res.sendStatus(404);
-    result = result.toJSON();
-    result.image = result.image ? `/images/${result.image}` : false;
-    result.coverImage = result.coverImage ? `/images/${result.coverImage}` : false;
-    result.referrer = !!result.referrer;
-    return res.send(result);
+    if (result) {
+      result = result.toJSON();
+      const chainNames = await CacheLogic.fetchChainNames();
+      await ProfileLogic.verifyPreferredChainName(chainNames, result);
+    }
+    return result;
+  }
+
+  static updateProfileForExternalAnswer(profile) {
+    return {
+      ...profile,
+      image: profile.image ? `/images/${profile.image}` : false,
+      coverImage: profile.coverImage ? `/images/${profile.coverImage}` : false,
+      referrer: !!profile.referrer,
+    };
+  }
+
+  static async getAllProfiles() {
+    const allProfiles = await Profile.findAll({ raw: true });
+
+    const chainNames = await CacheLogic.fetchChainNames();
+    return allProfiles.asyncMap(profile => ProfileLogic.verifyPreferredChainName(chainNames, profile));
   }
 
   // LEGACY

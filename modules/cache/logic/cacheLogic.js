@@ -11,7 +11,6 @@ const { getTipTopics } = require('../../aeternity/utils/tipTopicUtil');
 const Util = require('../../aeternity/utils/util');
 const MdwLogic = require('../../aeternity/logic/mdwLogic');
 const { MESSAGES, MESSAGE_QUEUES } = require('../../queue/constants/queue');
-const { Profile } = require('../../../models');
 
 const logger = require('../../../utils/logger')(module);
 
@@ -241,34 +240,7 @@ module.exports = class CacheLogic {
   }
 
   static async fetchChainNames() {
-    return cache.getOrSet(['fetchChainNames'], async () => {
-      const result = await MdwLogic.getChainNames();
-      const allProfiles = await Profile.findAll({ raw: true });
-
-      return result.reduce((acc, chainName) => {
-        if (!chainName.info.pointers || !chainName.info.pointers.account_pubkey) return acc;
-
-        const pubkey = chainName.info.pointers.account_pubkey;
-        if (!pubkey) return acc;
-
-        // already found a chain name
-        if (acc[pubkey]) {
-          // shorter always replaces
-          if (chainName.name.length < acc[pubkey].length) acc[pubkey] = chainName.name;
-          // equal length replaces if alphabetically earlier
-          if (chainName.name.length === acc[pubkey].length && chainName.name < acc[pubkey]) acc[pubkey] = chainName.name;
-        } else {
-          acc[pubkey] = chainName.name;
-        }
-
-        const currentProfile = allProfiles.find(profile => profile.author === pubkey);
-        if (currentProfile && currentProfile.preferredChainName) {
-          acc[pubkey] = currentProfile.preferredChainName;
-        }
-
-        return acc;
-      }, {});
-    }, cache.shortCacheTime);
+    return cache.getOrSet(['fetchChainNames'], async () => MdwLogic.getChainNames(), cache.shortCacheTime);
   }
 
   static async fetchTokenInfos() {

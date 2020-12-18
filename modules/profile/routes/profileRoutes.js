@@ -43,7 +43,12 @@ const upload = multer({ storage });
  *             schema:
  *               $ref: '#/components/schemas/Profile'
  */
-router.get('/:author', ProfileLogic.getSingleItem);
+router.get('/:author', async (req, res) => {
+  const author = req.body.author ? req.body.author : req.params.author;
+  const result = await ProfileLogic.getSingleItem(author);
+  if (!result) return res.sendStatus(404);
+  return res.send(ProfileLogic.updateProfileForExternalAnswer(result));
+});
 /**
  * @swagger
  * /profile/{author}:

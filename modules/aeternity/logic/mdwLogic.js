@@ -67,10 +67,26 @@ module.exports = class MdwLogic {
   }
 
   static async getChainNames() {
-    return this.iterateMdw(null, `names/active?limit=${LIMIT}`).catch(e => {
+    const result = await this.iterateMdw(null, `names/active?limit=${LIMIT}`).catch(e => {
       logger.error(`Could not fetch names from middleware: ${e.message}`);
       Sentry.captureException(e);
       return [];
     });
+    return result
+      .filter(chainName => !chainName.info.pointers || !chainName.info.pointers.account_pubkey)
+      .reduce((acc, chainName) => {
+        const pubkey = chainName.info.pointers.account_pubkey;
+
+        acc[pubkey] = acc[pubkey] || [];
+        acc[pubkey].push(chainName.name);
+        acc[pubkey].sort((name1, name2) => {
+          // shorter always replaces
+          const lengthDiff = name1.length - name2.length;
+          if (lengthDiff !== 0) return lengthDiff;
+          // equal length replaces if alphabetically earlier
+          return name1.localeCompare(name2);
+        });
+        return acc;
+      }, {});
   }
 };

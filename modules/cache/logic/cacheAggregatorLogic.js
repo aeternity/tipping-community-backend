@@ -5,14 +5,15 @@ const CommentLogic = require('../../comment/logic/commentLogic');
 const BlacklistLogic = require('../../blacklist/logic/blacklistLogic');
 const tipLogic = require('../../tip/logic/tipLogic');
 const TipOrderLogic = require('../../tip/logic/tiporderLogic');
+const ProfileLogic = require('../../profile/logic/profileLogic');
 
 class CacheAggregatorLogic {
   async getAllTips(blacklist = true) {
     const keys = ['CacheLogic.getAllTips'].concat(blacklist ? ['blacklisted'] : ['all']);
     return cache.getOrSet(keys, async () => {
-      const [allTips, tipsPreview, chainNames, commentCounts, blacklistedIds, localTips] = await Promise.all([
+      const [allTips, tipsPreview, chainNames, commentCounts, blacklistedIds, localTips, profiles] = await Promise.all([
         CacheLogic.getTips(), LinkPreviewLogic.fetchAllLinkPreviews(), CacheLogic.fetchChainNames(),
-        CommentLogic.fetchCommentCountForTips(), BlacklistLogic.getBlacklistedIds(), tipLogic.fetchAllLocalTips(),
+        CommentLogic.fetchCommentCountForTips(), BlacklistLogic.getBlacklistedIds(), tipLogic.fetchAllLocalTips(), ProfileLogic.getAllProfiles(),
       ]);
 
       let tips = allTips;
@@ -40,7 +41,11 @@ class CacheAggregatorLogic {
 
       // add chain names for each tip sender
       if (chainNames) {
-        tips = tips.map(tip => ({ ...tip, chainName: chainNames[tip.sender] }));
+        tips = tips.map(tip => {
+          const currentProfile = profiles.find(profile => profile.author === tip.sender);
+          if (currentProfile && currentProfile.preferredChainName) return ({ ...tip, chainName: currentProfile.preferredChainName });
+          return ({ ...tip, chainName: chainNames[tip.sender] ? chainNames[tip.sender][0] : undefined });
+        });
       }
 
       // add comment count to each tip

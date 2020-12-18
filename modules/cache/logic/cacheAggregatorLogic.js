@@ -5,7 +5,7 @@ const CommentLogic = require('../../comment/logic/commentLogic');
 const BlacklistLogic = require('../../blacklist/logic/blacklistLogic');
 const tipLogic = require('../../tip/logic/tipLogic');
 const TipOrderLogic = require('../../tip/logic/tiporderLogic');
-const ProfileLogic = require('../../profile/logic/profileLogic');
+const profileLogic = require('../../profile/logic/profileLogic');
 
 class CacheAggregatorLogic {
   async getAllTips(blacklist = true) {
@@ -13,7 +13,7 @@ class CacheAggregatorLogic {
     return cache.getOrSet(keys, async () => {
       const [allTips, tipsPreview, chainNames, commentCounts, blacklistedIds, localTips, profiles] = await Promise.all([
         CacheLogic.getTips(), LinkPreviewLogic.fetchAllLinkPreviews(), CacheLogic.fetchChainNames(),
-        CommentLogic.fetchCommentCountForTips(), BlacklistLogic.getBlacklistedIds(), tipLogic.fetchAllLocalTips(), ProfileLogic.getAllProfiles(),
+        CommentLogic.fetchCommentCountForTips(), BlacklistLogic.getBlacklistedIds(), tipLogic.fetchAllLocalTips(), profileLogic.getAllProfiles(),
       ]);
 
       let tips = allTips;

@@ -23,6 +23,15 @@ class MessageBroker {
     }, [
       { queueName: MESSAGE_QUEUES.LINKPREVIEW, message: MESSAGES.LINKPREVIEW.COMMANDS.UPDATE_DB },
     ]);
+
+    // S: UPDATED CHAIN NAMES
+    // T: UPDATE PREFERRED CHAIN NAMES
+    this.setupForwarding({
+      queueName: MESSAGE_QUEUES.CACHE,
+      message: MESSAGES.CACHE.EVENTS.RENEWED_CHAINNAMES,
+    }, [
+      { queueName: MESSAGE_QUEUES.PROFILE, message: MESSAGES.PROFILE.COMMANDS.UPDATE_PREFERRED_CHAIN_NAMES },
+    ]);
   }
 
   setupForwarding(source, targets) {

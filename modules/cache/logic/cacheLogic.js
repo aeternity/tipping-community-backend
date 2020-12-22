@@ -138,7 +138,7 @@ module.exports = class CacheLogic {
     const wordDetails = await wordRegistryData.tokens.asyncMap(([, wordSale]) => CacheLogic.wordSaleDetails(wordSale));
     return wordDetails.find(sale => sale.tokenAddress === address);
   }
-
+// TODO trigger these via message queue
   static async wordSaleVotesDetails(address) {
     const votes = await cache.getOrSet(['wordSaleVotes', address],
       () => aeternity.wordSaleVotes(address), cache.shortCacheTime);

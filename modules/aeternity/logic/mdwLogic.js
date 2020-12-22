@@ -1,4 +1,5 @@
 const axios = require('axios');
+const Sentry = require('@sentry/node');
 const logger = require('../../../utils/logger')(module);
 
 const LIMIT = 100; // max 1000
@@ -60,6 +61,7 @@ module.exports = class MdwLogic {
       return result;
     } catch (e) {
       logger.error(`Could not fetch events from middleware: ${e.message}`);
+      Sentry.captureException(e);
       return [];
     }
   }
@@ -67,6 +69,7 @@ module.exports = class MdwLogic {
   static async getChainNames() {
     return this.iterateMdw(null, `names/active?limit=${LIMIT}`).catch(e => {
       logger.error(`Could not fetch names from middleware: ${e.message}`);
+      Sentry.captureException(e);
       return [];
     });
   }

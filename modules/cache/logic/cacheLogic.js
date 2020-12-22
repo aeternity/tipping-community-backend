@@ -133,13 +133,14 @@ module.exports = class CacheLogic {
     };
   }
 
-  // TODO cache the result of this indefinetly
+  // TODO cache the result of this indefinetly (not all, only not changing info)
   static async wordSaleDetailsByToken(address) {
     const wordRegistryData = await CacheLogic.getWordRegistryData();
     const wordDetails = await wordRegistryData.tokens.asyncMap(([, wordSale]) => CacheLogic.wordSaleDetails(wordSale));
     return wordDetails.find(sale => sale.tokenAddress === address);
   }
-// TODO trigger these via message queue
+
+  // TODO trigger these via message queue
   static async wordSaleVotesDetails(address) {
     const votes = await cache.getOrSet(['wordSaleVotes', address],
       () => aeternity.wordSaleVotes(address), cache.shortCacheTime);

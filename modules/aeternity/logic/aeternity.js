@@ -2,6 +2,7 @@ const { Universal, Node, MemoryAccount } = require('@aeternity/aepp-sdk');
 const requireESM = require('esm')(module); // use to handle es6 import/export
 const tippingContractUtil = require('tipping-contract/util/tippingContractUtil');
 const BigNumber = require('bignumber.js');
+const Sentry = require('@sentry/node');
 
 const { decodeEvents, SOPHIA_TYPES } = requireESM('@aeternity/aepp-sdk/es/contract/aci/transformation');
 
@@ -158,6 +159,7 @@ class Aeternity {
       return Aeternity.addAdditionalTipsData(tips);
     } catch (e) {
       logger.error(e.message);
+      Sentry.captureException(e);
       return [];
     }
   }
@@ -177,6 +179,7 @@ class Aeternity {
     }
     return this.tokenContracts[contractAddress].methods.meta_info().then(r => r.decodedResult).catch(e => {
       logger.error(e.message);
+      Sentry.captureException(e);
       return null;
     });
   }
@@ -184,6 +187,7 @@ class Aeternity {
   async addTokenToRegistry(contractAddress) {
     return this.tokenRegistry.methods.add_token(contractAddress).catch(e => {
       logger.error(e.message);
+      Sentry.captureException(e);
       return [];
     });
   }
@@ -199,6 +203,7 @@ class Aeternity {
       .then(r => r.decodedResult)
       .catch(e => {
         logger.error(e.message);
+        Sentry.captureException(e);
         return null;
       });
   }

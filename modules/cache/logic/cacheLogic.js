@@ -133,6 +133,7 @@ module.exports = class CacheLogic {
     };
   }
 
+  // TODO cache the result of this indefinetly
   static async wordSaleDetailsByToken(address) {
     const wordRegistryData = await CacheLogic.getWordRegistryData();
     const wordDetails = await wordRegistryData.tokens.asyncMap(([, wordSale]) => CacheLogic.wordSaleDetails(wordSale));

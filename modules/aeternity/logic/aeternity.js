@@ -132,6 +132,7 @@ class Aeternity {
     if (!this.client) throw new Error('Init sdk first');
     return this.oracleContract.methods.get_state().then(res => res.decodedResult).catch(e => {
       logger.error(e.message);
+      Sentry.captureException(e);
       return [];
     });
   }
@@ -167,6 +168,7 @@ class Aeternity {
   async fetchTokenRegistryState() {
     return this.tokenRegistry.methods.get_state().then(r => r.decodedResult).catch(e => {
       logger.error(e.message);
+      Sentry.captureException(e);
       return [];
     });
   }

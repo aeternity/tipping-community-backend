@@ -7,7 +7,7 @@ package-lock.json
 database.sqlite
 .env
 /logs/*.log
-images/
+./images/
 /traces/*.json
 docker-compose.override.yml
 swagger.json

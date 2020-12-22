@@ -1,5 +1,43 @@
 {
     "tables": {
+        "IPFSEntries": {
+            "tableName": "IPFSEntries",
+            "schema": {
+                "id": {
+                    "allowNull": false,
+                    "primaryKey": true,
+                    "autoIncrement": true,
+                    "field": "id",
+                    "seqType": "Sequelize.INTEGER"
+                },
+                "hash": {
+                    "allowNull": false,
+                    "field": "hash",
+                    "seqType": "Sequelize.STRING"
+                },
+                "type": {
+                    "allowNull": false,
+                    "field": "type",
+                    "seqType": "Sequelize.ENUM('PROFILE_IMAGE', 'COVER_IMAGE')"
+                },
+                "reference": {
+                    "allowNull": true,
+                    "field": "reference",
+                    "seqType": "Sequelize.STRING"
+                },
+                "createdAt": {
+                    "allowNull": false,
+                    "field": "createdAt",
+                    "seqType": "Sequelize.DATE"
+                },
+                "updatedAt": {
+                    "allowNull": false,
+                    "field": "updatedAt",
+                    "seqType": "Sequelize.DATE"
+                }
+            },
+            "indexes": []
+        },
         "BlacklistEntries": {
             "tableName": "BlacklistEntries",
             "schema": {
@@ -260,44 +298,6 @@
             },
             "indexes": []
         },
-        "IPFSEntries": {
-            "tableName": "IPFSEntries",
-            "schema": {
-                "id": {
-                    "allowNull": false,
-                    "primaryKey": true,
-                    "autoIncrement": true,
-                    "field": "id",
-                    "seqType": "Sequelize.INTEGER"
-                },
-                "hash": {
-                    "allowNull": false,
-                    "field": "hash",
-                    "seqType": "Sequelize.STRING"
-                },
-                "type": {
-                    "allowNull": false,
-                    "field": "type",
-                    "seqType": "Sequelize.ENUM('PROFILE_IMAGE', 'COVER_IMAGE')"
-                },
-                "reference": {
-                    "allowNull": true,
-                    "field": "reference",
-                    "seqType": "Sequelize.STRING"
-                },
-                "createdAt": {
-                    "allowNull": false,
-                    "field": "createdAt",
-                    "seqType": "Sequelize.DATE"
-                },
-                "updatedAt": {
-                    "allowNull": false,
-                    "field": "updatedAt",
-                    "seqType": "Sequelize.DATE"
-                }
-            },
-            "indexes": []
-        },
         "LinkPreviews": {
             "tableName": "LinkPreviews",
             "schema": {
@@ -392,7 +392,7 @@
                         "value": "CREATED"
                     },
                     "field": "status",
-                    "seqType": "Sequelize.ENUM('CREATED', 'READ')"
+                    "seqType": "Sequelize.ENUM('CREATED', 'PEEKED', 'READ')"
                 },
                 "entityType": {
                     "allowNull": true,
@@ -445,6 +445,44 @@
                     }
                 }
             }
+        },
+        "Traces": {
+            "tableName": "Traces",
+            "schema": {
+                "id": {
+                    "allowNull": false,
+                    "primaryKey": true,
+                    "autoIncrement": true,
+                    "field": "id",
+                    "seqType": "Sequelize.INTEGER"
+                },
+                "url": {
+                    "allowNull": false,
+                    "field": "url",
+                    "seqType": "Sequelize.TEXT"
+                },
+                "uuid": {
+                    "allowNull": false,
+                    "field": "uuid",
+                    "seqType": "Sequelize.UUID"
+                },
+                "publicKey": {
+                    "allowNull": true,
+                    "field": "publicKey",
+                    "seqType": "Sequelize.STRING"
+                },
+                "createdAt": {
+                    "allowNull": false,
+                    "field": "createdAt",
+                    "seqType": "Sequelize.DATE"
+                },
+                "updatedAt": {
+                    "allowNull": false,
+                    "field": "updatedAt",
+                    "seqType": "Sequelize.DATE"
+                }
+            },
+            "indexes": []
         },
         "Pins": {
             "tableName": "Pins",
@@ -676,45 +714,7 @@
                 }
             },
             "indexes": []
-        },
-        "Traces": {
-            "tableName": "Traces",
-            "schema": {
-                "id": {
-                    "allowNull": false,
-                    "primaryKey": true,
-                    "autoIncrement": true,
-                    "field": "id",
-                    "seqType": "Sequelize.INTEGER"
-                },
-                "url": {
-                    "allowNull": false,
-                    "field": "url",
-                    "seqType": "Sequelize.TEXT"
-                },
-                "uuid": {
-                    "allowNull": false,
-                    "field": "uuid",
-                    "seqType": "Sequelize.UUID"
-                },
-                "publicKey": {
-                    "allowNull": true,
-                    "field": "publicKey",
-                    "seqType": "Sequelize.STRING"
-                },
-                "createdAt": {
-                    "allowNull": false,
-                    "field": "createdAt",
-                    "seqType": "Sequelize.DATE"
-                },
-                "updatedAt": {
-                    "allowNull": false,
-                    "field": "updatedAt",
-                    "seqType": "Sequelize.DATE"
-                }
-            },
-            "indexes": []
         }
     },
-    "revision": 5
+    "revision": 6
 }

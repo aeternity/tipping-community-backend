@@ -144,7 +144,9 @@ module.exports = class CacheLogic {
     const wordDetails = await wordRegistryData.tokens.asyncMap(
       async ([, wordSale]) => ({ tokenAddress: await CacheLogic.getWordSaleTokenAddress(wordSale), sale: wordSale }),
     );
-    return CacheLogic.wordSaleDetails(wordDetails.find(sale => sale.tokenAddress === address).sale);
+
+    const saleDetails = wordDetails.find(sale => sale.tokenAddress === address);
+    return saleDetails ? CacheLogic.wordSaleDetails(saleDetails.sale) : null;
   }
 
   // TODO trigger these via message queue

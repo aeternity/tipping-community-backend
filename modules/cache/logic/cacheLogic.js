@@ -46,7 +46,7 @@ module.exports = class CacheLogic {
       await CacheLogic.getOracleState();
       await CacheLogic.findContractEvents();
       await CacheLogic.getTokenInfos();
-      await CacheLogic.wordSaleDetailsByToken(); // keeps hot even if undefined is passed as argument
+      await CacheLogic.refreshWordAndVoteData(); // keeps hot even if undefined is passed as argument
     };
 
     setTimeout(() => {
@@ -133,11 +133,18 @@ module.exports = class CacheLogic {
     };
   }
 
-  // TODO cache the result of this indefinetly (not all, only not changing info)
+  static async refreshWordAndVoteData() {
+    const wordRegistryData = await CacheLogic.getWordRegistryData();
+    await wordRegistryData.tokens.asyncMap(([, wordSale]) => CacheLogic.wordSaleDetails(wordSale));
+    await wordRegistryData.tokens.asyncMap(([, wordSale]) => CacheLogic.wordSaleVotesDetails(wordSale));
+  }
+
   static async wordSaleDetailsByToken(address) {
     const wordRegistryData = await CacheLogic.getWordRegistryData();
-    const wordDetails = await wordRegistryData.tokens.asyncMap(([, wordSale]) => CacheLogic.wordSaleDetails(wordSale));
-    return wordDetails.find(sale => sale.tokenAddress === address);
+    const wordDetails = await wordRegistryData.tokens.asyncMap(
+      async ([, wordSale]) => ({ tokenAddress: await CacheLogic.getWordSaleTokenAddress(wordSale), sale: wordSale }),
+    );
+    return CacheLogic.wordSaleDetails(wordDetails.find(sale => sale.tokenAddress === address).sale);
   }
 
   // TODO trigger these via message queue
@@ -146,6 +153,11 @@ module.exports = class CacheLogic {
       () => aeternity.wordSaleVotes(address), cache.shortCacheTime);
 
     return Promise.all(votes.map(([id, vote]) => CacheLogic.wordSaleVoteInfo(id, vote[1], vote[0], address)));
+  }
+
+  static getWordSaleTokenAddress(sale) {
+    return cache.getOrSet(['wordSaleTokenAddress', sale],
+      () => aeternity.wordSaleTokenAddress(sale));
   }
 
   static async wordSaleVoteInfo(id, vote, alreadyApplied, sale) {
@@ -163,8 +175,7 @@ module.exports = class CacheLogic {
     const votedPositive = new BigNumber(votedFor)
       .dividedBy(new BigNumber(votedFor).plus(votedAgainst)).times(100).toFixed(0);
 
-    const tokenAddress = cache.getOrSet(['wordSaleTokenAddress', sale],
-      () => aeternity.wordSaleTokenAddress(sale));
+    const tokenAddress = CacheLogic.getWordSaleTokenAddress(sale);
 
     const totalSupply = cache.getOrSet(['fungibleTokenTotalSupply', await tokenAddress],
       async () => aeternity.fungibleTokenTotalSupply(await tokenAddress), cache.shortCacheTime);

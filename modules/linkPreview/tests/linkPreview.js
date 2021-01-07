@@ -8,7 +8,7 @@ const server = require('../../../server');
 const { LinkPreview } = require('../../../models');
 const linkPreviewLogic = require('../logic/linkPreviewLogic');
 const { MESSAGES, MESSAGE_QUEUES } = require('../../queue/constants/queue');
-const queue = require('../../queue/logic/queueLogic');
+const queueLogic = require('../../queue/logic/queueLogic');
 
 chai.should();
 chai.use(chaiHttp);
@@ -48,7 +48,7 @@ describe('LinkPreview', () => {
 
     it('it should call the update function when receiving a mq item', done => {
       const updateMock = sinon.stub(linkPreviewLogic, 'updateLinkpreviewDatabase').callsFake(async () => {});
-      queue.sendMessage(MESSAGE_QUEUES.LINKPREVIEW, MESSAGES.LINKPREVIEW.COMMANDS.UPDATE_DB);
+      queueLogic.sendMessage(MESSAGE_QUEUES.LINKPREVIEW, MESSAGES.LINKPREVIEW.COMMANDS.UPDATE_DB);
       setTimeout(() => {
         updateMock.callCount.should.eql(1);
         updateMock.restore();

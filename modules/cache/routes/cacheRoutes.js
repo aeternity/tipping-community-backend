@@ -4,7 +4,7 @@ const Fuse = require('fuse.js');
 const CacheLogic = require('../logic/cacheLogic');
 const cacheAggregatorLogic = require('../logic/cacheAggregatorLogic');
 const { topicsRegex } = require('../../aeternity/utils/tipTopicUtil');
-const { searchOptions } = require('../constants/searchOptions');
+const searchOptions = require('../constants/searchOptions');
 
 const router = new Router();
 

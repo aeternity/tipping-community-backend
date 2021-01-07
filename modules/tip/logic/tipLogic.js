@@ -4,20 +4,20 @@ const CacheLogic = require('../../cache/logic/cacheLogic');
 
 const { Tip, Retip } = require('../../../models');
 const NotificationLogic = require('../../notification/logic/notificationLogic');
-const queue = require('../../queue/logic/queueLogic');
+const queueLogic = require('../../queue/logic/queueLogic');
 const { MESSAGES, MESSAGE_QUEUES } = require('../../queue/constants/queue');
 
 const lock = new AsyncLock();
 
 class TipLogic {
   constructor() {
-    queue.subscribeToMessage(MESSAGE_QUEUES.TIPS, MESSAGES.TIPS.COMMANDS.UPDATE_DB, async message => {
+    queueLogic.subscribeToMessage(MESSAGE_QUEUES.TIPS, MESSAGES.TIPS.COMMANDS.UPDATE_DB, async message => {
       await this.updateTipsDB();
-      await queue.deleteMessage(MESSAGE_QUEUES.TIPS, message.id);
+      await queueLogic.deleteMessage(MESSAGE_QUEUES.TIPS, message.id);
     });
-    queue.subscribeToMessage(MESSAGE_QUEUES.RETIPS, MESSAGES.RETIPS.COMMANDS.UPDATE_DB, async message => {
+    queueLogic.subscribeToMessage(MESSAGE_QUEUES.RETIPS, MESSAGES.RETIPS.COMMANDS.UPDATE_DB, async message => {
       await this.updateRetipsDB();
-      await queue.deleteMessage(MESSAGE_QUEUES.RETIPS, message.id);
+      await queueLogic.deleteMessage(MESSAGE_QUEUES.RETIPS, message.id);
     });
   }
 
@@ -64,7 +64,7 @@ class TipLogic {
         media: media || [],
       })));
       if (newTipsIds.length > 0) {
-        await queue.sendMessage(MESSAGE_QUEUES.TIPS, MESSAGES.TIPS.EVENTS.CREATED_NEW_LOCAL_TIPS);
+        await queueLogic.sendMessage(MESSAGE_QUEUES.TIPS, MESSAGES.TIPS.EVENTS.CREATED_NEW_LOCAL_TIPS);
       }
     });
   }
@@ -73,7 +73,7 @@ class TipLogic {
     await lock.acquire('RetipLogic.updateRetipsDB', async () => {
       const remoteTips = await CacheLogic.getTips();
       const localRetips = await this.fetchAllLocalRetips();
-      const remoteRetips = [...new Set(remoteTips.map(tip => tip.retips.map(retip => ({
+      const remoteRetips = [...(remoteTips.map(tip => tip.retips.map(retip => ({
         ...retip,
         parentTip: tip,
       }))).flat())];

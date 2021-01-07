@@ -51,5 +51,5 @@ process.env = {
 };
 
 // RESET ALL QUEUES
-const queue = require('./modules/queue/logic/queueLogic')
-queue.clearRedisQueues().then(() => queue.init())
+const queueLogic = require('./modules/queue/logic/queueLogic')
+queueLogic.clearRedisQueues().then(() => queueLogic.init())

@@ -80,7 +80,7 @@ module.exports = class MdwLogic {
         acc[pubkey] = acc[pubkey] || [];
         acc[pubkey].push(chainName.name);
         acc[pubkey].sort((name1, name2) => {
-          // shorter always replaces
+          // since shorter names are more expensive, we prefer them here
           const lengthDiff = name1.length - name2.length;
           if (lengthDiff !== 0) return lengthDiff;
           // equal length replaces if alphabetically earlier

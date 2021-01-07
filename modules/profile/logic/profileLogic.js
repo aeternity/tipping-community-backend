@@ -6,15 +6,15 @@ const imageLogic = require('../../media/logic/imageLogic');
 const CacheLogic = require('../../cache/logic/cacheLogic');
 const { Profile } = require('../../../models');
 const { IPFS_TYPES } = require('../../backup/constants/ipfsTypes');
-const queue = require('../../queue/logic/queueLogic');
+const queueLogic = require('../../queue/logic/queueLogic');
 const { MESSAGE_QUEUES, MESSAGES } = require('../../queue/constants/queue');
 
 class ProfileLogic {
   constructor() {
-    queue.subscribeToMessage(MESSAGE_QUEUES.PROFILE, MESSAGES.PROFILE.COMMANDS.UPDATE_PREFERRED_CHAIN_NAMES,
+    queueLogic.subscribeToMessage(MESSAGE_QUEUES.PROFILE, MESSAGES.PROFILE.COMMANDS.UPDATE_PREFERRED_CHAIN_NAMES,
       async message => {
         await this.verifyPreferredChainNames();
-        await queue.deleteMessage(MESSAGE_QUEUES.PROFILE, message.id);
+        await queueLogic.deleteMessage(MESSAGE_QUEUES.PROFILE, message.id);
       });
   }
 

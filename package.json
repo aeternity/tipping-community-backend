@@ -29,7 +29,7 @@
     "@aeternity/aepp-sdk": "^7.7.0",
     "@sentry/node": "^5.27.6",
     "@sentry/tracing": "^5.27.6",
-    "aeternity-fungible-token": "github:mradkov/aeternity-fungible-token",
+    "aeternity-fungible-token": "github:aeternity/aeternity-fungible-token#v1.0.0",
     "async-lock": "^1.2.4",
     "axios": "latest",
     "bignumber.js": "^9.0.1",
@@ -57,13 +57,13 @@
     "sequelize-hierarchy": "^2.0.4",
     "sharp": "^0.26.3",
     "swagger-ui-express": "^4.1.5",
-    "tipping-contract": "github:aeternity/tipping-contract#develop",
-    "tipping-oracle-service": "github:aeternity/tipping-oracle-service",
-    "token-registry": "github:aeternity/token-registry",
+    "tipping-contract": "github:aeternity/tipping-contract#v3.0.0-alpha1",
+    "tipping-oracle-service": "github:aeternity/tipping-oracle-service#v0.3.1",
+    "token-registry": "github:aeternity/token-registry#v1.0.0",
     "uuid": "^8.3.1",
     "winston": "^3.3.3",
     "winston-daily-rotate-file": "^4.5.0",
-    "wordbazaar-contracts": "github:aeternity/wordbazaar-contracts#voting"
+    "wordbazaar-contracts": "github:aeternity/wordbazaar-contracts#v0.0.1-alpha1"
   },
   "devDependencies": {
     "babel-eslint": "^10.1.0",

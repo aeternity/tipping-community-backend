@@ -1,7 +1,6 @@
 const { MESSAGE_QUEUES, MESSAGES } = require('../constants/queue');
-const queue = require('./queueLogic');
+const queueLogic = require('./queueLogic');
 
-// TODO TEST
 class MessageBroker {
   async init() {
     // S: UPDATE TIPS CACHE
@@ -36,9 +35,9 @@ class MessageBroker {
 
   setupForwarding(source, targets) {
     // SETUP LOGIC
-    queue.subscribeToMessage(source.queueName, source.message, async message => {
-      await Promise.all(targets.map(({ queueName, message: newMessage }) => queue.sendMessage(queueName, newMessage)));
-      await queue.deleteMessage(source.queueName, message.id);
+    queueLogic.subscribeToMessage(source.queueName, source.message, async message => {
+      await Promise.all(targets.map(({ queueName, message: newMessage }) => queueLogic.sendMessage(queueName, newMessage)));
+      await queueLogic.deleteMessage(source.queueName, message.id);
     });
   }
 }

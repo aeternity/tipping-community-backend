@@ -4,7 +4,7 @@ const axios = require('axios');
 const aeternity = require('../../aeternity/logic/aeternity');
 const CommentLogic = require('../../comment/logic/commentLogic');
 const cache = require('../utils/cache');
-const queue = require('../../queue/logic/queueLogic');
+const queueLogic = require('../../queue/logic/queueLogic');
 
 const lock = new AsyncLock();
 const { getTipTopics } = require('../../aeternity/utils/tipTopicUtil');
@@ -61,7 +61,7 @@ module.exports = class CacheLogic {
       const tips = await aeternity.fetchTips();
       // Renew Stats
       await cache.del(['fetchStats']);
-      await queue.sendMessage(MESSAGE_QUEUES.CACHE, MESSAGES.CACHE.EVENTS.RENEWED_TIPS);
+      await queueLogic.sendMessage(MESSAGE_QUEUES.CACHE, MESSAGES.CACHE.EVENTS.RENEWED_TIPS);
       return tips;
     }, cache.shortCacheTime);
   }
@@ -240,7 +240,7 @@ module.exports = class CacheLogic {
   static async fetchChainNames() {
     return cache.getOrSet(['fetchChainNames'], async () => {
       const chainNames = await MdwLogic.getChainNames();
-      await queue.sendMessage(MESSAGE_QUEUES.CACHE, MESSAGES.CACHE.EVENTS.RENEWED_CHAINNAMES);
+      await queueLogic.sendMessage(MESSAGE_QUEUES.CACHE, MESSAGES.CACHE.EVENTS.RENEWED_CHAINNAMES);
       return chainNames;
     }, cache.shortCacheTime);
   }

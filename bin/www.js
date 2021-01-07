@@ -6,7 +6,7 @@ const logger = require('../utils/logger')(module);
 const aeternity = require('../modules/aeternity/logic/aeternity');
 const cache = require('../modules/cache/utils/cache');
 const broker = require('../modules/queue/logic/messageBrokerLogic');
-const queue = require('../modules/queue/logic/queueLogic');
+const queueLogic = require('../modules/queue/logic/queueLogic');
 const cacheLogic = require('../modules/cache/logic/cacheLogic');
 // Get port from environment and store in Express.
 
@@ -46,7 +46,7 @@ function onListening() {
 
 const startup = async () => {
   // first initialize aeternity sdk and cache before starting server
-  await queue.init();
+  await queueLogic.init();
   await broker.init();
   await aeternity.init();
   await cache.init(aeternity);

@@ -4,7 +4,7 @@ const sinon = require('sinon');
 
 const CacheLogic = require('../../cache/logic/cacheLogic');
 const TipLogic = require('../logic/tipLogic');
-const queue = require('../../queue/logic/queueLogic');
+const queueLogic = require('../../queue/logic/queueLogic');
 const { TIP_TYPES } = require('../constants/tipTypes');
 const { Tip, Retip, Notification } = require('../../../models');
 
@@ -14,7 +14,7 @@ describe('(Re)Tips', () => {
   let sandbox;
   beforeEach(() => {
     sandbox = sinon.createSandbox();
-    sandbox.stub(queue, 'sendMessage');
+    sandbox.stub(queueLogic, 'sendMessage');
   });
 
   afterEach(() => {

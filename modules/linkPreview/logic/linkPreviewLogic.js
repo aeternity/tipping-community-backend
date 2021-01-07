@@ -18,7 +18,7 @@ const DomLoader = require('../utils/domLoader');
 const cache = require('../../cache/utils/cache');
 const imageLogic = require('../../media/logic/imageLogic');
 const { MESSAGE_QUEUES, MESSAGES } = require('../../queue/constants/queue');
-const queue = require('../../queue/logic/queueLogic');
+const queueLogic = require('../../queue/logic/queueLogic');
 const CacheLogic = require('../../cache/logic/cacheLogic');
 
 const logger = require('../../../utils/logger')(module);
@@ -27,10 +27,10 @@ lngDetector.setLanguageType('iso2');
 
 class LinkPreviewLogic {
   constructor() {
-    queue.subscribeToMessage(MESSAGE_QUEUES.LINKPREVIEW, MESSAGES.LINKPREVIEW.COMMANDS.UPDATE_DB,
+    queueLogic.subscribeToMessage(MESSAGE_QUEUES.LINKPREVIEW, MESSAGES.LINKPREVIEW.COMMANDS.UPDATE_DB,
       async message => {
         await this.updateLinkpreviewDatabase();
-        await queue.deleteMessage(MESSAGE_QUEUES.LINKPREVIEW, message.id);
+        await queueLogic.deleteMessage(MESSAGE_QUEUES.LINKPREVIEW, message.id);
       });
   }
 
@@ -55,7 +55,7 @@ class LinkPreviewLogic {
     });
 
     if (difference.length > 0) {
-      queue.sendMessage(MESSAGE_QUEUES.LINKPREVIEW, MESSAGES.LINKPREVIEW.EVENTS.CREATED_NEW_PREVIEWS);
+      queueLogic.sendMessage(MESSAGE_QUEUES.LINKPREVIEW, MESSAGES.LINKPREVIEW.EVENTS.CREATED_NEW_PREVIEWS);
       await cache.del(['StaticLogic.getStats']);
     }
   }

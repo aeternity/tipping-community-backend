@@ -13,7 +13,7 @@ const aeternity = require('../../aeternity/logic/aeternity');
 const cacheAggregatorLogic = require('../logic/cacheAggregatorLogic');
 const { MESSAGES } = require('../../queue/constants/queue');
 const { MESSAGE_QUEUES } = require('../../queue/constants/queue');
-const queue = require('../../queue/logic/queueLogic');
+const queueLogic = require('../../queue/logic/queueLogic');
 
 chai.should();
 chai.use(chaiHttp);
@@ -43,7 +43,7 @@ describe('Cache', () => {
   describe('Keep Hot', () => {
     it('should update the cache (keep hot simulation)', async function () {
       this.timeout(15000);
-      const messageStub = sinon.stub(queue, 'sendMessage').callsFake(async () => {});
+      const messageStub = sinon.stub(queueLogic, 'sendMessage').callsFake(async () => {});
       await CacheLogic.getTips();
       sinon.assert.calledWith(messageStub, MESSAGE_QUEUES.CACHE, MESSAGES.CACHE.EVENTS.RENEWED_TIPS);
       messageStub.restore();
@@ -53,7 +53,7 @@ describe('Cache', () => {
   describe('API', () => {
     it('it should GET all cache items', function (done) {
       this.timeout(15000);
-      const messageStub = sinon.stub(queue, 'sendMessage').callsFake(async () => {});
+      const messageStub = sinon.stub(queueLogic, 'sendMessage').callsFake(async () => {});
       checkCachedRoute('/cache/tips', 'array', () => {
         messageStub.restore();
         done();
@@ -278,7 +278,7 @@ describe('Cache', () => {
 
     it('it should GET all chainnames cache items ', done => {
       cache.del(['fetchChainNames']).then(() => {
-        const messageStub = sinon.stub(queue, 'sendMessage').callsFake(async () => {});
+        const messageStub = sinon.stub(queueLogic, 'sendMessage').callsFake(async () => {});
         checkCachedRoute('/cache/chainnames', 'object', () => {
           sinon.assert.calledWith(messageStub, MESSAGE_QUEUES.CACHE, MESSAGES.CACHE.EVENTS.RENEWED_CHAINNAMES);
           messageStub.restore();
@@ -480,7 +480,7 @@ describe('Cache', () => {
       await cache.del(['getTips']);
       const stub = sinon.stub(CacheLogic, 'statsForTips').callsFake(() => []);
       // Fake keep hot
-      const messageStub = sinon.stub(queue, 'sendMessage').callsFake(async () => {});
+      const messageStub = sinon.stub(queueLogic, 'sendMessage').callsFake(async () => {});
       await CacheLogic.getTips();
       messageStub.restore();
       // Request stats

@@ -1,5 +1,6 @@
 const { Router } = require('express');
 const TokenCacheLogic = require('../logic/tokenCacheLogic');
+const CacheLogic = require('../../cache/logic/cacheLogic');
 
 const router = new Router();
 
@@ -88,21 +89,21 @@ router.get('/balances', TokenCacheLogic.tokenAccountBalance);
  *             schema:
  *               type: object
  */
-router.get('/wordRegistry', TokenCacheLogic.wordRegistry);
+router.get('/wordRegistry', async (req, res) => res.send(await CacheLogic.getWordRegistryData()));
 
 /**
  * @swagger
- * /tokenCache/wordSale:
+ * /tokenCache/wordSale/{contractAddress}:
  *   get:
  *     tags:
  *       - tokencache
  *     summary: Get word sale details for address
  *     parameters:
- *       - in: query
+ *       - in: path
  *         required: true
  *         schema:
  *           type: string
- *         name: address
+ *         name: contractAddress
  *     responses:
  *       200:
  *         description: OK
@@ -111,17 +112,17 @@ router.get('/wordRegistry', TokenCacheLogic.wordRegistry);
  *             schema:
  *               type: object
  */
-router.get('/wordSale', TokenCacheLogic.wordSaleDetails);
+router.get('/wordSale/:contractAddress', async (req, res) => res.send(await CacheLogic.wordSaleDetails(req.params.contractAddress)));
 
 /**
  * @swagger
- * /tokenCache/wordSaleByToken:
+ * /tokenCache/wordSaleByToken/{contractAddress}:
  *   get:
  *     tags:
  *       - tokencache
  *     summary: Get word sale details for token address
  *     parameters:
- *       - in: query
+ *       - in: path
  *         required: true
  *         schema:
  *           type: string
@@ -134,21 +135,25 @@ router.get('/wordSale', TokenCacheLogic.wordSaleDetails);
  *             schema:
  *               type: object
  */
-router.get('/wordSaleByToken', TokenCacheLogic.wordSaleDetailsByToken);
+router.get('/wordSaleByToken/:contractAddress', async (req, res) => {
+  const data = await CacheLogic.wordSaleDetailsByToken(req.params.contractAddress);
+  if (!data) return res.status(404).send('no word sale information for address');
+  return res.send(data);
+});
 
 /**
  * @swagger
- * /tokenCache/wordSaleVotesDetails:
+ * /tokenCache/wordSaleVotesDetails/{contractAddress}:
  *   get:
  *     tags:
  *       - tokencache
  *     summary: Get word sale vote details for address
  *     parameters:
- *       - in: query
+ *       - in: path
  *         required: true
  *         schema:
  *           type: string
- *         name: address
+ *         name: contractAddress
  *     responses:
  *       200:
  *         description: OK
@@ -157,6 +162,6 @@ router.get('/wordSaleByToken', TokenCacheLogic.wordSaleDetailsByToken);
  *             schema:
  *               type: object
  */
-router.get('/wordSaleVotesDetails', TokenCacheLogic.wordSaleVotesDetails);
+router.get('/wordSaleVotesDetails/:contractAddress', async (req, res) => res.send(await CacheLogic.wordSaleVotesDetails(req.params.contractAddress)));
 
 module.exports = router;

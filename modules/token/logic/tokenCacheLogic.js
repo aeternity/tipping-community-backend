@@ -29,30 +29,4 @@ module.exports = class TokenCacheLogic {
       return acc;
     }, Promise.resolve({})));
   }
-
-  // TODO move this to route files
-  static async wordRegistry(req, res) {
-    return res.send(await CacheLogic.getWordRegistryData());
-  }
-
-  static async wordSaleDetails(req, res) {
-    if (!req.query.address) return res.status(400).send('address query missing');
-
-    return res.send(await CacheLogic.wordSaleDetails(req.query.address));
-  }
-
-  static async wordSaleDetailsByToken(req, res) {
-    if (!req.query.address) return res.status(400).send('address query missing');
-
-    const data = await CacheLogic.wordSaleDetailsByToken(req.query.address);
-    if (!data) return res.status(404).send('no word sale information for address');
-
-    return res.send(data);
-  }
-
-  static async wordSaleVotesDetails(req, res) {
-    if (!req.query.address) return res.status(400).send('address query missing');
-
-    return res.send(await CacheLogic.wordSaleVotesDetails(req.query.address));
-  }
 };

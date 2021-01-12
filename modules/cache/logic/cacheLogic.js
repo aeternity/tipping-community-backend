@@ -377,8 +377,7 @@ module.exports = class CacheLogic {
   }
 
   static async invalidateWordSaleCache(req, res) {
-    const tokenAddress = await cache.getOrSet(['wordSaleTokenAddress', req.params.wordSale],
-      () => aeternity.wordSaleTokenAddress(req.params.wordSale));
+    const tokenAddress = await CacheLogic.getWordSaleTokenAddress(req.params.wordSale);
 
     await cache.del(['wordSalePrice', req.params.wordSale]);
     await cache.del(['wordSaleState', req.params.wordSale]);

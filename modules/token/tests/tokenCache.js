@@ -156,7 +156,6 @@ describe('Token Cache', () => {
 
     it('it should get the word registry overview', async () => {
       cache.del(['wordRegistryData']);
-
       const res = await chai.request(server).get('/tokenCache/wordRegistry');
       res.should.have.status(200);
       res.body.should.be.a('object');
@@ -164,7 +163,8 @@ describe('Token Cache', () => {
       res.body.should.have.property('tokens');
     });
 
-    it('it should get a word registry contract overview', async () => {
+    it('it should get a word registry contract overview', async function () {
+      this.timeout(15000);
       const ctAddress = 'ct_RJt3nE2xwpA1Y95pkwyH7M5VthQUBd2TcdxuDZguGatQzKrWM';
       cache.del(['wordSaleState', ctAddress]);
       cache.del(['fungibleTokenTotalSupply', ctAddress]);

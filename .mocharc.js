@@ -33,7 +33,9 @@ process.env = {
   TOKEN_REGISTRY_ADDRESS: 'ct_2Ga3mNT8er2zYjGKx7tJggn9nVnYt5UzmH9x9irRV4ayg4sfLL',
   CONTRACT_V1_ADDRESS: 'ct_2Cvbf3NYZ5DLoaNYAU71t67DdXLHeSXhodkSNifhgd7Xsw28Xd',
   CONTRACT_V2_ADDRESS: 'ct_2ZEoCKcqXkbz2uahRrsWeaPooZs9SdCv6pmC4kc55rD4MhqYSu',
-  CONTRACT_V3_ADDRESS: 'ct_WscpdLQf6ZZxoVqrsEwUwmuAEdzEkJii5W5TzG84rVgHeK6BW'
+  CONTRACT_V3_ADDRESS: 'ct_WscpdLQf6ZZxoVqrsEwUwmuAEdzEkJii5W5TzG84rVgHeK6BW',
+  WORD_REGISTRY_CONTRACT: 'ct_2nBfk6xdmBNtZFB1h4wmXV94X2nTUxx2XgdmJkyRRL9RD44QBT'
+
 }
 
 const Crypto = require('@aeternity/aepp-sdk').Crypto;

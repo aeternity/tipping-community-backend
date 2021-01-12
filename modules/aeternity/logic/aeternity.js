@@ -64,10 +64,15 @@ class Aeternity {
         { contractAddress: process.env.ORACLE_CONTRACT_ADDRESS },
       );
 
-      this.wordRegistryContract = await this.client.getContractInstance(
-        WORD_REGISTRY_INTERFACE,
-        { contractAddress: process.env.WORD_REGISTRY_CONTRACT },
-      );
+      if (process.env.WORD_REGISTRY_CONTRACT) {
+        this.wordRegistryContract = await this.client.getContractInstance(
+          WORD_REGISTRY_INTERFACE,
+          { contractAddress: process.env.WORD_REGISTRY_CONTRACT },
+        );
+        logger.info('Starting WITH WORD REGISTRY contract');
+      } else {
+        logger.info('Starting WITHOUT WORD REGISTRY contract');
+      }
 
       this.tokenRegistry = await this.client.getContractInstance(TOKEN_REGISTRY, { contractAddress: process.env.TOKEN_REGISTRY_ADDRESS });
 

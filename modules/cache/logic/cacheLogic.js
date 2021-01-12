@@ -46,7 +46,9 @@ module.exports = class CacheLogic {
       await CacheLogic.getOracleState();
       await CacheLogic.findContractEvents();
       await CacheLogic.getTokenInfos();
-      await CacheLogic.refreshWordAndVoteData(); // keeps hot even if undefined is passed as argument
+      if (process.env.WORD_REGISTRY_CONTRACT) {
+        await CacheLogic.refreshWordAndVoteData(); // keeps hot even if undefined is passed as argument
+      }
     };
 
     setTimeout(() => {

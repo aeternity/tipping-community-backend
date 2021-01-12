@@ -126,7 +126,7 @@ router.get('/wordSale/:contractAddress', async (req, res) => res.send(await Cach
  *         required: true
  *         schema:
  *           type: string
- *         name: address
+ *         name: contractAddress
  *     responses:
  *       200:
  *         description: OK

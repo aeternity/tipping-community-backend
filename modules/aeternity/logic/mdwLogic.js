@@ -12,7 +12,7 @@ module.exports = class MdwLogic {
   static async iterateMdw(contract, next, abortIfHashKnown = false) {
     const url = `${process.env.MIDDLEWARE_URL}/${next}`;
 
-    const result = await axios.get(url).then(res => res.data);
+    const result = await axios.get(url, { timeout: 10000 }).then(res => res.data);
 
     if (abortIfHashKnown && result.data.some(tx => knownHashes[contract][tx.hash])) return result.data.filter(tx => !knownHashes[contract][tx.hash]);
 

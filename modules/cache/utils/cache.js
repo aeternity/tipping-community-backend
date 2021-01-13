@@ -24,8 +24,7 @@ cache.networkKey = '';
 
 cache.init = async aeternity => {
   cache.networkKey = await aeternity.networkId();
-  // eslint-disable-next-line no-console
-  console.info(`cache networkKey ${cache.networkKey}`);
+  logger.info(`cache networkKey ${cache.networkKey}`);
 };
 
 cache.setKeepHot = keepHotFunction => {
@@ -60,8 +59,7 @@ cache.getOrSet = async (keys, asyncFetchData, expire = null, timeoutLock = true)
 
     return data;
   }).catch(e => {
-    // eslint-disable-next-line no-console
-    console.error(e);
+    logger.error(`Lock "${key}" threw error: ${e.message}`);
     return asyncFetchData();
   });
 };

@@ -68,9 +68,9 @@ describe('Middleware', () => {
     it('it should return an empty array if the middleware is down', async () => {
       const originalUrl = process.env.MIDDLEWARE_URL;
       process.env.MIDDLEWARE_URL = 'https://localhost/';
-      const transactions = await mdwLogic.getChainNames();
-      transactions.should.be.an('array');
-      transactions.should.have.length(0);
+      const names = await mdwLogic.getChainNames();
+      names.should.be.an('array');
+      names.should.have.length(0);
       process.env.MIDDLEWARE_URL = originalUrl;
     });
   });

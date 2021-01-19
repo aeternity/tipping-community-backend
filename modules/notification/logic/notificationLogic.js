@@ -99,6 +99,8 @@ module.exports = class NotificationLogic {
     if (commentMatch) {
       const commentId = commentMatch[2];
       const comment = await Comment.findOne({ where: { id: commentId }, raw: true });
+      // Do not create notifications if the tip creator comments on his/her own tip
+      if (comment.author === tip.sender) return;
       try {
         await NotificationLogic.add[NOTIFICATION_TYPES.TIP_ON_COMMENT](comment.author, tip.sender, tip.id, commentId);
       } catch (e) {
@@ -113,6 +115,8 @@ module.exports = class NotificationLogic {
 
   static async handleNewRetip(retip) {
     // RETIP ON TIP
+    // Do not create notifications if the tip creator retips on his/her own tip
+    if (retip.parentTip.sender === retip.sender) return;
     try {
       await NotificationLogic.add[NOTIFICATION_TYPES.RETIP_ON_TIP](retip.parentTip.sender, retip.sender, retip.parentTip.id, retip.id);
     } catch (e) {

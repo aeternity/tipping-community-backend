@@ -26,10 +26,16 @@ describe('Notifications', () => {
     entityType: ENTITY_TYPES.COMMENT,
     type: NOTIFICATION_TYPES.COMMENT_ON_COMMENT,
   };
+  let sandbox;
+
+  const fakeTipsAndUpdateDB = async fakeData => {
+    sandbox.stub(CacheLogic, 'getTips').callsFake(async () => fakeData);
+    await TipLogic.updateTipsDB();
+    await TipLogic.updateRetipsDB();
+  };
 
   describe('Create Notifications', () => {
     let createdComment = null;
-    let sandbox;
     beforeEach(async () => {
       await Comment.destroy({
         where: {},
@@ -83,11 +89,6 @@ describe('Notifications', () => {
         },
       ];
 
-      sandbox.stub(CacheLogic, 'getTips').callsFake(async () => fakeData);
-
-      await TipLogic.updateTipsDB();
-      await TipLogic.updateRetipsDB();
-
       const createdNotification = await Notification.findOne({
         where: {
           type: NOTIFICATION_TYPES.TIP_ON_COMMENT,
@@ -131,10 +132,7 @@ describe('Notifications', () => {
         },
       ];
 
-      sandbox.stub(CacheLogic, 'getTips').callsFake(async () => fakeData);
-
-      await TipLogic.updateTipsDB();
-      await TipLogic.updateRetipsDB();
+      await fakeTipsAndUpdateDB(fakeData);
 
       const createdNotification = await Notification.findOne({
         where: {
@@ -182,10 +180,7 @@ describe('Notifications', () => {
         },
       ];
 
-      sandbox.stub(CacheLogic, 'getTips').callsFake(async () => fakeData);
-
-      await TipLogic.updateTipsDB();
-      await TipLogic.updateRetipsDB();
+      await fakeTipsAndUpdateDB(fakeData);
 
       const createdNotification = await Notification.findOne({
         where: {
@@ -239,10 +234,8 @@ describe('Notifications', () => {
         },
       ];
 
-      sandbox.stub(CacheLogic, 'getTips').callsFake(async () => fakeData);
+      await fakeTipsAndUpdateDB(fakeData);
 
-      await TipLogic.updateTipsDB();
-      await TipLogic.updateRetipsDB();
 
       const createdNotification = await Notification.findOne({
         where: {
@@ -290,10 +283,7 @@ describe('Notifications', () => {
         },
       ];
 
-      sandbox.stub(CacheLogic, 'getTips').callsFake(async () => fakeData);
-
-      await TipLogic.updateTipsDB();
-      await TipLogic.updateRetipsDB();
+      await fakeTipsAndUpdateDB(fakeData);
     });
   });
 

@@ -21,6 +21,12 @@ describe('(Re)Tips', () => {
     sandbox.restore();
   });
 
+  const fakeTipsAndUpdateDB = async fakeData => {
+    sandbox.stub(CacheLogic, 'getTips').callsFake(async () => fakeData);
+    await TipLogic.updateTipsDB();
+    await TipLogic.updateRetipsDB();
+  };
+
   describe('DB', () => {
     beforeEach(async () => {
       await Retip.destroy({
@@ -55,10 +61,7 @@ describe('(Re)Tips', () => {
         },
       ];
 
-      sandbox.stub(CacheLogic, 'getTips').callsFake(async () => fakeData);
-
-      await TipLogic.updateTipsDB();
-      await TipLogic.updateRetipsDB();
+      await fakeTipsAndUpdateDB(fakeData);
 
       const tip = await Tip.findOne({
         where: {
@@ -88,10 +91,7 @@ describe('(Re)Tips', () => {
         },
       ];
 
-      sandbox.stub(CacheLogic, 'getTips').callsFake(async () => fakeData);
-
-      await TipLogic.updateTipsDB();
-      await TipLogic.updateRetipsDB();
+      await fakeTipsAndUpdateDB(fakeData);
 
       const tip = await Tip.findOne({
         where: {
@@ -121,10 +121,7 @@ describe('(Re)Tips', () => {
         },
       ];
 
-      sandbox.stub(CacheLogic, 'getTips').callsFake(async () => fakeData);
-
-      await TipLogic.updateTipsDB();
-      await TipLogic.updateRetipsDB();
+      await fakeTipsAndUpdateDB(fakeData);
 
       const tip = await Tip.findOne({
         where: {
@@ -161,10 +158,7 @@ describe('(Re)Tips', () => {
         },
       ];
 
-      sandbox.stub(CacheLogic, 'getTips').callsFake(async () => fakeData);
-
-      await TipLogic.updateTipsDB();
-      await TipLogic.updateRetipsDB();
+      await fakeTipsAndUpdateDB(fakeData);
 
       const tip = await Tip.findOne({
         where: {
@@ -218,10 +212,7 @@ describe('(Re)Tips', () => {
         },
       ];
 
-      sandbox.stub(CacheLogic, 'getTips').callsFake(async () => fakeData);
-
-      await TipLogic.updateTipsDB();
-      await TipLogic.updateRetipsDB();
+      await fakeTipsAndUpdateDB(fakeData);
 
       const tip = await Tip.findOne({
         where: {
@@ -268,10 +259,7 @@ describe('(Re)Tips', () => {
         },
       ];
 
-      sandbox.stub(CacheLogic, 'getTips').callsFake(async () => fakeData);
-
-      await TipLogic.updateTipsDB();
-      await TipLogic.updateRetipsDB();
+      await fakeTipsAndUpdateDB(fakeData);
 
       const tip = await Tip.findOne({
         where: {
@@ -319,10 +307,7 @@ describe('(Re)Tips', () => {
         },
       ];
 
-      sandbox.stub(CacheLogic, 'getTips').callsFake(async () => fakeData);
-
-      await TipLogic.updateTipsDB();
-      await TipLogic.updateRetipsDB();
+      await fakeTipsAndUpdateDB(fakeData);
 
       const tip = await Tip.findOne({
         where: {

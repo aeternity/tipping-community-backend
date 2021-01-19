@@ -2,7 +2,7 @@ const { MESSAGE_QUEUES, MESSAGES } = require('../constants/queue');
 const queueLogic = require('./queueLogic');
 
 class MessageBroker {
-  async init() {
+  init() {
     // S: UPDATE TIPS CACHE
     // T: UPDATE TIPS DB
     // T: UPDATE RETIPS DB

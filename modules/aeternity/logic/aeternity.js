@@ -11,7 +11,11 @@ const TIPPING_V2_INTERFACE = require('tipping-contract/Tipping_v2_Interface.aes'
 const TIPPING_V3_INTERFACE = require('tipping-contract/Tipping_v3_Interface.aes');
 const ORACLE_SERVICE_INTERFACE = require('tipping-oracle-service/OracleServiceInterface.aes');
 const TOKEN_CONTRACT_INTERFACE = require('aeternity-fungible-token/FungibleTokenFullInterface.aes');
-const TOKEN_REGISTRY = require('token-registry/TokenRegistry.aes');
+const TOKEN_REGISTRY = require('token-registry/TokenRegistryInterface.aes');
+const WORD_REGISTRY_INTERFACE = require('wordbazaar-contracts/WordRegistryInterface.aes');
+const WORD_SALE_INTERFACE = require('wordbazaar-contracts/TokenSaleInterface.aes');
+const TOKEN_VOTING_CONTRACT = require('wordbazaar-contracts/TokenVotingInterface.aes');
+
 const logger = require('../../../utils/logger')(module);
 const { topicsRegex } = require('../utils/tipTopicUtil');
 const { TRACE_STATES } = require('../../payfortx/constants/traceStates');
@@ -59,8 +63,22 @@ class Aeternity {
         ORACLE_SERVICE_INTERFACE,
         { contractAddress: process.env.ORACLE_CONTRACT_ADDRESS },
       );
+
+      if (process.env.WORD_REGISTRY_CONTRACT) {
+        this.wordRegistryContract = await this.client.getContractInstance(
+          WORD_REGISTRY_INTERFACE,
+          { contractAddress: process.env.WORD_REGISTRY_CONTRACT },
+        );
+        logger.info('Starting WITH WORD REGISTRY contract');
+      } else {
+        logger.info('Starting WITHOUT WORD REGISTRY contract');
+      }
+
       this.tokenRegistry = await this.client.getContractInstance(TOKEN_REGISTRY, { contractAddress: process.env.TOKEN_REGISTRY_ADDRESS });
+
       this.tokenContracts = {};
+      this.wordSaleContracts = {};
+      this.tokenVotingContracts = {};
     }
   }
 
@@ -128,6 +146,46 @@ class Aeternity {
     });
   }
 
+  async fetchWordRegistryData() {
+    if (!this.client) throw new Error('Init sdk first');
+    return this.wordRegistryContract.methods.get_state().then(res => res.decodedResult);
+  }
+
+  async wordSaleTokenAddress(contractAddress) {
+    await this.initWordSaleContractIfUnknown(contractAddress);
+    return this.wordSaleContracts[contractAddress].methods.get_token().then(res => res.decodedResult);
+  }
+
+  async wordSaleState(contractAddress) {
+    await this.initWordSaleContractIfUnknown(contractAddress);
+    return this.wordSaleContracts[contractAddress].methods.get_state().then(res => res.decodedResult);
+  }
+
+  async wordSalePrice(contractAddress) {
+    await this.initWordSaleContractIfUnknown(contractAddress);
+    return this.wordSaleContracts[contractAddress].methods.prices().then(res => res.decodedResult);
+  }
+
+  async wordSaleVotes(contractAddress) {
+    await this.initWordSaleContractIfUnknown(contractAddress);
+    return this.wordSaleContracts[contractAddress].methods.votes().then(res => res.decodedResult);
+  }
+
+  async wordSaleVoteTimeout(contractAddress) {
+    await this.initWordSaleContractIfUnknown(contractAddress);
+    return this.wordSaleContracts[contractAddress].methods.vote_timeout().then(res => res.decodedResult);
+  }
+
+  async wordSaleVoteState(contractAddress) {
+    await this.initTokenVotingContractIfUnknown(contractAddress);
+    return this.tokenVotingContracts[contractAddress].methods.get_state().then(res => res.decodedResult);
+  }
+
+  async fungibleTokenTotalSupply(contractAddress) {
+    await this.initTokenContractIfUnknown(contractAddress);
+    return this.tokenContracts[contractAddress].methods.total_supply().then(res => res.decodedResult);
+  }
+
   async fetchOracleState() {
     if (!this.client) throw new Error('Init sdk first');
     return this.oracleContract.methods.get_state().then(res => res.decodedResult).catch(e => {
@@ -173,12 +231,33 @@ class Aeternity {
     });
   }
 
-  async fetchTokenMetaInfo(contractAddress) {
+  async initTokenVotingContractIfUnknown(contractAddress) {
+    if (!this.tokenVotingContracts[contractAddress]) {
+      this.tokenVotingContracts[contractAddress] = await this.client.getContractInstance(
+        TOKEN_VOTING_CONTRACT, { contractAddress },
+      );
+    }
+  }
+
+  async initWordSaleContractIfUnknown(contractAddress) {
+    if (!this.wordSaleContracts[contractAddress]) {
+      this.wordSaleContracts[contractAddress] = await this.client.getContractInstance(
+        WORD_SALE_INTERFACE, { contractAddress },
+      );
+    }
+  }
+
+  async initTokenContractIfUnknown(contractAddress) {
     if (!this.tokenContracts[contractAddress]) {
       this.tokenContracts[contractAddress] = await this.client.getContractInstance(
         TOKEN_CONTRACT_INTERFACE, { contractAddress },
       );
     }
+  }
+
+  async fetchTokenMetaInfo(contractAddress) {
+    await this.initTokenContractIfUnknown(contractAddress);
+
     return this.tokenContracts[contractAddress].methods.meta_info().then(r => r.decodedResult).catch(e => {
       logger.error(e.message);
       Sentry.captureException(e);
@@ -196,11 +275,8 @@ class Aeternity {
 
   // TODO optimize cache generation for account balances
   async fetchTokenAccountBalances(contractAddress) {
-    if (!this.tokenContracts[contractAddress]) {
-      this.tokenContracts[contractAddress] = await this.client.getContractInstance(
-        TOKEN_CONTRACT_INTERFACE, { contractAddress },
-      );
-    }
+    await this.initTokenContractIfUnknown(contractAddress);
+
     return this.tokenContracts[contractAddress].methods.balances()
       .then(r => r.decodedResult)
       .catch(e => {

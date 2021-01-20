@@ -46,6 +46,9 @@ module.exports = class CacheLogic {
       await CacheLogic.getOracleState();
       await CacheLogic.findContractEvents();
       await CacheLogic.getTokenInfos();
+      if (process.env.WORD_REGISTRY_CONTRACT) {
+        await CacheLogic.refreshWordAndVoteData(); // keeps hot even if undefined is passed as argument
+      }
     };
 
     setTimeout(() => {
@@ -105,6 +108,98 @@ module.exports = class CacheLogic {
           return acc;
         }, Promise.resolve({}));
     });
+  }
+
+  static async getWordRegistryData() {
+    return cache.getOrSet(['wordRegistryData'], () => aeternity.fetchWordRegistryData(), cache.shortCacheTime);
+  }
+
+  static async wordSaleDetails(address) {
+    const wordSaleState = await cache.getOrSet(['wordSaleState', address],
+      () => aeternity.wordSaleState(address));
+    const totalSupply = cache.getOrSet(['fungibleTokenTotalSupply', wordSaleState.token],
+      async () => aeternity.fungibleTokenTotalSupply(wordSaleState.token), cache.shortCacheTime);
+
+    const price = cache.getOrSet(['wordSalePrice', address],
+      () => aeternity.wordSalePrice(address), cache.shortCacheTime);
+
+    const [buy, sell] = await price;
+    return {
+      wordSaleAddress: address,
+      tokenAddress: wordSaleState.token,
+      totalSupply: await totalSupply,
+      buyPrice: buy,
+      sellPrice: sell,
+      spread: wordSaleState.spread,
+      description: wordSaleState.description,
+    };
+  }
+
+  static async refreshWordAndVoteData() {
+    const wordRegistryData = await CacheLogic.getWordRegistryData();
+    await wordRegistryData.tokens.asyncMap(([, wordSale]) => CacheLogic.wordSaleDetails(wordSale));
+    await wordRegistryData.tokens.asyncMap(([, wordSale]) => CacheLogic.wordSaleVotesDetails(wordSale));
+  }
+
+  static async wordSaleDetailsByToken(address) {
+    const wordRegistryData = await CacheLogic.getWordRegistryData();
+    const wordDetails = await wordRegistryData.tokens.asyncMap(
+      async ([, wordSale]) => ({ tokenAddress: await CacheLogic.getWordSaleTokenAddress(wordSale), sale: wordSale }),
+    );
+
+    const saleDetails = wordDetails.find(sale => sale.tokenAddress === address);
+    return saleDetails ? CacheLogic.wordSaleDetails(saleDetails.sale) : null;
+  }
+
+  // TODO trigger these via message queue
+  static async wordSaleVotesDetails(address) {
+    const votes = await cache.getOrSet(['wordSaleVotes', address],
+      () => aeternity.wordSaleVotes(address), cache.shortCacheTime);
+
+    return Promise.all(votes.map(([id, vote]) => CacheLogic.wordSaleVoteInfo(id, vote[1], vote[0], address)));
+  }
+
+  static getWordSaleTokenAddress(sale) {
+    return cache.getOrSet(['wordSaleTokenAddress', sale],
+      () => aeternity.wordSaleTokenAddress(sale));
+  }
+
+  static async wordSaleVoteInfo(id, vote, alreadyApplied, sale) {
+    const state = cache.getOrSet(['wordSaleVoteState', vote],
+      () => aeternity.wordSaleVoteState(vote), cache.shortCacheTime);
+
+    const voteTimeout = cache.getOrSet(['wordSaleVoteTimeout', sale],
+      () => aeternity.wordSaleVoteTimeout(sale));
+
+    const height = aeternity.client.height();
+
+    const votedFor = (await state).vote_state.find(([s]) => s)[1];
+    const votedAgainst = (await state).vote_state.find(([s]) => !s)[1];
+    const ifAgainstZero = votedFor === 0 ? 0 : 100;
+    const votedPositive = new BigNumber(votedFor)
+      .dividedBy(new BigNumber(votedFor).plus(votedAgainst)).times(100).toFixed(0);
+
+    const tokenAddress = CacheLogic.getWordSaleTokenAddress(sale);
+
+    const totalSupply = cache.getOrSet(['fungibleTokenTotalSupply', await tokenAddress],
+      async () => aeternity.fungibleTokenTotalSupply(await tokenAddress), cache.shortCacheTime);
+
+    const stakePercent = (await totalSupply) ? new BigNumber(votedFor).dividedBy(await totalSupply).times(100).toFixed(0) : '0';
+    const timeoutHeight = (await state).close_height + (await voteTimeout);
+    return {
+      id,
+      alreadyApplied,
+      voteAddress: vote,
+      subject: (await state).metadata.subject,
+      timeouted: timeoutHeight < (await height),
+      timeoutHeight,
+      closeHeight: (await state).close_height,
+      voteAccounts: (await state).vote_accounts,
+      isClosed: (await height) >= (await state).close_height,
+      isSuccess: new BigNumber(stakePercent).isGreaterThan(50),
+      votePercent: votedAgainst !== 0 ? votedPositive : ifAgainstZero,
+      stakePercent,
+    };
   }
 
   static async getOracleState() {
@@ -263,6 +358,33 @@ module.exports = class CacheLogic {
   static async invalidateTokenCache(req, res) {
     await cache.del(['getTokenAccounts', req.params.token]);
     await CacheLogic.getTokenAccounts(req.params.token); // wait for cache update to let frontend know data availability
+    if (res) res.send({ status: 'OK' });
+  }
+
+  static async invalidateWordRegistryCache(req, res) {
+    await cache.del(['wordRegistryData']);
+    await CacheLogic.getWordRegistryData(); // wait for cache update to let frontend know data availability
+    if (res) res.send({ status: 'OK' });
+  }
+
+  static async invalidateWordSaleVotesCache(req, res) {
+    await cache.del(['wordSaleVotes', req.params.wordSale]);
+    await CacheLogic.wordSaleVotesDetails(req.params.wordSale); // wait for cache update to let frontend know data availability
+    if (res) res.send({ status: 'OK' });
+  }
+
+  static async invalidateWordSaleVoteStateCache(req, res) {
+    await cache.del(['wordSaleVoteState', req.params.vote]);
+    if (res) res.send({ status: 'OK' });
+  }
+
+  static async invalidateWordSaleCache(req, res) {
+    const tokenAddress = await CacheLogic.getWordSaleTokenAddress(req.params.wordSale);
+
+    await cache.del(['wordSalePrice', req.params.wordSale]);
+    await cache.del(['wordSaleState', req.params.wordSale]);
+    await cache.del(['fungibleTokenTotalSupply', tokenAddress]);
+    await CacheLogic.wordSaleDetails(req.params.wordSale); // wait for cache update to let frontend know data availability
     if (res) res.send({ status: 'OK' });
   }
 

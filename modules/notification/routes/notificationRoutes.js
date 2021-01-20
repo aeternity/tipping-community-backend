@@ -12,7 +12,7 @@ const router = new Router();
 
 /**
  * @swagger
- * /notifications/{notificationId}:
+ * /notification/{notificationId}:
  *   get:
  *     tags:
  *       - notifications
@@ -52,7 +52,7 @@ router.get('/user/:author', signatureAuth, NotificationLogic.getForUser);
 
 /**
  * @swagger
- * /notifications:
+ * /notification:
  *   post:
  *     tags:
  *       - notifications
@@ -95,7 +95,7 @@ router.post('/', signatureAuth, async (req, res) => {
 
 /**
  * @swagger
- * /notifications/{notificationId}:
+ * /notification/{notificationId}:
  *   post:
  *     tags:
  *       - notifications

@@ -460,4 +460,30 @@ describe('Cache', () => {
       stub.restore();
     });
   });
+  describe('WordBazaar', () => {
+    it('it should invalidate a wordSale cache', function (done) {
+      this.timeout(5000);
+      // Just a random token contract, can be replaced anytime if its not working anymore
+      const wordSaleCtAddress = 'ct_RJt3nE2xwpA1Y95pkwyH7M5VthQUBd2TcdxuDZguGatQzKrWM';
+      checkCachedRoute(`/cache/invalidate/wordSale/${wordSaleCtAddress}`, 'object', done);
+    });
+
+    it('it should invalidate the wordRegistry cache', done => {
+      checkCachedRoute('/cache/invalidate/wordRegistry', 'object', done);
+    });
+
+    it('it should invalidate a wordSalesVote cache', function (done) {
+      this.timeout(5000);
+      // Just a random token contract, can be replaced anytime if its not working anymore
+      const wordSaleCtAddress = 'ct_RJt3nE2xwpA1Y95pkwyH7M5VthQUBd2TcdxuDZguGatQzKrWM';
+      checkCachedRoute(`/cache/invalidate/wordSaleVotes/${wordSaleCtAddress}`, 'object', done);
+    });
+
+    it('it should invalidate a wordSaleVoteState cache', function (done) {
+      this.timeout(5000);
+      // Just a random token contract, can be replaced anytime if its not working anymore
+      const wordSaleCtAddress = 'ct_RJt3nE2xwpA1Y95pkwyH7M5VthQUBd2TcdxuDZguGatQzKrWM';
+      checkCachedRoute(`/cache/invalidate/wordSaleVoteState/${wordSaleCtAddress}`, 'object', done);
+    });
+  });
 });

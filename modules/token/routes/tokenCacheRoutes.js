@@ -4,6 +4,11 @@ const CacheLogic = require('../../cache/logic/cacheLogic');
 
 const router = new Router();
 
+const wordbazaarMiddleware = (req, res, next) => {
+  if (process.env.WORD_REGISTRY_CONTRACT) return next();
+  return res.status(403).send('NotImplemented');
+};
+
 /**
  * @swagger
  * tags:
@@ -89,7 +94,7 @@ router.get('/balances', TokenCacheLogic.tokenAccountBalance);
  *             schema:
  *               type: object
  */
-router.get('/wordRegistry', async (req, res) => res.send(await CacheLogic.getWordRegistryData()));
+router.get('/wordRegistry', wordbazaarMiddleware, async (req, res) => res.send(await CacheLogic.getWordRegistryData()));
 
 /**
  * @swagger
@@ -112,7 +117,8 @@ router.get('/wordRegistry', async (req, res) => res.send(await CacheLogic.getWor
  *             schema:
  *               type: object
  */
-router.get('/wordSale/:contractAddress', async (req, res) => res.send(await CacheLogic.wordSaleDetails(req.params.contractAddress)));
+router.get('/wordSale/:contractAddress', wordbazaarMiddleware,
+  async (req, res) => res.send(await CacheLogic.wordSaleDetails(req.params.contractAddress)));
 
 /**
  * @swagger
@@ -135,7 +141,7 @@ router.get('/wordSale/:contractAddress', async (req, res) => res.send(await Cach
  *             schema:
  *               type: object
  */
-router.get('/wordSaleByToken/:contractAddress', async (req, res) => {
+router.get('/wordSaleByToken/:contractAddress', wordbazaarMiddleware, async (req, res) => {
   const data = await CacheLogic.wordSaleDetailsByToken(req.params.contractAddress);
   if (!data) return res.status(404).send('no word sale information for address');
   return res.send(data);
@@ -162,6 +168,7 @@ router.get('/wordSaleByToken/:contractAddress', async (req, res) => {
  *             schema:
  *               type: object
  */
-router.get('/wordSaleVotesDetails/:contractAddress', async (req, res) => res.send(await CacheLogic.wordSaleVotesDetails(req.params.contractAddress)));
+router.get('/wordSaleVotesDetails/:contractAddress', wordbazaarMiddleware,
+  async (req, res) => res.send(await CacheLogic.wordSaleVotesDetails(req.params.contractAddress)));
 
 module.exports = router;

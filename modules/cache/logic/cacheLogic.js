@@ -23,7 +23,7 @@ const searchOptions = {
   threshold: 0.3,
   includeScore: true,
   shouldSort: false,
-  keys: ['title', 'chainName', 'sender', 'preview.description', 'preview.title', 'url', 'topics'],
+  keys: ['title', 'chainName', 'sender', 'preview.description', 'preview.title', 'url', 'topics', 'word'],
 };
 
 module.exports = class CacheLogic {
@@ -108,6 +108,46 @@ module.exports = class CacheLogic {
           return acc;
         }, Promise.resolve({}));
     });
+  }
+
+  static async getWordRegistryAndSaleData(ordering = null, direction = 'desc', search = null) {
+    const wordRegistryData = await CacheLogic.getWordRegistryData();
+    let data = await wordRegistryData.tokens.asyncMap(async ([word, sale]) => {
+      const wordSaleDetails = await CacheLogic.wordSaleDetails(sale);
+
+      return {
+        word,
+        sale,
+        ...wordSaleDetails
+      }
+    });
+
+    switch (ordering) {
+      case 'asset':
+        direction === 'desc' ? data.sort((a, b) => -a.word.localeCompare(b.word)) : data.sort((a, b) => a.word.localeCompare(b.word));
+        break;
+      case 'buyprice':
+        direction === 'desc' ? data.sort((a, b) => new BigNumber(b.buyPrice).comparedTo(a.buyPrice)) : data.sort((a, b) => new BigNumber(a.buyPrice).comparedTo(b.buyPrice));
+        break;
+      case 'sellprice':
+        direction === 'desc' ? data.sort((a, b) => new BigNumber(b.sellPrice).comparedTo(a.sellPrice)) : data.sort((a, b) => new BigNumber(a.sellPrice).comparedTo(b.sellPrice));
+        break;
+      case 'supply':
+        direction === 'desc' ? data.sort((a, b) => new BigNumber(b.totalSupply).comparedTo(a.totalSupply)) : data.sort((a, b) => new BigNumber(a.totalSupply).comparedTo(b.totalSupply));
+        break;
+      default:
+    }
+
+    if (search) {
+      data = new Fuse(data, searchOptions).search(search).map(result => {
+        const item = result.item;
+        item.searchScore = result.item.score;
+        return item;
+      });
+    }
+
+
+    return data;
   }
 
   static async getWordRegistryData() {

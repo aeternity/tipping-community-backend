@@ -3,6 +3,11 @@ const CacheLogic = require('../logic/cacheLogic');
 
 const router = new Router();
 
+const wordbazaarMiddleware = (req, res, next) => {
+  if (process.env.WORD_REGISTRY_CONTRACT) return next();
+  return res.status(403).send('NotImplemented');
+};
+
 CacheLogic.init(); // calls init
 
 /**
@@ -327,7 +332,7 @@ router.get('/invalidate/events', CacheLogic.invalidateContractEvents);
  *       200:
  *         description: OK
  */
-router.get('/invalidate/token/:token', CacheLogic.invalidateTokenCache);
+router.get('/invalidate/token/:token', wordbazaarMiddleware, CacheLogic.invalidateTokenCache);
 
 /**
  * @swagger
@@ -347,7 +352,7 @@ router.get('/invalidate/token/:token', CacheLogic.invalidateTokenCache);
  *       200:
  *         description: OK
  */
-router.get('/invalidate/wordSale/:wordSale', CacheLogic.invalidateWordSaleCache);
+router.get('/invalidate/wordSale/:wordSale', wordbazaarMiddleware, CacheLogic.invalidateWordSaleCache);
 
 /**
  * @swagger
@@ -360,7 +365,7 @@ router.get('/invalidate/wordSale/:wordSale', CacheLogic.invalidateWordSaleCache)
  *       200:
  *         description: OK
  */
-router.get('/invalidate/wordRegistry', CacheLogic.invalidateWordRegistryCache);
+router.get('/invalidate/wordRegistry', wordbazaarMiddleware, CacheLogic.invalidateWordRegistryCache);
 
 /**
  * @swagger
@@ -380,7 +385,7 @@ router.get('/invalidate/wordRegistry', CacheLogic.invalidateWordRegistryCache);
  *       200:
  *         description: OK
  */
-router.get('/invalidate/wordSaleVotes/:wordSale', CacheLogic.invalidateWordSaleVotesCache);
+router.get('/invalidate/wordSaleVotes/:wordSale', wordbazaarMiddleware, CacheLogic.invalidateWordSaleVotesCache);
 
 /**
  * @swagger
@@ -400,6 +405,6 @@ router.get('/invalidate/wordSaleVotes/:wordSale', CacheLogic.invalidateWordSaleV
  *       200:
  *         description: OK
  */
-router.get('/invalidate/wordSaleVoteState/:vote', CacheLogic.invalidateWordSaleVoteStateCache);
+router.get('/invalidate/wordSaleVoteState/:vote', wordbazaarMiddleware, CacheLogic.invalidateWordSaleVoteStateCache);
 
 module.exports = router;

@@ -8,7 +8,7 @@ const sinon = require('sinon');
 const ae = require('../logic/aeternity');
 const Trace = require('../../payfortx/logic/traceLogic');
 
-chai.should();
+const should = chai.should();
 // Our parent block
 describe('Aeternity', () => {
   describe('Init', () => {

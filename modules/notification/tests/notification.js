@@ -89,6 +89,8 @@ describe('Notifications', () => {
         },
       ];
 
+      await fakeTipsAndUpdateDB(fakeData);
+
       const createdNotification = await Notification.findOne({
         where: {
           type: NOTIFICATION_TYPES.TIP_ON_COMMENT,
@@ -101,6 +103,7 @@ describe('Notifications', () => {
         },
         raw: true,
       });
+
       createdNotification.should.be.a('object');
       createdNotification.should.have.property('receiver', 'ak_comment');
       createdNotification.should.have.property('entityType', ENTITY_TYPES.TIP);
@@ -235,7 +238,6 @@ describe('Notifications', () => {
       ];
 
       await fakeTipsAndUpdateDB(fakeData);
-
 
       const createdNotification = await Notification.findOne({
         where: {

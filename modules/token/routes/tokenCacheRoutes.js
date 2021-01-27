@@ -95,8 +95,7 @@ router.get('/balances', TokenCacheLogic.tokenAccountBalance);
  *               type: object
  */
 router.get('/wordRegistry', wordbazaarMiddleware,
-  async (req, res) =>
-    res.send(await CacheLogic.getWordRegistryAndSaleData(req.query.ordering, req.query.direction, req.query.search)));
+  async (req, res) => res.send(await CacheLogic.getWordRegistryAndSaleData(req.query.ordering, req.query.direction, req.query.search)));
 
 /**
  * @swagger

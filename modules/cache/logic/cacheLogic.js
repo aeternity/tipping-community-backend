@@ -149,7 +149,7 @@ module.exports = class CacheLogic {
     if (search) {
       data = new Fuse(data, searchOptions).search(search).map(result => {
         const { item } = result;
-        item.searchScore = result.item.score;
+        item.searchScore = result.score;
         return item;
       });
     }

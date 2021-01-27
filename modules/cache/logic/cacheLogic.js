@@ -118,34 +118,41 @@ module.exports = class CacheLogic {
       return {
         word,
         sale,
-        ...wordSaleDetails
-      }
+        ...wordSaleDetails,
+      };
     });
 
     switch (ordering) {
       case 'asset':
-        direction === 'desc' ? data.sort((a, b) => -a.word.localeCompare(b.word)) : data.sort((a, b) => a.word.localeCompare(b.word));
+        data = direction === 'desc'
+          ? data.sort((a, b) => -a.word.localeCompare(b.word))
+          : data.sort((a, b) => a.word.localeCompare(b.word));
         break;
       case 'buyprice':
-        direction === 'desc' ? data.sort((a, b) => new BigNumber(b.buyPrice).comparedTo(a.buyPrice)) : data.sort((a, b) => new BigNumber(a.buyPrice).comparedTo(b.buyPrice));
+        data = direction === 'desc'
+          ? data.sort((a, b) => new BigNumber(b.buyPrice).comparedTo(a.buyPrice))
+          : data.sort((a, b) => new BigNumber(a.buyPrice).comparedTo(b.buyPrice));
         break;
       case 'sellprice':
-        direction === 'desc' ? data.sort((a, b) => new BigNumber(b.sellPrice).comparedTo(a.sellPrice)) : data.sort((a, b) => new BigNumber(a.sellPrice).comparedTo(b.sellPrice));
+        data = direction === 'desc'
+          ? data.sort((a, b) => new BigNumber(b.sellPrice).comparedTo(a.sellPrice))
+          : data.sort((a, b) => new BigNumber(a.sellPrice).comparedTo(b.sellPrice));
         break;
       case 'supply':
-        direction === 'desc' ? data.sort((a, b) => new BigNumber(b.totalSupply).comparedTo(a.totalSupply)) : data.sort((a, b) => new BigNumber(a.totalSupply).comparedTo(b.totalSupply));
+        data = direction === 'desc'
+          ? data.sort((a, b) => new BigNumber(b.totalSupply).comparedTo(a.totalSupply))
+          : data.sort((a, b) => new BigNumber(a.totalSupply).comparedTo(b.totalSupply));
         break;
       default:
     }
 
     if (search) {
       data = new Fuse(data, searchOptions).search(search).map(result => {
-        const item = result.item;
+        const { item } = result;
         item.searchScore = result.item.score;
         return item;
       });
     }
-
 
     return data;
   }

@@ -154,13 +154,73 @@ describe('Token Cache', () => {
       sandbox.restore();
     });
 
-    it('it should get the word registry overview', async () => {
+    it('it should get the word registry overview', async function () {
+      this.timeout(15000);
       cache.del(['wordRegistryData']);
+      sandbox.stub(aeternity, 'fetchWordRegistryData').callsFake(async () => ({
+        owner: 'ak_2VnwoJPQgrXvreUx2L9BVvd9BidWwpu1ASKK1AMre21soEgpRT',
+        tokens: [
+          ['a', 'ct_7LcKkiLz2JSEXbmgZbNuG9MmCEJvV3YE44hbeVtX3YHSV92yg'],
+          ['bigear', 'ct_ut1QB7jsUvDr5jcB7X3NeLTW8iMaVprVTD5ts1tAtQcKTUQqb'],
+        ],
+      }));
       const res = await chai.request(server).get('/tokenCache/wordRegistry');
       res.should.have.status(200);
-      res.body.should.be.a('object');
-      res.body.should.have.property('owner', 'ak_2VnwoJPQgrXvreUx2L9BVvd9BidWwpu1ASKK1AMre21soEgpRT');
-      res.body.should.have.property('tokens');
+      res.body.should.be.a('array');
+      res.body.should.have.length(2);
+      const [firstWord] = res.body;
+      firstWord.should.have.property('word', 'a');
+      firstWord.should.have.property('sale', 'ct_7LcKkiLz2JSEXbmgZbNuG9MmCEJvV3YE44hbeVtX3YHSV92yg');
+      firstWord.should.have.property('wordSaleAddress', 'ct_7LcKkiLz2JSEXbmgZbNuG9MmCEJvV3YE44hbeVtX3YHSV92yg');
+      firstWord.should.have.property('tokenAddress', 'ct_2FsxPDC4bozSPNL6HFNtYfMXp9QhLJ9WzHqpBeRib1iw4TXYRE');
+      firstWord.should.have.property('totalSupply');
+      firstWord.should.have.property('buyPrice');
+      firstWord.should.have.property('sellPrice');
+      firstWord.should.have.property('spread');
+      firstWord.should.have.property('description');
+    });
+
+    it('it should search the word registry', async () => {
+      cache.del(['wordRegistryData']);
+      sandbox.stub(aeternity, 'fetchWordRegistryData').callsFake(async () => ({
+        owner: 'ak_2VnwoJPQgrXvreUx2L9BVvd9BidWwpu1ASKK1AMre21soEgpRT',
+        tokens: [
+          ['a', 'ct_7LcKkiLz2JSEXbmgZbNuG9MmCEJvV3YE44hbeVtX3YHSV92yg'],
+          ['bigear', 'ct_ut1QB7jsUvDr5jcB7X3NeLTW8iMaVprVTD5ts1tAtQcKTUQqb'],
+        ],
+      }));
+      // only occurs in second token
+      const resB = await chai.request(server).get('/tokenCache/wordRegistry?search=b');
+      resB.should.have.status(200);
+      resB.body.should.be.an('array');
+      resB.body.should.have.length(1);
+      resB.body[0].should.have.property('searchScore');
+      resB.body[0].searchScore.should.be.a('number');
+
+      // occurs in both tokens
+      const resA = await chai.request(server).get('/tokenCache/wordRegistry?search=a');
+      resA.should.have.status(200);
+      resA.body.should.be.an('array');
+      resA.body.should.have.length(2);
+
+      // occurs in no token
+      const res0 = await chai.request(server).get('/tokenCache/wordRegistry?search=x');
+      res0.should.have.status(200);
+      res0.body.should.be.an('array');
+      res0.body.should.have.length(0);
+
+      // sort by asset
+      const resOrderAsset = await chai.request(server).get('/tokenCache/wordRegistry?search=a&ordering=asset&direction=asc');
+      resOrderAsset.should.have.status(200);
+      resOrderAsset.body.should.be.an('array');
+      resOrderAsset.body.should.have.length(2);
+      resOrderAsset.body[0].should.have.property('word', 'a');
+
+      const resOrderAssetReverse = await chai.request(server).get('/tokenCache/wordRegistry?search=a&ordering=asset&direction=desc');
+      resOrderAssetReverse.should.have.status(200);
+      resOrderAssetReverse.body.should.be.an('array');
+      resOrderAssetReverse.body.should.have.length(2);
+      resOrderAssetReverse.body[0].should.have.property('word', 'bigear');
     });
 
     it('it should get a word registry contract overview', async function () {

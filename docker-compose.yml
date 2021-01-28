@@ -12,7 +12,8 @@ services:
       - postgres
       - ipfs
     environment:
-      - REDIS_URL=redis://redis:6379
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
       - NODE_URL=https://mainnet.aeternity.io
       - COMPILER_URL=https://latest.compiler.aepps.com
       - CONTRACT_V1_ADDRESS=ct_2AfnEfCSZCTEkxL5Yoi4Yfq6fF7YapHRaFKDJK3THMXMBspp5z

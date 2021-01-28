@@ -23,7 +23,6 @@ module.exports = class CacheLogic {
 
     const keepHotFunction = async () => {
       await CacheLogic.getTips();
-      await CacheLogic.getAllTips(true); // only keep the blacklisted cache hot
       await CacheLogic.fetchChainNames();
       await CacheLogic.fetchPrice();
       await CacheLogic.getOracleState();

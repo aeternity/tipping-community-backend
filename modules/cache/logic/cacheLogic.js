@@ -1,10 +1,12 @@
 const BigNumber = require('bignumber.js');
 const AsyncLock = require('async-lock');
 const axios = require('axios');
+const Fuse = require('fuse.js');
 const aeternity = require('../../aeternity/logic/aeternity');
 const CommentLogic = require('../../comment/logic/commentLogic');
 const cache = require('../utils/cache');
 const queueLogic = require('../../queue/logic/queueLogic');
+const searchOptions = require('../constants/searchOptions');
 
 const lock = new AsyncLock();
 const { getTipTopics } = require('../../aeternity/utils/tipTopicUtil');

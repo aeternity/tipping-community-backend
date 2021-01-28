@@ -183,9 +183,14 @@ module.exports = class CacheLogic {
   }
 
   static async refreshWordAndVoteData() {
-    const wordRegistryData = await CacheLogic.getWordRegistryData();
-    await wordRegistryData.tokens.asyncMap(([, wordSale]) => CacheLogic.wordSaleDetails(wordSale));
-    await wordRegistryData.tokens.asyncMap(([, wordSale]) => CacheLogic.wordSaleVotesDetails(wordSale));
+    return lock.acquire('CacheLogic.refreshWordAndVoteData', async () => {
+      const wordRegistryData = await CacheLogic.getWordRegistryData();
+      await wordRegistryData.tokens.asyncMap(async ([, wordSale]) => {
+        const details = await CacheLogic.wordSaleDetails(wordSale);
+        return CacheLogic.getTokenMetaInfo(details.tokenAddress)
+      });
+      await wordRegistryData.tokens.asyncMap(([, wordSale]) => CacheLogic.wordSaleVotesDetails(wordSale));
+    });
   }
 
   static async wordSaleDetailsByToken(address) {

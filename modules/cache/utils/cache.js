@@ -3,9 +3,9 @@ const { promisify } = require('util');
 const AsyncLock = require('async-lock');
 const logger = require('../../../utils/logger')(module);
 
-if (!process.env.REDIS_URL) throw Error('REDIS_URL is not set');
+if (!process.env.REDIS_HOST) throw Error('REDIS_HOST is not set');
 
-const client = redis.createClient(process.env.REDIS_URL);
+const client = redis.createClient(`redis://${process.env.REDIS_HOST}:${process.env.REDIS_PORT || 6379}`);
 const get = promisify(client.get).bind(client);
 const set = promisify(client.set).bind(client);
 const del = promisify(client.del).bind(client);
@@ -19,7 +19,7 @@ cache.wsconnection = null;
 
 cache.shortCacheTime = process.env.SHORT_CACHE_TIME || 5 * 60;
 cache.longCacheTime = process.env.LONG_CACHE_TIME || 60 * 60;
-cache.keepHotInterval = process.env.KEEP_HOT_INTERVAL || 20 * 1000;
+cache.keepHotInterval = process.env.KEEP_HOT_INTERVAL || cache.shortCacheTime * 1000;
 cache.networkKey = '';
 
 cache.init = async aeternity => {

@@ -1,40 +1,23 @@
 const BigNumber = require('bignumber.js');
 const AsyncLock = require('async-lock');
-const Fuse = require('fuse.js');
 const axios = require('axios');
+const Fuse = require('fuse.js');
 const aeternity = require('../../aeternity/logic/aeternity');
-const LinkPreviewLogic = require('../../linkPreview/logic/linkPreviewLogic');
-const TipOrderLogic = require('../../tip/logic/tiporderLogic');
 const CommentLogic = require('../../comment/logic/commentLogic');
-const TipLogic = require('../../tip/logic/tipLogic');
-const BlacklistLogic = require('../../blacklist/logic/blacklistLogic');
-const AsyncTipGeneratorsLogic = require('../../../logic/asyncTipGeneratorsLogic');
 const cache = require('../utils/cache');
+const queueLogic = require('../../queue/logic/queueLogic');
+const searchOptions = require('../constants/searchOptions');
 
 const lock = new AsyncLock();
-const { getTipTopics, topicsRegex } = require('../../aeternity/utils/tipTopicUtil');
+const { getTipTopics } = require('../../aeternity/utils/tipTopicUtil');
 const Util = require('../../aeternity/utils/util');
 const MdwLogic = require('../../aeternity/logic/mdwLogic');
-const { Profile } = require('../../../models');
+const { MESSAGES, MESSAGE_QUEUES } = require('../../queue/constants/queue');
 
 const logger = require('../../../utils/logger')(module);
 
-const searchOptions = {
-  threshold: 0.3,
-  includeScore: true,
-  shouldSort: false,
-  keys: ['title', 'chainName', 'sender', 'preview.description', 'preview.title', 'url', 'topics'],
-};
-
 module.exports = class CacheLogic {
-  constructor() {
-    CacheLogic.init();
-  }
-
   static async init() {
-    // Run once so the db is synced initially without getting triggered every 5 seconds
-    await aeternity.init();
-
     // INIT ONCE
     await CacheLogic.fetchStats();
 
@@ -80,12 +63,7 @@ module.exports = class CacheLogic {
       const tips = await aeternity.fetchTips();
       // Renew Stats
       await cache.del(['fetchStats']);
-
-      // not await on purpose, just trigger background actions
-      AsyncTipGeneratorsLogic.triggerGeneratePreviews(tips);
-      AsyncTipGeneratorsLogic.triggerFetchAllLocalRetips(tips);
-      CacheLogic.triggerGetTokenContractIndex(tips);
-
+      await queueLogic.sendMessage(MESSAGE_QUEUES.CACHE, MESSAGES.CACHE.EVENTS.RENEWED_TIPS);
       return tips;
     }, cache.shortCacheTime);
   }
@@ -108,6 +86,53 @@ module.exports = class CacheLogic {
           return acc;
         }, Promise.resolve({}));
     });
+  }
+
+  static async getWordRegistryAndSaleData(ordering = null, direction = 'desc', search = null) {
+    const wordRegistryData = await CacheLogic.getWordRegistryData();
+    let data = await wordRegistryData.tokens.asyncMap(async ([word, sale]) => {
+      const wordSaleDetails = await CacheLogic.wordSaleDetails(sale);
+
+      return {
+        word,
+        sale,
+        ...wordSaleDetails,
+      };
+    });
+
+    switch (ordering) {
+      case 'asset':
+        data = direction === 'desc'
+          ? data.sort((a, b) => -a.word.localeCompare(b.word))
+          : data.sort((a, b) => a.word.localeCompare(b.word));
+        break;
+      case 'buyprice':
+        data = direction === 'desc'
+          ? data.sort((a, b) => new BigNumber(b.buyPrice).comparedTo(a.buyPrice))
+          : data.sort((a, b) => new BigNumber(a.buyPrice).comparedTo(b.buyPrice));
+        break;
+      case 'sellprice':
+        data = direction === 'desc'
+          ? data.sort((a, b) => new BigNumber(b.sellPrice).comparedTo(a.sellPrice))
+          : data.sort((a, b) => new BigNumber(a.sellPrice).comparedTo(b.sellPrice));
+        break;
+      case 'supply':
+        data = direction === 'desc'
+          ? data.sort((a, b) => new BigNumber(b.totalSupply).comparedTo(a.totalSupply))
+          : data.sort((a, b) => new BigNumber(a.totalSupply).comparedTo(b.totalSupply));
+        break;
+      default:
+    }
+
+    if (search) {
+      data = new Fuse(data, searchOptions).search(search).map(result => {
+        const { item } = result;
+        item.searchScore = result.score;
+        return item;
+      });
+    }
+
+    return data;
   }
 
   static async getWordRegistryData() {
@@ -136,9 +161,17 @@ module.exports = class CacheLogic {
   }
 
   static async refreshWordAndVoteData() {
-    const wordRegistryData = await CacheLogic.getWordRegistryData();
-    await wordRegistryData.tokens.asyncMap(([, wordSale]) => CacheLogic.wordSaleDetails(wordSale));
-    await wordRegistryData.tokens.asyncMap(([, wordSale]) => CacheLogic.wordSaleVotesDetails(wordSale));
+    return lock.acquire('CacheLogic.refreshWordAndVoteData', async () => {
+      const wordRegistryData = await CacheLogic.getWordRegistryData();
+
+      return Promise.all([
+        wordRegistryData.tokens.asyncMap(async ([, wordSale]) => {
+          const details = await CacheLogic.wordSaleDetails(wordSale);
+          return CacheLogic.getTokenMetaInfo(details.tokenAddress);
+        }),
+        wordRegistryData.tokens.asyncMap(([, wordSale]) => CacheLogic.wordSaleVotesDetails(wordSale)),
+      ]);
+    });
   }
 
   static async wordSaleDetailsByToken(address) {
@@ -208,32 +241,9 @@ module.exports = class CacheLogic {
 
   static async fetchChainNames() {
     return cache.getOrSet(['fetchChainNames'], async () => {
-      const result = await MdwLogic.getChainNames();
-      const allProfiles = await Profile.findAll({ raw: true });
-
-      return result.reduce((acc, chainName) => {
-        if (!chainName.info.pointers || !chainName.info.pointers.account_pubkey) return acc;
-
-        const pubkey = chainName.info.pointers.account_pubkey;
-        if (!pubkey) return acc;
-
-        // already found a chain name
-        if (acc[pubkey]) {
-          // shorter always replaces
-          if (chainName.name.length < acc[pubkey].length) acc[pubkey] = chainName.name;
-          // equal length replaces if alphabetically earlier
-          if (chainName.name.length === acc[pubkey].length && chainName.name < acc[pubkey]) acc[pubkey] = chainName.name;
-        } else {
-          acc[pubkey] = chainName.name;
-        }
-
-        const currentProfile = allProfiles.find(profile => profile.author === pubkey);
-        if (currentProfile && currentProfile.preferredChainName) {
-          acc[pubkey] = currentProfile.preferredChainName;
-        }
-
-        return acc;
-      }, {});
+      const chainNames = await MdwLogic.getChainNames();
+      await queueLogic.sendMessage(MESSAGE_QUEUES.CACHE, MESSAGES.CACHE.EVENTS.RENEWED_CHAINNAMES);
+      return chainNames;
     }, cache.shortCacheTime);
   }
 
@@ -284,81 +294,22 @@ module.exports = class CacheLogic {
     });
   }
 
-  static async getAllTips(blacklist = true) {
-    const keys = ['CacheLogic.getAllTips'].concat(blacklist ? ['blacklisted'] : ['all']);
-    return cache.getOrSet(keys, async () => {
-      const [allTips, tipsPreview, chainNames, commentCounts, blacklistedIds, localTips] = await Promise.all([
-        CacheLogic.getTips(), LinkPreviewLogic.fetchAllLinkPreviews(), CacheLogic.fetchChainNames(),
-        CommentLogic.fetchCommentCountForTips(), BlacklistLogic.getBlacklistedIds(), TipLogic.fetchAllLocalTips(),
-      ]);
-
-      let tips = allTips;
-
-      // filter by blacklisted from backend
-      if (blacklist && blacklistedIds) {
-        tips = tips.filter(tip => !blacklistedIds.includes(tip.id));
-      }
-
-      // add preview to tips from backend
-      if (tipsPreview) {
-        tips = tips.map(tip => {
-          const preview = tipsPreview.find(linkPreview => linkPreview.requestUrl === tip.url);
-          return { ...tip, preview };
-        });
-      }
-
-      // add language to tips from backend
-      if (localTips) {
-        tips = tips.map(tip => {
-          const result = localTips.find(localTip => localTip.id === tip.id);
-          return { ...tip, contentLanguage: result ? result.language : null };
-        });
-      }
-
-      // add chain names for each tip sender
-      if (chainNames) {
-        tips = tips.map(tip => ({ ...tip, chainName: chainNames[tip.sender] }));
-      }
-
-      // add comment count to each tip
-      if (commentCounts) {
-        tips = tips.map(tip => {
-          const result = commentCounts.find(comment => comment.tipId === tip.id);
-          return { ...tip, commentCount: result ? result.count : 0 };
-        });
-      }
-
-      // add score to tips
-      tips = TipOrderLogic.applyTipScoring(tips);
-
-      return tips;
-    }, cache.shortCacheTime);
-  }
-
-  static async invalidateTips(req, res) {
+  static async invalidateTipsCache() {
     await cache.del(['getTips']);
     await cache.del(['CacheLogic.getAllTips', 'blacklisted']);
     await cache.del(['CacheLogic.getAllTips', 'all']);
-    CacheLogic.getAllTips(); // just trigger cache update, so follow up requests may have it cached already
-    if (res) res.send({ status: 'OK' });
   }
 
-  static async invalidateOracle(req, res) {
+  static async invalidateOracle() {
     await cache.del(['oracleState']);
-    CacheLogic.getOracleState(); // just trigger cache update, so follow up requests may have it cached already
-    if (res) res.send({ status: 'OK' });
   }
 
-  static async invalidateContractEvents(req, res) {
+  static async invalidateContractEvents() {
     await cache.del(['contractEvents']);
-    CacheLogic.findContractEvents(); // just trigger cache update, so follow up requests may have it cached already
-    if (res) res.send({ status: 'OK' });
   }
 
-  static async invalidateTokenCache(req, res) {
-    await cache.del(['getTokenAccounts', req.params.token]);
-    await CacheLogic.getTokenAccounts(req.params.token); // wait for cache update to let frontend know data availability
-    if (res) res.send({ status: 'OK' });
+  static async invalidateTokenCache(tokenContractAddress) {
+    await cache.del(['getTokenAccounts', tokenContractAddress]);
   }
 
   static async invalidateWordRegistryCache(req, res) {
@@ -386,74 +337,6 @@ module.exports = class CacheLogic {
     await cache.del(['fungibleTokenTotalSupply', tokenAddress]);
     await CacheLogic.wordSaleDetails(req.params.wordSale); // wait for cache update to let frontend know data availability
     if (res) res.send({ status: 'OK' });
-  }
-
-  static async deliverTip(req, res) {
-    const tips = await CacheLogic.getAllTips(false);
-    const result = tips.find(tip => tip.id === req.query.id);
-    return result ? res.send(result) : res.sendStatus(404);
-  }
-
-  static async deliverTips(req, res) {
-    const limit = 30;
-    let tips = await CacheLogic.getAllTips(req.query.blacklist !== 'false');
-
-    if (req.query.address) {
-      tips = tips.filter(tip => tip.sender === req.query.address);
-    }
-
-    if (req.query.contractVersion) {
-      const contractVersions = Array.isArray(req.query.contractVersion) ? req.query.contractVersion : [req.query.contractVersion];
-      tips = tips.filter(tip => contractVersions.includes((tip.id.split('_')[1] ? tip.id.split('_')[1] : 'v1')));
-    }
-
-    if (req.query.search) {
-      let searchTips = tips;
-
-      // if topics exist, only show topics
-      const searchTopics = req.query.search.match(topicsRegex);
-      if (searchTopics) {
-        searchTips = tips.filter(tip => searchTopics.every(topic => tip.topics.includes(topic)));
-      }
-
-      // otherwise fuzzy search all content
-      if (searchTopics === null || searchTips.length === 0) {
-        // TODO consider indexing
-        searchTips = new Fuse(tips, searchOptions).search(req.query.search).map(result => {
-          const tip = result.item;
-          tip.searchScore = result.item.score;
-          return tip;
-        });
-      }
-
-      tips = searchTips;
-    }
-    if (req.query.language) {
-      const requestedLanguages = req.query.language.split('|');
-      tips = tips.filter(tip => tip.preview && requestedLanguages.includes(tip.preview.lang)
-        && (!tip.contentLanguage || requestedLanguages.includes(tip.contentLanguage)));
-    }
-
-    if (req.query.ordering) {
-      switch (req.query.ordering) {
-        case 'hot':
-          tips.sort((a, b) => b.score - a.score);
-          break;
-        case 'latest':
-          tips.sort((a, b) => b.timestamp - a.timestamp);
-          break;
-        case 'highest':
-          tips.sort((a, b) => new BigNumber(b.total_amount).minus(a.total_amount).toNumber());
-          break;
-        default:
-      }
-    }
-
-    if (req.query.page) {
-      tips = tips.slice((req.query.page - 1) * limit, req.query.page * limit);
-    }
-
-    res.send(tips);
   }
 
   static async deliverContractEvents(req, res) {

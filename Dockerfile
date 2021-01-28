@@ -44,4 +44,4 @@ USER pptruser
 
 EXPOSE 3000
 
-CMD npm run db:create; node server.js
+CMD npm run db:create; node bin/www

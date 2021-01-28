@@ -27,6 +27,8 @@ process.env = {
   AUTHENTICATION_PASSWORD: 'pass',
   NODE_ENV: 'test',
   REDIS_URL: 'redis://localhost:6379',
+  REDIS_PORT: '6379',
+  REDIS_HOST: 'localhost',
   IPFS_URL: 'http://localhost:5001',
   ORACLE_CONTRACT_ADDRESS: 'ct_2PbBVGroJ2G618tHbWEWRrrxxf1BAn7Qt7BoNcLh3LqsSck8Lu',
   MIDDLEWARE_URL: 'https://testnet.aeternity.io/mdw',
@@ -38,6 +40,7 @@ process.env = {
 
 }
 
+// GENERATE KEYPAIR
 const Crypto = require('@aeternity/aepp-sdk').Crypto;
 const { secretKey, publicKey } = Crypto.generateKeyPair();
 
@@ -46,3 +49,7 @@ process.env = {
   PRIVATE_KEY: secretKey,
   PUBLIC_KEY: publicKey,
 };
+
+// RESET ALL QUEUES
+const queueLogic = require('./modules/queue/logic/queueLogic')
+queueLogic.clearRedisQueues().then(() => queueLogic.init())

@@ -2,10 +2,11 @@
 const chai = require('chai');
 const chaiHttp = require('chai-http');
 const { describe, it } = require('mocha');
+const sinon = require('sinon');
 
 const server = require('../../../server');
-const RetipLogic = require('../../tip/logic/retipLogic');
 const TipLogic = require('../../tip/logic/tipLogic');
+const CacheLogic = require('../../cache/logic/cacheLogic');
 const { publicKey, performSignedGETRequest, performSignedJSONRequest } = require('../../../utils/testingUtil');
 const {
   Notification, Comment, Tip, Retip,
@@ -24,6 +25,13 @@ describe('Notifications', () => {
     sender: 'ak_sender',
     entityType: ENTITY_TYPES.COMMENT,
     type: NOTIFICATION_TYPES.COMMENT_ON_COMMENT,
+  };
+  let sandbox;
+
+  const fakeTipsAndUpdateDB = async fakeData => {
+    sandbox.stub(CacheLogic, 'getTips').callsFake(async () => fakeData);
+    await TipLogic.updateTipsDB();
+    await TipLogic.updateRetipsDB();
   };
 
   describe('Create Notifications', () => {
@@ -58,6 +66,12 @@ describe('Notifications', () => {
         signature: 'sig',
         challenge: 'chall',
       }, { raw: true });
+
+      sandbox = sinon.createSandbox();
+    });
+
+    afterEach(() => {
+      sandbox.restore();
     });
 
     it('it should create notifications for TIP_ON_COMMENT', async () => {
@@ -75,8 +89,7 @@ describe('Notifications', () => {
         },
       ];
 
-      await TipLogic.updateTipsDB(fakeData);
-      await RetipLogic.updateRetipsDB(fakeData);
+      await fakeTipsAndUpdateDB(fakeData);
 
       const createdNotification = await Notification.findOne({
         where: {
@@ -90,6 +103,7 @@ describe('Notifications', () => {
         },
         raw: true,
       });
+
       createdNotification.should.be.a('object');
       createdNotification.should.have.property('receiver', 'ak_comment');
       createdNotification.should.have.property('entityType', ENTITY_TYPES.TIP);
@@ -121,8 +135,7 @@ describe('Notifications', () => {
         },
       ];
 
-      await TipLogic.updateTipsDB(fakeData);
-      await RetipLogic.updateRetipsDB(fakeData);
+      await fakeTipsAndUpdateDB(fakeData);
 
       const createdNotification = await Notification.findOne({
         where: {
@@ -170,8 +183,7 @@ describe('Notifications', () => {
         },
       ];
 
-      await TipLogic.updateTipsDB(fakeData);
-      await RetipLogic.updateRetipsDB(fakeData);
+      await fakeTipsAndUpdateDB(fakeData);
 
       const createdNotification = await Notification.findOne({
         where: {
@@ -225,8 +237,7 @@ describe('Notifications', () => {
         },
       ];
 
-      await TipLogic.updateTipsDB(fakeData);
-      await RetipLogic.updateRetipsDB(fakeData);
+      await fakeTipsAndUpdateDB(fakeData);
 
       const createdNotification = await Notification.findOne({
         where: {
@@ -274,8 +285,7 @@ describe('Notifications', () => {
         },
       ];
 
-      await TipLogic.updateTipsDB(fakeData);
-      await RetipLogic.updateRetipsDB(fakeData);
+      await fakeTipsAndUpdateDB(fakeData);
     });
   });
 

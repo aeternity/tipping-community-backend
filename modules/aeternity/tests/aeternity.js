@@ -1,6 +1,5 @@
 // Require the dev-dependencies
 const chai = require('chai');
-const chaiHttp = require('chai-http');
 const {
   describe, it, beforeEach, afterEach,
 } = require('mocha');
@@ -10,12 +9,11 @@ const ae = require('../logic/aeternity');
 const Trace = require('../../payfortx/logic/traceLogic');
 
 const should = chai.should();
-chai.use(chaiHttp);
 // Our parent block
 describe('Aeternity', () => {
   describe('Init', () => {
     it('it should init', async function () {
-      this.timeout(5000);
+      this.timeout(20000);
       await ae.init();
     });
 
@@ -86,7 +84,7 @@ describe('Aeternity', () => {
       result.should.eql(false);
 
       // CHECK V2
-      result = await ae.preClaim('not_a_real_account', 'https://probably.not.an.existing.tip', new Trace(), ae.contractV2);
+      result = await ae.preClaim('not_a_real_acdcount', 'https://probably.not.an.existing.tip', new Trace(), ae.contractV2);
       result.should.be.a('boolean');
       result.should.eql(false);
     });

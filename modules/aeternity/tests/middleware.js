@@ -61,16 +61,16 @@ describe('Middleware', () => {
   describe('Names', () => {
     it('it should get the active chain names', async () => {
       const names = await mdwLogic.getChainNames();
-      names.should.be.an('array');
-      names.should.have.length.greaterThan(0);
+      names.should.be.an('object');
+      Object.keys(names).should.have.length.greaterThan(0);
     });
 
     it('it should return an empty array if the middleware is down', async () => {
       const originalUrl = process.env.MIDDLEWARE_URL;
       process.env.MIDDLEWARE_URL = 'https://localhost/';
       const names = await mdwLogic.getChainNames();
-      names.should.be.an('array');
-      names.should.have.length(0);
+      names.should.be.an('object');
+      Object.keys(names).should.have.length(0);
       process.env.MIDDLEWARE_URL = originalUrl;
     });
   });

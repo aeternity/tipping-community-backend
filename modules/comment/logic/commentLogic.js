@@ -1,7 +1,6 @@
-const { Comment, Profile } = require('../../../models');
+const { Comment, Profile, Tip } = require('../../../models');
 const NotificationLogic = require('../../notification/logic/notificationLogic');
 const cache = require('../../cache/utils/cache');
-const TipLogic = require('../../tip/logic/tipLogic');
 const { NOTIFICATION_TYPES } = require('../../notification/constants/notification');
 
 module.exports = class CommentLogic {
@@ -14,12 +13,12 @@ module.exports = class CommentLogic {
         return res.status(400).send('Missing required field');
       }
       const parentComment = (typeof parentId !== 'undefined' && parentId !== '')
-        ? await Comment.findOne({ where: { id: parentId } }, { raw: true }) : null;
+        ? await Comment.findOne({ where: { id: parentId } }) : null;
       if (parentComment === null && typeof parentId !== 'undefined' && parentId !== '') {
         return res.status(400).send(`Could not find parent comment with id ${parentId}`);
       }
 
-      const relevantTip = await TipLogic.getOne(tipId);
+      const relevantTip = await Tip.findOne({ where: { id: tipId } });
       if (!relevantTip) return res.status(400).send(`Could not find tip with id ${tipId}`);
 
       const entry = await Comment.create({

@@ -86,6 +86,22 @@ router.get('/balances', TokenCacheLogic.tokenAccountBalance);
  *     tags:
  *       - tokencache
  *     summary: Get word registry overview
+ *     parameters:
+ *       - in: query
+ *         required: false
+ *         schema:
+ *           type: string
+ *         name: ordering
+ *       - in: query
+ *         required: false
+ *         schema:
+ *           type: string
+ *         name: direction
+ *       - in: query
+ *         required: false
+ *         schema:
+ *           type: string
+ *         name: search
  *     responses:
  *       200:
  *         description: OK
@@ -94,7 +110,8 @@ router.get('/balances', TokenCacheLogic.tokenAccountBalance);
  *             schema:
  *               type: object
  */
-router.get('/wordRegistry', wordbazaarMiddleware, async (req, res) => res.send(await CacheLogic.getWordRegistryData()));
+router.get('/wordRegistry', wordbazaarMiddleware,
+  async (req, res) => res.send(await CacheLogic.getWordRegistryAndSaleData(req.query.ordering, req.query.direction, req.query.search)));
 
 /**
  * @swagger

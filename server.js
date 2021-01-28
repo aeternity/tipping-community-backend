@@ -9,9 +9,6 @@ const app = express();
 const exphbs = require('express-handlebars');
 const cors = require('cors');
 const logger = require('./utils/logger')(module);
-const aeternity = require('./modules/aeternity/logic/aeternity');
-const cache = require('./modules/cache/utils/cache');
-
 // SENTRY
 if (process.env.SENTRY_URL) {
   Sentry.init({
@@ -41,7 +38,7 @@ if (process.env.SENTRY_URL) {
 app.engine('handlebars', exphbs());
 app.set('view engine', 'handlebars');
 app.set('views', path.join(__dirname, './modules/blacklist/views'));
-// MIDDLWARES
+// MIDDLEWARES
 app.use(express.json()); // for parsing application/json
 
 process
@@ -102,17 +99,5 @@ app.use((err, req, res, next) => {
 app.use((req, res) => {
   res.sendStatus(404);
 });
-
-// first initialize aeternity sdk and cache before starting server
-const startup = async () => {
-  await aeternity.init();
-  await cache.init(aeternity);
-
-  app.listen(3000, () => {
-    logger.info('Server started');
-  });
-};
-
-startup();
 
 module.exports = app;

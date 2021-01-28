@@ -3,11 +3,22 @@ const BackupLogic = require('../../backup/logic/backupLogic');
 const aeternity = require('../../aeternity/logic/aeternity');
 const cache = require('../../cache/utils/cache');
 const imageLogic = require('../../media/logic/imageLogic');
+const CacheLogic = require('../../cache/logic/cacheLogic');
 const { Profile } = require('../../../models');
 const { IPFS_TYPES } = require('../../backup/constants/ipfsTypes');
+const queueLogic = require('../../queue/logic/queueLogic');
+const { MESSAGE_QUEUES, MESSAGES } = require('../../queue/constants/queue');
 
-module.exports = class ProfileLogic {
-  static async upsertProfile(req, res) {
+class ProfileLogic {
+  constructor() {
+    queueLogic.subscribeToMessage(MESSAGE_QUEUES.PROFILE, MESSAGES.PROFILE.COMMANDS.UPDATE_PREFERRED_CHAIN_NAMES,
+      async message => {
+        await this.verifyPreferredChainNames();
+        await queueLogic.deleteMessage(MESSAGE_QUEUES.PROFILE, message.id);
+      });
+  }
+
+  async upsertProfile(req, res) {
     try {
       const {
         biography, preferredChainName, referrer, location, signature, challenge,
@@ -55,26 +66,45 @@ module.exports = class ProfileLogic {
       if (coverImage && coverImage[0].filename !== null) {
         await BackupLogic.backupImageToIPFS(coverImage[0].filename, author, IPFS_TYPES.COVER_IMAGE);
       }
-      return ProfileLogic.getSingleItem(req, res);
+      return res.send(this.updateProfileForExternalAnswer(await this.getSingleItem(author)));
     } catch (e) {
       logger.error(e);
       return res.status(500).send(e.message);
     }
   }
 
-  static async getSingleItem(req, res) {
-    const author = req.body.author ? req.body.author : req.params.author;
-    let result = await Profile.findOne({ where: { author } });
-    if (!result) return res.sendStatus(404);
-    result = result.toJSON();
-    result.image = result.image ? `/images/${result.image}` : false;
-    result.coverImage = result.coverImage ? `/images/${result.coverImage}` : false;
-    result.referrer = !!result.referrer;
-    return res.send(result);
+  // TODO run this via message queue when chain names are updated
+  async verifyPreferredChainNames() {
+    const allProfiles = await Profile.findAll({ raw: true });
+    const chainNames = await CacheLogic.fetchChainNames();
+    return allProfiles.asyncMap(async profile => {
+      if (profile.preferredChainName && (
+        !chainNames[profile.author] || !chainNames[profile.author].includes(profile.preferredChainName)
+      )) {
+        await Profile.update({ preferredChainName: null }, { where: { author: profile.author } });
+      }
+    });
+  }
+
+  async getSingleItem(author) {
+    return Profile.findOne({ where: { author }, raw: true });
+  }
+
+  updateProfileForExternalAnswer(profile) {
+    return {
+      ...profile,
+      image: profile.image ? `/images/${profile.image}` : false,
+      coverImage: profile.coverImage ? `/images/${profile.coverImage}` : false,
+      referrer: !!profile.referrer,
+    };
+  }
+
+  async getAllProfiles() {
+    return Profile.findAll({ raw: true });
   }
 
   // LEGACY
-  static async deleteImage(req, res) {
+  async deleteImage(req, res) {
     const result = await Profile.findOne({ where: { author: req.params.author }, raw: true });
     if (!result || !result.image) return res.sendStatus(404);
     imageLogic.deleteImage(result.image);
@@ -86,7 +116,7 @@ module.exports = class ProfileLogic {
     return res.sendStatus(200);
   }
 
-  static async getImage(req, res) {
+  async getImage(req, res) {
     const result = await Profile.findOne({ where: { author: req.params.author }, raw: true });
     if (!result || !result.image) return res.sendStatus(404);
     try {
@@ -97,7 +127,7 @@ module.exports = class ProfileLogic {
     }
   }
 
-  static async verifyRequest(req, res, next) {
+  async verifyRequest(req, res, next) {
     // Get author
     const author = req.params.author ? req.params.author : req.body.author;
     if (!author) return res.status(400).send({ err: 'Missing author' });
@@ -111,4 +141,7 @@ module.exports = class ProfileLogic {
     // check if chain name points to author
     return addresses.includes(author) ? next() : res.status(400).send({ err: 'Chainname does not point to author' });
   }
-};
+}
+
+const profileLogic = new ProfileLogic();
+module.exports = profileLogic;

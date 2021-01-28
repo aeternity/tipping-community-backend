@@ -1,7 +1,7 @@
 const multer = require('multer');
 const { Router } = require('express');
 const path = require('path');
-const ProfileLogic = require('../logic/profileLogic');
+const profileLogic = require('../logic/profileLogic');
 const { signatureAuth } = require('../../authentication/logic/authenticationLogic');
 
 const router = new Router();
@@ -43,7 +43,12 @@ const upload = multer({ storage });
  *             schema:
  *               $ref: '#/components/schemas/Profile'
  */
-router.get('/:author', ProfileLogic.getSingleItem);
+router.get('/:author', async (req, res) => {
+  const author = req.body.author ? req.body.author : req.params.author;
+  const result = await profileLogic.getSingleItem(author);
+  if (!result) return res.sendStatus(404);
+  return res.send(profileLogic.updateProfileForExternalAnswer(result));
+});
 /**
  * @swagger
  * /profile/{author}:
@@ -79,8 +84,8 @@ router.post(
   '/:author',
   upload.fields([{ name: 'image', maxCount: 1 }, { name: 'coverImage', maxCount: 1 }]),
   signatureAuth,
-  ProfileLogic.verifyRequest,
-  ProfileLogic.upsertProfile,
+  profileLogic.verifyRequest,
+  (req, res) => profileLogic.upsertProfile(req, res),
 );
 
 // Image routes
@@ -106,7 +111,7 @@ router.post(
  *               type: string
  *               format: binary
  */
-router.get('/image/:author', ProfileLogic.getImage);
+router.get('/image/:author', profileLogic.getImage);
 
 // Legacy routes
 /**
@@ -145,8 +150,8 @@ router.post(
   '/image/:author',
   upload.fields([{ name: 'image', maxCount: 1 }, { name: 'coverImage', maxCount: 1 }]),
   signatureAuth,
-  ProfileLogic.verifyRequest,
-  ProfileLogic.upsertProfile,
+  profileLogic.verifyRequest,
+  (req, res) => profileLogic.upsertProfile(req, res),
 );
 /**
  * @swagger
@@ -175,8 +180,8 @@ router.post(
 router.delete(
   '/image/:author',
   signatureAuth,
-  ProfileLogic.verifyRequest,
-  ProfileLogic.deleteImage,
+  profileLogic.verifyRequest,
+  (req, res) => profileLogic.deleteImage(req, res),
 );
 /**
  * @swagger
@@ -208,8 +213,8 @@ router.post(
   '/',
   upload.fields([{ name: 'image', maxCount: 1 }, { name: 'coverImage', maxCount: 1 }]),
   signatureAuth,
-  ProfileLogic.verifyRequest,
-  ProfileLogic.upsertProfile,
+  profileLogic.verifyRequest,
+  (req, res) => profileLogic.upsertProfile(req, res),
 );
 
 module.exports = router;

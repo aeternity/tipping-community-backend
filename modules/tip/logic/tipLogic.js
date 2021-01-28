@@ -1,27 +1,38 @@
 const cld = require('cld');
 const AsyncLock = require('async-lock');
+const CacheLogic = require('../../cache/logic/cacheLogic');
 
-const { Tip } = require('../../../models');
+const { Tip, Retip } = require('../../../models');
 const NotificationLogic = require('../../notification/logic/notificationLogic');
+const queueLogic = require('../../queue/logic/queueLogic');
+const { MESSAGES, MESSAGE_QUEUES } = require('../../queue/constants/queue');
 
 const lock = new AsyncLock();
 
-module.exports = class TipLogic {
-  static async fetchAllLocalTips() {
+class TipLogic {
+  constructor() {
+    queueLogic.subscribeToMessage(MESSAGE_QUEUES.TIPS, MESSAGES.TIPS.COMMANDS.UPDATE_DB, async message => {
+      await this.updateTipsDB();
+      await queueLogic.deleteMessage(MESSAGE_QUEUES.TIPS, message.id);
+    });
+    queueLogic.subscribeToMessage(MESSAGE_QUEUES.RETIPS, MESSAGES.RETIPS.COMMANDS.UPDATE_DB, async message => {
+      await this.updateRetipsDB();
+      await queueLogic.deleteMessage(MESSAGE_QUEUES.RETIPS, message.id);
+    });
+  }
+
+  async fetchAllLocalTips() {
     return Tip.findAll({ raw: true });
   }
 
-  static async bulkCreate(tips) {
-    return Tip.bulkCreate(tips, { raw: true });
+  async fetchAllLocalRetips() {
+    return Retip.findAll({ raw: true });
   }
 
-  static async getOne(tipId) {
-    return Tip.findOne({ where: { id: tipId }, raw: true });
-  }
-
-  static async updateTipsDB(remoteTips) {
+  async updateTipsDB() {
     await lock.acquire('TipLogic.updateTipsDB', async () => {
-      const localTips = await TipLogic.fetchAllLocalTips();
+      const remoteTips = await CacheLogic.getTips();
+      const localTips = await Tip.findAll({ raw: true });
       const remoteTipIds = [...new Set(remoteTips.map(tip => tip.id))];
       const localTipIds = [...new Set(localTips.map(tip => tip.id))];
 
@@ -43,7 +54,7 @@ module.exports = class TipLogic {
         const lang = probability.languages ? probability.languages[0].code : null;
         return { ...tip, lang };
       });
-      await TipLogic.bulkCreate(result.map(({
+      await Tip.bulkCreate(result.map(({
         id, lang, claim, sender, media,
       }) => ({
         id: String(id),
@@ -52,6 +63,44 @@ module.exports = class TipLogic {
         unclaimed: claim ? claim.unclaimed : false,
         media: media || [],
       })));
+      if (newTipsIds.length > 0) {
+        await queueLogic.sendMessage(MESSAGE_QUEUES.TIPS, MESSAGES.TIPS.EVENTS.CREATED_NEW_LOCAL_TIPS);
+      }
     });
   }
-};
+
+  async updateRetipsDB() {
+    await lock.acquire('RetipLogic.updateRetipsDB', async () => {
+      const remoteTips = await CacheLogic.getTips();
+      const localRetips = await this.fetchAllLocalRetips();
+      const remoteRetips = [...(remoteTips.map(tip => tip.retips.map(retip => ({
+        ...retip,
+        parentTip: tip,
+      }))).flat())];
+      const remoteRetipIds = [...new Set(remoteRetips.map(retip => retip.id))];
+      const localRetipIds = [...new Set(localRetips.map(retip => retip.id))];
+
+      const newReTipIds = remoteRetipIds.filter(id => !localRetipIds.includes(id));
+      const oldReTipIds = remoteRetipIds.filter(id => localRetipIds.includes(id));
+
+      // Send appropriate notifications for new tips
+      await newReTipIds.asyncMap(id => NotificationLogic.handleNewRetip(remoteRetips.find(retip => retip.id === id)));
+      await oldReTipIds.asyncMap(id => NotificationLogic.handleOldRetip(
+        localRetips.find(retip => retip.id === id),
+        remoteRetips.find(retip => retip.id === id),
+      ));
+
+      await Retip.bulkCreate(
+        newReTipIds.map(id => remoteRetips.find(({ id: retipId }) => id === retipId))
+          .map(({
+            id, parentTip, claim, sender,
+          }) => ({
+            id, tipId: parentTip.id, unclaimed: claim.unclaimed, sender,
+          })),
+      );
+    });
+  }
+}
+
+const tipLogic = new TipLogic();
+module.exports = tipLogic;

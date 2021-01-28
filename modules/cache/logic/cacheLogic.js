@@ -185,11 +185,14 @@ module.exports = class CacheLogic {
   static async refreshWordAndVoteData() {
     return lock.acquire('CacheLogic.refreshWordAndVoteData', async () => {
       const wordRegistryData = await CacheLogic.getWordRegistryData();
-      await wordRegistryData.tokens.asyncMap(async ([, wordSale]) => {
-        const details = await CacheLogic.wordSaleDetails(wordSale);
-        return CacheLogic.getTokenMetaInfo(details.tokenAddress)
-      });
-      await wordRegistryData.tokens.asyncMap(([, wordSale]) => CacheLogic.wordSaleVotesDetails(wordSale));
+
+      return Promise.all([
+        wordRegistryData.tokens.asyncMap(async ([, wordSale]) => {
+          const details = await CacheLogic.wordSaleDetails(wordSale);
+          return CacheLogic.getTokenMetaInfo(details.tokenAddress);
+        }),
+        wordRegistryData.tokens.asyncMap(([, wordSale]) => CacheLogic.wordSaleVotesDetails(wordSale)),
+      ]);
     });
   }
 

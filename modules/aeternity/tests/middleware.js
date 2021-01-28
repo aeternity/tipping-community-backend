@@ -59,7 +59,7 @@ describe('Middleware', () => {
   });
 
   describe('Names', () => {
-    it.skip('it should get the active chain names', async () => {
+    it('it should get the active chain names', async () => {
       const names = await mdwLogic.getChainNames();
       names.should.be.an('array');
       names.should.have.length.greaterThan(0);

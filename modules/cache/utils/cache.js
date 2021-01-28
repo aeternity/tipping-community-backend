@@ -19,7 +19,7 @@ cache.wsconnection = null;
 
 cache.shortCacheTime = process.env.SHORT_CACHE_TIME || 5 * 60;
 cache.longCacheTime = process.env.LONG_CACHE_TIME || 60 * 60;
-cache.keepHotInterval = process.env.KEEP_HOT_INTERVAL || 20 * 1000;
+cache.keepHotInterval = process.env.KEEP_HOT_INTERVAL || cache.shortCacheTime * 1000;
 cache.networkKey = '';
 
 cache.init = async aeternity => {

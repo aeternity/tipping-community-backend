@@ -26,7 +26,6 @@ process.env = {
   AUTHENTICATION_USER: 'admin',
   AUTHENTICATION_PASSWORD: 'pass',
   NODE_ENV: 'test',
-  REDIS_URL: 'redis://localhost:6379',
   REDIS_PORT: '6379',
   REDIS_HOST: 'localhost',
   IPFS_URL: 'http://localhost:5001',

@@ -30,9 +30,6 @@ jobs:
           docker run --name postgres -p 5432:5432 -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=superhero -d postgres:latest
           npx sequelize-cli db:migrate
           npm test
-        env:
-          REDIS_URL: redis://localhost:6379
-          IPFS_URL: http://localhost:5001
 
   build-docker:
     runs-on: ubuntu-latest

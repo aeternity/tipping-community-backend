@@ -342,7 +342,7 @@ class Aeternity {
 
             if ((await contract.methods.check_claim(url, address)).decodedResult.success) {
               clearInterval(interval);
-              return resolve();
+              return resolve(true);
             }
           } catch (e) {
             if (!e.message.includes('MORE_ORACLE_ANSWERS_REQUIRED')) {

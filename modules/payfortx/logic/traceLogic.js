@@ -5,9 +5,9 @@ const logger = require('../../../utils/logger')(module);
 const { TRACE_STATES } = require('../constants/traceStates');
 
 module.exports = class Trace {
-  constructor() {
-    this.id = uuidv4();
-    this.data = [];
+  constructor(uuid = null) {
+    this.id = uuid || uuidv4();
+    this.data = uuid ? this.readJSON() : [];
     this.writeToJSON();
     this.saveToDisk = false;
   }
@@ -25,6 +25,10 @@ module.exports = class Trace {
       uuid: this.id,
     });
     this.saveToDisk = true;
+  }
+
+  readJSON() {
+    return JSON.parse(fs.readFileSync(`./traces/${this.id}.json`, 'utf-8'));
   }
 
   writeToJSON() {

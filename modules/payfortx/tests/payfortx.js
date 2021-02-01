@@ -5,8 +5,11 @@ const sinon = require('sinon');
 
 const { Crypto } = require('@aeternity/aepp-sdk');
 const tippingContractUtil = require('tipping-contract/util/tippingContractUtil');
+const BigNumber = require('bignumber.js');
 const ae = require('../../aeternity/logic/aeternity');
 const server = require('../../../server');
+const Trace = require('../logic/traceLogic');
+const { TRACE_STATES } = require('../constants/traceStates');
 const { publicKey, secretKey } = require('../../../utils/testingUtil');
 
 chai.should();
@@ -47,16 +50,34 @@ describe('Pay for TX', () => {
         await ae.init();
       });
 
-      it('it should reject on website not in contract', done => {
-        chai.request(server).post('/claim/submit').send({
+      it('it should reject on website not in contract with zero amount', async function () {
+        this.timeout(10000);
+        const res = await chai.request(server).post('/claim/submit').send({
           address: publicKey,
           url: 'https://complicated.domain.test',
-        }).end((err, res) => {
-          res.should.have.status(400);
-          res.body.should.have.property('error', 'No zero amount claims');
-          done();
         });
-      }).timeout(10000);
+        res.should.have.status(400);
+        res.body.should.have.property('error', 'No zero amount claims');
+      });
+
+      it('it should accept if pre-claim was successful', async function () {
+        this.timeout(10000);
+        const preClaimStub = sinon.stub(ae, 'checkPreClaimProperties').callsFake(async () => new BigNumber(100000));
+        const claimStub = sinon.stub(ae, 'claimTips').callsFake(async () => true);
+        const res = await chai.request(server).post('/claim/submit').send({
+          address: publicKey,
+          url: 'https://complicated.domain.test',
+        });
+        res.should.have.status(200);
+        res.body.should.have.property('claimUUID');
+        claimStub.called.should.equal(true);
+        const trace = new Trace(res.body.claimUUID);
+        const lastElement = trace.data[trace.data.length - 1];
+        lastElement.should.have.property('result', 'success');
+        lastElement.should.have.property('state', TRACE_STATES.FINISHED);
+        claimStub.restore();
+        preClaimStub.restore();
+      });
     });
   });
 

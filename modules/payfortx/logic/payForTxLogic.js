@@ -59,7 +59,6 @@ module.exports = class PayForTxLogic {
 
       // Verify result
       if (result.isZero()) return sendError(400, 'No zero amount claims');
-      if (!result) return sendError(400, 'Claim rejected');
       trace.setMetaData(req.body.url, req.body.address);
 
       // run claim async
@@ -75,7 +74,7 @@ module.exports = class PayForTxLogic {
   static async runAsyncClaim(address, url, trace) {
     try {
       await aeternity.claimTips(address, url, trace);
-      CacheLogic.invalidateTips();
+      CacheLogic.invalidateTipsCache();
       CacheLogic.invalidateOracle();
       CacheLogic.invalidateContractEvents();
       trace.finished({

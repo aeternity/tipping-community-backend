@@ -103,6 +103,7 @@ class MessageQueue {
 
   async resetAll() {
     await this.clearRedisQueues();
+    await subscriber.unsubscribe();
     this.queues.map(queue => queue.subject.complete());
     this.queues = [];
     await this.init();

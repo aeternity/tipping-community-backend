@@ -42,9 +42,7 @@ module.exports = class TipTracing {
     const unsafeCheckOracleAnswers = await aeternity.oracleContract.methods.unsafe_check_oracle_answers(tip.url).then(x => x.decodedResult);
 
     // Deliberately not cached
-    const contractTransactions = await aeternity.middlewareContractTransactions();
-    const events = await contractTransactions.map(tx => tx.hash)
-      .asyncMap(hash => aeternity.transactionEvents(hash))
+    const events = await CacheLogic.findContractEvents()
       .then(transactionEvents => transactionEvents.filter(e => e.url === tip.url));
 
     const result = {

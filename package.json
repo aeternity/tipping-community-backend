@@ -13,8 +13,7 @@
     "lint-ci": "eslint --ext .js --max-warnings=0 .",
     "swagger:create": "npx swagger-jsdoc@5 -d .swaggerDef.js ./modules/**/*.js && node ./cli/generateDefinitionFromModels.js",
     "swagger:lint": "npx @redocly/openapi-cli lint swagger.json --format stylish",
-    "swagger": "npm run swagger:create && npm run swagger:lint",
-    "release": "standard-version"
+    "swagger": "npm run swagger:create && npm run swagger:lint"
   },
   "repository": {
     "type": "git",
@@ -85,7 +84,6 @@
     "husky": "^4.3.8",
     "mocha": "^8.2.0",
     "sequelize-auto-migrations": "github:scimonster/sequelize-auto-migrations#a063aa6535a3f580623581bf866cef2d609531ba",
-    "sinon": "^9.2.1",
-    "standard-version": "^9.1.0"
+    "sinon": "^9.2.1"
   }
 }

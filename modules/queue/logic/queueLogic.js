@@ -2,20 +2,27 @@ const { filter } = require('rxjs/operators');
 
 const RedisSMQ = require('rsmq');
 const { Subject } = require('rxjs');
+const redis = require('redis');
 const logger = require('../../../utils/logger')(module);
 const { MESSAGE_QUEUES, MESSAGES } = require('../constants/queue');
 
-const rsmq = new RedisSMQ({ host: process.env.REDIS_HOST, port: process.env.REDIS_PORT || 6379, ns: 'rsmq' });
+const publisher = redis.createClient(`redis://${process.env.REDIS_HOST}:${process.env.REDIS_PORT || 6379}`);
+const subscriber = redis.createClient(`redis://${process.env.REDIS_HOST}:${process.env.REDIS_PORT || 6379}`);
+const MQ_NAMESPACE = 'rsmq';
+const rsmq = new RedisSMQ({
+  publisher,
+  ns: MQ_NAMESPACE,
+  realtime: true,
+});
 
 // TODO TEST
 class MessageQueue {
   queues = [];
 
   constructor() {
-    // Setup all queues
-    this.interval = setInterval(() => this.notifySubscriber(), 100);
     // Create initial subjects
     Object.values(MESSAGE_QUEUES).map(qname => this.initQueueSubject(qname));
+    subscriber.on('message', channel => this.notifySubscriber(channel));
     logger.info('All MQs registered locally');
   }
 
@@ -24,11 +31,11 @@ class MessageQueue {
     logger.info('All MQs registered on redis');
   }
 
-  notifySubscriber() {
-    this.queues.map(async queue => {
-      const message = await this.receiveMessage(queue.name).catch(e => logger.warn(`Reading queue ${queue.name} failed with ${e.message}`));
-      if (message.id) queue.subject.next(message);
-    });
+  async notifySubscriber(channel) {
+    const qname = channel.replace(`${MQ_NAMESPACE}:rt:`, '');
+    const message = await this.receiveMessage(qname).catch(e => logger.warn(`Reading queue ${qname} failed with ${e.message}`));
+    const queue = this.queues.find(q => q.name === qname);
+    if (message.id) queue.subject.next(message);
   }
 
   initQueueSubject(qname) {
@@ -47,6 +54,7 @@ class MessageQueue {
     const openQueues = await rsmq.listQueuesAsync();
     if (!openQueues.includes(qname)) {
       await rsmq.createQueueAsync({ qname, vt: 60 * 10 }); // 10 Minutes message receive timeout
+      subscriber.subscribe(`${MQ_NAMESPACE}:rt:${qname}`);
     }
   }
 

@@ -25,6 +25,11 @@
   "bugs": {
     "url": "https://github.com/aeternity/tipping-community-backend/issues"
   },
+  "husky": {
+    "hooks": {
+      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
+    }
+  },
   "homepage": "https://github.com/aeternity/tipping-community-backend#readme",
   "dependencies": {
     "@aeternity/aepp-sdk": "^7.7.0",
@@ -69,12 +74,15 @@
     "wordbazaar-contracts": "github:aeternity/wordbazaar-contracts#v0.0.1-alpha1"
   },
   "devDependencies": {
+    "@commitlint/cli": "^11.0.0",
+    "@commitlint/config-conventional": "^11.0.0",
     "babel-eslint": "^10.1.0",
     "chai": "^4.2.0",
     "chai-http": "^4.3.0",
     "eslint": "^7.14.0",
     "eslint-config-airbnb-base": "^14.2.1",
     "eslint-plugin-import": "^2.22.1",
+    "husky": "^4.3.8",
     "mocha": "^8.2.0",
     "sequelize-auto-migrations": "github:scimonster/sequelize-auto-migrations#a063aa6535a3f580623581bf866cef2d609531ba",
     "sinon": "^9.2.1",

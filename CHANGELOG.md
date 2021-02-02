@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.7.1](https://www.github.com/aeternity/tipping-community-backend/compare/v1.7.0...v1.7.1) (2021-02-02)
+
+
+### Bug Fixes
+
+* **trace:** fixes blockchain trace ([cafb8b8](https://www.github.com/aeternity/tipping-community-backend/commit/cafb8b8b0fa4b7ef969d57b79937c692774e38f4))
+
 ## [1.7.0](https://www.github.com/aeternity/tipping-community-backend/compare/v1.6.2...v1.7.0) (2021-02-01)
 
 

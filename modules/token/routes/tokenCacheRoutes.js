@@ -1,6 +1,9 @@
 const { Router } = require('express');
+const BigNumber = require('bignumber.js');
+const Fuse = require('fuse.js');
 const TokenCacheLogic = require('../logic/tokenCacheLogic');
 const CacheLogic = require('../../cache/logic/cacheLogic');
+const searchOptions = require('../../cache/constants/searchOptions');
 
 const router = new Router();
 
@@ -111,7 +114,52 @@ router.get('/balances', TokenCacheLogic.tokenAccountBalance);
  *               type: object
  */
 router.get('/wordRegistry', wordbazaarMiddleware,
-  async (req, res) => res.send(await CacheLogic.getWordRegistryAndSaleData(req.query.ordering, req.query.direction, req.query.search)));
+  async (req, res) => {
+    const limit = 30;
+    const direction = req.query.direction || 'desc';
+
+    let words = await CacheLogic.getWordRegistryAndSaleData();
+
+    if (req.query.ordering) {
+      switch (req.query.ordering) {
+        case 'asset':
+          words = direction === 'desc'
+            ? words.sort((a, b) => -a.word.localeCompare(b.word))
+            : words.sort((a, b) => a.word.localeCompare(b.word));
+          break;
+        case 'buyprice':
+          words = direction === 'desc'
+            ? words.sort((a, b) => new BigNumber(b.buyPrice).comparedTo(a.buyPrice))
+            : words.sort((a, b) => new BigNumber(a.buyPrice).comparedTo(b.buyPrice));
+          break;
+        case 'sellprice':
+          words = direction === 'desc'
+            ? words.sort((a, b) => new BigNumber(b.sellPrice).comparedTo(a.sellPrice))
+            : words.sort((a, b) => new BigNumber(a.sellPrice).comparedTo(b.sellPrice));
+          break;
+        case 'supply':
+          words = direction === 'desc'
+            ? words.sort((a, b) => new BigNumber(b.totalSupply).comparedTo(a.totalSupply))
+            : words.sort((a, b) => new BigNumber(a.totalSupply).comparedTo(b.totalSupply));
+          break;
+        default:
+      }
+    }
+
+    if (req.query.search) {
+      words = new Fuse(words, searchOptions).search(req.query.search).map(result => {
+        const { item } = result;
+        item.searchScore = result.score;
+        return item;
+      });
+    }
+
+    if (req.query.page) {
+      words = words.slice((req.query.page - 1) * limit, req.query.page * limit);
+    }
+
+    return res.send(words);
+  });
 
 /**
  * @swagger

@@ -15,7 +15,6 @@ const rsmq = new RedisSMQ({
   realtime: true,
 });
 
-// TODO TEST
 class MessageQueue {
   queues = [];
 
@@ -52,9 +51,10 @@ class MessageQueue {
     if (!Object.values(MESSAGE_QUEUES).includes(qname)) throw new Error(`Queue name ${qname} is not a valid queue name. Update the enums.`);
     this.initQueueSubject(qname);
     const openQueues = await rsmq.listQueuesAsync();
+    logger.debug(`Subscribing to redis queue "${qname}"`);
+    subscriber.subscribe(`${MQ_NAMESPACE}:rt:${qname}`);
     if (!openQueues.includes(qname)) {
       await rsmq.createQueueAsync({ qname, vt: 60 * 10 }); // 10 Minutes message receive timeout
-      subscriber.subscribe(`${MQ_NAMESPACE}:rt:${qname}`);
     }
   }
 
@@ -71,7 +71,7 @@ class MessageQueue {
   }
 
   registerDebugListener(qname) {
-    logger.debug(`SUBSCRIBING TO: "${qname}"`);
+    logger.debug(`Subscribing locally to queue "${qname}"`);
     this.subscribe(qname, message => logger.debug(`NEW MESSAGE: { message: ${message.message}, id: ${message.id} }`));
   }
 

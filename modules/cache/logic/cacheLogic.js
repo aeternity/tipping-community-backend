@@ -136,26 +136,43 @@ module.exports = class CacheLogic {
     ];
 
     return txs.flatMap(tx => {
-      const logs = decodeEvents(tx.tx.log, { schema: eventsSchema }).map(event => {
-        switch (event.name) {
-          case 'Buy':
-            return {
-              event: event.name, address: event.decoded[0], price: event.decoded[1], amount: event.decoded[2],
-            };
-          case 'Sell':
-            return {
-              event: event.name, address: event.decoded[0], return: event.decoded[1], amount: event.decoded[2],
-            };
-          default:
-            return {};
+      const decodedEvent = () => {
+        const decodedEvents = decodeEvents(tx.tx.log, { schema: eventsSchema })
+          .flatMap(({ name, decoded }) => ({ name, decoded }))
+          .filter(log => log.decoded.length);
+
+        if (decodedEvents.length === 1) {
+          const [event] = decodedEvents;
+          switch (event.name) {
+            case 'Buy':
+              return {
+                event: event.name,
+                address: event.decoded[0],
+                price: event.decoded[1],
+                amount: event.decoded[2],
+                perToken: new BigNumber(event.decoded[1]).dividedBy(event.decoded[2]),
+              };
+            case 'Sell':
+              return {
+                event: event.name,
+                address: event.decoded[0],
+                return: event.decoded[1],
+                amount: event.decoded[2],
+                perToken: new BigNumber(event.decoded[1]).dividedBy(event.decoded[2]),
+              };
+            default:
+              return {};
+          }
         }
-      }).filter(event => event.event);
+
+        return {};
+      };
 
       return {
         timestamp: tx.micro_time,
-        logs,
+        ...decodedEvent(),
       };
-    }).filter(event => event.logs.length);
+    }).filter(event => event.event);
   }
 
   static async refreshWordAndVoteData() {

@@ -1,6 +1,9 @@
 const BigNumber = require('bignumber.js');
 const AsyncLock = require('async-lock');
 const axios = require('axios');
+const requireESM = require('esm')(module);
+// use to handle es6 import/export
+const { decodeEvents, SOPHIA_TYPES } = requireESM('@aeternity/aepp-sdk/es/contract/aci/transformation');
 const aeternity = require('../../aeternity/logic/aeternity');
 const CommentLogic = require('../../comment/logic/commentLogic');
 const cache = require('../utils/cache');
@@ -123,6 +126,38 @@ module.exports = class CacheLogic {
     };
   }
 
+  static async wordPriceHistory(wordSale) {
+    const height = await aeternity.client.height();
+    const txs = await MdwLogic.getContractTransactions(height, wordSale);
+
+    const eventsSchema = [
+      { name: 'Buy', types: [SOPHIA_TYPES.address, SOPHIA_TYPES.int, SOPHIA_TYPES.int] },
+      { name: 'Sell', types: [SOPHIA_TYPES.address, SOPHIA_TYPES.int, SOPHIA_TYPES.int] },
+    ];
+
+    return txs.flatMap(tx => {
+      const logs = decodeEvents(tx.tx.log, { schema: eventsSchema }).map(event => {
+        switch (event.name) {
+          case 'Buy':
+            return {
+              event: event.name, address: event.decoded[0], price: event.decoded[1], amount: event.decoded[2],
+            };
+          case 'Sell':
+            return {
+              event: event.name, address: event.decoded[0], return: event.decoded[1], amount: event.decoded[2],
+            };
+          default:
+            return {};
+        }
+      }).filter(event => event.event);
+
+      return {
+        timestamp: tx.micro_time,
+        logs,
+      };
+    }).filter(event => event.logs.length);
+  }
+
   static async refreshWordAndVoteData() {
     return lock.acquire('CacheLogic.refreshWordAndVoteData', async () => {
       const wordRegistryData = await CacheLogic.getWordRegistryData();
@@ -167,7 +202,7 @@ module.exports = class CacheLogic {
     const voteTimeout = cache.getOrSet(['wordSaleVoteTimeout', sale],
       () => aeternity.wordSaleVoteTimeout(sale));
 
-    const height = aeternity.client.height();
+    const height = await aeternity.client.height();
 
     const votedFor = (await state).vote_state.find(([s]) => s)[1];
     const votedAgainst = (await state).vote_state.find(([s]) => !s)[1];

@@ -70,7 +70,7 @@
     "uuid": "^8.3.1",
     "winston": "^3.3.3",
     "winston-daily-rotate-file": "^4.5.0",
-    "wordbazaar-contracts": "github:aeternity/wordbazaar-contracts#v0.0.1-alpha1"
+    "wordbazaar-contracts": "github:aeternity/wordbazaar-contracts#v0.0.2-alpha1"
   },
   "devDependencies": {
     "@commitlint/cli": "^11.0.0",

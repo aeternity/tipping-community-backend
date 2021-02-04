@@ -187,6 +187,30 @@ router.get('/wordSale/:contractAddress', wordbazaarMiddleware,
 
 /**
  * @swagger
+ * /tokenCache/priceHistory/{contractAddress}:
+ *   get:
+ *     tags:
+ *       - tokencache
+ *     summary: Get word sale price history events for address
+ *     parameters:
+ *       - in: path
+ *         required: true
+ *         schema:
+ *           type: string
+ *         name: contractAddress
+ *     responses:
+ *       200:
+ *         description: OK
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ */
+router.get('/priceHistory/:contractAddress', wordbazaarMiddleware,
+  async (req, res) => res.send(await CacheLogic.wordPriceHistory(req.params.contractAddress)));
+
+/**
+ * @swagger
  * /tokenCache/wordSaleByToken/{contractAddress}:
  *   get:
  *     tags:

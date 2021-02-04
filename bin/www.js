@@ -10,6 +10,16 @@ const queueLogic = require('../modules/queue/logic/queueLogic');
 const cacheLogic = require('../modules/cache/logic/cacheLogic');
 // Get port from environment and store in Express.
 
+process
+  .on('unhandledRejection', reason => {
+    if (process.env.SENTRY_URL) Sentry.captureException(reason);
+    logger.error(reason);
+  })
+  .on('uncaughtException', err => {
+    if (process.env.SENTRY_URL) Sentry.captureException(err);
+    logger.error(err);
+  });
+
 function normalizePort(value) {
   return typeof value === 'string' ? parseInt(value, 10) : value;
 }

@@ -20,7 +20,6 @@ const logger = require('../../../utils/logger')(module);
 module.exports = class CacheLogic {
   static async init() {
     // INIT ONCE
-    await CacheLogic.fetchStats();
 
     const keepHotFunction = async () => {
       await CacheLogic.getTips();
@@ -34,16 +33,23 @@ module.exports = class CacheLogic {
       }
     };
 
-    setTimeout(() => {
+    setTimeout(async () => {
       cache.setKeepHot(keepHotFunction);
+      await CacheLogic.fetchStats();
     }, 5000);
+
+    queueLogic.subscribeToMessage(MESSAGE_QUEUES.CACHE, MESSAGES.CACHE.COMMANDS.RENEW_TIPS, async message => {
+      await CacheLogic.invalidateTipsCache();
+      await CacheLogic.getTips();
+      await queueLogic.deleteMessage(MESSAGE_QUEUES.CACHE, message.id);
+    });
   }
 
   static async findContractEvents() {
     const fetchContractEvents = async () => {
       const height = await aeternity.client.height();
       const contractTransactions = await MdwLogic.middlewareContractTransactions(height);
-      return contractTransactions.asyncMap(tx => aeternity.decodeTransactionEvents(tx));
+      return contractTransactions.asyncMap(tx => aeternity.decodeTransactionEventsFromMdw(tx));
     };
 
     return cache.getOrSet(['contractEvents'], async () => fetchContractEvents().catch(logger.error), cache.shortCacheTime, false);
@@ -494,5 +500,9 @@ module.exports = class CacheLogic {
   static async deliverTipTopics(req, res) {
     const tips = await CacheLogic.getTips();
     res.send(getTipTopics(tips));
+  }
+
+  static async getTx(hash) {
+    return cache.getOrSet(['tx', hash], async () => aeternity.fetchTx(hash));
   }
 };

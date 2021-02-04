@@ -82,7 +82,7 @@ class Aeternity {
     return (await this.client.getNodeInfo()).nodeNetworkId;
   }
 
-  async decodeTransactionEvents(data) {
+  decodeTransactionEvents(log) {
     const eventsSchema = [
       { name: 'TipReceived', types: [SOPHIA_TYPES.address, SOPHIA_TYPES.int, SOPHIA_TYPES.string] },
       {
@@ -99,47 +99,89 @@ class Aeternity {
       { name: 'CheckPersistClaim', types: [SOPHIA_TYPES.string, SOPHIA_TYPES.address, SOPHIA_TYPES.int] },
       { name: 'Transfer', types: [SOPHIA_TYPES.address, SOPHIA_TYPES.address, SOPHIA_TYPES.int] },
       { name: 'Allowance', types: [SOPHIA_TYPES.address, SOPHIA_TYPES.address, SOPHIA_TYPES.int] },
+      { name: 'TipDirectReceived', types: [SOPHIA_TYPES.address, SOPHIA_TYPES.int, SOPHIA_TYPES.string] },
+      { name: 'TipDirectTokenReceived', types: [SOPHIA_TYPES.address, SOPHIA_TYPES.int, SOPHIA_TYPES.string, SOPHIA_TYPES.address] },
+      { name: 'PostWithoutTipReceived', types: [SOPHIA_TYPES.address, SOPHIA_TYPES.string] },
     ];
 
-    const decodedEvents = decodeEvents(data.tx.log, { schema: eventsSchema });
-
-    return decodedEvents.map(decodedEvent => {
-      const event = {
-        event: decodedEvent.name,
-        caller: data.tx.caller_id,
-        nonce: data.tx.nonce,
-        height: data.block_height,
-        hash: data.hash,
-        time: data.micro_time,
-        contract: data.tx.contract_id,
-      };
+    return (decodeEvents(log, { schema: eventsSchema }) || []).map(decodedEvent => {
+      const event = {};
       switch (decodedEvent.name) {
+        // AEX9
         case 'Transfer':
           event.from = `ak_${decodedEvent.decoded[0]}`;
           event.to = `ak_${decodedEvent.decoded[1]}`;
-          event.amount = decodedEvent.decoded[2] ? decodedEvent.decoded[2] : null;
+          event.amount = decodedEvent.decoded[2] || null;
           break;
         case 'Allowance':
           event.from = `ak_${decodedEvent.decoded[0]}`;
           event.for = `ak_${decodedEvent.decoded[1]}`;
-          event.amount = decodedEvent.decoded[2] ? decodedEvent.decoded[2] : null;
+          event.amount = decodedEvent.decoded[2] || null;
           break;
+
+          // V2
+        case 'TipDirectReceived':
+        case 'TipDirectTokenReceived':
+          event.address = `ak_${decodedEvent.decoded[0]}`;
+          event.amount = decodedEvent.decoded[1] || null;
+          event.receiver = decodedEvent.decoded[2]; // eslint-disable-line prefer-destructuring
+          event.tokenContract = decodedEvent.decoded[3] || null;
+          break;
+
+          // V3
+        case 'PostWithoutTipReceived':
+          event.address = `ak_${decodedEvent.decoded[0]}`;
+          event.title = decodedEvent.decoded[1]; // eslint-disable-line prefer-destructuring
+          break;
+
+          // ORACLES
         case 'CheckPersistClaim':
           event.address = `ak_${decodedEvent.decoded[1]}`;
-          event.amount = decodedEvent.decoded[2] ? decodedEvent.decoded[2] : null;
+          event.amount = decodedEvent.decoded[2] || null;
           event.url = decodedEvent.decoded[0]; // eslint-disable-line prefer-destructuring
           break;
         case 'QueryOracle':
           event.address = `ak_${decodedEvent.decoded[1]}`;
           event.url = decodedEvent.decoded[0]; // eslint-disable-line prefer-destructuring
           break;
-        default:
+
+        case 'TipReceived':
+        case 'TipTokenReceived':
+        case 'ReTipReceived':
+        case 'ReTipTokenReceived':
+        case 'TipWithdrawn':
           event.address = `ak_${decodedEvent.decoded[0]}`;
           event.amount = decodedEvent.decoded[1] ? decodedEvent.decoded[1] : null;
           event.url = decodedEvent.decoded[2]; // eslint-disable-line prefer-destructuring
+          event.tokenContract = decodedEvent.decoded[3] || null;
+          break;
+        default:
+          logger.warn(`Could not process event ${decodedEvent.name}`);
+          break;
       }
-      return event;
+      return {
+        parsedEvent: event,
+        ...decodedEvent,
+      };
     });
+  }
+
+  decodeTransactionEventsFromNode(tx) {
+    return this.decodeTransactionEvents(tx.log);
+  }
+
+  decodeTransactionEventsFromMdw(data) {
+    const decodedEvents = this.decodeTransactionEvents(data.tx.log);
+    return decodedEvents.map(decodedEvent => ({
+      event: decodedEvent.name,
+      caller: data.tx.caller_id,
+      nonce: data.tx.nonce,
+      height: data.block_height,
+      hash: data.hash,
+      time: data.micro_time,
+      contract: data.tx.contract_id,
+      ...decodedEvent.parsedEvent,
+    }));
   }
 
   async fetchWordRegistryData() {
@@ -391,6 +433,10 @@ class Aeternity {
 
   async postTipToV3(title, media = [], author, signature) {
     return this.contractV3.methods.post_without_tip_sig(title, media, author, signature);
+  }
+
+  async fetchTx(hash) {
+    return this.client.getTxInfo(hash);
   }
 }
 

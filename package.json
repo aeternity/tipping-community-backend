@@ -36,7 +36,7 @@
     "@sentry/tracing": "^5.27.6",
     "aeternity-fungible-token": "github:aeternity/aeternity-fungible-token#v1.0.0",
     "async-lock": "^1.2.4",
-    "axios": "latest",
+    "axios": "^0.21.1",
     "bignumber.js": "^9.0.1",
     "cld": "^2.7.0",
     "cors": "^2.8.5",
@@ -68,6 +68,7 @@
     "tipping-oracle-service": "github:aeternity/tipping-oracle-service#v0.3.1",
     "token-registry": "github:aeternity/token-registry#v1.0.0",
     "uuid": "^8.3.1",
+    "websocket": "^1.0.33",
     "winston": "^3.3.3",
     "winston-daily-rotate-file": "^4.5.0",
     "wordbazaar-contracts": "github:aeternity/wordbazaar-contracts#v0.0.2-alpha1"

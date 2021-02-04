@@ -31,6 +31,33 @@ class MessageBroker {
     }, [
       { queueName: MESSAGE_QUEUES.PROFILE, message: MESSAGES.PROFILE.COMMANDS.UPDATE_PREFERRED_CHAIN_NAMES },
     ]);
+
+    // S: NEW TIP
+    // T: UPDATE TIPS
+    this.setupForwarding({
+      queueName: MESSAGE_QUEUES.BLOCKCHAIN,
+      message: MESSAGES.BLOCKCHAIN.EVENTS.TIP_RECEIVED,
+    }, [
+      { queueName: MESSAGE_QUEUES.CACHE, message: MESSAGES.CACHE.COMMANDS.RENEW_TIPS },
+    ]);
+
+    // S: TIP CLAIMED
+    // T: UPDATE PREFERRED CHAIN NAMES
+    this.setupForwarding({
+      queueName: MESSAGE_QUEUES.BLOCKCHAIN,
+      message: MESSAGES.BLOCKCHAIN.EVENTS.TIP_WITHDRAWN,
+    }, [
+      { queueName: MESSAGE_QUEUES.CACHE, message: MESSAGES.CACHE.COMMANDS.RENEW_TIPS },
+    ]);
+
+    // S: INVALIDATION REQUEST
+    // T: UPDATE PREFERRED CHAIN NAMES
+    this.setupForwarding({
+      queueName: MESSAGE_QUEUES.CACHE,
+      message: MESSAGES.CACHE.EVENTS.TIP_INVALIDATION_REQUEST,
+    }, [
+      { queueName: MESSAGE_QUEUES.CACHE, message: MESSAGES.CACHE.COMMANDS.RENEW_TIPS },
+    ]);
   }
 
   setupForwarding(source, targets) {

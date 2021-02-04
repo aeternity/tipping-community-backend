@@ -9,6 +9,7 @@ const cache = require('../modules/cache/utils/cache');
 const broker = require('../modules/queue/logic/messageBrokerLogic');
 const queueLogic = require('../modules/queue/logic/queueLogic');
 const cacheLogic = require('../modules/cache/logic/cacheLogic');
+const chainListenerLogic = require('../modules/aeternity/logic/chainListenerLogic');
 
 process
   .on('unhandledRejection', reason => {
@@ -61,6 +62,7 @@ const startup = async () => {
   await aeternity.init();
   await cache.init(aeternity);
   await cacheLogic.init();
+  await chainListenerLogic.startInvalidator();
 
   server.listen(port);
   server.on('error', onError);

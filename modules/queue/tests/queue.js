@@ -23,8 +23,20 @@ describe('Queue', () => {
       const initializedQueues = queueLogic.queues.map(q => q.name);
       initializedQueues.should.deep.equal(Object.values(MESSAGE_QUEUES));
     });
-    it('should reject a message that is ill typed', done => {
+    it('should reject a message with no queue', done => {
       queueLogic.sendMessage('', 'SAMPLE_MESSAGE').catch(e => {
+        e.message.should.eql('Queue  is not valid');
+        done();
+      });
+    });
+    it('should reject an empty message', done => {
+      queueLogic.sendMessage('SAMPLE_QUEUE', '').catch(e => {
+        e.message.should.eql('Message  is not valid');
+        done();
+      });
+    });
+    it('should reject a message that is ill typed', done => {
+      queueLogic.sendMessage('SAMPLE_QUEUE', 'SAMPLE_MESSAGE').catch(e => {
         e.message.should.eql('Message SAMPLE_MESSAGE does not follow required pattern QUEUE.TYPE.ACTION');
         done();
       });

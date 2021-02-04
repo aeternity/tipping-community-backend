@@ -5,6 +5,8 @@ const CacheLogic = require('../logic/cacheLogic');
 const cacheAggregatorLogic = require('../logic/cacheAggregatorLogic');
 const { topicsRegex } = require('../../aeternity/utils/tipTopicUtil');
 const searchOptions = require('../constants/searchOptions');
+const queueLogic = require('../../queue/logic/queueLogic');
+const { MESSAGES, MESSAGE_QUEUES } = require('../../queue/constants/queue');
 
 const router = new Router();
 
@@ -12,8 +14,6 @@ const wordbazaarMiddleware = (req, res, next) => {
   if (process.env.WORD_REGISTRY_CONTRACT) return next();
   return res.status(403).send('NotImplemented');
 };
-
-CacheLogic.init(); // calls init
 
 /**
  * @swagger
@@ -356,8 +356,7 @@ router.get('/events', CacheLogic.deliverContractEvents);
  *         description: OK
  */
 router.get('/invalidate/tips', async (req, res) => {
-  await CacheLogic.invalidateTipsCache();
-  cacheAggregatorLogic.getAllTips(); // just trigger cache update, so follow up requests may have it cached already
+  await queueLogic.sendMessage(MESSAGE_QUEUES.CACHE, MESSAGES.CACHE.EVENTS.TIP_INVALIDATION_REQUEST);
   if (res) res.send({ status: 'OK' });
 });
 /**

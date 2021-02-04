@@ -99,6 +99,10 @@ module.exports = class NotificationLogic {
     if (commentMatch) {
       const commentId = commentMatch[2];
       const comment = await Comment.findOne({ where: { id: commentId }, raw: true });
+      if (!comment) {
+        logger.warn(`Could not find comment with id ${commentId} locally`);
+        return;
+      }
       // Do not create notifications if the tip creator comments on his/her own tip
       if (comment.author === tip.sender) return;
       try {

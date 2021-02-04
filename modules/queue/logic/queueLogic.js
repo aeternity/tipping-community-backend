@@ -30,11 +30,25 @@ class MessageQueue {
     logger.info('All MQs registered on redis');
   }
 
+  async getAllMessages(qname) {
+    let fetchSuccess = true;
+    const allMessages = [];
+    while (fetchSuccess) {
+      // eslint-disable-next-line no-await-in-loop
+      const message = await this.receiveMessage(qname).catch(e => logger.warn(`Reading queue ${qname} failed with ${e.message}`));
+      fetchSuccess = message && message.id;
+      if (fetchSuccess) {
+        allMessages.push(message);
+      }
+    }
+    return allMessages;
+  }
+
   async notifySubscriber(channel) {
     const qname = channel.replace(`${MQ_NAMESPACE}:rt:`, '');
-    const message = await this.receiveMessage(qname).catch(e => logger.warn(`Reading queue ${qname} failed with ${e.message}`));
+    const messages = await this.getAllMessages(qname);
     const queue = this.queues.find(q => q.name === qname);
-    if (message.id) queue.subject.next(message);
+    messages.filter(message => message.id).map(message => queue.subject.next(message));
   }
 
   initQueueSubject(qname) {
@@ -78,6 +92,12 @@ class MessageQueue {
   async receiveMessage(qname) { return rsmq.receiveMessageAsync({ qname }); }
 
   async sendMessage(qname, message) {
+    if (!qname) {
+      throw new Error(`Queue ${qname} is not valid`);
+    }
+    if (!message) {
+      throw new Error(`Message ${message} is not valid`);
+    }
     const [messageQueueName, messageQueueType, messageQueueAction] = message.split('.');
     if (!messageQueueName || !messageQueueType || !messageQueueAction) {
       throw new Error(`Message ${message} does not follow required pattern QUEUE.TYPE.ACTION`);

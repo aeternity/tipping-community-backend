@@ -41,16 +41,6 @@ app.set('views', path.join(__dirname, './modules/blacklist/views'));
 // MIDDLEWARES
 app.use(express.json()); // for parsing application/json
 
-process
-  .on('unhandledRejection', reason => {
-    if (process.env.SENTRY_URL) Sentry.captureException(reason);
-    logger.error(reason);
-  })
-  .on('uncaughtException', err => {
-    if (process.env.SENTRY_URL) Sentry.captureException(err);
-    logger.error(err);
-  });
-
 app.use(cors({
   origin: '*',
   optionsSuccessStatus: 200,

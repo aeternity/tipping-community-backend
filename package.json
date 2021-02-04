@@ -2,7 +2,7 @@
   "name": "tipping-community-backend",
   "version": "1.7.1",
   "description": "",
-  "main": "server.js",
+  "main": "bin/www.js",
   "scripts": {
     "test": "mocha modules/**/tests/*.js --exit",
     "benchmark": "node benchmark.js",
@@ -84,6 +84,7 @@
     "eslint-plugin-import": "^2.22.1",
     "husky": "^4.3.8",
     "mocha": "^8.2.0",
+    "rewire": "^5.0.0",
     "sequelize-auto-migrations": "github:scimonster/sequelize-auto-migrations#a063aa6535a3f580623581bf866cef2d609531ba",
     "sinon": "^9.2.1"
   }

@@ -7,6 +7,7 @@ const { MESSAGES } = require('../../queue/constants/queue');
 const { MESSAGE_QUEUES } = require('../../queue/constants/queue');
 
 let wsconnection = null;
+const wsclient = new WebSocketClient();
 
 // Check if all envs are defined
 if (!process.env.WEBSOCKET_URL) throw new Error('WEBSOCKET_URL is not set');
@@ -61,29 +62,32 @@ const subscribeToContract = contract => {
   }));
 };
 
+const handleWebsocketMessage = async message => {
+  if (message.type === 'utf8' && message.utf8Data.includes('payload')) {
+    const data = JSON.parse(message.utf8Data);
+    if (data.subscription === 'Object') {
+      const tx = await CacheLogic.getTx(data.payload.hash);
+      const events = await aeternity.decodeTransactionEventsFromNode(tx);
+      if (events.length > 0) events.map(event => handleContractEvent(event));
+    }
+  }
+};
+
+const handleConnectionInit = async connection => {
+  logger.info('WebSocket connected');
+  wsconnection = connection;
+  if (process.env.CONTRACT_V1_ADDRESS) subscribeToContract(process.env.CONTRACT_V1_ADDRESS);
+  if (process.env.CONTRACT_V2_ADDRESS) subscribeToContract(process.env.CONTRACT_V2_ADDRESS);
+  if (process.env.CONTRACT_V3_ADDRESS) subscribeToContract(process.env.CONTRACT_V3_ADDRESS);
+  if (process.env.WORD_REGISTRY_CONTRACT) subscribeToContract(process.env.WORD_REGISTRY_CONTRACT);
+
+  wsconnection.on('message', handleWebsocketMessage);
+};
+
 const startInvalidator = () => {
-  const wsclient = new WebSocketClient();
   wsclient.connect(process.env.WEBSOCKET_URL);
   wsclient.on('connectFailed', e => logger.error(e));
-  wsclient.on('connect', async connection => {
-    logger.info('WebSocket connected');
-    wsconnection = connection;
-    if (process.env.CONTRACT_V1_ADDRESS) subscribeToContract(process.env.CONTRACT_V1_ADDRESS);
-    if (process.env.CONTRACT_V2_ADDRESS) subscribeToContract(process.env.CONTRACT_V2_ADDRESS);
-    if (process.env.CONTRACT_V3_ADDRESS) subscribeToContract(process.env.CONTRACT_V3_ADDRESS);
-    if (process.env.WORD_REGISTRY_CONT) subscribeToContract(process.env.CONTRACT_V1_ADDRESS);
-
-    wsconnection.on('message', async message => {
-      if (message.type === 'utf8' && message.utf8Data.includes('payload')) {
-        const data = JSON.parse(message.utf8Data);
-        if (data.subscription === 'Object') {
-          const tx = await CacheLogic.getTx(data.payload.hash);
-          const events = await aeternity.decodeTransactionEventsFromNode(tx);
-          if (events.length > 0) events.map(event => handleContractEvent(event));
-        }
-      }
-    });
-  });
+  wsclient.on('connect', handleConnectionInit);
 };
 
 module.exports = {

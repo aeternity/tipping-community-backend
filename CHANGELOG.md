@@ -2,6 +2,45 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.8.0](https://www.github.com/aeternity/tipping-community-backend/compare/v1.7.1...v1.8.0) (2021-02-05)
+
+
+### Features
+
+* **mq:** adds chain subscriber ([950d542](https://www.github.com/aeternity/tipping-community-backend/commit/950d542d2de08ad14d21572d0a25479a97cac2f2))
+* **mq:** elevates mq logs to info ([de94471](https://www.github.com/aeternity/tipping-community-backend/commit/de94471cf6c5de62fae06535c6595b68ab3b0ea8))
+* **mq:** realtime message queues ([105d71c](https://www.github.com/aeternity/tipping-community-backend/commit/105d71c3ef466a0c207a29a5158dcba247d81be8))
+* **pricehistory:** add endpoint, mdw fetching logic fixes ([9a2b760](https://www.github.com/aeternity/tipping-community-backend/commit/9a2b7609bc492f80c4fc935b0c11b30418e63a63))
+* **pricehistory:** refactor response format ([2006c59](https://www.github.com/aeternity/tipping-community-backend/commit/2006c5966fe9516f174c71d0b98e1d44f39e6bb4))
+* **words:** add pagination, move params to route ([9ea7d9c](https://www.github.com/aeternity/tipping-community-backend/commit/9ea7d9c0666fcaf8612ba774ea055050bb74ea08))
+
+
+### Bug Fixes
+
+* **mq:** re-subscribe on restart even if queue still exists ([ae86dbe](https://www.github.com/aeternity/tipping-community-backend/commit/ae86dbea3c8488e1d6e91f591f87494387cc66d5))
+* **mq:** retrieves all messages on notification ([be93b2d](https://www.github.com/aeternity/tipping-community-backend/commit/be93b2d72fe9c9a35f0f9605c163430874b98c92))
+* **mq:** unsubscribe on reset ([59d8e95](https://www.github.com/aeternity/tipping-community-backend/commit/59d8e959df354a01f5a70d8cf72f200cb9c72aa1))
+* **preview:** removes not consumed link preview event ([1c9e999](https://www.github.com/aeternity/tipping-community-backend/commit/1c9e99995fa04d67ed1d46ada9a9ebf4e5259b42))
+* **rejectionhandler:** move promise rejection handler ([3648f1b](https://www.github.com/aeternity/tipping-community-backend/commit/3648f1b48d09b2e067232cc4dd0142ef47a93e28))
+
+
+### Miscellaneous
+
+* **www:** move dependencies ([89dff6d](https://www.github.com/aeternity/tipping-community-backend/commit/89dff6d5e57f243cb7ec5951eb048b6f9f3946b6))
+
+
+### Testing
+
+* **mq:** adds tests to chain subscriber ([23911c3](https://www.github.com/aeternity/tipping-community-backend/commit/23911c34d8efc9cbc388fbfbbe0ded27323cf3c8))
+* **pricehistory:** adds tests for two success cases ([14743cf](https://www.github.com/aeternity/tipping-community-backend/commit/14743cf2944060999ffdaad0751082f471984584))
+
+
+### CI / CD
+
+* adds missing commit lint config file ([baf30e9](https://www.github.com/aeternity/tipping-community-backend/commit/baf30e9bd8e2c79ab155d990adababe67947191a))
+* adds more categories to changelog ([7f5c682](https://www.github.com/aeternity/tipping-community-backend/commit/7f5c68298c036bae3e10d6673a773179b89d02d5))
+* upgrades release action to v2 ([764bc9e](https://www.github.com/aeternity/tipping-community-backend/commit/764bc9e34579fd8c399bf076b54ce99f692a5612))
+
 ### [1.7.1](https://www.github.com/aeternity/tipping-community-backend/compare/v1.7.0...v1.7.1) (2021-02-02)
 
 

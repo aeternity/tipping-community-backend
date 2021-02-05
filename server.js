@@ -8,7 +8,6 @@ const path = require('path');
 const app = express();
 const exphbs = require('express-handlebars');
 const cors = require('cors');
-const logger = require('./utils/logger')(module);
 // SENTRY
 if (process.env.SENTRY_URL) {
   Sentry.init({

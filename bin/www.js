@@ -1,14 +1,14 @@
 #!/usr/bin/env node
 const http = require('http');
+const Sentry = require('@sentry/node');
+
 const app = require('../server');
 const logger = require('../utils/logger')(module);
-
 const aeternity = require('../modules/aeternity/logic/aeternity');
 const cache = require('../modules/cache/utils/cache');
 const broker = require('../modules/queue/logic/messageBrokerLogic');
 const queueLogic = require('../modules/queue/logic/queueLogic');
 const cacheLogic = require('../modules/cache/logic/cacheLogic');
-// Get port from environment and store in Express.
 
 process
   .on('unhandledRejection', reason => {

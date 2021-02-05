@@ -291,5 +291,31 @@ describe('Token Cache', () => {
         stakePercent: '0',
       });
     });
+
+    it('it should get the token price history', async function () {
+      this.timeout(10000);
+      const wordCtAddress = 'ct_2n3AwDgQhGWWhh2CGe15cYhpoziHFraVTLbdQJjErbjYstdQHT';
+
+      const res = await chai.request(server).get(`/tokenCache/priceHistory/${wordCtAddress}`);
+      res.should.have.status(200);
+      res.body.should.be.an('array');
+      res.body[0].should.be.deep.equal({
+        timestamp: 1612348975927,
+        event: 'Buy',
+        address: 'y87WkN4C4QevzjTuEYHg6XLqiWx3rjfYDFLBmZiqiro5mkRag',
+        price: '105000000000000000',
+        amount: '100000000000000000',
+        perToken: '1.05',
+      });
+    });
+    it('it should get the token price history for a token without history', async function () {
+      this.timeout(10000);
+      const wordCtAddress = 'ct_2tAB3fS34GphhDvUfrBETiK4A61PVMYuFoLJBsD2Br6F5jvEm9';
+
+      const res = await chai.request(server).get(`/tokenCache/priceHistory/${wordCtAddress}`);
+      res.should.have.status(200);
+      res.body.should.be.an('array');
+      res.body.should.have.length(0);
+    });
   });
 });

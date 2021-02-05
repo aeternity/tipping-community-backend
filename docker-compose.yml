@@ -26,7 +26,7 @@ services:
       - PRIVATE_KEY=f38eecf78a521fcbf34d253b6681f69e0f64d99526d63e18f205e03cf30dd1248117982ba9504170f1f40c66c137c1823244dc7795950a85807793626e69ebce
       - AUTHENTICATION_USER=user # used for blacklisting & flagging ui, replace with your own credentials
       - AUTHENTICATION_PASSWORD=password # used for blacklisting & flagging ui, replace with your own credentials
-      - NODE_ENV=development
+      - NODE_ENV=production
       # all optional
       - POSTGRES_PASSWORD=postgres # replace with your own credentials
       - POSTGRES_USER=postgres # replace with your own credentials

@@ -10,7 +10,7 @@ const publisher = redis.createClient(`redis://${process.env.REDIS_HOST}:${proces
 const subscriber = redis.createClient(`redis://${process.env.REDIS_HOST}:${process.env.REDIS_PORT || 6379}`);
 const MQ_NAMESPACE = 'rsmq';
 const rsmq = new RedisSMQ({
-  publisher,
+  client: publisher,
   ns: MQ_NAMESPACE,
   realtime: true,
 });

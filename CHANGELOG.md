@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.8.1](https://www.github.com/aeternity/tipping-community-backend/compare/v1.8.0...v1.8.1) (2021-02-05)
+
+
+### Bug Fixes
+
+* **docker:** adds websocket url to docker compose ([7b1cbdc](https://www.github.com/aeternity/tipping-community-backend/commit/7b1cbdced08e4e18c5d8ed9c41d44d44e8ad8401))
+* **dom:** defaults to local chrome ([4e2e20a](https://www.github.com/aeternity/tipping-community-backend/commit/4e2e20a8ee42103e2700937f112963e76fa3bf64))
+* **mq:** passes client correctly to rsmq ([e4e7ebe](https://www.github.com/aeternity/tipping-community-backend/commit/e4e7ebe6f4d29c6b159aade2d8331b6ede78c30b))
+
+
+### CI / CD
+
+* adds empty package name to avoid prefix ([e9f4eb7](https://www.github.com/aeternity/tipping-community-backend/commit/e9f4eb75ae38b34b80cb50d74ad0b17f1571ab16))
+
 ## [1.8.0](https://www.github.com/aeternity/tipping-community-backend/compare/v1.7.1...v1.8.0) (2021-02-05)
 
 

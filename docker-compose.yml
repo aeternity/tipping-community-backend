@@ -27,6 +27,7 @@ services:
       - AUTHENTICATION_USER=user # used for blacklisting & flagging ui, replace with your own credentials
       - AUTHENTICATION_PASSWORD=password # used for blacklisting & flagging ui, replace with your own credentials
       - NODE_ENV=production
+      - WEBSOCKET_URL=wss://mainnet.aeternity.io/mdw/websocket
       # all optional
       - POSTGRES_PASSWORD=postgres # replace with your own credentials
       - POSTGRES_USER=postgres # replace with your own credentials

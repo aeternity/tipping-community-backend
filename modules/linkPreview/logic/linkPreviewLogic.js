@@ -55,7 +55,7 @@ class LinkPreviewLogic {
     });
 
     if (difference.length > 0) {
-      queueLogic.sendMessage(MESSAGE_QUEUES.LINKPREVIEW, MESSAGES.LINKPREVIEW.EVENTS.CREATED_NEW_PREVIEWS);
+      // queueLogic.sendMessage(MESSAGE_QUEUES.LINKPREVIEW, MESSAGES.LINKPREVIEW.EVENTS.CREATED_NEW_PREVIEWS);
       await cache.del(['StaticLogic.getStats']);
     }
   }

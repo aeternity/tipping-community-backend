@@ -86,7 +86,7 @@ class MessageQueue {
 
   registerDebugListener(qname) {
     logger.debug(`Subscribing locally to queue "${qname}"`);
-    this.subscribe(qname, message => logger.debug(`NEW MESSAGE: { message: ${message.message}, id: ${message.id} }`));
+    this.subscribe(qname, message => logger.info(`NEW MESSAGE: { message: ${message.message}, id: ${message.id} }`));
   }
 
   async receiveMessage(qname) { return rsmq.receiveMessageAsync({ qname }); }

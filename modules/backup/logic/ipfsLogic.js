@@ -29,10 +29,9 @@ class IPFSLogic {
   }
 
   async addFile(buffer) {
-    const generator = this.node.add({
+    return this.node.add({
       content: buffer,
     });
-    return IPFSLogic.asyncGeneratorToArray(generator);
   }
 
   async pinFile(hash) {

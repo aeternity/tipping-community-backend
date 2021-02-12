@@ -27,12 +27,7 @@ describe('IPFS', () => {
 
     it('it should allow file upload', async function () {
       this.timeout(100000);
-      const results = await ipfs.addFile(randomBuffer);
-
-      results.should.be.an('array');
-      results.should.have.length(1);
-
-      const firstResult = results[0];
+      const firstResult = await ipfs.addFile(randomBuffer);
 
       firstResult.should.be.an('object');
 

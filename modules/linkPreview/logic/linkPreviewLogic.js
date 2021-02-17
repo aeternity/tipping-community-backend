@@ -121,7 +121,7 @@ class LinkPreviewLogic {
         newUrl = `/images/${filename}`;
         logger.info(`Got image snapshot preview for ${filename}`);
       } catch (e) {
-        logger.error(`screen shot api failed as well for ${requestUrl}`);
+        logger.error(`screen shot api failed as well for ${requestUrl}`, e);
       }
     }
 

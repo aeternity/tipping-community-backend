@@ -74,18 +74,32 @@ const handleWebsocketMessage = async message => {
 };
 
 const handleConnectionInit = async connection => {
-  logger.info('WebSocket connected');
+  logger.debug('WebSocket connected');
   wsconnection = connection;
   if (process.env.CONTRACT_V1_ADDRESS) subscribeToContract(process.env.CONTRACT_V1_ADDRESS);
   if (process.env.CONTRACT_V2_ADDRESS) subscribeToContract(process.env.CONTRACT_V2_ADDRESS);
   if (process.env.CONTRACT_V3_ADDRESS) subscribeToContract(process.env.CONTRACT_V3_ADDRESS);
   if (process.env.WORD_REGISTRY_CONTRACT) subscribeToContract(process.env.WORD_REGISTRY_CONTRACT);
-
   wsconnection.on('message', handleWebsocketMessage);
+  wsconnection.on('error', error => {
+    logger.error(`Connection Error: ${error.toString()}`);
+  });
+  wsconnection.on('close', (closeCode, closeReason) => {
+    if (closeCode === 1006) {
+      // eslint-disable-next-line no-use-before-define
+      connectToWebsocket();
+    } else {
+      logger.error(`Websocket closed with code: ${closeCode} and reason: ${closeReason}`);
+    }
+  });
+};
+
+const connectToWebsocket = () => {
+  wsclient.connect(process.env.WEBSOCKET_URL);
 };
 
 const startInvalidator = () => {
-  wsclient.connect(process.env.WEBSOCKET_URL);
+  connectToWebsocket();
   wsclient.on('connectFailed', e => logger.error(e));
   wsclient.on('connect', handleConnectionInit);
 };

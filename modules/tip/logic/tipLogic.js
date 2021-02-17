@@ -66,6 +66,7 @@ class TipLogic {
       if (newTipsIds.length > 0) {
         await queueLogic.sendMessage(MESSAGE_QUEUES.TIPS, MESSAGES.TIPS.EVENTS.CREATED_NEW_LOCAL_TIPS);
       }
+      await queueLogic.sendMessage(MESSAGE_QUEUES.TIPS, MESSAGES.TIPS.EVENTS.UPDATE_DB_FINISHED);
     });
   }
 

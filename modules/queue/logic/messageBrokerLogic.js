@@ -5,13 +5,20 @@ class MessageBroker {
   init() {
     // S: UPDATE TIPS CACHE
     // T: UPDATE TIPS DB
-    // T: UPDATE RETIPS DB
     this.setupForwarding({
       queueName: MESSAGE_QUEUES.CACHE,
       message: MESSAGES.CACHE.EVENTS.RENEWED_TIPS,
     }, [
       { queueName: MESSAGE_QUEUES.TIPS, message: MESSAGES.TIPS.COMMANDS.UPDATE_DB },
-      { queueName: MESSAGE_QUEUES.RETIPS, message: MESSAGES.RETIPS.COMMANDS.UPDATE_DB },
+    ]);
+
+    // S: UPDATED TIPS DB
+    // T: UPDATE RETIPS DB
+    this.setupForwarding({
+      queueName: MESSAGE_QUEUES.TIPS,
+      message: MESSAGES.TIPS.EVENTS.UPDATE_DB_FINISHED,
+    }, [
+      { queueName: MESSAGE_QUEUES.TIPS, message: MESSAGES.RETIPS.COMMANDS.UPDATE_DB },
     ]);
 
     // S: UPDATE TIPS DB

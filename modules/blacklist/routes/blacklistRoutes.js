@@ -1,5 +1,5 @@
 const { Router } = require('express');
-const { BlacklistEntry } = require('sequelize');
+const { BlacklistEntry } = require('../../../models');
 const Logic = require('../logic/blacklistLogic');
 const CacheLogic = require('../../cache/logic/cacheLogic');
 const { basicAuth, signatureAuth } = require('../../authentication/logic/authenticationLogic');

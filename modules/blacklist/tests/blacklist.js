@@ -22,7 +22,7 @@ describe('Blacklist', () => {
     }).then(() => done());
   });
 
-  const tipId = 1;
+  const tipId = '1_v0';
 
   describe('Blacklist API', () => {
     it('it should GET all the blacklist entries (empty)', done => {
@@ -55,7 +55,7 @@ describe('Blacklist', () => {
 
     it('it should CREATE a new blacklist entry via wallet auth', done => {
       performSignedJSONRequest(server, 'post', '/blacklist/api/wallet/', {
-        tipId: tipId + 1, author: publicKey,
+        tipId: '1_v1', author: publicKey,
       }).then(({ res }) => {
         res.should.have.status(200);
         done();

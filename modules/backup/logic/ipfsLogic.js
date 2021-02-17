@@ -6,6 +6,13 @@ function init() {
   node = ipfsClient(process.env.IPFS_URL);
 }
 
+async function getCoreVitals() {
+  return {
+    id: await node.id(),
+    version: await node.version(),
+  };
+}
+
 async function asyncGeneratorToArray(generator) {
   const all = [];
   // eslint-disable-next-line no-restricted-syntax
@@ -58,4 +65,5 @@ module.exports = {
   pinFile,
   getPinnedFiles,
   getFile,
+  getCoreVitals,
 };

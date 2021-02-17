@@ -321,6 +321,14 @@ module.exports = class CacheLogic {
     await cache.del(['CacheLogic.getAllTips', 'all']);
   }
 
+  static async invalidateBlacklistedTips() {
+    await cache.del(['CacheLogic.getAllTips', 'blacklisted']);
+  }
+
+  static async invalidateStatsCache() {
+    await cache.del(['StaticLogic.getStats']);
+  }
+
   static async invalidateOracle() {
     await cache.del(['oracleState']);
   }

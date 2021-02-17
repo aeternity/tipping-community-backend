@@ -1,4 +1,5 @@
 const { Router } = require('express');
+const { BlacklistEntry } = require('sequelize');
 const Logic = require('../logic/blacklistLogic');
 const CacheLogic = require('../../cache/logic/cacheLogic');
 const { basicAuth, signatureAuth } = require('../../authentication/logic/authenticationLogic');
@@ -30,7 +31,9 @@ const router = new Router();
  *               items:
  *                 $ref: '#/components/schemas/BlacklistEntry'
  */
-router.get('/api', Logic.getAllItems);
+router.get('/api', async (req, res) => {
+  res.send(await BlacklistEntry.findAll({ raw: true }));
+});
 /**
  * @swagger
  * /blacklist/api/{tipId}:
@@ -52,7 +55,10 @@ router.get('/api', Logic.getAllItems);
  *             schema:
  *              $ref: '#/components/schemas/BlacklistEntry'
  */
-router.get('/api/:tipId', Logic.getSingleItem);
+router.get('/api/:tipId', async (req, res) => {
+  const result = await BlacklistEntry.findOne({ where: { tipId: req.params.tipId } });
+  return result ? res.send(result.toJSON()) : res.sendStatus(404);
+});
 
 // View routes
 /**
@@ -99,7 +105,15 @@ router.get('/', basicAuth, async (req, res) => res.render('admin', {
  *             schema:
  *              $ref: '#/components/schemas/BlacklistEntry'
  */
-router.post('/api', basicAuth, Logic.addItem);
+router.post('/api', basicAuth, async (req, res) => {
+  try {
+    const { tipId } = req.body;
+    if (!tipId) return res.status(400).send('Missing required field tipId');
+    return res.send(await Logic.addItem(tipId));
+  } catch (e) {
+    return res.status(500).send(e.message);
+  }
+});
 /**
  * @swagger
  * /blacklist/api/{tipId}:
@@ -128,7 +142,18 @@ router.post('/api', basicAuth, Logic.addItem);
  *             schema:
  *              $ref: '#/components/schemas/BlacklistEntry'
  */
-router.put('/api/:tipId', basicAuth, Logic.updateItem);
+router.put('/api/:tipId', basicAuth, async (req, res) => {
+  try {
+    const { status } = req.body;
+    const { tipId } = req.params;
+    if (!tipId) return res.status(400).send('Missing required field tipId');
+    if (!status) return res.status(400).send('Missing required field status');
+    await Logic.updateItem(tipId, status);
+    return res.sendStatus(200);
+  } catch (e) {
+    return res.status(500).send(e.message);
+  }
+});
 /**
  * @swagger
  * /blacklist/api/{tipId}:
@@ -148,7 +173,10 @@ router.put('/api/:tipId', basicAuth, Logic.updateItem);
  *       200:
  *         description: OK
  */
-router.delete('/api/:tipId', basicAuth, Logic.removeItem);
+router.delete('/api/:tipId', basicAuth, async (req, res) => {
+  const result = await Logic.removeItem(req.params.tipId);
+  return result === 1 ? res.sendStatus(200) : res.sendStatus(404);
+});
 
 // Public routes
 /**
@@ -177,6 +205,16 @@ router.delete('/api/:tipId', basicAuth, Logic.removeItem);
  *                - $ref: '#/components/schemas/BlacklistEntry'
  *                - $ref: '#/components/schemas/SignatureResponse'
  */
-router.post('/api/wallet', signatureAuth, Logic.flagTip);
+router.post('/api/wallet', signatureAuth, async (req, res) => {
+  try {
+    const { author, tipId } = req.body;
+    if (!tipId) return res.status(400).send('Missing required field tipId');
+    if (!author) return res.status(400).send('Missing required field author');
+    const entry = await Logic.flagTip(tipId, author);
+    return res.send(entry);
+  } catch (e) {
+    return res.status(500).send(e.message);
+  }
+});
 
 module.exports = router;

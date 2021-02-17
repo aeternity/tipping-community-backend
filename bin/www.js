@@ -10,6 +10,7 @@ const broker = require('../modules/queue/logic/messageBrokerLogic');
 const queueLogic = require('../modules/queue/logic/queueLogic');
 const cacheLogic = require('../modules/cache/logic/cacheLogic');
 const chainListenerLogic = require('../modules/aeternity/logic/chainListenerLogic');
+const ipfsLogic = require('../modules/backup/logic/ipfsLogic');
 
 process
   .on('unhandledRejection', reason => {
@@ -63,6 +64,7 @@ const startup = async () => {
   await cache.init(aeternity);
   await cacheLogic.init();
   await chainListenerLogic.startInvalidator();
+  ipfsLogic.init();
 
   server.listen(port);
   server.on('error', onError);

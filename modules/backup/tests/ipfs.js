@@ -14,15 +14,11 @@ describe('IPFS', () => {
     let randomBuffer;
 
     before(done => {
+      ipfs.init();
       crypto.randomBytes(1000000, (err, buffer) => {
         randomBuffer = buffer;
         done();
       });
-    });
-
-    it('it should have a node property', done => {
-      ipfs.should.have.property('node');
-      done();
     });
 
     it('it should allow file upload', async function () {

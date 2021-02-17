@@ -23,8 +23,7 @@ module.exports = class HealthLogic {
 
   static async checkIPFSHealth() {
     try {
-      await ipfs.node.id();
-      await ipfs.node.version();
+      await ipfs.getCoreVitals();
       return true;
     } catch (e) {
       return false;

@@ -21,6 +21,19 @@ const TipLogic = {
     });
   },
 
+  async fetchTips(page) {
+    const limit = 30;
+
+    if (page) {
+      return Tip.findAll({
+        offset: (page - 1) * limit,
+        limit: limit
+      })
+    }
+
+    return TipLogic.fetchAllLocalTips();
+  }
+
   async fetchAllLocalTips() {
     return Tip.findAll({ raw: true });
   },

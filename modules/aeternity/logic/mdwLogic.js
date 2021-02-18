@@ -7,9 +7,9 @@ const knownHashes = {};
 
 if (process.env.MIDDLEWARE_URL.match(/\/$/)) throw new Error('MDW URL can not end with a trailing slash');
 
-module.exports = class MdwLogic {
+const MdwLogic = {
   // fetches pages forwards, if no next its the last page, don't cache that
-  static async iterateMdw(contract, next, abortIfHashKnown = false) {
+  async iterateMdw(contract, next, abortIfHashKnown = false) {
     const url = `${process.env.MIDDLEWARE_URL}/${next}`;
 
     const result = await axios.get(url, { timeout: 10000 }).then(res => res.data);
@@ -17,28 +17,28 @@ module.exports = class MdwLogic {
     if (abortIfHashKnown && result.data.some(tx => knownHashes[contract][tx.hash])) return result.data.filter(tx => !knownHashes[contract][tx.hash]);
 
     if (result.next) {
-      return result.data.concat(await this.iterateMdw(contract, result.next, abortIfHashKnown));
+      return result.data.concat(await MdwLogic.iterateMdw(contract, result.next, abortIfHashKnown));
     }
     return result.data;
-  }
+  },
 
-  static async getContractTransactions(height, contract) {
+  async getContractTransactions(height, contract) {
     const nonCached = await MdwLogic.fetchNonCachedForContract(height, contract);
     return Object.values(knownHashes[contract]).concat(nonCached);
-  }
+  },
 
-  static async fetchNonCachedForContract(height, contract) {
+  async fetchNonCachedForContract(height, contract) {
     // only get all transactions forwards if none are fetched before
     if (!knownHashes[contract]) knownHashes[contract] = [];
     if (Object.keys(knownHashes[contract]).length === 0) {
-      const txsForward = await this.iterateMdw(contract, `txs/gen/0-${height - 20}?contract=${contract}&type=contract_call&limit=${LIMIT}`);
+      const txsForward = await MdwLogic.iterateMdw(contract, `txs/gen/0-${height - 20}?contract=${contract}&type=contract_call&limit=${LIMIT}`);
       txsForward.forEach(tx => {
         knownHashes[contract][tx.hash] = tx;
       });
     }
 
     // get transactions backwards, abort if we already know any
-    const txsBackward = await this.iterateMdw(contract, `txs/backward?contract=${contract}&type=contract_call&limit=${LIMIT}`, true);
+    const txsBackward = await MdwLogic.iterateMdw(contract, `txs/backward?contract=${contract}&type=contract_call&limit=${LIMIT}`, true);
 
     // cache everything but the latest 100 transactions (in case of forks)
     if (txsBackward.length >= (LIMIT - 1)) {
@@ -50,9 +50,9 @@ module.exports = class MdwLogic {
 
     // if less than 100 return all uncached
     return txsBackward;
-  }
+  },
 
-  static async middlewareContractTransactions(height) {
+  async middlewareContractTransactions(height) {
     try {
       const result = await MdwLogic.getContractTransactions(height, process.env.CONTRACT_V1_ADDRESS);
       if (process.env.CONTRACT_V2_ADDRESS) {
@@ -67,10 +67,10 @@ module.exports = class MdwLogic {
       Sentry.captureException(e);
       return [];
     }
-  }
+  },
 
-  static async getChainNames() {
-    const result = await this.iterateMdw(null, `names/active?limit=${LIMIT}`).catch(e => {
+  async getChainNames() {
+    const result = await MdwLogic.iterateMdw(null, `names/active?limit=${LIMIT}`).catch(e => {
       logger.error(`Could not fetch names from middleware: ${e.message}`);
       Sentry.captureException(e);
       return [];
@@ -91,5 +91,7 @@ module.exports = class MdwLogic {
         });
         return acc;
       }, {});
-  }
+  },
 };
+
+module.exports = MdwLogic;

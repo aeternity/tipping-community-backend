@@ -4,116 +4,78 @@ const cache = require('../../cache/utils/cache');
 const { NOTIFICATION_TYPES } = require('../../notification/constants/notification');
 
 const CommentLogic = {
-  async addItem(req, res) {
-    try {
-      const {
-        tipId, text, author, signature, challenge, parentId,
-      } = req.body;
-      if (tipId === null || tipId === undefined || !text || !author || !signature || !challenge) {
-        return res.status(400).send('Missing required field');
-      }
-      const parentComment = (typeof parentId !== 'undefined' && parentId !== '')
-        ? await Comment.findOne({ where: { id: parentId } }) : null;
-      if (parentComment === null && typeof parentId !== 'undefined' && parentId !== '') {
-        return res.status(400).send(`Could not find parent comment with id ${parentId}`);
-      }
-
-      const relevantTip = await Tip.findOne({ where: { id: tipId } });
-      if (!relevantTip) return res.status(400).send(`Could not find tip with id ${tipId}`);
-
-      const entry = await Comment.create({
-        tipId, text, author, signature, challenge, parentId,
-      });
-
-      // Kill stats cache
-      await cache.del(['StaticLogic.getStats']);
-
-      // Create notification
-      await NotificationLogic.add[NOTIFICATION_TYPES.COMMENT_ON_TIP](relevantTip.sender, entry.author, entry.id, relevantTip.id);
-      if (parentComment !== null) {
-        await NotificationLogic.add[NOTIFICATION_TYPES.COMMENT_ON_COMMENT](parentComment.author, entry.author, entry.id, parentComment.id);
-      }
-
-      return res.send(entry);
-    } catch (e) {
-      return res.status(500).send(e.message);
+  async addItem(tipId, text, author, signature, challenge, parentId) {
+    const parentComment = (typeof parentId !== 'undefined' && parentId !== '')
+      ? await Comment.findOne({ where: { id: parentId } }) : null;
+    if (parentComment === null && typeof parentId !== 'undefined' && parentId !== '') {
+      throw Error(`Could not find parent comment with id ${parentId}`);
     }
+
+    const relevantTip = await Tip.findOne({ where: { id: tipId } });
+    if (!relevantTip) throw Error(`Could not find tip with id ${tipId}`);
+
+    const entry = await Comment.create({
+      tipId, text, author, signature, challenge, parentId,
+    });
+
+    // Kill stats cache
+    await cache.del(['StaticLogic.getStats']);
+
+    // Create notification
+    await NotificationLogic.add[NOTIFICATION_TYPES.COMMENT_ON_TIP](relevantTip.sender, entry.author, entry.id, relevantTip.id);
+    if (parentComment !== null) {
+      await NotificationLogic.add[NOTIFICATION_TYPES.COMMENT_ON_COMMENT](parentComment.author, entry.author, entry.id, parentComment.id);
+    }
+    return entry;
   },
 
-  async removeItem(req, res) {
-    const result = await Comment.destroy({
+  async removeItem(id) {
+    return Comment.destroy({
       where: {
-        id: req.params.id,
+        id,
       },
     });
-    return result === 1 ? res.sendStatus(200) : res.sendStatus(404);
   },
 
-  async getAllItemsForThread(req, res) {
-    res.send((await Comment.findAll({
-      where: { tipId: req.params.tipId },
+  async fetchCommentsForAuthor(author) {
+    return Comment.findAll({
+      where: { author },
       include: [{
         model: Comment,
         as: 'descendents',
         hierarchy: true,
       }, Profile],
-    })).map(comment => comment.toJSON()));
+    }).then(comments => comments.map(comment => comment.toJSON()));
   },
 
-  async getAllItemsForAuthor(req, res) {
-    res.send((await Comment.findAll({
-      where: { author: req.params.author },
+  async fetchSingleComment(commentId) {
+    return Comment.findOne({
+      where: { id: commentId },
       include: [{
         model: Comment,
         as: 'descendents',
         hierarchy: true,
       }, Profile],
-    })).map(comment => comment.toJSON()));
+    }).then(result => (result ? result.toJSON() : null));
   },
 
-  async getAllItems(req, res) {
-    res.send((await Comment.findAll({
+  async fetchCommentsForTip(tipId) {
+    return Comment.findAll({
+      where: { tipId },
       include: [{
         model: Comment,
         as: 'descendents',
         hierarchy: true,
       }, Profile],
-    })).map(comment => comment.toJSON()));
+    }).then(comments => comments.map(comment => comment.toJSON()));
   },
 
-  async getSingleItem(req, res) {
-    const result = await Comment.findOne({
-      where: { id: req.params.id },
-      include: [{
-        model: Comment,
-        as: 'descendents',
-        hierarchy: true,
-      }, Profile],
-    });
-    return result ? res.send(result.toJSON()) : res.sendStatus(404);
-  },
-
-  // TODO move to stats
   async fetchCommentCountForAddress(address) {
     return Comment.count({ where: { author: address } });
   },
 
-  // TODO move to stats
-  async getCommentCountForAddress(req, res) {
-    return res.send({
-      count: await CommentLogic.fetchCommentCountForAddress(req.params.author),
-      author: req.params.author,
-    });
-  },
-
-  // TODO move to stats
   fetchCommentCountForTips() {
     return Comment.count({ group: ['tipId'] });
-  },
-
-  // TODO move to stats
-  async getCommentCountForTips(req, res) {
-    return res.send(await CommentLogic.fetchCommentCountForTips());
   },
 
   async updateItem(req, res) {

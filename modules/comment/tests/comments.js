@@ -313,7 +313,7 @@ describe('Comments', () => {
     it('it should REJECT a nested comment entry with a wrong parent id', done => {
       const nestedTestData = { ...testData, parentId: 0 };
       performSignedJSONRequest(server, 'post', '/comment/api', nestedTestData).then(({ res }) => {
-        res.should.have.status(400);
+        res.should.have.status(500);
         res.text.should.equal(`Could not find parent comment with id ${nestedTestData.parentId}`);
         done();
       });

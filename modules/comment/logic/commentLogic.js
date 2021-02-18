@@ -78,18 +78,6 @@ const CommentLogic = {
     return Comment.count({ group: ['tipId'] });
   },
 
-  async updateItem(req, res) {
-    const { text, author, hidden } = req.body;
-    if (!author) return res.status(400).send({ err: 'Author required' });
-    if (!text && !hidden) return res.status(400).send({ err: 'Missing at least one updatable field' });
-    await Comment.update({
-      ...text && { text },
-      ...hidden && { hidden },
-    }, { where: { id: req.params.id }, raw: true });
-    const result = await Comment.findOne({ where: { id: req.params.id }, raw: true });
-    return result ? res.send(result) : res.sendStatus(404);
-  },
-
   async verifyAuthor(req, res, next) {
     if (!req.body.author) return res.status(400).send({ err: 'Author required' });
     const result = await Comment.findOne({ where: { id: req.params.id, author: req.body.author }, raw: true });

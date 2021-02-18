@@ -50,7 +50,10 @@ router.get('/api/', CommentLogic.getAllItems);
  *             schema:
  *              $ref: '#/components/schemas/Comment'
  */
-router.get('/api/:id', CommentLogic.getSingleItem);
+router.get('/api/:id', async (req, res) => {
+  const result = await CommentLogic.fetchSingleComment(req.params.id);
+  return result ? res.send(result) : res.sendStatus(404);
+});
 /**
  * @swagger
  * /comment/api/tip/{tipId}:
@@ -74,7 +77,9 @@ router.get('/api/:id', CommentLogic.getSingleItem);
  *               items:
  *                 $ref: '#/components/schemas/Comment'
  */
-router.get('/api/tip/:tipId', CommentLogic.getAllItemsForThread);
+router.get('/api/tip/:tipId', async (req, res) => {
+  res.send(await CommentLogic.fetchCommentsForTip(req.params.tipId));
+});
 /**
  * @swagger
  * /comment/api/author/{author}:
@@ -98,7 +103,9 @@ router.get('/api/tip/:tipId', CommentLogic.getAllItemsForThread);
  *               items:
  *                 $ref: '#/components/schemas/Comment'
  */
-router.get('/api/author/:author', CommentLogic.getAllItemsForAuthor);
+router.get('/api/author/:author', async (req, res) => {
+  res.send(await CommentLogic.fetchCommentsForAuthor(req.params.author));
+});
 
 // Count routes
 /**
@@ -124,7 +131,9 @@ router.get('/api/author/:author', CommentLogic.getAllItemsForAuthor);
  *                    type: integer
  *
  */
-router.get('/count/tips/', CommentLogic.getCommentCountForTips);
+router.get('/count/tips/', async (req, res) => {
+  res.send(await CommentLogic.fetchCommentCountForTips());
+});
 /**
  * @swagger
  * /comment/count/author/{author}:
@@ -151,7 +160,12 @@ router.get('/count/tips/', CommentLogic.getCommentCountForTips);
  *                count:
  *                  type: integer
  */
-router.get('/count/author/:author', CommentLogic.getCommentCountForAddress);
+router.get('/count/author/:author', async (req, res) => {
+  res.send({
+    count: await CommentLogic.fetchCommentCountForAddress(req.params.author),
+    author: req.params.author,
+  });
+});
 
 // Restricted api routes
 /**
@@ -180,7 +194,21 @@ router.get('/count/author/:author', CommentLogic.getCommentCountForAddress);
  *                - $ref: '#/components/schemas/Comment'
  *                - $ref: '#/components/schemas/SignatureResponse'
  */
-router.post('/api', signatureAuth, CommentLogic.addItem);
+router.post('/api', signatureAuth, async (req, res) => {
+  const {
+    tipId, text, author, signature, challenge, parentId,
+  } = req.body;
+  if (tipId === null || tipId === undefined || !text || !author || !signature || !challenge) {
+    res.status(400).send('Missing required field');
+  } else {
+    try {
+      const result = await CommentLogic.addItem(tipId, text, author, signature, challenge, parentId);
+      res.send(result);
+    } catch (e) {
+      res.status(500).send(e.message);
+    }
+  }
+});
 /**
  * @swagger
  * /comment/api/{commentId}:
@@ -204,6 +232,9 @@ router.post('/api', signatureAuth, CommentLogic.addItem);
  *             schema:
  *               $ref: '#/components/schemas/SignatureResponse'
  */
-router.delete('/api/:id', signatureAuth, CommentLogic.verifyAuthor, CommentLogic.removeItem);
+router.delete('/api/:id', signatureAuth, CommentLogic.verifyAuthor, async (req, res) => {
+  const result = await CommentLogic.removeItem(req.params.id);
+  res.send(result === 1 ? res.sendStatus(200) : res.sendStatus(404));
+});
 
 module.exports = router;

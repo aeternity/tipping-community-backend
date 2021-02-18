@@ -65,16 +65,18 @@ const TipLogic = {
         title = title.replace(/[!0-9#.,?)-:'“@/\\]/g, '');
         const probability = await cld.detect(title).catch(() => ({}));
         const lang = probability.languages ? probability.languages[0].code : null;
-        return { ...tip, lang };
+        return { ...tip, lang, title };
       });
       await Tip.bulkCreate(result.map(({
-        id, lang, claim, sender, media,
+        id, lang, claim, sender, media, title, topics
       }) => ({
         id: String(id),
         language: lang,
         sender,
         unclaimed: claim ? claim.unclaimed : false,
         media: media || [],
+        title: title,
+        topics: topics,
       })));
       if (newTipsIds.length > 0) {
         await queueLogic.sendMessage(MESSAGE_QUEUES.TIPS, MESSAGES.TIPS.EVENTS.CREATED_NEW_LOCAL_TIPS);

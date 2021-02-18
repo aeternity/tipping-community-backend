@@ -765,6 +765,16 @@
                     "field": "language",
                     "seqType": "Sequelize.STRING"
                 },
+                "title": {
+                    "allowNull": false,
+                    "field": "title",
+                    "seqType": "Sequelize.STRING"
+                },
+                "topics": {
+                    "allowNull": false,
+                    "field": "topics",
+                    "seqType": "Sequelize.ARRAY(Sequelize.STRING)"
+                },
                 "media": {
                     "allowNull": true,
                     "field": "media",

@@ -40,22 +40,24 @@ describe('Cache', () => {
   };
   const minimalTimeout = 200;
 
+  afterEach(() => {
+    sinon.restore();
+  });
+
   describe('Keep Hot', () => {
     it('should update the cache (keep hot simulation)', async function () {
       this.timeout(15000);
       const messageStub = sinon.stub(queueLogic, 'sendMessage').callsFake(async () => {});
       await CacheLogic.getTips();
       sinon.assert.calledWith(messageStub, MESSAGE_QUEUES.CACHE, MESSAGES.CACHE.EVENTS.RENEWED_TIPS);
-      messageStub.restore();
     });
   });
 
   describe('API', () => {
     it('it should GET all cache items', function (done) {
       this.timeout(15000);
-      const messageStub = sinon.stub(queueLogic, 'sendMessage').callsFake(async () => {});
+      sinon.stub(queueLogic, 'sendMessage').callsFake(async () => {});
       checkCachedRoute('/cache/tips', 'array', () => {
-        messageStub.restore();
         done();
       });
     });
@@ -106,8 +108,6 @@ describe('Cache', () => {
       resTopic.body.should.have.length(1);
       resTopic.body[0].id.should.equal(1);
       stub.callCount.should.eql(3);
-
-      stub.restore();
     });
 
     it('it should GET all cache items with language filters', async () => {
@@ -165,8 +165,6 @@ describe('Cache', () => {
       resLanguageZHEN.body.should.have.length(4);
       resLanguageZHEN.body[0].id.should.equal('1_v1');
       stub.callCount.should.eql(3);
-
-      stub.restore();
     });
 
     it('it should GET all cache items with contractVersion filters', async () => {
@@ -208,12 +206,11 @@ describe('Cache', () => {
       resV2V3.body.should.have.length(2);
       resV2V3.body[0].id.should.equal('3_v2');
       stub.callCount.should.eql(3);
-
-      stub.restore();
     });
 
     it('it should not GET a flagged / blacklisted tip when requesting the full list', done => {
       const stub = sinon.stub(BlacklistLogic, 'getBlacklistedIds').callsFake(() => ['0_v1']);
+
       cache.del(['CacheLogic.getAllTips', 'blacklisted']);
       chai.request(server).get('/cache/tips').end((err, res) => {
         res.should.have.status(200);
@@ -359,9 +356,8 @@ describe('Cache', () => {
         },
       ];
 
-      const stub = sinon.stub(MdwLogic, 'middlewareContractTransactions').callsFake(async () => mockData);
+      sinon.stub(MdwLogic, 'middlewareContractTransactions').callsFake(async () => mockData);
       checkCachedRoute('/cache/events', 'array', () => {
-        stub.restore();
         done();
       });
     });

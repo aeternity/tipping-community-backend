@@ -10,15 +10,14 @@ const cache = require('../utils/cache');
 const queueLogic = require('../../queue/logic/queueLogic');
 
 const lock = new AsyncLock();
-const { getTipTopics } = require('../../aeternity/utils/tipTopicUtil');
 const Util = require('../../aeternity/utils/util');
 const MdwLogic = require('../../aeternity/logic/mdwLogic');
 const { MESSAGES, MESSAGE_QUEUES } = require('../../queue/constants/queue');
 
 const logger = require('../../../utils/logger')(module);
 
-module.exports = class CacheLogic {
-  static async init() {
+const CacheLogic = {
+  async init() {
     // INIT ONCE
 
     const keepHotFunction = async () => {
@@ -43,9 +42,9 @@ module.exports = class CacheLogic {
       await CacheLogic.getTips();
       await queueLogic.deleteMessage(MESSAGE_QUEUES.CACHE, message.id);
     });
-  }
+  },
 
-  static async findContractEvents() {
+  async findContractEvents() {
     const fetchContractEvents = async () => {
       const height = await aeternity.client.height();
       const contractTransactions = await MdwLogic.middlewareContractTransactions(height);
@@ -53,18 +52,18 @@ module.exports = class CacheLogic {
     };
 
     return cache.getOrSet(['contractEvents'], async () => fetchContractEvents().catch(logger.error), cache.shortCacheTime, false);
-  }
+  },
 
-  static async fetchPrice() {
+  async fetchPrice() {
     return cache.getOrSet(
       ['fetchPrice'],
       async () => axios.get('https://api.coingecko.com/api/v3/simple/price?ids=aeternity&vs_currencies=usd,eur,cny')
         .then(res => res.data).catch(logger.error),
       cache.longCacheTime,
     );
-  }
+  },
 
-  static async getTips() {
+  async getTips() {
     return cache.getOrSet(['getTips'], async () => {
       const tips = await aeternity.fetchTips();
       // Renew Stats
@@ -72,9 +71,9 @@ module.exports = class CacheLogic {
       await queueLogic.sendMessage(MESSAGE_QUEUES.CACHE, MESSAGES.CACHE.EVENTS.RENEWED_TIPS);
       return tips;
     }, cache.shortCacheTime);
-  }
+  },
 
-  static async triggerGetTokenContractIndex(tips) {
+  async triggerGetTokenContractIndex(tips) {
     return lock.acquire('CacheLogic.triggerTokenContractIndex', async () => {
       const tokenContracts = tips.filter(t => t.token).map(t => t.token);
       const tokenRegistryContracts = await CacheLogic.getTokenRegistryState()
@@ -92,12 +91,12 @@ module.exports = class CacheLogic {
           return acc;
         }, Promise.resolve({}));
     });
-  }
+  },
 
-  static async getWordRegistryAndSaleData() {
+  async getWordRegistryAndSaleData() {
     const wordRegistryData = await CacheLogic.getWordRegistryData();
     return wordRegistryData.tokens.asyncMap(async ([word, sale]) => {
-      const wordSaleDetails = await CacheLogic.wordSaleDetails(sale);
+      const wordSaleDetails = await CacheLogic.getWordSaleDetails(sale);
 
       return {
         word,
@@ -105,13 +104,13 @@ module.exports = class CacheLogic {
         ...wordSaleDetails,
       };
     });
-  }
+  },
 
-  static async getWordRegistryData() {
+  async getWordRegistryData() {
     return cache.getOrSet(['wordRegistryData'], () => aeternity.fetchWordRegistryData(), cache.shortCacheTime);
-  }
+  },
 
-  static async wordSaleDetails(address) {
+  async getWordSaleDetails(address) {
     const wordSaleState = await cache.getOrSet(['wordSaleState', address],
       () => aeternity.wordSaleState(address));
     const totalSupply = cache.getOrSet(['fungibleTokenTotalSupply', wordSaleState.token],
@@ -130,9 +129,9 @@ module.exports = class CacheLogic {
       spread: wordSaleState.spread,
       description: wordSaleState.description,
     };
-  }
+  },
 
-  static async wordPriceHistory(wordSale) {
+  async wordPriceHistory(wordSale) {
     const height = await aeternity.client.height();
     const txs = await MdwLogic.getContractTransactions(height, wordSale);
 
@@ -179,46 +178,46 @@ module.exports = class CacheLogic {
         ...decodedEvent(),
       };
     }).filter(event => event.event);
-  }
+  },
 
-  static async refreshWordAndVoteData() {
-    return lock.acquire('CacheLogic.refreshWordAndVoteData', async () => {
+  async refreshWordAndVoteData() {
+    return lock.acquire('refreshWordAndVoteData', async () => {
       const wordRegistryData = await CacheLogic.getWordRegistryData();
 
       return Promise.all([
         wordRegistryData.tokens.asyncMap(async ([, wordSale]) => {
-          const details = await CacheLogic.wordSaleDetails(wordSale);
+          const details = await CacheLogic.getWordSaleDetails(wordSale);
           return CacheLogic.getTokenMetaInfo(details.tokenAddress);
         }),
         wordRegistryData.tokens.asyncMap(([, wordSale]) => CacheLogic.wordSaleVotesDetails(wordSale)),
       ]);
     });
-  }
+  },
 
-  static async wordSaleDetailsByToken(address) {
+  async wordSaleDetailsByToken(address) {
     const wordRegistryData = await CacheLogic.getWordRegistryData();
     const wordDetails = await wordRegistryData.tokens.asyncMap(
       async ([, wordSale]) => ({ tokenAddress: await CacheLogic.getWordSaleTokenAddress(wordSale), sale: wordSale }),
     );
 
     const saleDetails = wordDetails.find(sale => sale.tokenAddress === address);
-    return saleDetails ? CacheLogic.wordSaleDetails(saleDetails.sale) : null;
-  }
+    return saleDetails ? CacheLogic.getWordSaleDetails(saleDetails.sale) : null;
+  },
 
   // TODO trigger these via message queue
-  static async wordSaleVotesDetails(address) {
+  async wordSaleVotesDetails(address) {
     const votes = await cache.getOrSet(['wordSaleVotes', address],
       () => aeternity.wordSaleVotes(address), cache.shortCacheTime);
 
     return Promise.all(votes.map(([id, vote]) => CacheLogic.wordSaleVoteInfo(id, vote[1], vote[0], address)));
-  }
+  },
 
-  static getWordSaleTokenAddress(sale) {
+  getWordSaleTokenAddress(sale) {
     return cache.getOrSet(['wordSaleTokenAddress', sale],
       () => aeternity.wordSaleTokenAddress(sale));
-  }
+  },
 
-  static async wordSaleVoteInfo(id, vote, alreadyApplied, sale) {
+  async wordSaleVoteInfo(id, vote, alreadyApplied, sale) {
     const state = cache.getOrSet(['wordSaleVoteState', vote],
       () => aeternity.wordSaleVoteState(vote), cache.shortCacheTime);
 
@@ -254,40 +253,40 @@ module.exports = class CacheLogic {
       votePercent: votedAgainst !== 0 ? votedPositive : ifAgainstZero,
       stakePercent,
     };
-  }
+  },
 
-  static async getOracleState() {
+  async getOracleState() {
     return cache.getOrSet(['oracleState'], () => aeternity.fetchOracleState(), cache.shortCacheTime);
-  }
+  },
 
-  static async fetchChainNames() {
+  async fetchChainNames() {
     return cache.getOrSet(['fetchChainNames'], async () => {
       const chainNames = await MdwLogic.getChainNames();
       await queueLogic.sendMessage(MESSAGE_QUEUES.CACHE, MESSAGES.CACHE.EVENTS.RENEWED_CHAINNAMES);
       return chainNames;
     }, cache.shortCacheTime);
-  }
+  },
 
-  static async fetchTokenInfos() {
+  async fetchTokenInfos() {
     const tips = await CacheLogic.getTips();
     return CacheLogic.triggerGetTokenContractIndex(tips);
-  }
+  },
 
-  static async getTokenInfos() {
+  async getTokenInfos() {
     return cache.getOrSet(['getTokenInfos'], () => CacheLogic.fetchTokenInfos(), cache.shortCacheTime);
-  }
+  },
 
-  static async getTokenRegistryState() {
+  async getTokenRegistryState() {
     return cache.getOrSet(['getTokenRegistryState'], () => aeternity.fetchTokenRegistryState(), cache.shortCacheTime);
-  }
+  },
 
-  static async getTokenBalances(account) {
+  async getTokenBalances(account) {
     const cacheKeys = ['getTokenAccounts.fetchBalances', account];
     const hasBalanceTokens = await cache.get(cacheKeys);
     return hasBalanceTokens || [];
-  }
+  },
 
-  static async getTokenAccounts(token) {
+  async getTokenAccounts(token) {
     return cache.getOrSet(['getTokenAccounts', token], async () => {
       const balances = await aeternity.fetchTokenAccountBalances(token);
       await balances.asyncMap(async ([account]) => {
@@ -299,9 +298,9 @@ module.exports = class CacheLogic {
 
       return true; // redis can only set cache for defined values, as we just want to cache that we have fetched tokens, just cache true
     }, cache.longCacheTime);
-  }
+  },
 
-  static async getTokenMetaInfo(contractAddress) {
+  async getTokenMetaInfo(contractAddress) {
     return cache.getOrSet(['getTokenMetaInfo', contractAddress], async () => {
       const tokenInRegistry = await CacheLogic.getTokenRegistryState().then(state => state.find(([token]) => token === contractAddress));
       const metaInfo = await aeternity.fetchTokenMetaInfo(contractAddress);
@@ -313,91 +312,70 @@ module.exports = class CacheLogic {
       }
       return metaInfo;
     });
-  }
+  },
 
-  static async invalidateTipsCache() {
+  async invalidateTipsCache() {
     await cache.del(['getTips']);
     await cache.del(['CacheLogic.getAllTips', 'blacklisted']);
     await cache.del(['CacheLogic.getAllTips', 'all']);
-  }
+  },
 
-  static async invalidateBlacklistedTips() {
+  async invalidateBlacklistedTips() {
     await cache.del(['CacheLogic.getAllTips', 'blacklisted']);
-  }
+  },
 
-  static async invalidateStatsCache() {
+  async invalidateStatsCache() {
     await cache.del(['StaticLogic.getStats']);
-  }
+  },
 
-  static async invalidateOracle() {
+  async invalidateOracle() {
     await cache.del(['oracleState']);
-  }
+  },
 
-  static async invalidateContractEvents() {
+  async invalidateContractEvents() {
     await cache.del(['contractEvents']);
-  }
+  },
 
-  static async invalidateTokenCache(tokenContractAddress) {
+  async invalidateTokenCache(tokenContractAddress) {
     await cache.del(['getTokenAccounts', tokenContractAddress]);
-  }
+  },
 
-  static async invalidateWordRegistryCache(req, res) {
+  async invalidateWordRegistryCache() {
     await cache.del(['wordRegistryData']);
     await CacheLogic.getWordRegistryData(); // wait for cache update to let frontend know data availability
-    if (res) res.send({ status: 'OK' });
-  }
+  },
 
-  static async invalidateWordSaleVotesCache(req, res) {
-    await cache.del(['wordSaleVotes', req.params.wordSale]);
-    await CacheLogic.wordSaleVotesDetails(req.params.wordSale); // wait for cache update to let frontend know data availability
-    if (res) res.send({ status: 'OK' });
-  }
+  async invalidateWordSaleVotesCache(wordSale) {
+    await cache.del(['wordSaleVotes', wordSale]);
+    await CacheLogic.wordSaleVotesDetails(wordSale); // wait for cache update to let frontend know data availability
+  },
 
-  static async invalidateWordSaleVoteStateCache(req, res) {
-    await cache.del(['wordSaleVoteState', req.params.vote]);
-    if (res) res.send({ status: 'OK' });
-  }
+  async invalidateWordSaleVoteStateCache(voteContract) {
+    await cache.del(['wordSaleVoteState', voteContract]);
+  },
 
-  static async invalidateWordSaleCache(req, res) {
-    const tokenAddress = await CacheLogic.getWordSaleTokenAddress(req.params.wordSale);
+  async invalidateWordSaleCache(wordSale) {
+    const tokenAddress = await CacheLogic.getWordSaleTokenAddress(wordSale);
 
-    await cache.del(['wordSalePrice', req.params.wordSale]);
-    await cache.del(['wordSaleState', req.params.wordSale]);
+    await cache.del(['wordSalePrice', wordSale]);
+    await cache.del(['wordSaleState', wordSale]);
     await cache.del(['fungibleTokenTotalSupply', tokenAddress]);
-    await CacheLogic.wordSaleDetails(req.params.wordSale); // wait for cache update to let frontend know data availability
-    if (res) res.send({ status: 'OK' });
-  }
+    await CacheLogic.getWordSaleDetails(wordSale); // wait for cache update to let frontend know data availability
+  },
 
-  static async deliverContractEvents(req, res) {
-    let contractEvents = await CacheLogic.findContractEvents();
-    if (req.query.address) contractEvents = contractEvents.filter(e => e.address === req.query.address);
-    if (req.query.event) contractEvents = contractEvents.filter(e => e.event === req.query.event);
-    contractEvents.sort((a, b) => b.time - a.time || b.nonce - a.nonce);
-    if (req.query.limit) contractEvents = contractEvents.slice(0, parseInt(req.query.limit, 10));
-    res.send(contractEvents);
-  }
-
-  static async deliverPrice(req, res) {
-    res.send(await CacheLogic.fetchPrice());
-  }
-
-  static async deliverChainNames(req, res) {
-    res.send(await CacheLogic.fetchChainNames());
-  }
-
-  static async deliverUserStats(req, res) {
+  async getUserStats(address) {
     const oracleState = await CacheLogic.getOracleState();
     const allTips = await CacheLogic.getTips();
-    const userTips = allTips.filter(tip => tip.sender === req.query.address);
+    const userTips = allTips.filter(tip => tip.sender === address);
 
-    const userReTips = allTips.flatMap(tip => tip.retips.filter(retip => retip.sender === req.query.address));
+    const userReTips = allTips.flatMap(tip => tip.retips.filter(retip => retip.sender === address));
     const totalTipAmount = userTips
       .reduce((acc, tip) => acc.plus(tip.amount), new BigNumber(0))
       .plus(userReTips.reduce((acc, tip) => acc.plus(tip.amount), new BigNumber(0))).toFixed();
 
     const claimedUrls = oracleState.success_claimed_urls
       ? oracleState.success_claimed_urls
-        .filter(([, data]) => data.success && data.account === req.query.address).map(([url]) => url)
+        .filter(([, data]) => data.success && data.account === address).map(([url]) => url)
       : [];
 
     const unclaimedAmount = allTips
@@ -412,7 +390,7 @@ module.exports = class CacheLogic {
         : acc),
       new BigNumber(0));
 
-    const stats = {
+    return {
       tipsLength: userTips.length,
       retipsLength: userReTips.length,
       claimedUrlsLength: claimedUrls.length,
@@ -424,13 +402,11 @@ module.exports = class CacheLogic {
       unclaimedAmountAe: Util.atomsToAe(unclaimedAmount).toFixed(),
       claimedAmountAe: Util.atomsToAe(claimedAmount).toFixed(),
 
-      userComments: await CommentLogic.fetchCommentCountForAddress(req.query.address),
+      userComments: await CommentLogic.fetchCommentCountForAddress(address),
     };
+  },
 
-    res.send(stats);
-  }
-
-  static async fetchStats() {
+  async fetchStats() {
     return cache.getOrSet(['fetchStats'], async () => {
       const tips = await CacheLogic.getTips();
 
@@ -445,13 +421,9 @@ module.exports = class CacheLogic {
         by_url: statsByUrl,
       };
     }, cache.longCacheTime);
-  }
+  },
 
-  static async deliverStats(req, res) {
-    res.send(await CacheLogic.fetchStats());
-  }
-
-  static statsForTips(tips) {
+  statsForTips(tips) {
     const senders = [...new Set(tips
       .reduce((acc, tip) => acc
         .concat([tip.sender, ...tip.retips.map(retip => retip.sender)]), []))];
@@ -499,18 +471,11 @@ module.exports = class CacheLogic {
       senders,
       senders_length: senders.length,
     };
-  }
+  },
 
-  static async deliverOracleState(req, res) {
-    res.send(await CacheLogic.getOracleState());
-  }
-
-  static async deliverTipTopics(req, res) {
-    const tips = await CacheLogic.getTips();
-    res.send(getTipTopics(tips));
-  }
-
-  static async getTx(hash) {
+  async getTx(hash) {
     return cache.getOrSet(['tx', hash], async () => aeternity.fetchTx(hash));
-  }
+  },
 };
+
+module.exports = CacheLogic;

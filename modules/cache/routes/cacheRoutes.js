@@ -6,6 +6,7 @@ const cacheAggregatorLogic = require('../logic/cacheAggregatorLogic');
 const { topicsRegex } = require('../../aeternity/utils/tipTopicUtil');
 const searchOptions = require('../constants/searchOptions');
 const queueLogic = require('../../queue/logic/queueLogic');
+const { getTipTopics } = require('../../aeternity/utils/tipTopicUtil');
 const { MESSAGES, MESSAGE_QUEUES } = require('../../queue/constants/queue');
 
 const router = new Router();
@@ -188,7 +189,9 @@ router.get('/tips', async (req, res) => {
  *             schema:
  *               type: object
  */
-router.get('/stats', CacheLogic.deliverStats);
+router.get('/stats', async (req, res) => {
+  res.send(await CacheLogic.fetchStats());
+});
 
 /**
  * @swagger
@@ -212,7 +215,9 @@ router.get('/stats', CacheLogic.deliverStats);
  *             schema:
  *               type: object
  */
-router.get('/userStats', CacheLogic.deliverUserStats);
+router.get('/userStats', async (req, res) => {
+  res.send(await CacheLogic.getUserStats(req.query.address));
+});
 
 /**
  * @swagger
@@ -231,7 +236,9 @@ router.get('/userStats', CacheLogic.deliverUserStats);
  *               items:
  *                 type: object
  */
-router.get('/chainNames', CacheLogic.deliverChainNames);
+router.get('/chainNames', async (req, res) => {
+  res.send(await CacheLogic.fetchChainNames());
+});
 
 /**
  * @swagger
@@ -261,7 +268,9 @@ router.get('/chainNames', CacheLogic.deliverChainNames);
  *                       type: number
  *                       format: float
  */
-router.get('/price', CacheLogic.deliverPrice);
+router.get('/price', async (req, res) => {
+  res.send(await CacheLogic.fetchPrice());
+});
 
 /**
  * @swagger
@@ -278,7 +287,9 @@ router.get('/price', CacheLogic.deliverPrice);
  *             schema:
  *               type: object
  */
-router.get('/oracle', CacheLogic.deliverOracleState);
+router.get('/oracle', async (req, res) => {
+  res.send(await CacheLogic.getOracleState());
+});
 
 /**
  * @swagger
@@ -304,7 +315,10 @@ router.get('/oracle', CacheLogic.deliverOracleState);
  *                   count:
  *                     type: integer
  */
-router.get('/topics', CacheLogic.deliverTipTopics);
+router.get('/topics', async (req, res) => {
+  const tips = await CacheLogic.getTips();
+  res.send(getTipTopics(tips));
+});
 
 /**
  * @swagger
@@ -342,7 +356,14 @@ router.get('/topics', CacheLogic.deliverTipTopics);
  *               items:
  *                 type: object
  */
-router.get('/events', CacheLogic.deliverContractEvents);
+router.get('/events', async (req, res) => {
+  let contractEvents = await CacheLogic.findContractEvents();
+  if (req.query.address) contractEvents = contractEvents.filter(e => e.address === req.query.address);
+  if (req.query.event) contractEvents = contractEvents.filter(e => e.event === req.query.event);
+  contractEvents.sort((a, b) => b.time - a.time || b.nonce - a.nonce);
+  if (req.query.limit) contractEvents = contractEvents.slice(0, parseInt(req.query.limit, 10));
+  res.send(contractEvents);
+});
 
 /**
  * @swagger
@@ -410,7 +431,7 @@ router.get('/invalidate/events', async (req, res) => {
  *         description: OK
  */
 router.get('/invalidate/token/:token', async (req, res) => {
-  CacheLogic.invalidateTokenCache(req.params.token);
+  await CacheLogic.invalidateTokenCache(req.params.token);
   await CacheLogic.getTokenAccounts(req.params.token); // wait for cache update to let frontend know data availability
   if (res) res.send({ status: 'OK' });
 });
@@ -432,7 +453,10 @@ router.get('/invalidate/token/:token', async (req, res) => {
  *       200:
  *         description: OK
  */
-router.get('/invalidate/wordSale/:wordSale', wordbazaarMiddleware, CacheLogic.invalidateWordSaleCache);
+router.get('/invalidate/wordSale/:wordSale', wordbazaarMiddleware, async (req, res) => {
+  await CacheLogic.invalidateWordSaleCache(req.params.wordSale);
+  res.send({ status: 'OK' });
+});
 
 /**
  * @swagger
@@ -445,7 +469,10 @@ router.get('/invalidate/wordSale/:wordSale', wordbazaarMiddleware, CacheLogic.in
  *       200:
  *         description: OK
  */
-router.get('/invalidate/wordRegistry', wordbazaarMiddleware, CacheLogic.invalidateWordRegistryCache);
+router.get('/invalidate/wordRegistry', wordbazaarMiddleware, async (req, res) => {
+  await CacheLogic.invalidateWordRegistryCache();
+  res.send({ status: 'OK' });
+});
 
 /**
  * @swagger
@@ -465,7 +492,10 @@ router.get('/invalidate/wordRegistry', wordbazaarMiddleware, CacheLogic.invalida
  *       200:
  *         description: OK
  */
-router.get('/invalidate/wordSaleVotes/:wordSale', wordbazaarMiddleware, CacheLogic.invalidateWordSaleVotesCache);
+router.get('/invalidate/wordSaleVotes/:wordSale', wordbazaarMiddleware, async (req, res) => {
+  await CacheLogic.invalidateWordSaleVotesCache(req.params.wordSale);
+  res.send({ status: 'OK' });
+});
 
 /**
  * @swagger
@@ -485,6 +515,9 @@ router.get('/invalidate/wordSaleVotes/:wordSale', wordbazaarMiddleware, CacheLog
  *       200:
  *         description: OK
  */
-router.get('/invalidate/wordSaleVoteState/:vote', wordbazaarMiddleware, CacheLogic.invalidateWordSaleVoteStateCache);
+router.get('/invalidate/wordSaleVoteState/:vote', wordbazaarMiddleware, async (req, res) => {
+  await CacheLogic.invalidateWordSaleVoteStateCache(req.params.vote);
+  res.send({ status: 'OK' });
+});
 
 module.exports = router;

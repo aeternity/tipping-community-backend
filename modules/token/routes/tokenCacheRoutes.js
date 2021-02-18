@@ -183,7 +183,7 @@ router.get('/wordRegistry', wordbazaarMiddleware,
  *               type: object
  */
 router.get('/wordSale/:contractAddress', wordbazaarMiddleware,
-  async (req, res) => res.send(await CacheLogic.wordSaleDetails(req.params.contractAddress)));
+  async (req, res) => res.send(await CacheLogic.getWordSaleDetails(req.params.contractAddress)));
 
 /**
  * @swagger

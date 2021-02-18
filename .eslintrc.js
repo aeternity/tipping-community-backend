@@ -13,6 +13,7 @@ module.exports = {
   },
   parser: 'babel-eslint',
   rules: {
+    'no-use-before-define': 'off',
     'no-extend-native': 'off',
     'max-len': ['error', { code: 150 }],
     'import/no-extraneous-dependencies': ['error', { devDependencies: true }],

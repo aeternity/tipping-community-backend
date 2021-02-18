@@ -27,13 +27,32 @@ module.exports = (sequelize, DataTypes) => sequelize.define('Tip', {
     type: DataTypes.ENUM({
       values: Object.values(TIP_TYPES),
     }),
-    defaultValue: TIP_TYPES.AE_TIP,
     allowNull: false,
   },
   sender: { type: DataTypes.STRING },
-  unclaimed: {
-    type: DataTypes.BOOLEAN,
-    defaultValue: true,
+  contractId: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  url: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  token: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  tokenAmount: {
+    type: DataTypes.NUMERIC,
+    allowNull: true,
+  },
+  amount: {
+    type: DataTypes.NUMERIC,
+    allowNull: true,
+  },
+  claimGen: {
+    type: DataTypes.NUMERIC,
+    allowNull: true,
   },
 }, {
   timestamps: true,

@@ -6,6 +6,7 @@ const aeternity = require('../../aeternity/logic/aeternity');
 const { Tip, Retip } = require('../../../models');
 const NotificationLogic = require('../../notification/logic/notificationLogic');
 const queueLogic = require('../../queue/logic/queueLogic');
+const { mapTipType } = require('../constants/tipTypes');
 const { MESSAGES, MESSAGE_QUEUES } = require('../../queue/constants/queue');
 
 const lock = new AsyncLock();
@@ -28,8 +29,8 @@ const TipLogic = {
     if (page) {
       return Tip.findAll({
         offset: (page - 1) * limit,
-        limit: limit
-      })
+        limit,
+      });
     }
 
     return TipLogic.fetchAllLocalTips();
@@ -69,15 +70,21 @@ const TipLogic = {
         return { ...tip, lang, title };
       });
       await Tip.bulkCreate(result.map(({
-        id, lang, claim, sender, media, title, topics
+        id, lang, sender, media, url, topics, title, token, token_amount, amount, claim_gen, type, contractId,
       }) => ({
         id: String(id),
         language: lang,
         sender,
-        unclaimed: claim ? claim.unclaimed : false,
         media: media || [],
-        title: title,
-        topics: topics,
+        url,
+        topics,
+        title,
+        token,
+        tokenAmount: token_amount,
+        amount,
+        claimGen: claim_gen,
+        type: mapTipType(type),
+        contractId,
       })));
       if (newTipsIds.length > 0) {
         await queueLogic.sendMessage(MESSAGE_QUEUES.TIPS, MESSAGES.TIPS.EVENTS.CREATED_NEW_LOCAL_TIPS);

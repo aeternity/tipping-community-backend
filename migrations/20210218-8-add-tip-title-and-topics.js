@@ -103,14 +103,14 @@ module.exports = {
             return run(null);
         }
     },
-  up: async function(queryInterface, Sequelize)
-  {
-    const transaction = await queryInterface.sequelize.transaction();
-    await queryInterface.sequelize.query('TRUNCATE TABLE "Tips" CASCADE;', { transaction });
-    await transaction.commit();
+    up: async function(queryInterface, Sequelize)
+    {
+      const transaction = await queryInterface.sequelize.transaction();
+      await queryInterface.sequelize.query('TRUNCATE TABLE "Tips" CASCADE;', { transaction });
+      await transaction.commit();
 
-    return this.execute(queryInterface, Sequelize, migrationCommands);
-  },
+      return this.execute(queryInterface, Sequelize, migrationCommands);
+    },
     down: function(queryInterface, Sequelize)
     {
         return this.execute(queryInterface, Sequelize, rollbackCommands);

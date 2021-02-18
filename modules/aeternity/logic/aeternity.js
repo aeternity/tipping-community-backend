@@ -336,7 +336,7 @@ const aeternity = {
       Sentry.captureException(e);
       return [];
     }
-  }
+  },
 
   async fetchTokenRegistryState() {
     return tokenRegistry.methods.get_state(tempCallOptions).then(r => r.decodedResult).catch(e => {

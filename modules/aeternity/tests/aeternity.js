@@ -171,9 +171,11 @@ describe('Aeternity', () => {
       await ae.init();
     });
 
-    after(async () => {
+    after(async function () {
+      this.timeout(15000);
       await ae.resetClient();
     });
+
     it('should handle a non responding compiler during runtime', async function () {
       this.timeout(10000);
       const client = ae.getClient();

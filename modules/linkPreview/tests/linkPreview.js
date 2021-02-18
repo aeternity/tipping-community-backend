@@ -27,7 +27,8 @@ describe('LinkPreview', () => {
   describe('LinkPreview API', () => {
     let imageUrl;
 
-    it('it get link preview for aeternity.com', async () => {
+    it('it get link preview for aeternity.com', async function () {
+      this.timeout(10000);
       const dbResult = await linkPreviewLogic.generatePreview(requestUrl);
       const preview = dbResult.toJSON();
       preview.should.have.property('id');

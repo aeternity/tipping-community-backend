@@ -12,4 +12,4 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           release-type: node
           package-name: ""
-          changelog-types: '[{"type":"feat","section":"Features","hidden":false},{"type":"fix","section":"Bug Fixes","hidden":false},{"type":"ci","section":"CI / CD","hidden":false},{"type":"test","section":"Testing","hidden":false},{"type":"chore","section":"Miscellaneous","hidden":false}]'
+          changelog-types: '[{"type":"feat","section":"Features","hidden":false},{"type":"fix","section":"Bug Fixes","hidden":false},{"type":"ci","section":"CI / CD","hidden":false},{"type":"test","section":"Testing","hidden":false},{"type":"refactor","section":"Refactorings","hidden":false},{"type":"chore","section":"Miscellaneous","hidden":false}]'

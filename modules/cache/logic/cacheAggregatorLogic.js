@@ -7,7 +7,7 @@ const tipLogic = require('../../tip/logic/tipLogic');
 const TipOrderLogic = require('../../tip/logic/tiporderLogic');
 const profileLogic = require('../../profile/logic/profileLogic');
 
-class CacheAggregatorLogic {
+const CacheAggregatorLogic = {
   async getAllTips(blacklist = true) {
     const keys = ['CacheLogic.getAllTips'].concat(blacklist ? ['blacklisted'] : ['all']);
     return cache.getOrSet(keys, async () => {
@@ -61,9 +61,7 @@ class CacheAggregatorLogic {
 
       return tips;
     }, cache.shortCacheTime);
-  }
-}
+  },
+};
 
-const cacheAggregatorLogic = new CacheAggregatorLogic();
-
-module.exports = cacheAggregatorLogic;
+module.exports = CacheAggregatorLogic;

@@ -45,7 +45,6 @@ module.exports = class PayForTxLogic {
     });
     if (!req.body.url) return sendError(400, 'url not found in body');
     if (!req.body.address) return sendError(400, 'address not found in body');
-    if (!aeternity || !aeternity.client) return sendError(500, 'sdk not initialized yet');
     trace.update({
       state: TRACE_STATES.DATA_PARSED,
       url: req.body.url,
@@ -55,7 +54,7 @@ module.exports = class PayForTxLogic {
     // Try to claim
     try {
       // Check sync if properties are okay
-      const result = await aeternity.checkPreClaimProperties(req.body.address, req.body.url, trace);
+      const result = await aeternity.getTotalClaimableAmount(req.body.url, trace);
 
       // Verify result
       if (result.isZero()) return sendError(400, 'No zero amount claims');
@@ -94,7 +93,6 @@ module.exports = class PayForTxLogic {
     if (!req.body.title) return sendError(400, 'title not found in body');
     if (!req.body.author) return sendError(400, 'author not found in body');
     if (!req.body.signature) return sendError(400, 'signature not found in body');
-    if (!aeternity || !aeternity.client) return sendError(500, 'sdk not initialized yet');
     const {
       title, media, author, signature: signatureInHex,
     } = req.body;

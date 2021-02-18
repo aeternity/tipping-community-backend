@@ -46,7 +46,7 @@ const CacheLogic = {
 
   async findContractEvents() {
     const fetchContractEvents = async () => {
-      const height = await aeternity.client.height();
+      const height = await aeternity.getHeight();
       const contractTransactions = await MdwLogic.middlewareContractTransactions(height);
       return contractTransactions.asyncMap(tx => aeternity.decodeTransactionEventsFromMdw(tx));
     };
@@ -132,7 +132,7 @@ const CacheLogic = {
   },
 
   async wordPriceHistory(wordSale) {
-    const height = await aeternity.client.height();
+    const height = await aeternity.getHeight();
     const txs = await MdwLogic.getContractTransactions(height, wordSale);
 
     const eventsSchema = [
@@ -224,7 +224,7 @@ const CacheLogic = {
     const voteTimeout = cache.getOrSet(['wordSaleVoteTimeout', sale],
       () => aeternity.wordSaleVoteTimeout(sale));
 
-    const height = await aeternity.client.height();
+    const height = await aeternity.getHeight();
 
     const votedFor = (await state).vote_state.find(([s]) => s)[1];
     const votedAgainst = (await state).vote_state.find(([s]) => !s)[1];

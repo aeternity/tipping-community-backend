@@ -39,7 +39,7 @@ module.exports = class TipTracing {
     // Deliberately not cached
     const oracle = await aeternity.fetchOracleState();
     const oracleClaim = oracle.success_claimed_urls.find(([url]) => url === tip.url);
-    const unsafeCheckOracleAnswers = await aeternity.oracleContract.methods.unsafe_check_oracle_answers(tip.url).then(x => x.decodedResult);
+    const unsafeCheckOracleAnswers = await aeternity.getUnsafeOracleAnswersForUrl(tip.url);
 
     // Deliberately not cached
     const events = await CacheLogic.findContractEvents()

@@ -72,7 +72,7 @@ describe('Trace', () => {
     });
 
     it('proper request should leave a trace', done => {
-      const stub = sinon.stub(ae, 'checkPreClaimProperties').callsFake(async () => new BigNumber(10));
+      const stub = sinon.stub(ae, 'getTotalClaimableAmount').callsFake(async () => new BigNumber(10));
       chai.request(server).post('/claim/submit')
         .send({
           address: publicKey, // Random PK

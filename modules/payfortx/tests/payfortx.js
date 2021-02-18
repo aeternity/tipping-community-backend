@@ -62,8 +62,8 @@ describe('Pay for TX', () => {
 
       it('it should accept if pre-claim was successful', async function () {
         this.timeout(10000);
-        const preClaimStub = sinon.stub(ae, 'checkPreClaimProperties').callsFake(async () => new BigNumber(100000));
-        const claimStub = sinon.stub(ae, 'claimTips').callsFake(async () => true);
+        const preClaimStub = sinon.stub(ae, 'getTotalClaimableAmount').resolves(new BigNumber(100000));
+        const claimStub = sinon.stub(ae, 'claimTips').resolves(true);
         const res = await chai.request(server).post('/claim/submit').send({
           address: publicKey,
           url: 'https://complicated.domain.test',
@@ -88,7 +88,6 @@ describe('Pay for TX', () => {
     });
 
     it('it should post a contract without', async function () {
-      if (!ae.contractV3) this.skip();
       this.timeout(20000);
 
       const testData = {
@@ -101,7 +100,7 @@ describe('Pay for TX', () => {
       const hash = Crypto.hash(message);
       const signature = Crypto.signPersonalMessage(hash, Buffer.from(secretKey, 'hex'));
 
-      const postStub = sinon.stub(ae.contractV3.methods, 'post_without_tip_sig').callsFake((title, media, author, passedSignature) => {
+      const postStub = sinon.stub(ae, 'postTipToV3').callsFake((title, media, author, passedSignature) => {
         title.should.equal(testData.title);
         media.should.deep.equal(testData.media);
         author.should.equal(publicKey);

@@ -256,7 +256,6 @@ describe('Cache', () => {
     });
 
     it(`it should GET a single V2 tip cache item in less than ${minimalTimeout}ms`, function (done) {
-      if (!aeternity.contractV2) this.skip();
       this.timeout(minimalTimeout);
       checkCachedRoute('/cache/tip?id=0_v2', 'object', done);
     });

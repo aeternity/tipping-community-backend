@@ -1,10 +1,11 @@
 // Require the dev-dependencies
 const chai = require('chai');
 const {
-  describe, it, beforeEach, afterEach,
+  describe, it, afterEach,
 } = require('mocha');
 const sinon = require('sinon');
 
+const BigNumber = require('bignumber.js');
 const ae = require('../logic/aeternity');
 const Trace = require('../../payfortx/logic/traceLogic');
 
@@ -23,14 +24,8 @@ describe('Aeternity', () => {
     });
   });
   describe('Claiming', () => {
-    let sandbox;
-
-    beforeEach(() => {
-      sandbox = sinon.createSandbox();
-    });
-
     afterEach(() => {
-      sandbox.restore();
+      sinon.restore();
     });
 
     it('it should get the oracle state', async function () {
@@ -77,89 +72,53 @@ describe('Aeternity', () => {
 
     it('it should fail pre-claiming an non existing tip', async function () {
       this.timeout(10000);
-
-      // CHECK V1
-      let result = await ae.preClaim('not_a_real_account', 'https://probably.not.an.existing.tip', new Trace(), ae.contractV1);
-      result.should.be.a('boolean');
-      result.should.eql(false);
-
       // CHECK V2
-      result = await ae.preClaim('not_a_real_acdcount', 'https://probably.not.an.existing.tip', new Trace(), ae.contractV2);
-      result.should.be.a('boolean');
-      result.should.eql(false);
+      const resultV2 = await ae.getTotalClaimableAmount('https://probably.not.an.existing.tip', new Trace());
+      resultV2.should.be.an.instanceOf(BigNumber);
+      resultV2.toFixed(0).should.eql('0');
     });
 
     const url = 'https://probably.not.an.existing.tip';
     const address = 'ak_YCwfWaW5ER6cRsG9Jg4KMyVU59bQkt45WvcnJJctQojCqBeG2';
 
-    it('it should succeed pre-claiming with V1 stubs', async function () {
+    it('it should succeed claiming with V1 stubs', async function () {
       this.timeout(10000);
-      const unclaimdForUrlV1 = sandbox.stub(ae.contractV1.methods, 'unclaimed_for_url').callsFake(async () => ({ decodedResult: 1 }));
-      const checkClaimV1 = sandbox.stub(ae.contractV1.methods, 'check_claim').callsFake(async () => ({ decodedResult: { success: true } }));
-      await ae.preClaim(address, url, new Trace(), ae.contractV1);
-      unclaimdForUrlV1.called.should.equal(true);
-      sinon.assert.alwaysCalledWith(unclaimdForUrlV1, url);
-      checkClaimV1.called.should.equal(true);
-      sinon.assert.alwaysCalledWith(checkClaimV1, url, address);
+      const stubClaimAmount = sinon.stub(ae, 'getClaimableAmount').resolves(new BigNumber('1'));
+      const stubCheckClaim = sinon.stub(ae, 'checkClaimOnContract').resolves(true);
+      const stubClaim = sinon.stub(ae, 'claimOnContract').resolves(true);
+      const trace = new Trace();
+      await ae.claimTips(address, url, trace);
+      stubClaimAmount.called.should.equal(true);
+      sinon.assert.calledWith(stubClaimAmount, url, trace);
+      stubCheckClaim.called.should.equal(true);
+      sinon.assert.calledWith(stubCheckClaim, address, url, trace);
+      stubClaim.called.should.equal(true);
+      sinon.assert.calledWith(stubClaim, address, url, trace);
     });
 
-    it('it should succeed pre-claiming with V1 + V2 stubs', async function () {
+    it('it should succeed claiming with V1 + V2 stubs', async function () {
       this.timeout(10000);
-      if (ae.contractV2) {
-        const unclaimdForUrlV1 = sandbox.stub(ae.contractV1.methods, 'unclaimed_for_url').callsFake(async () => ({ decodedResult: 1 }));
-        const unclaimdForUrlV2 = sandbox.stub(ae.contractV2.methods, 'unclaimed_for_url').callsFake(async () => ({ decodedResult: 1 }));
-        const checkClaimV1 = sandbox.stub(ae.contractV1.methods, 'check_claim').callsFake(async () => ({ decodedResult: { success: true } }));
-        const checkClaimV2 = sandbox.stub(ae.contractV2.methods, 'check_claim').callsFake(async () => ({ decodedResult: { success: true } }));
-        await ae.preClaim(address, url, new Trace(), ae.contractV1);
-        await ae.preClaim(address, url, new Trace(), ae.contractV2);
-        unclaimdForUrlV1.called.should.equal(true);
-        sinon.assert.alwaysCalledWith(unclaimdForUrlV1, url);
-        unclaimdForUrlV2.called.should.equal(true);
-        sinon.assert.alwaysCalledWith(unclaimdForUrlV2, url);
-        checkClaimV1.called.should.equal(true);
-        sinon.assert.alwaysCalledWith(checkClaimV1, url, address);
-        checkClaimV2.called.should.equal(true);
-        sinon.assert.alwaysCalledWith(checkClaimV2, url, address);
-      } else {
-        this.skip();
-      }
-    });
-
-    it('it should allow to claim if all goes well (with stubs) for V1', async function () {
-      this.timeout(10000);
-      sandbox.stub(ae, 'preClaim').callsFake(async () => ({ decodedResult: true }));
-      const claimV1 = sandbox.stub(ae.contractV1.methods, 'claim').callsFake(async () => ({ decodedResult: true }));
-      const result = await ae.claimTips(address, url, new Trace());
-      result.should.equal(true);
-      claimV1.called.should.equal(true);
-      sinon.assert.alwaysCalledWith(claimV1, url, address);
-    });
-
-    it('it should allow to claim if all goes well (with stubs) for V1 + V2', async function () {
-      this.timeout(10000);
-      if (ae.contractV2) {
-        sandbox.stub(ae, 'preClaim').callsFake(async () => ({ decodedResult: true }));
-        const claimV1 = sandbox.stub(ae.contractV1.methods, 'claim').callsFake(async () => ({ decodedResult: true }));
-        const claimV2 = sandbox.stub(ae.contractV2.methods, 'claim').callsFake(async () => ({ decodedResult: true }));
-        const result = await ae.claimTips(address, url, new Trace());
-        result.should.equal(true);
-        claimV1.called.should.equal(true);
-        claimV2.called.should.equal(false); // no need to claim V2 if V1 is claimable
-        sinon.assert.alwaysCalledWith(claimV1, url, address);
-      } else {
-        this.skip();
-      }
+      const stubClaimAmount = sinon.stub(ae, 'getClaimableAmount')
+        .onFirstCall().returns(new BigNumber('0'))
+        .onSecondCall()
+        .returns(new BigNumber('1'));
+      const stubCheckClaim = sinon.stub(ae, 'checkClaimOnContract').resolves(true);
+      const stubClaim = sinon.stub(ae, 'claimOnContract').resolves(true);
+      const trace = new Trace();
+      await ae.claimTips(address, url, trace);
+      stubClaimAmount.calledTwice.should.equal(true);
+      sinon.assert.calledWith(stubClaimAmount, url, trace, sinon.match.object);
+      stubCheckClaim.calledOnce.should.equal(true);
+      sinon.assert.calledWith(stubCheckClaim, address, url);
+      stubClaim.calledOnce.should.equal(true);
+      sinon.assert.calledWith(stubClaim, address, url);
     });
   });
   describe('Tokens', () => {
-    let sandbox;
     let tokenContractAddress;
-    beforeEach(() => {
-      sandbox = sinon.createSandbox();
-    });
 
     afterEach(() => {
-      sandbox.restore();
+      sinon.restore();
     });
     it('it should get the token registry state', async function () {
       this.timeout(10000);
@@ -211,18 +170,23 @@ describe('Aeternity', () => {
       this.timeout(10000);
       await ae.init();
     });
+
+    after(async () => {
+      await ae.resetClient();
+    });
     it('should handle a non responding compiler during runtime', async function () {
       this.timeout(10000);
-      ae.client.selectedNode.instance.url = 'https://localhost';
-      const staticStub = sinon.stub(ae.client, 'contractCallStatic').callsFake(() => { throw new Error('NETWORK ERROR'); });
-      const callStub = sinon.stub(ae.client, 'contractCall').callsFake(() => { throw new Error('NETWORK ERROR'); });
+      const client = ae.getClient();
+      client.selectedNode.instance.url = 'https://localhost';
+      const staticStub = sinon.stub(client, 'contractCallStatic').callsFake(() => { throw new Error('NETWORK ERROR'); });
+      const callStub = sinon.stub(client, 'contractCall').callsFake(() => { throw new Error('NETWORK ERROR'); });
       const tips = await ae.fetchTips();
       tips.should.be.an('array');
       tips.should.have.length(0);
       const tokenBalances = await ae.fetchTokenAccountBalances('ct_2bCbmU7vtsysL4JiUdUZjJJ98LLbJWG1fRtVApBvqSFEM59D6W');
       should.equal(tokenBalances, null);
       const trace = new Trace();
-      const preClaim = await ae.checkPreClaimProperties('ak_test', 'http://test', trace);
+      const preClaim = await ae.getTotalClaimableAmount('http://test', trace);
       should.equal(preClaim.toFixed(0), '0');
 
       const registryState = await ae.fetchTokenRegistryState();
@@ -237,10 +201,9 @@ describe('Aeternity', () => {
       this.timeout(10000);
       const originalUrl = process.env.NODE_URL;
       process.env.NODE_URL = 'https://localhost';
-      ae.client = null;
-      let error = null;
+      let error = '';
       try {
-        await ae.init();
+        await ae.resetClient();
       } catch (e) {
         error = e.message;
       }
@@ -251,10 +214,9 @@ describe('Aeternity', () => {
       this.timeout(10000);
       const originalUrl = process.env.COMPILER_URL;
       process.env.COMPILER_URL = 'https://localhost';
-      ae.client = null;
-      let error = null;
+      let error = '';
       try {
-        await ae.init();
+        await ae.resetClient();
       } catch (e) {
         error = e.message;
       }

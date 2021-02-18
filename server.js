@@ -65,6 +65,7 @@ app.use('/notification', require('./modules/notification/routes/notificationRout
 app.use('/consent', require('./modules/consent/routes/consentRoutes.js'));
 
 app.use('/images', require('./modules/media/routes/imageRoutes.js'));
+app.use('/tips', require('./modules/tip/routes/tipRoutes.js'));
 
 // expose api docs
 if (fs.existsSync('./swagger.json')) {

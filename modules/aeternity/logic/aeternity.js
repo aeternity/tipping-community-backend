@@ -104,7 +104,7 @@ class Aeternity {
       { name: 'PostWithoutTipReceived', types: [SOPHIA_TYPES.address, SOPHIA_TYPES.string] },
     ];
 
-    return (decodeEvents(log, { schema: eventsSchema }) || []).map(decodedEvent => {
+    return (log ? decodeEvents(log, { schema: eventsSchema }) : []).map(decodedEvent => {
       const event = {};
       switch (decodedEvent.name) {
         // AEX9

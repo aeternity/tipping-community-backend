@@ -1,6 +1,7 @@
 const cld = require('cld');
 const AsyncLock = require('async-lock');
 const CacheLogic = require('../../cache/logic/cacheLogic');
+const aeternity = require('../../aeternity/logic/aeternity');
 
 const { Tip, Retip } = require('../../../models');
 const NotificationLogic = require('../../notification/logic/notificationLogic');
@@ -44,7 +45,7 @@ const TipLogic = {
 
   async updateTipsDB() {
     await lock.acquire('TipLogic.updateTipsDB', async () => {
-      const remoteTips = await CacheLogic.getTips();
+      const remoteTips = await aeternity.fetchTipsBasic();
       const localTips = await Tip.findAll({ raw: true });
       const remoteTipIds = [...new Set(remoteTips.map(tip => tip.id))];
       const localTipIds = [...new Set(localTips.map(tip => tip.id))];

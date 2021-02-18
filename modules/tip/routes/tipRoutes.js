@@ -1,5 +1,6 @@
 const { Router } = require('express');
 const TipLogic = require('../logic/tipLogic');
+
 const router = new Router();
 
 /**
@@ -67,7 +68,7 @@ const router = new Router();
 router.get('/', async (req, res) => {
   // req.query. blacklist, address, contractVersion, search, language, ordering, page
 
-  let tips = await TipLogic.fetchTips(req.query.page);
+  const tips = await TipLogic.fetchTips(req.query.page);
 
   res.send(tips);
 });

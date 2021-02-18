@@ -19,6 +19,7 @@ const TOKEN_VOTING_CONTRACT = require('wordbazaar-contracts/TokenVotingInterface
 
 const logger = require('../../../utils/logger')(module);
 const { topicsRegex } = require('../utils/tipTopicUtil');
+const basicTippingContractUtil = require('../../../utils/basicTippingContractUtil');
 const { TRACE_STATES } = require('../../payfortx/constants/traceStates');
 const Util = require('../utils/util');
 
@@ -318,6 +319,20 @@ const aeternity = {
       return [];
     }
   },
+
+  async fetchTipsBasic() {
+    if (!this.client) throw new Error('Init sdk first');
+    try {
+      const fetchV1State = this.contractV1.methods.get_state();
+      const fetchV2State = process.env.CONTRACT_V2_ADDRESS ? this.contractV2.methods.get_state() : Promise.resolve(null);
+      const fetchV3State = process.env.CONTRACT_V3_ADDRESS ? this.contractV3.methods.get_state() : Promise.resolve(null);
+      return basicTippingContractUtil.getTips(...[await fetchV1State, await fetchV2State, await fetchV3State].filter(state => state));
+    } catch (e) {
+      logger.error(e.message);
+      Sentry.captureException(e);
+      return [];
+    }
+  }
 
   async fetchTokenRegistryState() {
     return tokenRegistry.methods.get_state().then(r => r.decodedResult).catch(e => {

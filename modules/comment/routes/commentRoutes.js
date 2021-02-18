@@ -9,25 +9,7 @@ const router = new Router();
  * - name: "comment"
  *   description: "Comments on tips"
  */
-// Open api routes
-/**
- * @swagger
- * /comment/api:
- *   get:
- *     tags:
- *       - comment
- *     summary: Returns all comments
- *     responses:
- *       200:
- *         description: Returns all comments
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/Comment'
- */
-router.get('/api/', CommentLogic.getAllItems);
+
 /**
  * @swagger
  * /comment/api/{commentId}:

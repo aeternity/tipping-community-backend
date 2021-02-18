@@ -781,23 +781,43 @@
                     "seqType": "Sequelize.ARRAY(Sequelize.TEXT)"
                 },
                 "type": {
-                    "defaultValue": {
-                        "value": "AE_TIP"
-                    },
                     "allowNull": false,
                     "field": "type",
-                    "seqType": "Sequelize.ENUM('AE_TIP', 'TOKEN_TIP', 'DIRECT_AE_TIP', 'DIRECT_TOKEN_TIP')"
+                    "seqType": "Sequelize.ENUM('AE_TIP', 'TOKEN_TIP', 'DIRECT_AE_TIP', 'DIRECT_TOKEN_TIP', 'POST_WITHOUT_TIP')"
                 },
                 "sender": {
                     "field": "sender",
                     "seqType": "Sequelize.STRING"
                 },
-                "unclaimed": {
-                    "defaultValue": {
-                        "value": true
-                    },
-                    "field": "unclaimed",
-                    "seqType": "Sequelize.BOOLEAN"
+                "contractId": {
+                    "allowNull": false,
+                    "field": "contractId",
+                    "seqType": "Sequelize.STRING"
+                },
+                "url": {
+                    "allowNull": true,
+                    "field": "url",
+                    "seqType": "Sequelize.STRING"
+                },
+                "token": {
+                    "allowNull": true,
+                    "field": "token",
+                    "seqType": "Sequelize.STRING"
+                },
+                "tokenAmount": {
+                    "allowNull": true,
+                    "field": "tokenAmount",
+                    "seqType": "Sequelize.BIGINT"
+                },
+                "amount": {
+                    "allowNull": true,
+                    "field": "amount",
+                    "seqType": "Sequelize.BIGINT"
+                },
+                "claimGen": {
+                    "allowNull": true,
+                    "field": "claimGen",
+                    "seqType": "Sequelize.BIGINT"
                 },
                 "createdAt": {
                     "allowNull": false,

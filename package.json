@@ -64,7 +64,7 @@
     "sequelize-hierarchy": "^2.0.4",
     "sharp": "^0.27.1",
     "swagger-ui-express": "^4.1.6",
-    "tipping-contract": "github:aeternity/tipping-contract#v3.0.0-alpha3",
+    "tipping-contract": "github:aeternity/tipping-contract#v3.0.1-alpha1",
     "tipping-oracle-service": "github:aeternity/tipping-oracle-service#v0.3.1",
     "token-registry": "github:aeternity/token-registry#v1.0.0",
     "uuid": "^8.3.2",

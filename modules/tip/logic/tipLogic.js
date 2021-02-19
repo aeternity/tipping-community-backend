@@ -6,7 +6,6 @@ const aeternity = require('../../aeternity/logic/aeternity');
 const { Tip, Retip } = require('../../../models');
 const NotificationLogic = require('../../notification/logic/notificationLogic');
 const queueLogic = require('../../queue/logic/queueLogic');
-const { mapTipType } = require('../constants/tipTypes');
 const { MESSAGES, MESSAGE_QUEUES } = require('../../queue/constants/queue');
 
 const lock = new AsyncLock();
@@ -83,7 +82,7 @@ const TipLogic = {
         tokenAmount: token_amount,
         amount,
         claimGen: claim_gen,
-        type: mapTipType(type),
+        type,
         contractId,
       })));
       if (newTipsIds.length > 0) {

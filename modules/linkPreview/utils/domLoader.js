@@ -24,14 +24,23 @@ module.exports = class DomLoader {
 
     try {
       const page = await browser.newPage();
-      await page.goto(url, {
+      let response = await page.goto(url, {
         waitUntil: 'networkidle2',
       });
+      // Weibo hack
       if (
         (new URL(url)).hostname === 'www.weibo.com'
         && (new URL(page.url())).hostname === 'passport.weibo.com'
       ) {
         await page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 45 * 1000 });
+      }
+
+      // Cloudflare / Redirect hack
+      if (
+        // code should be 301 or 503
+        response.status() === 301 || response.status() === 503
+      ) {
+        response = await page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 15 * 1000 });
       }
 
       if (
@@ -40,11 +49,15 @@ module.exports = class DomLoader {
       ) {
         throw new Error('Got caught on login.php');
       }
-      const filename = `preview-${uuidv4()}.jpg`;
-      if (screenshot) await page.screenshot({ path: imageLogic.getImagePath(filename) });
-      const html = await page.content();
-      await browser.close();
-      return { html, url: page.url(), screenshot: screenshot ? filename : null };
+
+      if (response.status() >= 200 && response.status() < 300) {
+        const filename = `preview-${uuidv4()}.jpg`;
+        if (screenshot) await page.screenshot({ path: imageLogic.getImagePath(filename) });
+        const html = await page.content();
+        await browser.close();
+        return { html, url: page.url(), screenshot: screenshot ? filename : null };
+      }
+      throw Error(`Website responded with ${response.status()}`);
     } catch (e) {
       logger.error(`Error while crawling ${url}: ${e.message}`);
       await browser.close();

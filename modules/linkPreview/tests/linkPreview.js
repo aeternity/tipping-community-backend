@@ -82,6 +82,18 @@ describe('LinkPreview', () => {
       });
     });
 
+    it('it should fail gracefully', async function () {
+      this.timeout(10000);
+      const dbResult = await linkPreviewLogic.generatePreview('http://httpstat.us/400');
+      dbResult.should.have.property('requestUrl', 'http://httpstat.us/400');
+      dbResult.should.have.property('querySucceeded', false);
+      dbResult.should.have.property('title', null);
+      dbResult.should.have.property('description', null);
+      dbResult.should.have.property('image', null);
+      dbResult.should.have.property('responseUrl', null);
+      dbResult.should.have.property('lang', null);
+    });
+
     after(() => {
       fs.readdirSync('images')
         .filter(fileName => fileName.includes('preview-'))

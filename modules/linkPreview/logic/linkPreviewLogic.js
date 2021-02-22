@@ -148,6 +148,7 @@ class LinkPreviewLogic {
       await metascraper({ url });
       // Crawl the url
       const html = await crawler(url);
+      if (!html) throw new Error('No HTML');
       const result = await metascraper({ url, html });
       const data = {
         ...result,

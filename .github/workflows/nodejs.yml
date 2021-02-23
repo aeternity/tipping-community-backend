@@ -21,7 +21,7 @@ jobs:
         with:
           node-version: 14.x
       - name: Install Dependencies
-        run: npm i
+        run: npm ci
       - name: Run Tests
         run: |
           docker run --name server-redis -p 6379:6379 -d redis
@@ -49,7 +49,7 @@ jobs:
         with:
           node-version: 14.x
       - name: Install Dependencies
-        run: npm i
+        run: npm ci
       - name: Lint Codebase
         run: npm run lint-ci
 
@@ -64,7 +64,7 @@ jobs:
         with:
           node-version: 14.x
       - name: Install Dependencies
-        run: npm i
+        run: npm ci
       - name: Create Swagger File
         run: npm run swagger:create
       - name: Lint Swagger File

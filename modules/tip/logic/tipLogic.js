@@ -30,7 +30,7 @@ class TipLogic {
 
     if (page) {
       return Tip.findAll({
-        attributes: Object.keys(Tip.rawAttributes).concat([TIP_AGGREGATION.TOTAL_URL_AMOUNT]),
+        attributes: Object.keys(Tip.rawAttributes).concat([TIP_AGGREGATION.TOTAL_URL_AMOUNT, TIP_AGGREGATION.COUNT_COMMENTS]),
         include: [Retip],
         offset: (page - 1) * limit,
         limit,
@@ -44,7 +44,7 @@ class TipLogic {
     //return Tip.findAll({ raw: true });
 
     return Tip.findAll({
-      attributes: Object.keys(Tip.rawAttributes).concat([TIP_AGGREGATION.TOTAL_URL_AMOUNT]),
+      attributes: Object.keys(Tip.rawAttributes).concat([TIP_AGGREGATION.TOTAL_URL_AMOUNT, TIP_AGGREGATION.COUNT_COMMENTS]),
       include: [Retip],
     });
   }

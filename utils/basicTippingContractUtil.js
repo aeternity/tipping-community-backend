@@ -2,19 +2,32 @@ const { topicsRegex } = require('../modules/aeternity/utils/tipTopicUtil');
 
 const basicTippingContractUtil = {};
 
-basicTippingContractUtil.getTips = (...states) => {
-  if (!Array.isArray(states) || (Array.isArray(states) && states.length === 0)) throw Error('states must be passed as additional arguments');
+const aggregateStates = (states, formatFunction) => states.reduce((acc, cur) => {
+  if (!cur.result || !cur.decodedResult) throw Error('full returned tx state must be passed');
+  const tips = formatFunction(cur);
+  return acc.concat(tips);
+}, []);
 
-  return states.reduce((acc, cur) => {
-    if (!cur.result || !cur.decodedResult) throw Error('full returned tx state must be passed');
-    const tips = aggregateState(cur);
-    return acc.concat(tips);
-  }, []);
+const formatRetips = returnState => {
+  const state = returnState.decodedResult;
+  const suffix = `_${ state.version || 'v1' }`;
+
+  return state.retips ? state.retips.map(([id, tipTypeData]) => {
+    const data = tipTypeData
+    data.id = id + suffix;
+    data.tip_id = data.tip_id + suffix;
+    data.contractId = returnState.result.contractId;
+    data.claim_gen = data.claim_gen === 'None' || data.claim_gen === undefined ? null : data.claim_gen;
+    data.token = data.token !== undefined ? data.token : null;
+    data.token_amount = data.token_amount ? data.token_amount : 0;
+
+    return data;
+  }) : [];
 };
 
-const aggregateState = returnState => {
+const formatTips = returnState => {
   const state = returnState.decodedResult;
-  const suffix = `_${state.version || 'v1'}`;
+  const suffix = `_${ state.version || 'v1' }`;
   const findUrl = urlId => state.urls.find(([_, id]) => urlId === id)[0];
 
   return state.tips.map(([id, tipTypeData]) => {
@@ -75,6 +88,14 @@ const aggregateState = returnState => {
 
     return data;
   });
+};
+
+basicTippingContractUtil.getRetips = (states) => {
+  return aggregateStates(states, formatRetips);
+};
+
+basicTippingContractUtil.getTips = (states) => {
+  return aggregateStates(states, formatTips);
 };
 
 module.exports = basicTippingContractUtil;

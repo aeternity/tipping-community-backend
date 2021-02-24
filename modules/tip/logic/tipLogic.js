@@ -12,6 +12,8 @@ const lock = new AsyncLock();
 
 const TipLogic = {
   init() {
+    setTimeout(TipLogic.updateTipsDB, 5000);
+
     queueLogic.subscribeToMessage(MESSAGE_QUEUES.TIPS, MESSAGES.TIPS.COMMANDS.UPDATE_DB, async message => {
       await TipLogic.updateTipsDB();
       await queueLogic.deleteMessage(MESSAGE_QUEUES.TIPS, message.id);
@@ -33,7 +35,7 @@ const TipLogic = {
     }
 
     return TipLogic.fetchAllLocalTips();
-  }
+  },
 
   async fetchAllLocalTips() {
     return Tip.findAll({ raw: true });

@@ -12,6 +12,8 @@ const lock = new AsyncLock();
 
 class TipLogic {
   constructor() {
+    setTimeout(this.updateTipsDB, 5000);
+
     queueLogic.subscribeToMessage(MESSAGE_QUEUES.TIPS, MESSAGES.TIPS.COMMANDS.UPDATE_DB, async message => {
       await this.updateTipsDB();
       await queueLogic.deleteMessage(MESSAGE_QUEUES.TIPS, message.id);

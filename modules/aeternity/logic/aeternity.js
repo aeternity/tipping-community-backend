@@ -324,17 +324,20 @@ const aeternity = {
     }
   },
 
-  async fetchTipsBasic() {
+  async fetchStateBasic() {
     if (!client) throw new Error('Init sdk first');
     try {
       const fetchV1State = contractV1.methods.get_state();
       const fetchV2State = process.env.CONTRACT_V2_ADDRESS ? contractV2.methods.get_state() : Promise.resolve(null);
       const fetchV3State = process.env.CONTRACT_V3_ADDRESS ? contractV3.methods.get_state() : Promise.resolve(null);
-      return basicTippingContractUtil.getTips(...[await fetchV1State, await fetchV2State, await fetchV3State].filter(state => state));
+      return {
+        tips: basicTippingContractUtil.getTips([await fetchV1State, await fetchV2State, await fetchV3State].filter(state => state)),
+        retips: basicTippingContractUtil.getRetips([await fetchV1State, await fetchV2State, await fetchV3State].filter(state => state)),
+      };
     } catch (e) {
-      logger.error(e.message);
+      logger.error(e.message, e);
       Sentry.captureException(e);
-      return [];
+      return { tips: [], retips: [] };
     }
   },
 

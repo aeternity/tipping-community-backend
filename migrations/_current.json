@@ -86,6 +86,12 @@
                 "tipId": {
                     "allowNull": false,
                     "field": "tipId",
+                    "references": {
+                        "model": "Tips",
+                        "key": "id"
+                    },
+                    "onDelete": "NO ACTION",
+                    "onUpdate": "CASCADE",
                     "seqType": "Sequelize.STRING"
                 },
                 "text": {

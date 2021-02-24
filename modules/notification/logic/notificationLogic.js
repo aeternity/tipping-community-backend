@@ -119,10 +119,9 @@ module.exports = class NotificationLogic {
 
   static async handleNewRetip(retip) {
     // RETIP ON TIP
-    // Do not create notifications if the tip creator retips on his/her own tip
-    if (retip.parentTip.sender === retip.sender) return;
+    // TODO Do not create notifications if the tip creator retips on his/her own tip
     try {
-      await NotificationLogic.add[NOTIFICATION_TYPES.RETIP_ON_TIP](retip.parentTip.sender, retip.sender, retip.parentTip.id, retip.id);
+      await NotificationLogic.add[NOTIFICATION_TYPES.RETIP_ON_TIP](retip.sender, retip.sender, retip.tipId, retip.id);
     } catch (e) {
       if (!e.message.includes('SequelizeUniqueConstraintError')) {
         logger.error(e);

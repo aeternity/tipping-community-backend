@@ -96,7 +96,7 @@ router.get('/', basicAuth, async (req, res) => res.render('admin', {
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/BlacklistEntry'
+ *             $ref: '#/components/schemas/BlacklistEntry-author'
  *     responses:
  *       200:
  *         description: created blacklist entry

@@ -324,11 +324,11 @@ const aeternity = {
   },
 
   async fetchTipsBasic() {
-    if (!this.client) throw new Error('Init sdk first');
+    if (!client) throw new Error('Init sdk first');
     try {
-      const fetchV1State = this.contractV1.methods.get_state();
-      const fetchV2State = process.env.CONTRACT_V2_ADDRESS ? this.contractV2.methods.get_state() : Promise.resolve(null);
-      const fetchV3State = process.env.CONTRACT_V3_ADDRESS ? this.contractV3.methods.get_state() : Promise.resolve(null);
+      const fetchV1State = contractV1.methods.get_state();
+      const fetchV2State = process.env.CONTRACT_V2_ADDRESS ? contractV2.methods.get_state() : Promise.resolve(null);
+      const fetchV3State = process.env.CONTRACT_V3_ADDRESS ? contractV3.methods.get_state() : Promise.resolve(null);
       return basicTippingContractUtil.getTips(...[await fetchV1State, await fetchV2State, await fetchV3State].filter(state => state));
     } catch (e) {
       logger.error(e.message);

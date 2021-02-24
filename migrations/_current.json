@@ -635,16 +635,40 @@
                     "field": "id",
                     "seqType": "Sequelize.STRING"
                 },
-                "unclaimed": {
-                    "defaultValue": {
-                        "value": true
+                "tipId": {
+                    "allowNull": false,
+                    "field": "tipId",
+                    "references": {
+                        "model": "Tips",
+                        "key": "id"
                     },
-                    "field": "unclaimed",
-                    "seqType": "Sequelize.BOOLEAN"
+                    "onDelete": "NO ACTION",
+                    "onUpdate": "CASCADE",
+                    "seqType": "Sequelize.STRING"
                 },
                 "sender": {
                     "field": "sender",
                     "seqType": "Sequelize.STRING"
+                },
+                "token": {
+                    "allowNull": true,
+                    "field": "token",
+                    "seqType": "Sequelize.STRING"
+                },
+                "tokenAmount": {
+                    "allowNull": true,
+                    "field": "tokenAmount",
+                    "seqType": "Sequelize.DECIMAL"
+                },
+                "amount": {
+                    "allowNull": true,
+                    "field": "amount",
+                    "seqType": "Sequelize.DECIMAL"
+                },
+                "claimGen": {
+                    "allowNull": true,
+                    "field": "claimGen",
+                    "seqType": "Sequelize.DECIMAL"
                 },
                 "createdAt": {
                     "allowNull": false,
@@ -655,17 +679,6 @@
                     "allowNull": false,
                     "field": "updatedAt",
                     "seqType": "Sequelize.DATE"
-                },
-                "tipId": {
-                    "allowNull": true,
-                    "references": {
-                        "model": "Tips",
-                        "key": "id"
-                    },
-                    "onDelete": "SET NULL",
-                    "onUpdate": "CASCADE",
-                    "field": "tipId",
-                    "seqType": "Sequelize.STRING"
                 }
             },
             "indexes": []
@@ -726,17 +739,17 @@
                 "tokenAmount": {
                     "allowNull": true,
                     "field": "tokenAmount",
-                    "seqType": "Sequelize.BIGINT"
+                    "seqType": "Sequelize.DECIMAL"
                 },
                 "amount": {
                     "allowNull": true,
                     "field": "amount",
-                    "seqType": "Sequelize.BIGINT"
+                    "seqType": "Sequelize.DECIMAL"
                 },
                 "claimGen": {
                     "allowNull": true,
                     "field": "claimGen",
-                    "seqType": "Sequelize.BIGINT"
+                    "seqType": "Sequelize.DECIMAL"
                 },
                 "createdAt": {
                     "allowNull": false,
@@ -752,5 +765,5 @@
             "indexes": []
         }
     },
-    "revision": 9
+    "revision": 10
 }

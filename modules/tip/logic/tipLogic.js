@@ -14,6 +14,7 @@ const lock = new AsyncLock();
 class TipLogic {
   constructor() {
     setTimeout(this.updateTipsDB, 5000);
+    setTimeout(this.updateRetipsDB, 5000);
 
     queueLogic.subscribeToMessage(MESSAGE_QUEUES.TIPS, MESSAGES.TIPS.COMMANDS.UPDATE_DB, async message => {
       await this.updateTipsDB();
@@ -49,13 +50,9 @@ class TipLogic {
     });
   }
 
-  async fetchAllLocalRetips() {
-    return Retip.findAll({ raw: true });
-  }
-
   async updateTipsDB() {
     await lock.acquire('TipLogic.updateTipsDB', async () => {
-      const remoteTips = await aeternity.fetchTipsBasic();
+      const remoteTips = (await aeternity.fetchStateBasic()).tips;
       const localTips = await Tip.findAll({ raw: true });
       const remoteTipIds = [...new Set(remoteTips.map(tip => tip.id))];
       const localTipIds = [...new Set(localTips.map(tip => tip.id))];
@@ -104,12 +101,8 @@ class TipLogic {
 
   async updateRetipsDB() {
     await lock.acquire('RetipLogic.updateRetipsDB', async () => {
-      const remoteTips = await CacheLogic.getTips();
-      const localRetips = await this.fetchAllLocalRetips();
-      const remoteRetips = [...(remoteTips.map(tip => tip.retips.map(retip => ({
-        ...retip,
-        parentTip: tip,
-      }))).flat())];
+      const remoteRetips = (await aeternity.fetchStateBasic()).retips
+      const localRetips = await Retip.findAll({ raw: true });
       const remoteRetipIds = [...new Set(remoteRetips.map(retip => retip.id))];
       const localRetipIds = [...new Set(localRetips.map(retip => retip.id))];
 
@@ -123,14 +116,22 @@ class TipLogic {
         remoteRetips.find(retip => retip.id === id),
       ));
 
+      const retipsToInsert = newReTipIds.map(id => remoteRetips.find(({id: retipId}) => id === retipId));
+
       await Retip.bulkCreate(
-        newReTipIds.map(id => remoteRetips.find(({ id: retipId }) => id === retipId))
-          .map(({
-            id, parentTip, claim, sender,
-          }) => ({
-            id, tipId: parentTip.id, unclaimed: claim.unclaimed, sender,
-          })),
-      );
+        retipsToInsert.map(({
+          id, tip_id, sender, token, token_amount, amount, claim_gen, type, contractId
+        }) => ({
+          id,
+          tipId: tip_id,
+          sender,
+          token,
+          tokenAmount: token_amount,
+          amount,
+          claimGen: claim_gen,
+          type,
+          contractId,
+        })));
     });
   }
 }

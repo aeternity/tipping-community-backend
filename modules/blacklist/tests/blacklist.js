@@ -70,7 +70,7 @@ describe('Blacklist', () => {
         res.should.have.status(200);
         res.body.should.be.a('object');
         res.body.should.have.property('tipId', walletTipId);
-        res.body.should.have.property('flagger', publicKey);
+        res.body.should.have.property('author', publicKey);
         res.body.should.have.property('status', BLACKLIST_STATUS.FLAGGED);
         res.body.should.have.property('createdAt');
         res.body.should.have.property('updatedAt');
@@ -93,7 +93,7 @@ describe('Blacklist', () => {
         res.should.have.status(200);
         res.body.should.be.a('object');
         res.body.should.have.property('tipId', walletTipId);
-        res.body.should.have.property('flagger', publicKey);
+        res.body.should.have.property('author', publicKey);
         res.body.should.have.property('status', BLACKLIST_STATUS.FLAGGED);
         res.body.should.have.property('createdAt');
         res.body.should.have.property('updatedAt');

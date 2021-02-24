@@ -14,7 +14,7 @@ module.exports = (sequelize, DataTypes) => sequelize.define('BlacklistEntry', {
     defaultValue: BLACKLIST_STATUS.HIDDEN,
     allowNull: false,
   },
-  flagger: {
+  author: {
     type: DataTypes.STRING,
     allowNull: true,
   },

@@ -6,6 +6,7 @@ const aeternity = require('../../aeternity/logic/aeternity');
 const { Tip, Retip } = require('../../../models');
 const NotificationLogic = require('../../notification/logic/notificationLogic');
 const queueLogic = require('../../queue/logic/queueLogic');
+const { TIP_AGGREGATION } = require('../utils/tipAggregation');
 const { MESSAGES, MESSAGE_QUEUES } = require('../../queue/constants/queue');
 
 const lock = new AsyncLock();
@@ -29,6 +30,7 @@ class TipLogic {
 
     if (page) {
       return Tip.findAll({
+        attributes: Object.keys(Tip.rawAttributes).concat([TIP_AGGREGATION.TOTAL_URL_AMOUNT]),
         offset: (page - 1) * limit,
         limit,
       });
@@ -38,7 +40,11 @@ class TipLogic {
   }
 
   async fetchAllLocalTips() {
-    return Tip.findAll({ raw: true });
+    //return Tip.findAll({ raw: true });
+
+    return Tip.findAll({
+      attributes: Object.keys(Tip.rawAttributes).concat([TIP_AGGREGATION.TOTAL_URL_AMOUNT])
+    });
   }
 
   async fetchAllLocalRetips() {

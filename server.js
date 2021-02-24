@@ -58,6 +58,8 @@ if (fs.existsSync('./swagger.json')) {
       // validateResponses: true, // <-- to validate responses
     }),
   );
+} else {
+  throw Error('Missing Swagger File. To create the file run: npm run swagger:create');
 }
 
 // ROUTES

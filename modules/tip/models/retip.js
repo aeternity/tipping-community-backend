@@ -5,11 +5,27 @@ module.exports = (sequelize, DataTypes) => sequelize.define('Retip', {
     allowNull: false,
     primaryKey: true,
   },
-  unclaimed: {
-    type: DataTypes.BOOLEAN,
-    defaultValue: true,
+  tipId: {
+    type: DataTypes.STRING,
+    allowNull: false,
   },
   sender: {type: DataTypes.STRING},
+  token: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  tokenAmount: {
+    type: DataTypes.NUMERIC,
+    allowNull: true,
+  },
+  amount: {
+    type: DataTypes.NUMERIC,
+    allowNull: true,
+  },
+  claimGen: {
+    type: DataTypes.NUMERIC,
+    allowNull: true,
+  },
 }, {
   timestamps: true,
 });

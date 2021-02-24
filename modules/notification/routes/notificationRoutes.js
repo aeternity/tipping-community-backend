@@ -12,7 +12,7 @@ const router = new Router();
 
 /**
  * @swagger
- * /notification/{notificationId}:
+ * /notification/user/{author}:
  *   get:
  *     tags:
  *       - notifications
@@ -21,10 +21,10 @@ const router = new Router();
  *       - signatureAuth: []
  *     parameters:
  *       - in: path
- *         name: notificationId
+ *         name: author
  *         required: true
  *         schema:
- *           type: integer
+ *           type: string
  *       - in: query
  *         name: signature
  *         required: false
@@ -65,6 +65,7 @@ router.get('/user/:author', signatureAuth, NotificationLogic.getForUser);
  *           schema:
  *             oneOf:
  *               - type: object
+ *                 required: [ ids, status, author ]
  *                 properties:
  *                   ids:
  *                     type: array
@@ -75,6 +76,8 @@ router.get('/user/:author', signatureAuth, NotificationLogic.getForUser);
  *                     enum:
  *                       - CREATED
  *                       - READ
+ *                   author:
+ *                     type: string
  *               - $ref: '#/components/schemas/SignatureRequest'
  *     responses:
  *       200:
@@ -114,12 +117,15 @@ router.post('/', signatureAuth, async (req, res) => {
  *           schema:
  *             oneOf:
  *               - type: object
+ *                 required: [ status, author ]
  *                 properties:
  *                   status:
  *                     type: string
  *                     enum:
  *                       - CREATED
  *                       - READ
+ *                   author:
+ *                     type: string
  *               - $ref: '#/components/schemas/SignatureRequest'
  *     responses:
  *       200:

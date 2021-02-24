@@ -58,8 +58,9 @@ router.get('/:author', Logic.getAllItemsPerUser);
  *           schema:
  *             oneOf:
  *               - type: object
+ *                 required: [ entryId, type ]
  *                 properties:
- *                   entityId:
+ *                   entryId:
  *                     type: string
  *                   type:
  *                     type: string

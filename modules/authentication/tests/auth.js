@@ -20,7 +20,6 @@ describe('Authenticator', () => {
     biography: 'What an awesome bio',
     preferredChainName: 'awesomename.chain',
     referrer: 'ak_aNTSYaqHmuSfKgBPjBm95eJz82JXKznCZVdchKKKh7jtDAJcW',
-    author: publicKey,
     location: 'awesome, location, country',
   };
 
@@ -144,7 +143,7 @@ describe('Authenticator', () => {
         shouldBeValidChallengeResponse(res.body, testData);
         const { challenge } = res.body;
         const signature = signChallenge(challenge);
-        chai.request(server).post('/profile/').send({
+        chai.request(server).post(`/profile/${publicKey}_2`).send({
           challenge,
           signature,
         }).end((innerError, innerRes) => {

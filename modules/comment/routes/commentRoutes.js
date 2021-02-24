@@ -168,7 +168,7 @@ router.get('/count/author/:author', CommentLogic.getCommentCountForAddress);
  *         application/json:
  *           schema:
  *             oneOf:
- *               - $ref: '#/components/schemas/Comment'
+ *               - $ref: '#/components/schemas/Comment-signature-challenge-hierarchyLevel'
  *               - $ref: '#/components/schemas/SignatureRequest'
  *     responses:
  *       200:

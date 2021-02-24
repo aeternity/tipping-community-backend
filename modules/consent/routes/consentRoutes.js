@@ -26,6 +26,16 @@ const router = new Router();
  *         required: true
  *         schema:
  *           type: string
+ *       - in: query
+ *         name: challenge
+ *         required: false
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: signature
+ *         required: false
+ *         schema:
+ *           type: string
  *     responses:
  *       200:
  *         description: Returns all consent domains for a user
@@ -57,6 +67,16 @@ router.get('/:author', signatureAuth, ConsentLogic.getAllItemsForUser);
  *       - in: path
  *         name: scope
  *         required: true
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: challenge
+ *         required: false
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: signature
+ *         required: false
  *         schema:
  *           type: string
  *     responses:
@@ -96,7 +116,7 @@ router.get('/:author/:scope', signatureAuth, ConsentLogic.getSingleItem);
  *         application/json:
  *           schema:
  *             oneOf:
- *               - $ref: '#/components/schemas/Consent'
+ *               - $ref: '#/components/schemas/Consent-author-scope'
  *               - $ref: '#/components/schemas/SignatureRequest'
  *     responses:
  *       200:

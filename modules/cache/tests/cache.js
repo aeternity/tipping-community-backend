@@ -27,6 +27,8 @@ describe('Cache', () => {
     await cache.del(['fetchStats']);
     await cache.del(['oracleState']);
     await cache.del(['contractEvents']);
+    await cache.del(['CacheLogic.getAllTips', 'all']);
+    await cache.del(['CacheLogic.getAllTips', 'blacklisted']);
 
     await aeternity.init();
   });
@@ -56,14 +58,12 @@ describe('Cache', () => {
   describe('API', () => {
     it('it should GET all cache items', function (done) {
       this.timeout(15000);
-      sinon.stub(queueLogic, 'sendMessage').callsFake(async () => {});
-      checkCachedRoute('/cache/tips', 'array', () => {
-        done();
-      });
+      sinon.stub(queueLogic, 'sendMessage').resolves(null);
+      checkCachedRoute('/cache/tips', 'array', done);
     });
 
     it('it should GET all cache items with filters', async () => {
-      const stub = sinon.stub(cacheAggregatorLogic, 'getAllTips').callsFake(() => [
+      const stub = sinon.stub(cacheAggregatorLogic, 'getAllTips').returns([
         {
           sender: 'ak_y87WkN4C4QevzjTuEYHg6XLqiWx3rjfYDFLBmZiqiro5mkRag',
           title: '#test tip',

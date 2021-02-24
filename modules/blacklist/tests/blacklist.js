@@ -22,7 +22,8 @@ describe('Blacklist', () => {
     }).then(() => done());
   });
 
-  const tipId = '1_v0';
+  const tipId = '1_v1';
+  const walletTipId = '2_v1';
 
   describe('Blacklist API', () => {
     it('it should GET all the blacklist entries (empty)', done => {
@@ -55,7 +56,7 @@ describe('Blacklist', () => {
 
     it('it should CREATE a new blacklist entry via wallet auth', done => {
       performSignedJSONRequest(server, 'post', '/blacklist/api/wallet/', {
-        tipId: '1_v1', author: publicKey,
+        tipId: walletTipId, author: publicKey,
       }).then(({ res }) => {
         res.should.have.status(200);
         done();
@@ -64,11 +65,11 @@ describe('Blacklist', () => {
 
     it('it should ALLOW overwriting a blacklist entry via wallet auth', done => {
       performSignedJSONRequest(server, 'post', '/blacklist/api/wallet/', {
-        tipId: tipId + 1, author: publicKey,
+        tipId: walletTipId, author: publicKey,
       }).then(({ res }) => {
         res.should.have.status(200);
         res.body.should.be.a('object');
-        res.body.should.have.property('tipId', String(tipId + 1));
+        res.body.should.have.property('tipId', walletTipId);
         res.body.should.have.property('flagger', publicKey);
         res.body.should.have.property('status', BLACKLIST_STATUS.FLAGGED);
         res.body.should.have.property('createdAt');
@@ -88,10 +89,10 @@ describe('Blacklist', () => {
     });
 
     it('it should GET a single item created via wallet auth', done => {
-      chai.request(server).get(`/blacklist/api/${tipId + 1}`).end((err, res) => {
+      chai.request(server).get(`/blacklist/api/${walletTipId}`).end((err, res) => {
         res.should.have.status(200);
         res.body.should.be.a('object');
-        res.body.should.have.property('tipId', String(tipId + 1));
+        res.body.should.have.property('tipId', walletTipId);
         res.body.should.have.property('flagger', publicKey);
         res.body.should.have.property('status', BLACKLIST_STATUS.FLAGGED);
         res.body.should.have.property('createdAt');

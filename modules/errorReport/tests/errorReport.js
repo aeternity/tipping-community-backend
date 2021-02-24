@@ -18,20 +18,20 @@ describe('Error Reports', () => {
 
   const testData = {
     appVersion: '0.0.21',
-    browser: {
+    browser: JSON.stringify({
       name: 'chrome',
       os: 'Windows 10',
       version: '81.0.4044',
-    },
-    error: {
+    }),
+    error: JSON.stringify({
       message: 'Ooops something went very wrong somehwere',
       stack: `
       Some
       Multiline
       Info`,
       other: 'fields',
-    },
-    time: 143489512334,
+    }),
+    time: '143489512334',
     platform: 'extension',
     description: 'description',
   };

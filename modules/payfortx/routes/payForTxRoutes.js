@@ -25,7 +25,6 @@ const router = new Router();
  *             properties:
  *               url:
  *                 type: string
- *                 format: url
  *               address:
  *                 type: string
  *     responses:
@@ -59,7 +58,6 @@ router.post('/submit', PayForTxLogic.payForTx);
  *                 type: string
  *               title:
  *                 type: string
- *                 format: url
  *               media:
  *                 type: array
  *                 items:

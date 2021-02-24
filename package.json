@@ -43,6 +43,7 @@
     "esm": "^3.2.25",
     "express": "^4.17.1",
     "express-handlebars": "^5.2.1",
+    "express-openapi-validator": "^4.11.0",
     "fuse.js": "^6.4.6",
     "glob": "^7.1.6",
     "ipfs-http-client": "^49.0.2",

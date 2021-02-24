@@ -8,6 +8,7 @@ const path = require('path');
 const app = express();
 const exphbs = require('express-handlebars');
 const cors = require('cors');
+const OpenApiValidator = require('express-openapi-validator');
 // SENTRY
 if (process.env.SENTRY_URL) {
   Sentry.init({
@@ -46,6 +47,19 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
 }));
 
+// expose api docs
+if (fs.existsSync('./swagger.json')) {
+  app.use('/docs', swaggerUi.serve, swaggerUi.setup(JSON.parse(fs.readFileSync('./swagger.json'))));
+  app.use(
+    OpenApiValidator.middleware({
+      apiSpec: './swagger.json',
+      fileUploader: false,
+      // TODO take care of the errors
+      // validateResponses: true, // <-- to validate responses
+    }),
+  );
+}
+
 // ROUTES
 app.use('/blacklist', require('./modules/blacklist/routes/blacklistRoutes.js'));
 app.use('/comment', require('./modules/comment/routes/commentRoutes.js'));
@@ -66,11 +80,6 @@ app.use('/consent', require('./modules/consent/routes/consentRoutes.js'));
 
 app.use('/images', require('./modules/media/routes/imageRoutes.js'));
 
-// expose api docs
-if (fs.existsSync('./swagger.json')) {
-  app.use('/docs', swaggerUi.serve, swaggerUi.setup(JSON.parse(fs.readFileSync('./swagger.json'))));
-}
-
 if (process.env.SENTRY_URL) {
   // log errors that come from controllers
   app.use(Sentry.Handlers.errorHandler());
@@ -81,7 +90,10 @@ app.use((err, req, res, next) => {
   if (res.headersSent) {
     return next(err);
   }
-  return res.status(500).send({ error: err });
+  return res.status(err.status || 500).json({
+    message: err.message,
+    errors: err.errors,
+  });
 });
 
 // catch 404

@@ -18,7 +18,7 @@ class MessageBroker {
       queueName: MESSAGE_QUEUES.TIPS,
       message: MESSAGES.TIPS.EVENTS.UPDATE_DB_FINISHED,
     }, [
-      { queueName: MESSAGE_QUEUES.TIPS, message: MESSAGES.RETIPS.COMMANDS.UPDATE_DB },
+      { queueName: MESSAGE_QUEUES.RETIPS, message: MESSAGES.RETIPS.COMMANDS.UPDATE_DB },
     ]);
 
     // S: UPDATE TIPS DB

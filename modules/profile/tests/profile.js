@@ -10,6 +10,7 @@ const { Profile, IPFSEntry, Comment } = require('../../../models');
 const server = require('../../../server');
 const { IPFS_TYPES } = require('../../backup/constants/ipfsTypes');
 const ae = require('../../aeternity/logic/aeternity');
+const ipfs = require('../../backup/logic/ipfsLogic');
 const {
   publicKey,
   performSignedJSONRequest,
@@ -26,7 +27,6 @@ describe('Profile', () => {
     biography: 'What an awesome bio',
     preferredChainName: 'awesomename.chain',
     referrer: 'ak_aNTSYaqHmuSfKgBPjBm95eJz82JXKznCZVdchKKKh7jtDAJcW',
-    author: publicKey,
     location: 'awesome, location, country',
   };
 
@@ -57,14 +57,14 @@ describe('Profile', () => {
 
     it('it should CREATE a new profile', done => {
       const stub = sinon.stub(ae, 'getAddressForChainName').callsFake(() => ({
-        pointers: [{ id: testData.author, key: 'account_pubkey' }],
+        pointers: [{ id: publicKey, key: 'account_pubkey' }],
       }));
       performSignedJSONRequest(server, 'post', `/profile/${publicKey}`, testData)
         .then(({ res, signature, challenge }) => {
           res.should.have.status(200);
           res.body.should.be.a('object');
           res.body.should.have.property('biography', testData.biography);
-          res.body.should.have.property('author', testData.author);
+          res.body.should.have.property('author', publicKey);
           res.body.should.have.property('preferredChainName', testData.preferredChainName);
           res.body.should.have.property('referrer', true);
           res.body.should.have.property('location', testData.location);
@@ -85,7 +85,7 @@ describe('Profile', () => {
         res.should.have.status(200);
         res.body.should.be.a('object');
         res.body.should.have.property('biography', testData.biography);
-        res.body.should.have.property('author', testData.author);
+        res.body.should.have.property('author', publicKey);
         res.body.should.have.property('referrer', true);
         res.body.should.have.property('location', testData.location);
         res.body.should.have.property('signature');
@@ -99,7 +99,7 @@ describe('Profile', () => {
     const newBio = 'another updated bio';
     it('it should allow to update an profile', done => {
       performSignedJSONRequest(server, 'post', `/profile/${publicKey}`, {
-        author: testData.author, biography: newBio,
+        biography: newBio,
       }).then(({ res }) => {
         res.should.have.status(200);
         res.body.should.be.a('object');
@@ -113,7 +113,7 @@ describe('Profile', () => {
         res.should.have.status(200);
         res.body.should.be.a('object');
         res.body.should.have.property('biography', newBio);
-        res.body.should.have.property('author', testData.author);
+        res.body.should.have.property('author', publicKey);
         done();
       });
     });
@@ -132,9 +132,11 @@ describe('Profile', () => {
       });
       await Profile.create({
         ...testData,
+        author: publicKey,
         signature: 'signature',
         challenge: 'challenge',
       });
+      await ipfs.init();
     });
 
     const binaryParser = function (res, cb) {
@@ -165,7 +167,7 @@ describe('Profile', () => {
           res.should.have.status(200);
           res.body.should.be.a('object');
           res.body.should.have.property('biography', testData.biography);
-          res.body.should.have.property('author', testData.author);
+          res.body.should.have.property('author', publicKey);
           res.body.should.have.property('image');
           res.body.image.should.contain(`/images/${publicKey}`);
           res.body.should.have.property('signature', signature);
@@ -222,7 +224,7 @@ describe('Profile', () => {
           res.should.have.status(200);
           res.body.should.be.a('object');
           res.body.should.have.property('biography', testData.biography);
-          res.body.should.have.property('author', testData.author);
+          res.body.should.have.property('author', publicKey);
           res.body.should.have.property('image');
           res.body.image.should.contain(`/images/${publicKey}`);
           imageURL = res.body.image;
@@ -284,7 +286,7 @@ describe('Profile', () => {
     });
 
     it('it should delete the image', done => {
-      performSignedJSONRequest(server, 'post', `/profile/${publicKey}`, { image: null })
+      performSignedJSONRequest(server, 'post', `/profile/${publicKey}`, { image: '' })
         .then(({ res }) => {
           res.should.have.status(200);
           done();
@@ -326,6 +328,7 @@ describe('Profile', () => {
       });
       await Profile.create({
         ...testData,
+        author: publicKey,
         signature: 'signature',
         challenge: 'challenge',
       });
@@ -360,7 +363,7 @@ describe('Profile', () => {
           res.should.have.status(200);
           res.body.should.be.a('object');
           res.body.should.have.property('biography', testData.biography);
-          res.body.should.have.property('author', testData.author);
+          res.body.should.have.property('author', publicKey);
           res.body.should.have.property('coverImage');
           res.body.coverImage.should.contain(`/images/${publicKey}`);
           res.body.should.have.property('signature', signature);
@@ -417,7 +420,7 @@ describe('Profile', () => {
           res.should.have.status(200);
           res.body.should.be.a('object');
           res.body.should.have.property('biography', testData.biography);
-          res.body.should.have.property('author', testData.author);
+          res.body.should.have.property('author', publicKey);
           res.body.should.have.property('coverImage');
           res.body.coverImage.should.contain(`/images/${publicKey}`);
           imageURL = res.body.coverImage;
@@ -479,7 +482,7 @@ describe('Profile', () => {
     });
 
     it('it should delete the cover image', done => {
-      performSignedJSONRequest(server, 'post', `/profile/${publicKey}`, { coverImage: null })
+      performSignedJSONRequest(server, 'post', `/profile/${publicKey}`, { coverImage: '' })
         .then(({ res }) => {
           res.should.have.status(200);
           done();

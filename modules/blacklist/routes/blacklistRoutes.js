@@ -133,7 +133,7 @@ router.post('/api', basicAuth, async (req, res) => {
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/BlacklistEntry'
+ *             $ref: '#/components/schemas/BlacklistEntry-tipId'
  *     responses:
  *       200:
  *         description: updated blacklist entry

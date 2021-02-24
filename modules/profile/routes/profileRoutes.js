@@ -66,10 +66,12 @@ router.get('/:author', async (req, res) => {
  *       content:
  *         multipart/form-data:
  *           schema:
- *             $ref: '#/components/schemas/Profile'
+ *             type: object
  *         application/json:
- *          schema:
- *            $ref: '#/components/schemas/SignatureRequest'
+ *           schema:
+ *             oneOf:
+ *               - $ref: '#/components/schemas/Profile-author-signature-challenge'
+ *               - $ref: '#/components/schemas/SignatureRequest'
  *     responses:
  *       200:
  *         description: Creates / Updates a profile
@@ -78,7 +80,7 @@ router.get('/:author', async (req, res) => {
  *             schema:
  *               oneOf:
  *                 - $ref: '#/components/schemas/Profile'
- *                 - $ref: '#/components/schemas/SignatureRequest'
+ *                 - $ref: '#/components/schemas/SignatureResponse'
  */
 router.post(
   '/:author',
@@ -132,7 +134,7 @@ router.get('/image/:author', profileLogic.getImage);
  *       content:
  *         multipart/form-data:
  *           schema:
- *             $ref: '#/components/schemas/Profile'
+ *             $ref: '#/components/schemas/Profile-author-signature-challenge'
  *         application/json:
  *          schema:
  *            $ref: '#/components/schemas/SignatureRequest'
@@ -144,7 +146,7 @@ router.get('/image/:author', profileLogic.getImage);
  *             schema:
  *               oneOf:
  *                 - $ref: '#/components/schemas/Profile'
- *                 - $ref: '#/components/schemas/SignatureRequest'
+ *                 - $ref: '#/components/schemas/SignatureResponse'
  */
 router.post(
   '/image/:author',
@@ -175,7 +177,7 @@ router.post(
  *             schema:
  *               oneOf:
  *                 - $ref: '#/components/schemas/Profile'
- *                 - $ref: '#/components/schemas/SignatureRequest'
+ *                 - $ref: '#/components/schemas/SignatureResponse'
  */
 router.delete(
   '/image/:author',
@@ -207,7 +209,7 @@ router.delete(
  *             schema:
  *               oneOf:
  *                 - $ref: '#/components/schemas/Profile'
- *                 - $ref: '#/components/schemas/SignatureRequest'
+ *                 - $ref: '#/components/schemas/SignatureResponse'
  */
 router.post(
   '/',

@@ -16,7 +16,7 @@ chai.use(chaiHttp);
 // Our parent block
 describe('Comments', () => {
   const testData = {
-    tipId: '0',
+    tipId: '0_v1',
     text: 'What an awesome website',
     author: publicKey,
   };
@@ -239,7 +239,7 @@ describe('Comments', () => {
       });
 
       parentComment = await Comment.create({
-        tipId: 0,
+        tipId: testData.tipId,
         text: 'Parent Comment',
         author: 'ak_testing',
         signature: 'sig',
@@ -247,7 +247,7 @@ describe('Comments', () => {
       }, { raw: true });
 
       const childComment = await Comment.create({
-        tipId: 0,
+        tipId: testData.tipId,
         text: 'Child Comment',
         author: 'ak_testing',
         signature: 'sig',
@@ -256,7 +256,7 @@ describe('Comments', () => {
       }, { raw: true });
 
       await Comment.create({
-        tipId: 0,
+        tipId: testData.tipId,
         text: 'Child Comment',
         author: 'ak_testing',
         signature: 'sig',
@@ -339,7 +339,7 @@ describe('Comments', () => {
     });
 
     it('it should GET ALL comments with children for a tipId', done => {
-      chai.request(server).get('/comment/api/tip/0').end((err, res) => {
+      chai.request(server).get(`/comment/api/tip/${testData.tipId}`).end((err, res) => {
         res.should.have.status(200);
         res.body.should.be.a('array');
         res.body.should.have.length(4);

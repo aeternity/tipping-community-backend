@@ -148,9 +148,10 @@ const authenticationLogic = {
  *       type: http
  *       scheme: basic
  *     signatureAuth:
- *       type: apiKey
- *       in: header
- *       name: NOT-A-REAL-KEY
+ *       authorizationUrl: ""
+ *       flow: "implicit"
+ *       type: "oauth2"
+ *       x-required-fields: [ challenge, signature ]
  *       description: This endpoint requires signature authentication. Swagger is insufficient here. Check the docs.
  */
 

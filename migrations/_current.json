@@ -817,6 +817,12 @@
                 "url": {
                     "allowNull": true,
                     "field": "url",
+                    "references": {
+                        "model": "LinkPreviews",
+                        "key": "requestUrl"
+                    },
+                    "onDelete": "NO ACTION",
+                    "onUpdate": "NO ACTION",
                     "seqType": "Sequelize.TEXT"
                 },
                 "token": {
@@ -853,5 +859,5 @@
             "indexes": []
         }
     },
-    "revision": 11
+    "revision": 12
 }

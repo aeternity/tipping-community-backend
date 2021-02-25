@@ -35,7 +35,7 @@ module.exports = (sequelize, DataTypes) => sequelize.define('Tip', {
     allowNull: false,
   },
   url: {
-    type: DataTypes.STRING,
+    type: DataTypes.TEXT,
     allowNull: true,
   },
   token: {

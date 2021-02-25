@@ -316,6 +316,7 @@
                 },
                 "requestUrl": {
                     "allowNull": false,
+                    "unique": true,
                     "field": "requestUrl",
                     "seqType": "Sequelize.TEXT"
                 },
@@ -729,7 +730,7 @@
                 "url": {
                     "allowNull": true,
                     "field": "url",
-                    "seqType": "Sequelize.STRING"
+                    "seqType": "Sequelize.TEXT"
                 },
                 "token": {
                     "allowNull": true,
@@ -765,5 +766,5 @@
             "indexes": []
         }
     },
-    "revision": 10
+    "revision": 11
 }

@@ -1,15 +1,19 @@
 const cld = require('cld');
 const AsyncLock = require('async-lock');
-const CacheLogic = require('../../cache/logic/cacheLogic');
 const aeternity = require('../../aeternity/logic/aeternity');
 
-const { Tip, Retip } = require('../../../models');
+const { Tip, Retip, LinkPreview } = require('../../../models');
 const NotificationLogic = require('../../notification/logic/notificationLogic');
 const queueLogic = require('../../queue/logic/queueLogic');
 const { TOTAL_AMOUNT, COUNT_COMMENTS } = require('../utils/tipAggregation');
 const { MESSAGES, MESSAGE_QUEUES } = require('../../queue/constants/queue');
 
 const lock = new AsyncLock();
+
+const dbFetchAttributes = {
+  attributes: Object.keys(Tip.rawAttributes).concat([TOTAL_AMOUNT, COUNT_COMMENTS]),
+  include: [Retip, LinkPreview],
+}
 
 const TipLogic = {
   init() {
@@ -31,8 +35,7 @@ const TipLogic = {
 
     if (page) {
       return Tip.findAll({
-        attributes: Object.keys(Tip.rawAttributes).concat([TOTAL_AMOUNT, COUNT_COMMENTS]),
-        include: [Retip],
+        ...dbFetchAttributes,
         offset: (page - 1) * limit,
         limit,
       });
@@ -44,10 +47,7 @@ const TipLogic = {
   async fetchAllLocalTips() {
     //return Tip.findAll({ raw: true });
 
-    return Tip.findAll({
-      attributes: Object.keys(Tip.rawAttributes).concat([TOTAL_AMOUNT, COUNT_COMMENTS]),
-      include: [Retip],
-    });
+    return Tip.findAll(dbFetchAttributes);
   },
 
   async updateTipsDB() {

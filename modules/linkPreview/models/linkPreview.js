@@ -3,6 +3,7 @@ module.exports = (sequelize, DataTypes) => sequelize.define('LinkPreview', {
   requestUrl: {
     type: DataTypes.TEXT,
     allowNull: false,
+    unique: true,
   },
   title: {
     type: DataTypes.TEXT,

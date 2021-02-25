@@ -227,13 +227,17 @@ module.exports = {
             return run(null);
         }
     },
-    up: function(queryInterface, Sequelize)
+    up: async function(queryInterface, Sequelize)
     {
-        return this.execute(queryInterface, Sequelize, migrationCommands);
+      const transaction = await queryInterface.sequelize.transaction();
+      await queryInterface.sequelize.query('TRUNCATE TABLE "Retips" CASCADE;', { transaction });
+      return this.execute(queryInterface, Sequelize, migrationCommands);
     },
-    down: function(queryInterface, Sequelize)
+    down: async function(queryInterface, Sequelize)
     {
-        return this.execute(queryInterface, Sequelize, rollbackCommands);
+      const transaction = await queryInterface.sequelize.transaction();
+      await queryInterface.sequelize.query('TRUNCATE TABLE "Retips" CASCADE;', { transaction });
+      return this.execute(queryInterface, Sequelize, rollbackCommands);
     },
     info: info
 };

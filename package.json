@@ -8,7 +8,7 @@
     "benchmark": "node benchmark.js",
     "db:create": "npx sequelize-cli --config config/config.js --env development db:migrate",
     "db:down": "npx sequelize-cli --config config/config.js --env development db:migrate:undo",
-    "db:makemigrations": "./node_modules/sequelize-auto-migrations/bin/makemigration.js",
+    "db:makemigrations": "npx sequelize-mig --config config/config.js --env development migration:make",
     "lint": "eslint .",
     "lint-fix": "eslint --ext .js --fix .",
     "lint-ci": "eslint --ext .js --max-warnings=0 .",
@@ -86,7 +86,7 @@
     "husky": "^5.0.9",
     "mocha": "^8.3.0",
     "rewire": "^5.0.0",
-    "sequelize-auto-migrations": "github:scimonster/sequelize-auto-migrations#a063aa6535a3f580623581bf866cef2d609531ba",
+    "sequelize-mig": "github:MRVMV/sequelize-mig#6112b12a0e40ca0789910c6e99ef5a0c1f4f7700",
     "sinon": "^9.2.4"
   }
 }

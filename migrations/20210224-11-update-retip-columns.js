@@ -229,14 +229,12 @@ module.exports = {
     },
     up: async function(queryInterface, Sequelize)
     {
-      const transaction = await queryInterface.sequelize.transaction();
-      await queryInterface.sequelize.query('TRUNCATE TABLE "Retips" CASCADE;', { transaction });
+      await queryInterface.sequelize.query('TRUNCATE TABLE "Retips" CASCADE;'); // hangs within transaction, so no transaction
       return this.execute(queryInterface, Sequelize, migrationCommands);
     },
     down: async function(queryInterface, Sequelize)
     {
-      const transaction = await queryInterface.sequelize.transaction();
-      await queryInterface.sequelize.query('TRUNCATE TABLE "Retips" CASCADE;', { transaction });
+      await queryInterface.sequelize.query('TRUNCATE TABLE "Retips" CASCADE;'); // hangs within transaction, so no transaction
       return this.execute(queryInterface, Sequelize, rollbackCommands);
     },
     info: info

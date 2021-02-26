@@ -1,4 +1,5 @@
 const { TIP_TYPES } = require('../constants/tipTypes');
+const { LinkPreview } = require('../../../models');
 
 module.exports = (sequelize, DataTypes) => sequelize.define('Tip', {
   // attributes
@@ -37,6 +38,10 @@ module.exports = (sequelize, DataTypes) => sequelize.define('Tip', {
   url: {
     type: DataTypes.TEXT,
     allowNull: true,
+    references: {
+      model: LinkPreview,
+      key: 'requestUrl'
+    }
   },
   token: {
     type: DataTypes.STRING,

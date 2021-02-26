@@ -2,7 +2,7 @@ const cld = require('cld');
 const AsyncLock = require('async-lock');
 const aeternity = require('../../aeternity/logic/aeternity');
 
-const { Tip, Retip, LinkPreview } = require('../../../models');
+const { Tip, Retip, LinkPreview, Claim } = require('../../../models');
 const NotificationLogic = require('../../notification/logic/notificationLogic');
 const queueLogic = require('../../queue/logic/queueLogic');
 const { TOTAL_AMOUNT, COUNT_COMMENTS, TOKEN_TOTAL_AMOUNT } = require('../utils/tipAggregation');
@@ -19,6 +19,7 @@ const TipLogic = {
   init() {
     setTimeout(TipLogic.updateTipsDB, 5000);
     setTimeout(this.updateRetipsDB, 5000);
+    setTimeout(this.updateClaimsDB, 5000);
 
     queueLogic.subscribeToMessage(MESSAGE_QUEUES.TIPS, MESSAGES.TIPS.COMMANDS.UPDATE_DB, async message => {
       await TipLogic.updateTipsDB();
@@ -50,6 +51,22 @@ const TipLogic = {
     return Tip.findAll(dbFetchAttributes);
   },
 
+
+  async updateClaimsDB() {
+    await lock.acquire('TipLogic.updateClaimsDB', async () => {
+      const remoteClaims = (await aeternity.fetchStateBasic()).claims;
+      const localClaims = await Claim.findAll({ raw: true });
+
+      const insertOrUpdateClaims = remoteClaims.filter(r => {
+        const notIncludesRemote = !localClaims.some(l => r.url === l.url && r.contractId === l.contractId);
+        const includesRemoteUpdated = localClaims.some(l => r.url === l.url && r.contractId === l.contractId && (r.amount !== l.amount || r.claimGen !== l.claimGen));
+        return includesRemoteUpdated || notIncludesRemote;
+      })
+
+      await Claim.bulkCreate(insertOrUpdateClaims, { updateOnDuplicate: ['claimGen', 'amount', 'updatedAt'] });
+    });
+  }
+
   async updateTipsDB() {
     await lock.acquire('TipLogic.updateTipsDB', async () => {
       const remoteTips = (await aeternity.fetchStateBasic()).tips;
@@ -76,7 +93,7 @@ const TipLogic = {
         return { ...tip, lang, title };
       });
       await Tip.bulkCreate(result.map(({
-        id, lang, sender, media, url, topics, title, token, token_amount, amount, claim_gen, type, contractId,
+        id, lang, sender, media, url, topics, title, token, tokenAmount, amount, claimGen, type, contractId,
       }) => ({
         id: String(id),
         language: lang,
@@ -86,9 +103,9 @@ const TipLogic = {
         topics,
         title,
         token,
-        tokenAmount: token_amount,
+        tokenAmount,
         amount,
-        claimGen: claim_gen,
+        claimGen,
         type,
         contractId,
       })));
@@ -117,21 +134,7 @@ const TipLogic = {
       ));
 
       const retipsToInsert = newReTipIds.map(id => remoteRetips.find(({id: retipId}) => id === retipId));
-
-      await Retip.bulkCreate(
-        retipsToInsert.map(({
-          id, tip_id, sender, token, token_amount, amount, claim_gen, type, contractId
-        }) => ({
-          id,
-          tipId: tip_id,
-          sender,
-          token,
-          tokenAmount: token_amount,
-          amount,
-          claimGen: claim_gen,
-          type,
-          contractId,
-        })));
+      await Retip.bulkCreate(retipsToInsert);
     });
   },
 };

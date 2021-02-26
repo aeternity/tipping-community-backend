@@ -714,6 +714,57 @@
             },
             "indexes": []
         },
+        "Claims": {
+            "tableName": "Claims",
+            "schema": {
+                "contractId": {
+                    "primaryKey": true,
+                    "allowNull": false,
+                    "field": "contractId",
+                    "seqType": "Sequelize.STRING"
+                },
+                "url": {
+                    "primaryKey": true,
+                    "allowNull": false,
+                    "field": "url",
+                    "seqType": "Sequelize.TEXT"
+                },
+                "amount": {
+                    "allowNull": false,
+                    "field": "amount",
+                    "seqType": "Sequelize.DECIMAL"
+                },
+                "claimGen": {
+                    "allowNull": false,
+                    "field": "claimGen",
+                    "seqType": "Sequelize.INTEGER"
+                },
+                "createdAt": {
+                    "allowNull": false,
+                    "field": "createdAt",
+                    "seqType": "Sequelize.DATE"
+                },
+                "updatedAt": {
+                    "allowNull": false,
+                    "field": "updatedAt",
+                    "seqType": "Sequelize.DATE"
+                }
+            },
+            "indexes": {
+                "aa535abba2ef9e8b7fb590086d5760ace9955c13": {
+                    "primaryKey": true,
+                    "fields": [
+                        "contractId",
+                        "url"
+                    ],
+                    "name": "claims_contract_id_url",
+                    "options": {
+                        "indexName": "claims_contract_id_url",
+                        "name": "claims_contract_id_url"
+                    }
+                }
+            }
+        },
         "Retips": {
             "tableName": "Retips",
             "schema": {
@@ -816,11 +867,11 @@
                 },
                 "url": {
                     "allowNull": true,
-                    "field": "url",
                     "references": {
                         "model": "LinkPreviews",
                         "key": "requestUrl"
                     },
+                    "field": "url",
                     "onDelete": "NO ACTION",
                     "onUpdate": "NO ACTION",
                     "seqType": "Sequelize.TEXT"
@@ -859,5 +910,5 @@
             "indexes": []
         }
     },
-    "revision": 11
+    "revision": 12
 }

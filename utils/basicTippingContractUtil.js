@@ -8,6 +8,24 @@ const aggregateStates = (states, formatFunction) => states.reduce((acc, cur) => 
   return acc.concat(tips);
 }, []);
 
+const findUrl = (urlId, urls) => urls.find(([_, id]) => urlId === id)[0];
+
+const formatClaims = returnState => {
+  const state = returnState.decodedResult;
+
+  return state.claims ? state.claims.map(([url_id, [claim_gen, amount]]) => {
+    const data = {};
+
+    data.contractId = returnState.result.contractId;
+    data.url = findUrl(url_id, state.urls);
+    data.claimGen = claim_gen
+    data.amount = String(amount)
+
+    return data;
+  }) : [];
+
+};
+
 const formatRetips = returnState => {
   const state = returnState.decodedResult;
   const suffix = `_${ state.version || 'v1' }`;
@@ -15,11 +33,11 @@ const formatRetips = returnState => {
   return state.retips ? state.retips.map(([id, tipTypeData]) => {
     const data = tipTypeData
     data.id = id + suffix;
-    data.tip_id = data.tip_id + suffix;
+    data.tipId = data.tip_id + suffix;
     data.contractId = returnState.result.contractId;
-    data.claim_gen = data.claim_gen === 'None' || data.claim_gen === undefined ? null : data.claim_gen;
+    data.claimGen = data.claim_gen === 'None' || data.claim_gen === undefined ? null : data.claim_gen;
     data.token = data.token !== undefined ? data.token : null;
-    data.token_amount = data.token_amount ? data.token_amount : 0;
+    data.tokenAmount = data.token_amount ? data.token_amount : "0";
 
     return data;
   }) : [];
@@ -28,7 +46,6 @@ const formatRetips = returnState => {
 const formatTips = returnState => {
   const state = returnState.decodedResult;
   const suffix = `_${ state.version || 'v1' }`;
-  const findUrl = urlId => state.urls.find(([_, id]) => urlId === id)[0];
 
   return state.tips.map(([id, tipTypeData]) => {
     const [tipType, tipData] = Object.entries(tipTypeData)[0];
@@ -36,17 +53,17 @@ const formatTips = returnState => {
       case 'AeTip':
         data = tipData[0];
         data.type = 'AE_TIP';
-        data.url_id = tipData[1];
+        data.urlId = tipData[1];
         data.amount = tipData[2];
-        data.claim_gen = tipData[3];
+        data.claimGen = tipData[3];
         break;
       case 'TokenTip':
         data = tipData[0];
         data.type = 'TOKEN_TIP';
-        data.url_id = tipData[1];
+        data.urlId = tipData[1];
         data.token = tipData[2].token;
         data.token_amount = tipData[2].amount;
-        data.claim_gen = tipData[3];
+        data.claimGen = tipData[3];
         data.amount = 0;
         break;
       case 'DirectAeTip':
@@ -60,7 +77,7 @@ const formatTips = returnState => {
         data.type = 'DIRECT_TOKEN_TIP';
         data.receiver = tipData[1];
         data.token = tipData[2].token;
-        data.token_amount = tipData[2].amount;
+        data.tokenAmount = tipData[2].amount;
         data.amount = 0;
         break;
       case 'PostWithoutTip':
@@ -78,12 +95,12 @@ const formatTips = returnState => {
     data.id = id + suffix;
     data.contractId = returnState.result.contractId;
 
-    data.url = data.url_id !== undefined ? findUrl(data.url_id) : null;
+    data.url = data.url_id !== undefined ? findUrl(data.url_id, state.urls) : null;
 
-    data.claim_gen = data.claim_gen === 'None' || data.claim_gen === undefined ? null : data.claim_gen;
+    data.claimGen = data.claim_gen === 'None' || data.claim_gen === undefined ? null : data.claim_gen;
 
     data.token = data.token !== undefined ? data.token : null;
-    data.token_amount = data.token_amount ? data.token_amount : 0;
+    data.tokenAmount = data.token_amount ? data.token_amount : "0";
     data.topics = [...new Set(data.title.match(topicsRegex))].map(x => x.toLowerCase());
 
     return data;
@@ -96,6 +113,10 @@ basicTippingContractUtil.getRetips = (states) => {
 
 basicTippingContractUtil.getTips = (states) => {
   return aggregateStates(states, formatTips);
+};
+
+basicTippingContractUtil.getClaims = (states) => {
+  return aggregateStates(states, formatClaims);
 };
 
 module.exports = basicTippingContractUtil;

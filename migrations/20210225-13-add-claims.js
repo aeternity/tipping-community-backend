@@ -113,13 +113,15 @@ module.exports = {
             return run(null);
         }
     },
-    up: function(queryInterface, Sequelize)
+    up: async function(queryInterface, Sequelize)
     {
-        return this.execute(queryInterface, Sequelize, migrationCommands);
+      await this.execute(queryInterface, Sequelize, migrationCommands);
+      return queryInterface.sequelize.query('CREATE FUNCTION unclaimed(numeric, text, varchar) RETURNS boolean AS \'SELECT "claimGen" < $1 FROM "Claims" AS "Claim" WHERE "Claim"."url" = $2 AND "Claim"."contractId" = $3\' LANGUAGE SQL IMMUTABLE;');
     },
-    down: function(queryInterface, Sequelize)
+    down: async function(queryInterface, Sequelize)
     {
-        return this.execute(queryInterface, Sequelize, rollbackCommands);
+      await queryInterface.sequelize.query('DROP FUNCTION unclaimed(numeric, text, varchar);');
+      return this.execute(queryInterface, Sequelize, rollbackCommands, );
     },
     info: info
 };

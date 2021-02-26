@@ -5,13 +5,13 @@ const aeternity = require('../../aeternity/logic/aeternity');
 const { Tip, Retip, LinkPreview } = require('../../../models');
 const NotificationLogic = require('../../notification/logic/notificationLogic');
 const queueLogic = require('../../queue/logic/queueLogic');
-const { TOTAL_AMOUNT, COUNT_COMMENTS } = require('../utils/tipAggregation');
+const { TOTAL_AMOUNT, COUNT_COMMENTS, TOKEN_TOTAL_AMOUNT } = require('../utils/tipAggregation');
 const { MESSAGES, MESSAGE_QUEUES } = require('../../queue/constants/queue');
 
 const lock = new AsyncLock();
 
 const dbFetchAttributes = {
-  attributes: Object.keys(Tip.rawAttributes).concat([TOTAL_AMOUNT, COUNT_COMMENTS]),
+  attributes: Object.keys(Tip.rawAttributes).concat([TOTAL_AMOUNT, COUNT_COMMENTS, TOKEN_TOTAL_AMOUNT]),
   include: [Retip, LinkPreview],
 }
 

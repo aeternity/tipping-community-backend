@@ -329,6 +329,7 @@ const aeternity = {
       return {
         tips: basicTippingContractUtil.getTips([await fetchV1State, await fetchV2State, await fetchV3State].filter(state => state)),
         retips: basicTippingContractUtil.getRetips([await fetchV1State, await fetchV2State, await fetchV3State].filter(state => state)),
+        claims: basicTippingContractUtil.getClaims([await fetchV1State, await fetchV2State, await fetchV3State].filter(state => state)),
       };
     } catch (e) {
       logger.error(e.message, e);

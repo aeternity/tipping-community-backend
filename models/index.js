@@ -22,7 +22,7 @@ Object.keys(db).forEach(modelName => {
   }
 });
 
-applyRelations(db);
+applyRelations(db, sequelize, Sequelize.Op);
 
 db.sequelize = sequelize;
 db.Sequelize = Sequelize;

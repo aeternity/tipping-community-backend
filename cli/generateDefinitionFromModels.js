@@ -59,7 +59,7 @@ const openAPIJSON = {
         properties: model.fields.reduce((allProperties, curr) => ({
           ...allProperties,
           [curr.column]: {
-            type: typeMapping(curr.type.toLowerCase()),
+            type: [typeMapping(curr.type.toLowerCase()), curr.allowNull ? 'null' : undefined].filter(a => a),
             format: formatMapping(curr.type.toLowerCase()),
             ...(curr.type === 'ENUM') && { enum: curr.values },
             ...(curr.type === 'ARRAY') && { items: { type: 'string' } },

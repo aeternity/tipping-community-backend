@@ -286,7 +286,7 @@ describe('Profile', () => {
     });
 
     it('it should delete the image', done => {
-      performSignedJSONRequest(server, 'post', `/profile/${publicKey}`, { image: '' })
+      performSignedJSONRequest(server, 'post', `/profile/${publicKey}`, { image: null })
         .then(({ res }) => {
           res.should.have.status(200);
           done();
@@ -482,7 +482,7 @@ describe('Profile', () => {
     });
 
     it('it should delete the cover image', done => {
-      performSignedJSONRequest(server, 'post', `/profile/${publicKey}`, { coverImage: '' })
+      performSignedJSONRequest(server, 'post', `/profile/${publicKey}`, { coverImage: null })
         .then(({ res }) => {
           res.should.have.status(200);
           done();

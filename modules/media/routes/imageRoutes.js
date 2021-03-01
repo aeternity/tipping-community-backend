@@ -23,6 +23,12 @@ const router = new express.Router();
  *         required: true
  *         schema:
  *           type: string
+ *       - in: query
+ *         name: cacheBust
+ *         required: false
+ *         description: Pass any random string to bypass the browser cache
+ *         schema:
+ *           type: string
  *     responses:
  *       200:
  *         description: returns an image

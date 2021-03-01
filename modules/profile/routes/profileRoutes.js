@@ -104,6 +104,12 @@ router.post(
  *         required: true
  *         schema:
  *           type: string
+ *       - in: query
+ *         name: cacheBust
+ *         description: Pass any random string to bypass the browser cache
+ *         required: false
+ *         schema:
+ *           type: string
  *     responses:
  *       200:
  *         description: Returns a profile image

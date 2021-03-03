@@ -896,6 +896,11 @@
                     "field": "claimGen",
                     "seqType": "Sequelize.DECIMAL"
                 },
+                "timestamp": {
+                    "allowNull": false,
+                    "field": "timestamp",
+                    "seqType": "Sequelize.DATE"
+                },
                 "createdAt": {
                     "allowNull": false,
                     "field": "createdAt",
@@ -910,5 +915,5 @@
             "indexes": []
         }
     },
-    "revision": 12
+    "revision": 13
 }

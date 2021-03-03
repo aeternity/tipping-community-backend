@@ -180,6 +180,27 @@ describe('Profile', () => {
         });
     });
 
+    it('it should not overwrite an profile image if a cover image is uploaded', done => {
+      performSignedMultipartFormRequest(server, 'post', `/profile/${publicKey}`, 'coverImage', './test/test.png')
+        .then(({ res, signature, challenge }) => {
+          res.should.have.status(200);
+          res.body.should.be.a('object');
+          res.body.should.have.property('biography', testData.biography);
+          res.body.should.have.property('author', publicKey);
+          res.body.should.have.property('image');
+          res.body.coverImage.should.contain(`/images/${publicKey}`);
+          res.body.should.have.property('coverImage');
+          res.body.coverImage.should.contain(`/images/${publicKey}`);
+          res.body.should.have.property('signature', signature);
+          res.body.should.have.property('challenge', challenge);
+          res.body.should.have.property('imageSignature', null);
+          res.body.should.have.property('imageChallenge', null);
+          res.body.should.have.property('createdAt');
+          res.body.should.have.property('updatedAt');
+          done();
+        });
+    });
+
     it('it should allow an image upload on new profile', done => {
       const { publicKey: localPublicKey, secretKey } = generateKeyPair();
       performSignedMultipartFormRequest(server, 'post', `/profile/${localPublicKey}`, 'image', './test/test.png', secretKey)
@@ -376,6 +397,27 @@ describe('Profile', () => {
         });
     });
 
+    it('it should not overwrite an coverImage if a profile image is uploaded', done => {
+      performSignedMultipartFormRequest(server, 'post', `/profile/${publicKey}`, 'image', './test/test.png')
+        .then(({ res, signature, challenge }) => {
+          res.should.have.status(200);
+          res.body.should.be.a('object');
+          res.body.should.have.property('biography', testData.biography);
+          res.body.should.have.property('author', publicKey);
+          res.body.should.have.property('image');
+          res.body.coverImage.should.contain(`/images/${publicKey}`);
+          res.body.should.have.property('coverImage');
+          res.body.coverImage.should.contain(`/images/${publicKey}`);
+          res.body.should.have.property('signature', signature);
+          res.body.should.have.property('challenge', challenge);
+          res.body.should.have.property('imageSignature', null);
+          res.body.should.have.property('imageChallenge', null);
+          res.body.should.have.property('createdAt');
+          res.body.should.have.property('updatedAt');
+          done();
+        });
+    });
+
     it('it should allow an cover image upload on new profile', done => {
       const { publicKey: localPublicKey, secretKey } = generateKeyPair();
       performSignedMultipartFormRequest(server, 'post', `/profile/${localPublicKey}`, 'coverImage', './test/test.png', secretKey)
@@ -414,7 +456,7 @@ describe('Profile', () => {
     });
 
     let imageURL = '';
-    it('it should GET an profile with image', done => {
+    it('it should GET an profile with a cover image', done => {
       chai.request(server).get(`/profile/${publicKey}`)
         .end((err, res) => {
           res.should.have.status(200);
@@ -475,9 +517,10 @@ describe('Profile', () => {
       });
       // two entries
       // first from initial upload
-      // second from re-upload of first user
+      // second from coverImage
+      // third from re-upload of first user
       entries.should.be.an('array');
-      entries.should.have.length(2);
+      entries.should.have.length(3);
       entries[0].hash.should.equal(entries[1].hash);
     });
 

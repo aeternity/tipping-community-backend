@@ -25,8 +25,8 @@ class ProfileLogic {
       } = req.body;
       let { image, coverImage } = (req.files ? req.files : {});
       // allow image deletion
-      if (!image && !req.body.image) image = [{ filename: null }];
-      if (!coverImage && !req.body.coverImage) coverImage = [{ filename: null }];
+      if (!image && req.body.image === null) image = [{ filename: null }];
+      if (!coverImage && req.body.coverImage === null) coverImage = [{ filename: null }];
       // get author
       const author = req.body.author ? req.body.author : req.params.author;
       if (!author) return res.status(400).send('Missing required field author');

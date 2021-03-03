@@ -86,12 +86,12 @@ const TipLogic = {
 
       const result = await newTipsIds.asyncMap(async id => {
         const tip = remoteTips.find(t => t.id === id);
-        let { title } = tip;
-        title = title.replace(/[!0-9#.,?)-:'“@/\\]/g, '');
-        const probability = await cld.detect(title).catch(() => ({}));
+        const titleToDetect = tip.title.replace(/[!0-9#.,?)-:'“@/\\]/g, '');
+        const probability = await cld.detect(titleToDetect).catch(() => ({}));
         const lang = probability.languages ? probability.languages[0].code : null;
-        return { ...tip, lang, title };
+        return { ...tip, lang };
       });
+
       await Tip.bulkCreate(result.map(({
         id, lang, sender, media, url, topics, title, token, tokenAmount, amount, claimGen, type, contractId,
       }) => ({

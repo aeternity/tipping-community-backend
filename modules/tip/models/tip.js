@@ -59,6 +59,10 @@ module.exports = (sequelize, DataTypes) => sequelize.define('Tip', {
     type: DataTypes.NUMERIC,
     allowNull: true,
   },
+  timestamp: {
+    type: DataTypes.DATE,
+    allowNull: false,
+  }
 }, {
   timestamps: true,
 });

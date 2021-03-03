@@ -5,13 +5,13 @@ const aeternity = require('../../aeternity/logic/aeternity');
 const { Tip, Retip, LinkPreview, Claim } = require('../../../models');
 const NotificationLogic = require('../../notification/logic/notificationLogic');
 const queueLogic = require('../../queue/logic/queueLogic');
-const { TOTAL_AMOUNT, COUNT_COMMENTS, TOKEN_TOTAL_AMOUNT, TOTAL_AMOUNT_UNCLAIMED, TOKEN_TOTAL_UNCLAIMED_AMOUNT } = require('../utils/tipAggregation');
+const { TOTAL_AMOUNT, COUNT_COMMENTS, TOKEN_TOTAL_AMOUNT, TOTAL_AMOUNT_UNCLAIMED, TOKEN_TOTAL_UNCLAIMED_AMOUNT, SCORE } = require('../utils/tipAggregation');
 const { MESSAGES, MESSAGE_QUEUES } = require('../../queue/constants/queue');
 
 const lock = new AsyncLock();
 
 const dbFetchAttributes = {
-  attributes: Object.keys(Tip.rawAttributes).concat([TOTAL_AMOUNT, COUNT_COMMENTS, TOKEN_TOTAL_AMOUNT, TOTAL_AMOUNT_UNCLAIMED, TOKEN_TOTAL_UNCLAIMED_AMOUNT]),
+  attributes: Object.keys(Tip.rawAttributes).concat([TOTAL_AMOUNT, COUNT_COMMENTS, TOKEN_TOTAL_AMOUNT, TOTAL_AMOUNT_UNCLAIMED, TOKEN_TOTAL_UNCLAIMED_AMOUNT, SCORE]),
   include: [Retip, LinkPreview, Claim],
 }
 
@@ -93,7 +93,7 @@ const TipLogic = {
       });
 
       await Tip.bulkCreate(result.map(({
-        id, lang, sender, media, url, topics, title, token, tokenAmount, amount, claimGen, type, contractId,
+        id, lang, sender, media, url, topics, title, token, tokenAmount, amount, claimGen, type, contractId, timestamp,
       }) => ({
         id: String(id),
         language: lang,
@@ -108,6 +108,7 @@ const TipLogic = {
         claimGen,
         type,
         contractId,
+        timestamp,
       })));
       if (newTipsIds.length > 0) {
         await queueLogic.sendMessage(MESSAGE_QUEUES.TIPS, MESSAGES.TIPS.EVENTS.CREATED_NEW_LOCAL_TIPS);

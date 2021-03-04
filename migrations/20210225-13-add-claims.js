@@ -116,7 +116,7 @@ module.exports = {
     up: async function(queryInterface, Sequelize)
     {
       await this.execute(queryInterface, Sequelize, migrationCommands);
-      return queryInterface.sequelize.query('CREATE FUNCTION unclaimed(numeric, text, varchar) RETURNS boolean AS \'SELECT "claimGen" < $1 FROM "Claims" AS "Claim" WHERE "Claim"."url" = $2 AND "Claim"."contractId" = $3\' LANGUAGE SQL IMMUTABLE;');
+      return queryInterface.sequelize.query('CREATE FUNCTION unclaimed(numeric, text, varchar) RETURNS boolean AS \'SELECT "claimGen" < $1 FROM "Claims" AS "Claim" WHERE "Claim"."url" = $2 AND "Claim"."contractId" = $3\' LANGUAGE SQL STABLE;');
     },
     down: async function(queryInterface, Sequelize)
     {

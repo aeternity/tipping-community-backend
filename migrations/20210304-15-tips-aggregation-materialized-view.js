@@ -90,6 +90,10 @@ FROM "Tips" AS "Tip"
 GROUP BY "Tip"."id", "Tip"."amount";`, { transaction });
 
       await queryInterface.sequelize.query(`
+CREATE UNIQUE INDEX id_idx
+    ON tipsaggregation (id);`, { transaction });
+
+      await queryInterface.sequelize.query(`
 CREATE FUNCTION refresh_tips_aggregation()
     RETURNS TRIGGER
     LANGUAGE plpgsql

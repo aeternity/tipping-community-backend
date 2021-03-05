@@ -45,8 +45,13 @@ const TipLogic = {
       where: whereArguments,
       offset: ((page || 1) - 1) * PAGE_LIMIT,
       limit: PAGE_LIMIT,
+      order: Tip.sequelize.literal(`${ordering === 'hot' ? "score" : ordering === 'latest' ? "timestamp" : "amount"} DESC`) // TODO order by totalamount
     });
   },
+
+  async fetchAllLocalTips() {
+    return Tip.findAll({ raw: true });
+  }
 
   async updateClaimsDB() {
     await lock.acquire('TipLogic.updateClaimsDB', async () => {

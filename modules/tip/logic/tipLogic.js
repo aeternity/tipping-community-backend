@@ -6,14 +6,17 @@ const { Tip, Retip, LinkPreview, Claim } = require('../../../models');
 const NotificationLogic = require('../../notification/logic/notificationLogic');
 const queueLogic = require('../../queue/logic/queueLogic');
 const { COUNT_COMMENTS, AGGREGATION_VIEW, SCORE } = require('../utils/tipAggregation');
+const { FILTER_BLACKLIST } = require('../utils/tipFilter');
 const { MESSAGES, MESSAGE_QUEUES } = require('../../queue/constants/queue');
 
 const lock = new AsyncLock();
 
 const dbFetchAttributes = {
   attributes: Object.keys(Tip.rawAttributes).concat([COUNT_COMMENTS, AGGREGATION_VIEW, SCORE]),
-  include: [Retip, LinkPreview, Claim,],
+  include: [Retip, LinkPreview, Claim],
 }
+
+const PAGE_LIMIT = 30;
 
 const TipLogic = {
   init() {
@@ -31,26 +34,19 @@ const TipLogic = {
     });
   },
 
-  async fetchTips(page) {
-    const limit = 30;
+  async fetchTips({ page, blacklist, address, contractVersion, search, language, ordering }) {
+    const whereArguments = []
 
-    if (page) {
-      return Tip.findAll({
-        ...dbFetchAttributes,
-        offset: (page - 1) * limit,
-        limit,
-      });
-    }
+    if (address) whereArguments.push({ sender: address });
+    if (blacklist !== 'false') whereArguments.push({ id: FILTER_BLACKLIST })
 
-    return TipLogic.fetchAllLocalTips();
+    return Tip.findAll({
+      ...dbFetchAttributes,
+      where: whereArguments,
+      offset: ((page || 1) - 1) * PAGE_LIMIT,
+      limit: PAGE_LIMIT,
+    });
   },
-
-  async fetchAllLocalTips() {
-    //return Tip.findAll({ raw: true });
-
-    return Tip.findAll(dbFetchAttributes);
-  },
-
 
   async updateClaimsDB() {
     await lock.acquire('TipLogic.updateClaimsDB', async () => {
@@ -65,7 +61,7 @@ const TipLogic = {
 
       await Claim.bulkCreate(insertOrUpdateClaims, { updateOnDuplicate: ['claimGen', 'amount', 'updatedAt'] });
     });
-  }
+  },
 
   async updateTipsDB() {
     await lock.acquire('TipLogic.updateTipsDB', async () => {

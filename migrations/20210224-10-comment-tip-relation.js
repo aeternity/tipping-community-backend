@@ -92,13 +92,22 @@ module.exports = {
             return run(null);
         }
     },
-    up: function(queryInterface, Sequelize)
+    up: async function(queryInterface, Sequelize)
     {
-        return this.execute(queryInterface, Sequelize, migrationCommands);
+
+      const transaction = await queryInterface.sequelize.transaction();
+      await queryInterface.sequelize.query('CREATE INDEX comment_tip_id_idx ON "Comments" ("tipId");', { transaction });
+      await transaction.commit();
+
+      return this.execute(queryInterface, Sequelize, migrationCommands);
     },
-    down: function(queryInterface, Sequelize)
+    down: async function(queryInterface, Sequelize)
     {
-        return this.execute(queryInterface, Sequelize, rollbackCommands);
+      const transaction = await queryInterface.sequelize.transaction();
+      await queryInterface.sequelize.query('DROP INDEX comment_tip_id_idx FROM "Comments";', { transaction });
+      await transaction.commit();
+
+      return this.execute(queryInterface, Sequelize, rollbackCommands);
     },
     info: info
 };

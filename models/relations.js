@@ -8,6 +8,9 @@ module.exports = (db, sequelize, Op) => {
   db.LinkPreview.hasOne(db.Tip, { optional: true, sourceKey: 'requestUrl', foreignKey: 'url', onDelete: 'NO ACTION', onUpdate: 'NO ACTION' })
   db.Tip.belongsTo(db.LinkPreview, { optional: true, targetKey: 'requestUrl', foreignKey: 'url', onDelete: 'NO ACTION', onUpdate: 'NO ACTION' })
 
+  db.BlacklistEntry.belongsTo(db.Tip, { foreignKey: 'tipId', onDelete: 'NO ACTION', onUpdate: 'NO ACTION' });
+  db.Tip.hasMany(db.BlacklistEntry, { foreignKey: 'tipId', onDelete: 'NO ACTION', onUpdate: 'NO ACTION' });
+
   db.Tip.hasOne(db.Claim, {
     foreignKey: 'url',
     sourceKey: 'url',

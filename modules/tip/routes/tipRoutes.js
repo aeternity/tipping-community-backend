@@ -66,10 +66,7 @@ const router = new Router();
  *                 $ref: '#/components/schemas/Tip'
  */
 router.get('/', async (req, res) => {
-  // req.query. blacklist, address, contractVersion, search, language, ordering, page
-
-  const tips = await TipLogic.fetchTips(req.query.page);
-
+  const tips = await TipLogic.fetchTips(req.query);
   res.send(tips);
 });
 

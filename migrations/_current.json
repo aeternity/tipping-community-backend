@@ -45,6 +45,12 @@
                     "allowNull": false,
                     "primaryKey": true,
                     "field": "tipId",
+                    "references": {
+                        "model": "Tips",
+                        "key": "id"
+                    },
+                    "onDelete": "NO ACTION",
+                    "onUpdate": "NO ACTION",
                     "seqType": "Sequelize.STRING"
                 },
                 "status": {
@@ -915,5 +921,5 @@
             "indexes": []
         }
     },
-    "revision": 13
+    "revision": 15
 }

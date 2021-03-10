@@ -1,7 +1,8 @@
 const cld = require('cld');
 const AsyncLock = require('async-lock');
-const aeternity = require('../../aeternity/logic/aeternity');
+const { Op } = require('sequelize');
 
+const aeternity = require('../../aeternity/logic/aeternity');
 const { Tip, Retip, LinkPreview, Claim } = require('../../../models');
 const NotificationLogic = require('../../notification/logic/notificationLogic');
 const queueLogic = require('../../queue/logic/queueLogic');
@@ -39,6 +40,16 @@ const TipLogic = {
 
     if (address) whereArguments.push({ sender: address });
     if (blacklist !== 'false') whereArguments.push({ id: FILTER_BLACKLIST })
+
+    if (contractVersion) {
+      const contractVersions = Array.isArray(contractVersion) ? contractVersion : [contractVersion];
+      whereArguments.push({ contractId: {[Op.in]: contractVersions.map(aeternity.contractAddressForVersion) }})
+    }
+
+    if (language) {
+      const languages = Array.isArray(language) ? language : [language];
+      whereArguments.push({ language: {[Op.in]: languages }})
+    }
 
     return Tip.findAll({
       ...dbFetchAttributes,

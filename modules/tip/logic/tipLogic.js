@@ -7,15 +7,10 @@ const { Tip, Retip, LinkPreview, Claim } = require('../../../models');
 const NotificationLogic = require('../../notification/logic/notificationLogic');
 const queueLogic = require('../../queue/logic/queueLogic');
 const { COUNT_COMMENTS, AGGREGATION_VIEW, SCORE } = require('../utils/tipAggregation');
-const { FILTER_BLACKLIST } = require('../utils/tipFilter');
+const { FILTER_BLACKLIST, FILTER_SIMILARITY_SUM } = require('../utils/tipFilter');
 const { MESSAGES, MESSAGE_QUEUES } = require('../../queue/constants/queue');
 
 const lock = new AsyncLock();
-
-const dbFetchAttributes = {
-  attributes: Object.keys(Tip.rawAttributes).concat([COUNT_COMMENTS, AGGREGATION_VIEW, SCORE]),
-  include: [Retip, LinkPreview, Claim],
-}
 
 const PAGE_LIMIT = 30;
 
@@ -37,6 +32,7 @@ const TipLogic = {
 
   async fetchTips({ page, blacklist, address, contractVersion, search, language, ordering }) {
     const whereArguments = []
+    var order = Tip.sequelize.literal(`${ordering === 'hot' ? 'score' : ordering === 'latest' ? 'timestamp' : 'amount'} DESC`) // TODO order by totalamount
 
     if (address) whereArguments.push({ sender: address });
     if (blacklist !== 'false') whereArguments.push({ id: FILTER_BLACKLIST })
@@ -51,12 +47,25 @@ const TipLogic = {
       whereArguments.push({ language: {[Op.in]: languages }})
     }
 
+    if (search) {
+      whereArguments.push(
+        Tip.sequelize.where(
+          FILTER_SIMILARITY_SUM(search),
+          Op.gt,
+          0.1
+        )
+      )
+
+      order = Tip.sequelize.literal('"searchScore" DESC')
+    }
+
     return Tip.findAll({
-      ...dbFetchAttributes,
+      attributes: Object.keys(Tip.rawAttributes).concat([COUNT_COMMENTS, AGGREGATION_VIEW, SCORE, [FILTER_SIMILARITY_SUM(search), "searchScore"]]),
+      include: [Retip, LinkPreview, Claim],
       where: whereArguments,
       offset: ((page || 1) - 1) * PAGE_LIMIT,
       limit: PAGE_LIMIT,
-      order: Tip.sequelize.literal(`${ordering === 'hot' ? "score" : ordering === 'latest' ? "timestamp" : "amount"} DESC`) // TODO order by totalamount
+      order: order
     });
   },
 

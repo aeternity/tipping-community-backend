@@ -6,7 +6,7 @@ const aeternity = require('../../aeternity/logic/aeternity');
 const { Tip, Retip, LinkPreview, Claim } = require('../../../models');
 const NotificationLogic = require('../../notification/logic/notificationLogic');
 const queueLogic = require('../../queue/logic/queueLogic');
-const { COUNT_COMMENTS, AGGREGATION_VIEW, SCORE } = require('../utils/tipAggregation');
+const { COUNT_COMMENTS, AGGREGATION_VIEW, TOTAL_AMOUNT_FOR_ORDER, SCORE } = require('../utils/tipAggregation');
 const { FILTER_BLACKLIST, FILTER_SIMILARITY_SUM } = require('../utils/tipFilter');
 const { MESSAGES, MESSAGE_QUEUES } = require('../../queue/constants/queue');
 const { topicsRegex } = require('../../aeternity/utils/tipTopicUtil');
@@ -32,9 +32,9 @@ const TipLogic = {
   },
 
   async fetchTips({ page, blacklist, address, contractVersion, search, language, ordering }) {
-    const attributes = Object.keys(Tip.rawAttributes).concat([COUNT_COMMENTS, AGGREGATION_VIEW, SCORE]);
+    const attributes = Object.keys(Tip.rawAttributes).concat([COUNT_COMMENTS, AGGREGATION_VIEW, TOTAL_AMOUNT_FOR_ORDER, SCORE]);
     const whereArguments = []
-    var order = Tip.sequelize.literal(`${ordering === 'hot' ? 'score' : ordering === 'latest' ? 'timestamp' : 'amount'} DESC`) // TODO order by totalamount
+    var order = Tip.sequelize.literal(`${ordering === 'hot' ? 'score' : ordering === 'latest' ? 'timestamp' : '\"totalAmountForOrder\"'} DESC`)
 
     if (address) whereArguments.push({ sender: address });
     if (blacklist !== 'false') whereArguments.push({ id: FILTER_BLACKLIST })

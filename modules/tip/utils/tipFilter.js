@@ -12,7 +12,9 @@ module.exports = {
           Tip.sequelize.fn('SIMILARITY', Tip.sequelize.col('Tip.sender'), search),
           Tip.sequelize.fn('ARRAY_PREPEND',
             Tip.sequelize.fn('SIMILARITY', Tip.sequelize.col('Tip.url'), search),
-            Tip.sequelize.literal('ARRAY[0::REAL]')
-          )))
+            Tip.sequelize.fn('ARRAY_PREPEND',
+              Tip.sequelize.fn('SIMILARITY', Tip.sequelize.literal('(SELECT CONCAT("LinkPreviews"."description", "LinkPreviews"."title") FROM "LinkPreviews" WHERE "LinkPreviews"."requestUrl" = "Tip"."url")'), search),
+              Tip.sequelize.literal('ARRAY[0::REAL]')
+            ))))
     ),
 };

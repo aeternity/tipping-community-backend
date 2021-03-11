@@ -9,6 +9,7 @@ const queueLogic = require('../../queue/logic/queueLogic');
 const { COUNT_COMMENTS, AGGREGATION_VIEW, SCORE } = require('../utils/tipAggregation');
 const { FILTER_BLACKLIST, FILTER_SIMILARITY_SUM } = require('../utils/tipFilter');
 const { MESSAGES, MESSAGE_QUEUES } = require('../../queue/constants/queue');
+const { topicsRegex } = require('../../aeternity/utils/tipTopicUtil');
 
 const lock = new AsyncLock();
 
@@ -31,6 +32,7 @@ const TipLogic = {
   },
 
   async fetchTips({ page, blacklist, address, contractVersion, search, language, ordering }) {
+    const attributes = Object.keys(Tip.rawAttributes).concat([COUNT_COMMENTS, AGGREGATION_VIEW, SCORE]);
     const whereArguments = []
     var order = Tip.sequelize.literal(`${ordering === 'hot' ? 'score' : ordering === 'latest' ? 'timestamp' : 'amount'} DESC`) // TODO order by totalamount
 
@@ -48,19 +50,25 @@ const TipLogic = {
     }
 
     if (search) {
-      whereArguments.push(
-        Tip.sequelize.where(
-          FILTER_SIMILARITY_SUM(search),
-          Op.gt,
-          0.1
+      const searchTopics = search.match(topicsRegex);
+      if (searchTopics) {
+        whereArguments.push({ topics: {[Op.overlap]: searchTopics }})
+      } else {
+        whereArguments.push(
+          Tip.sequelize.where(
+            FILTER_SIMILARITY_SUM(search),
+            Op.gt,
+            0.1
+          )
         )
-      )
 
-      order = Tip.sequelize.literal('"searchScore" DESC')
+        attributes.push([FILTER_SIMILARITY_SUM(search), "searchScore"]);
+        order = Tip.sequelize.literal('"searchScore" DESC')
+      }
     }
 
     return Tip.findAll({
-      attributes: Object.keys(Tip.rawAttributes).concat([COUNT_COMMENTS, AGGREGATION_VIEW, SCORE, [FILTER_SIMILARITY_SUM(search), "searchScore"]]),
+      attributes: attributes,
       include: [Retip, LinkPreview, Claim],
       where: whereArguments,
       offset: ((page || 1) - 1) * PAGE_LIMIT,

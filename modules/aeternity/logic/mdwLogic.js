@@ -76,7 +76,7 @@ module.exports = class MdwLogic {
       return [];
     });
     return result
-      .filter(chainName => !chainName.info.pointers || !chainName.info.pointers.account_pubkey)
+      .filter(chainName => chainName.info.pointers && chainName.info.pointers.account_pubkey)
       .reduce((acc, chainName) => {
         const pubkey = chainName.info.pointers.account_pubkey;
 

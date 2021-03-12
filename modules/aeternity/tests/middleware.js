@@ -63,6 +63,10 @@ describe('Middleware', () => {
       const names = await mdwLogic.getChainNames();
       names.should.be.an('object');
       Object.keys(names).should.have.length.greaterThan(0);
+      const firstAccount = Object.keys(names)[0];
+      firstAccount.should.include('ak_');
+      names[firstAccount].should.be.an('array');
+      names[firstAccount].should.have.length.greaterThan(0);
     });
 
     it('it should return an empty array if the middleware is down', async () => {

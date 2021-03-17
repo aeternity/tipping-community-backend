@@ -5,22 +5,21 @@ var Sequelize = require('sequelize');
 /**
  * Actions summary:
  *
- * removeColumn "unclaimed" from table "Retips"
- * addColumn "claimGen" to table "Retips"
- * addColumn "amount" to table "Retips"
- * addColumn "tokenAmount" to table "Retips"
- * addColumn "token" to table "Retips"
- * changeColumn "tipId" on table "Retips"
- * changeColumn "claimGen" on table "Tips"
- * changeColumn "amount" on table "Tips"
- * changeColumn "tokenAmount" on table "Tips"
+ * removeColumn "unclaimed" from table "Tips"
+ * addColumn "contractId" to table "Tips"
+ * addColumn "url" to table "Tips"
+ * addColumn "token" to table "Tips"
+ * addColumn "tokenAmount" to table "Tips"
+ * addColumn "amount" to table "Tips"
+ * addColumn "claimGen" to table "Tips"
+ * changeColumn "type" on table "Tips"
  *
  **/
 
 var info = {
-    "revision": 10,
+    "revision": 9,
     "name": "noname",
-    "created": "2021-02-24T17:49:30.713Z",
+    "created": "2021-02-18T16:07:17.918Z",
     "comment": ""
 };
 
@@ -28,7 +27,7 @@ var migrationCommands = function(transaction) {
     return [{
             fn: "removeColumn",
             params: [
-                "Retips",
+                "Tips",
                 "unclaimed",
                 {
                     transaction: transaction
@@ -38,11 +37,26 @@ var migrationCommands = function(transaction) {
         {
             fn: "addColumn",
             params: [
-                "Retips",
-                "claimGen",
+                "Tips",
+                "contractId",
                 {
-                    "type": Sequelize.DECIMAL,
-                    "field": "claimGen",
+                    "type": Sequelize.STRING,
+                    "field": "contractId",
+                    "allowNull": false
+                },
+                {
+                    transaction: transaction
+                }
+            ]
+        },
+        {
+            fn: "addColumn",
+            params: [
+                "Tips",
+                "url",
+                {
+                    "type": Sequelize.STRING,
+                    "field": "url",
                     "allowNull": true
                 },
                 {
@@ -53,37 +67,7 @@ var migrationCommands = function(transaction) {
         {
             fn: "addColumn",
             params: [
-                "Retips",
-                "amount",
-                {
-                    "type": Sequelize.DECIMAL,
-                    "field": "amount",
-                    "allowNull": true
-                },
-                {
-                    transaction: transaction
-                }
-            ]
-        },
-        {
-            fn: "addColumn",
-            params: [
-                "Retips",
-                "tokenAmount",
-                {
-                    "type": Sequelize.DECIMAL,
-                    "field": "tokenAmount",
-                    "allowNull": true
-                },
-                {
-                    transaction: transaction
-                }
-            ]
-        },
-        {
-            fn: "addColumn",
-            params: [
-                "Retips",
+                "Tips",
                 "token",
                 {
                     "type": Sequelize.STRING,
@@ -96,20 +80,44 @@ var migrationCommands = function(transaction) {
             ]
         },
         {
-            fn: "changeColumn",
+            fn: "addColumn",
             params: [
-                "Retips",
-                "tipId",
+                "Tips",
+                "tokenAmount",
                 {
-                    "type": Sequelize.STRING,
-                    "onUpdate": "CASCADE",
-                    "onDelete": "NO ACTION",
-                    "references": {
-                        "model": "Tips",
-                        "key": "id"
-                    },
-                    "field": "tipId",
-                    "allowNull": false
+                    "type": Sequelize.NUMERIC,
+                    "field": "tokenAmount",
+                    "allowNull": true
+                },
+                {
+                    transaction: transaction
+                }
+            ]
+        },
+        {
+            fn: "addColumn",
+            params: [
+                "Tips",
+                "amount",
+                {
+                    "type": Sequelize.NUMERIC,
+                    "field": "amount",
+                    "allowNull": true
+                },
+                {
+                    transaction: transaction
+                }
+            ]
+        },
+        {
+            fn: "addColumn",
+            params: [
+                "Tips",
+                "claimGen",
+                {
+                    "type": Sequelize.NUMERIC,
+                    "field": "claimGen",
+                    "allowNull": true
                 },
                 {
                     transaction: transaction
@@ -122,8 +130,8 @@ var rollbackCommands = function(transaction) {
     return [{
             fn: "removeColumn",
             params: [
-                "Retips",
-                "claimGen",
+                "Tips",
+                "contractId",
                 {
                     transaction: transaction
                 }
@@ -132,8 +140,8 @@ var rollbackCommands = function(transaction) {
         {
             fn: "removeColumn",
             params: [
-                "Retips",
-                "amount",
+                "Tips",
+                "url",
                 {
                     transaction: transaction
                 }
@@ -142,7 +150,17 @@ var rollbackCommands = function(transaction) {
         {
             fn: "removeColumn",
             params: [
-                "Retips",
+                "Tips",
+                "token",
+                {
+                    transaction: transaction
+                }
+            ]
+        },
+        {
+            fn: "removeColumn",
+            params: [
+                "Tips",
                 "tokenAmount",
                 {
                     transaction: transaction
@@ -152,8 +170,18 @@ var rollbackCommands = function(transaction) {
         {
             fn: "removeColumn",
             params: [
-                "Retips",
-                "token",
+                "Tips",
+                "amount",
+                {
+                    transaction: transaction
+                }
+            ]
+        },
+        {
+            fn: "removeColumn",
+            params: [
+                "Tips",
+                "claimGen",
                 {
                     transaction: transaction
                 }
@@ -162,7 +190,7 @@ var rollbackCommands = function(transaction) {
         {
             fn: "addColumn",
             params: [
-                "Retips",
+                "Tips",
                 "unclaimed",
                 {
                     "type": Sequelize.BOOLEAN,
@@ -175,20 +203,15 @@ var rollbackCommands = function(transaction) {
             ]
         },
         {
-            fn: "changeColumn",
+            fn: "addColumn",
             params: [
-                "Retips",
-                "tipId",
+                "Tips",
+                "type",
                 {
-                    "type": Sequelize.STRING,
-                    "field": "tipId",
-                    "onUpdate": "CASCADE",
-                    "onDelete": "SET NULL",
-                    "references": {
-                        "model": "Tips",
-                        "key": "id"
-                    },
-                    "allowNull": true
+                    "type": Sequelize.ENUM('AE_TIP', 'TOKEN_TIP', 'DIRECT_AE_TIP', 'DIRECT_TOKEN_TIP'),
+                    "field": "type",
+                    "allowNull": false,
+                    "defaultValue": "AE_TIP"
                 },
                 {
                     transaction: transaction
@@ -230,8 +253,8 @@ module.exports = {
     up: async function(queryInterface, Sequelize)
     {
       const transaction = await queryInterface.sequelize.transaction();
-      await queryInterface.sequelize.query('TRUNCATE TABLE "Retips" CASCADE;', { transaction });
-      await queryInterface.sequelize.query('CREATE INDEX retip_tip_id_idx ON "Retips" ("tipId");', { transaction });
+      await queryInterface.sequelize.query('ALTER TYPE "enum_Tips_type" ADD VALUE \'POST_WITHOUT_TIP\';');
+      await queryInterface.sequelize.query('TRUNCATE TABLE "Tips" CASCADE;', { transaction });
       await transaction.commit();
 
       return this.execute(queryInterface, Sequelize, migrationCommands);
@@ -239,8 +262,7 @@ module.exports = {
     down: async function(queryInterface, Sequelize)
     {
       const transaction = await queryInterface.sequelize.transaction();
-      await queryInterface.sequelize.query('DROP INDEX retip_tip_id_idx FROM "Retips";', { transaction });
-      await queryInterface.sequelize.query('TRUNCATE TABLE "Retips" CASCADE;', { transaction });
+      await queryInterface.sequelize.query('DROP TYPE "enum_Tips_type" CASCADE;');
       await transaction.commit();
 
       return this.execute(queryInterface, Sequelize, rollbackCommands);

@@ -5,62 +5,20 @@ var Sequelize = require('sequelize');
 /**
  * Actions summary:
  *
- * changeColumn "tipId" on table "Comments"
- * changeColumn "tipId" on table "Comments"
- * changeColumn "claimGen" on table "Tips"
- * changeColumn "amount" on table "Tips"
- * changeColumn "tokenAmount" on table "Tips"
- *
  **/
 
 var info = {
-    "revision": 9,
+    "revision": 17,
     "name": "noname",
-    "created": "2021-02-24T14:48:44.271Z",
+    "created": "2021-03-10T13:28:53.616Z",
     "comment": ""
 };
 
 var migrationCommands = function(transaction) {
-    return [{
-            fn: "changeColumn",
-            params: [
-                "Comments",
-                "tipId",
-                {
-                    "type": Sequelize.STRING,
-                    "onUpdate": "CASCADE",
-                    "onDelete": "NO ACTION",
-                    "references": {
-                        "model": "Tips",
-                        "key": "id"
-                    },
-                    "field": "tipId",
-                    "allowNull": false
-                },
-                {
-                    transaction: transaction
-                }
-            ]
-        }
-    ];
+    return [];
 };
 var rollbackCommands = function(transaction) {
-    return [{
-            fn: "changeColumn",
-            params: [
-                "Comments",
-                "tipId",
-                {
-                    "type": Sequelize.STRING,
-                    "field": "tipId",
-                    "allowNull": false
-                },
-                {
-                    transaction: transaction
-                }
-            ]
-        }
-    ];
+    return [];
 };
 
 module.exports = {
@@ -94,9 +52,9 @@ module.exports = {
     },
     up: async function(queryInterface, Sequelize)
     {
-
       const transaction = await queryInterface.sequelize.transaction();
-      await queryInterface.sequelize.query('CREATE INDEX comment_tip_id_idx ON "Comments" ("tipId");', { transaction });
+      await queryInterface.sequelize.query('CREATE EXTENSION IF NOT EXISTS pg_trgm;', { transaction });
+      await queryInterface.sequelize.query('CREATE OR REPLACE FUNCTION sum_array(REAL[]) RETURNS NUMERIC AS \'SELECT sum(a) AS sum FROM (SELECT unnest($1) AS a) AS b\' LANGUAGE SQL IMMUTABLE;', { transaction });
       await transaction.commit();
 
       return this.execute(queryInterface, Sequelize, migrationCommands);
@@ -104,7 +62,8 @@ module.exports = {
     down: async function(queryInterface, Sequelize)
     {
       const transaction = await queryInterface.sequelize.transaction();
-      await queryInterface.sequelize.query('DROP INDEX comment_tip_id_idx FROM "Comments";', { transaction });
+      await queryInterface.sequelize.query('DROP EXTENSION pg_trgm;', { transaction });
+      await queryInterface.sequelize.query('DROP FUNCTION sum_array(REAL[]);', { transaction });
       await transaction.commit();
 
       return this.execute(queryInterface, Sequelize, rollbackCommands);

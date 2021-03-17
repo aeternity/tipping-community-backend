@@ -22,4 +22,6 @@ module.exports = (db, sequelize, Op) => {
     constraints: false,
   });
 
+  db.Tip.hasOne(db.ChainName, { sourceKey: 'sender', foreignKey: 'publicKey', onDelete: 'NO ACTION', onUpdate: 'NO ACTION' });
+
 }

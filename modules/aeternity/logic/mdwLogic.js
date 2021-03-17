@@ -1,7 +1,12 @@
 const axios = require('axios');
 const Sentry = require('@sentry/node');
+const AsyncLock = require('async-lock');
+
 const logger = require('../../../utils/logger')(module);
 const aeternity = require('./aeternity');
+const { ChainName, sequelize } = require('../../../models');
+
+const lock = new AsyncLock();
 
 const LIMIT = 100; // max 1000
 
@@ -9,10 +14,13 @@ if (!process.env.MIDDLEWARE_URL) throw new Error('Env MIDDLEWARE_URL is not defi
 if (process.env.MIDDLEWARE_URL.match(/\/$/)) throw new Error('MIDDLEWARE_URL can not end with a trailing slash');
 
 const MdwLogic = {
+   init() {
+     this.updateChainNamesDB();
+   },
+
   // fetches pages forwards, if no next its the last page, don't cache that
   async iterateMdw(contract, next, abortIfHashKnown = false) {
     const url = `${process.env.MIDDLEWARE_URL}/${next}`;
-
     const result = await axios.get(url, { timeout: 10000 }).then(res => res.data);
 
     if (result.next) {
@@ -68,6 +76,19 @@ const MdwLogic = {
         return acc;
       }, {});
   },
-};
+
+   async updateChainNamesDB() {
+     await lock.acquire('TipLogic.updateTipsDB', async () => {
+       const result = await this.getChainNames().then((res) => Object.entries(res).map(([publicKey, chainNames]) => {
+         return { publicKey, name: chainNames[0] };
+       }));
+
+       const transaction = await sequelize.transaction()
+       await ChainName.truncate({ transaction });
+       await ChainName.bulkCreate(result, { transaction });
+       await transaction.commit();
+     });
+   },
+}
 
 module.exports = MdwLogic;

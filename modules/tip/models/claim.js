@@ -22,6 +22,6 @@ module.exports = (sequelize, DataTypes) => sequelize.define('Claim', {
   timestamps: true,
   indexes: [{
     primaryKey: true,
-    fields: ['contractId', 'url']
-  }]
+    fields: ['contractId', 'url'],
+  }],
 });

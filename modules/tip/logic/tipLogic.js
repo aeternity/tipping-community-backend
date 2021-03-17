@@ -3,10 +3,14 @@ const AsyncLock = require('async-lock');
 const { Op } = require('sequelize');
 
 const aeternity = require('../../aeternity/logic/aeternity');
-const { Tip, Retip, LinkPreview, Claim, ChainName, sequelize } = require('../../../models');
+const {
+  Tip, Retip, LinkPreview, Claim, ChainName, sequelize,
+} = require('../../../models');
 const NotificationLogic = require('../../notification/logic/notificationLogic');
 const queueLogic = require('../../queue/logic/queueLogic');
-const { COUNT_COMMENTS, AGGREGATION_VIEW, TOTAL_AMOUNT_FOR_ORDER, SCORE } = require('../utils/tipAggregation');
+const {
+  COUNT_COMMENTS, AGGREGATION_VIEW, TOTAL_AMOUNT_FOR_ORDER, SCORE,
+} = require('../utils/tipAggregation');
 const { FILTER_BLACKLIST, FILTER_SIMILARITY_SUM } = require('../utils/tipFilter');
 const { MESSAGES, MESSAGE_QUEUES } = require('../../queue/constants/queue');
 const { topicsRegex } = require('../../aeternity/utils/tipTopicUtil');
@@ -31,49 +35,62 @@ const TipLogic = {
     });
   },
 
-  async fetchTips({ page, blacklist, address, contractVersion, search, language, ordering }) {
+  orderByColumn(ordering) {
+    switch (ordering) {
+      case 'hot':
+        return 'score';
+      case 'latest':
+        return 'timestamp';
+      default:
+        return '"totalAmountForOrder"';
+    }
+  },
+
+  async fetchTips({
+    page, blacklist, address, contractVersion, search, language, ordering,
+  }) {
     const attributes = Object.keys(Tip.rawAttributes).concat([COUNT_COMMENTS, AGGREGATION_VIEW, TOTAL_AMOUNT_FOR_ORDER, SCORE]);
-    const whereArguments = []
-    var order = sequelize.literal(`${ordering === 'hot' ? 'score' : ordering === 'latest' ? 'timestamp' : '\"totalAmountForOrder\"'} DESC`)
+    const whereArguments = [];
+    let order = sequelize.literal(`${this.orderByColumn(ordering)} DESC`);
 
     if (address) whereArguments.push({ sender: address });
-    if (blacklist !== 'false') whereArguments.push({ id: FILTER_BLACKLIST })
+    if (blacklist !== 'false') whereArguments.push({ id: FILTER_BLACKLIST });
 
     if (contractVersion) {
       const contractVersions = Array.isArray(contractVersion) ? contractVersion : [contractVersion];
-      whereArguments.push({ contractId: {[Op.in]: contractVersions.map(aeternity.contractAddressForVersion) }})
+      whereArguments.push({ contractId: { [Op.in]: contractVersions.map(aeternity.contractAddressForVersion) } });
     }
 
     if (language) {
       const languages = Array.isArray(language) ? language : [language];
-      whereArguments.push({ language: {[Op.in]: languages }})
+      whereArguments.push({ language: { [Op.in]: languages } });
     }
 
     if (search) {
       const searchTopics = search.match(topicsRegex);
       if (searchTopics) {
-        whereArguments.push({ topics: {[Op.overlap]: searchTopics }})
+        whereArguments.push({ topics: { [Op.overlap]: searchTopics } });
       } else {
         whereArguments.push(
           sequelize.where(
             FILTER_SIMILARITY_SUM(search),
             Op.gt,
-            0.1
-          )
-        )
+            0.1,
+          ),
+        );
 
-        attributes.push([FILTER_SIMILARITY_SUM(search), "searchScore"]);
-        order = sequelize.literal('"searchScore" DESC')
+        attributes.push([FILTER_SIMILARITY_SUM(search), 'searchScore']);
+        order = sequelize.literal('"searchScore" DESC');
       }
     }
 
     return Tip.findAll({
-      attributes: attributes,
+      attributes,
       include: [Retip, LinkPreview, Claim, ChainName],
       where: whereArguments,
       offset: ((page || 1) - 1) * PAGE_LIMIT,
       limit: PAGE_LIMIT,
-      order: order
+      order,
     });
   },
 
@@ -88,9 +105,10 @@ const TipLogic = {
 
       const insertOrUpdateClaims = remoteClaims.filter(r => {
         const notIncludesRemote = !localClaims.some(l => r.url === l.url && r.contractId === l.contractId);
-        const includesRemoteUpdated = localClaims.some(l => r.url === l.url && r.contractId === l.contractId && (r.amount !== l.amount || r.claimGen !== l.claimGen));
+        const includesRemoteUpdated = localClaims.some(l => r.url === l.url && r.contractId === l.contractId
+          && (r.amount !== l.amount || r.claimGen !== l.claimGen));
         return includesRemoteUpdated || notIncludesRemote;
-      })
+      });
 
       await Claim.bulkCreate(insertOrUpdateClaims, { updateOnDuplicate: ['claimGen', 'amount', 'updatedAt'] });
     });
@@ -148,7 +166,7 @@ const TipLogic = {
 
   async updateRetipsDB() {
     await lock.acquire('RetipLogic.updateRetipsDB', async () => {
-      const remoteRetips = (await aeternity.fetchStateBasic()).retips
+      const remoteRetips = (await aeternity.fetchStateBasic()).retips;
       const localRetips = await Retip.findAll({ raw: true });
       const remoteRetipIds = [...new Set(remoteRetips.map(retip => retip.id))];
       const localRetipIds = [...new Set(localRetips.map(retip => retip.id))];
@@ -163,7 +181,7 @@ const TipLogic = {
         remoteRetips.find(retip => retip.id === id),
       ));
 
-      const retipsToInsert = newReTipIds.map(id => remoteRetips.find(({id: retipId}) => id === retipId));
+      const retipsToInsert = newReTipIds.map(id => remoteRetips.find(({ id: retipId }) => id === retipId));
       await Retip.bulkCreate(retipsToInsert);
     });
   },

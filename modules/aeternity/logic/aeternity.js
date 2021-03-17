@@ -531,14 +531,16 @@ const aeternity = {
 
   contractAddressForVersion(version) {
     switch (version) {
-      case "v1":
-        return process.env.CONTRACT_V1_ADDRESS
-      case "v2":
-        return process.env.CONTRACT_V2_ADDRESS
-      case "v3":
-        return process.env.CONTRACT_V3_ADDRESS
+      case 'v1':
+        return process.env.CONTRACT_V1_ADDRESS;
+      case 'v2':
+        return process.env.CONTRACT_V2_ADDRESS;
+      case 'v3':
+        return process.env.CONTRACT_V3_ADDRESS;
+      default:
+        return '';
     }
-  }
+  },
 };
 
 module.exports = aeternity;

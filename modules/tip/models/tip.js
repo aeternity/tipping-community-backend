@@ -40,8 +40,8 @@ module.exports = (sequelize, DataTypes) => sequelize.define('Tip', {
     allowNull: true,
     references: {
       model: LinkPreview,
-      key: 'requestUrl'
-    }
+      key: 'requestUrl',
+    },
   },
   token: {
     type: DataTypes.STRING,
@@ -62,7 +62,7 @@ module.exports = (sequelize, DataTypes) => sequelize.define('Tip', {
   timestamp: {
     type: DataTypes.DATE,
     allowNull: false,
-  }
+  },
 }, {
   timestamps: true,
 });

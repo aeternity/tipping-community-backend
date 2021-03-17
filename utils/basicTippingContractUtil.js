@@ -18,26 +18,25 @@ const formatClaims = returnState => {
 
     data.contractId = returnState.result.contractId;
     data.url = findUrl(url_id, state.urls);
-    data.claimGen = claim_gen
-    data.amount = String(amount)
+    data.claimGen = claim_gen;
+    data.amount = String(amount);
 
     return data;
   }) : [];
-
 };
 
 const formatRetips = returnState => {
   const state = returnState.decodedResult;
-  const suffix = `_${ state.version || 'v1' }`;
+  const suffix = `_${state.version || 'v1'}`;
 
   return state.retips ? state.retips.map(([id, tipTypeData]) => {
-    const data = tipTypeData
+    const data = tipTypeData;
     data.id = id + suffix;
     data.tipId = data.tip_id + suffix;
     data.contractId = returnState.result.contractId;
     data.claimGen = data.claim_gen === 'None' || data.claim_gen === undefined ? null : data.claim_gen;
     data.token = data.token !== undefined ? data.token : null;
-    data.tokenAmount = data.token_amount ? data.token_amount : "0";
+    data.tokenAmount = data.token_amount ? data.token_amount : '0';
 
     return data;
   }) : [];
@@ -45,7 +44,7 @@ const formatRetips = returnState => {
 
 const formatTips = returnState => {
   const state = returnState.decodedResult;
-  const suffix = `_${ state.version || 'v1' }`;
+  const suffix = `_${state.version || 'v1'}`;
 
   return state.tips.map(([id, tipTypeData]) => {
     const [tipType, tipData] = Object.entries(tipTypeData)[0];
@@ -100,23 +99,17 @@ const formatTips = returnState => {
     data.claimGen = data.claim_gen === 'None' || data.claim_gen === undefined ? null : data.claim_gen;
 
     data.token = data.token !== undefined ? data.token : null;
-    data.tokenAmount = data.token_amount ? data.token_amount : "0";
+    data.tokenAmount = data.token_amount ? data.token_amount : '0';
     data.topics = [...new Set(data.title.match(topicsRegex))].map(x => x.toLowerCase());
 
     return data;
   });
 };
 
-basicTippingContractUtil.getRetips = (states) => {
-  return aggregateStates(states, formatRetips);
-};
+basicTippingContractUtil.getRetips = states => aggregateStates(states, formatRetips);
 
-basicTippingContractUtil.getTips = (states) => {
-  return aggregateStates(states, formatTips);
-};
+basicTippingContractUtil.getTips = states => aggregateStates(states, formatTips);
 
-basicTippingContractUtil.getClaims = (states) => {
-  return aggregateStates(states, formatClaims);
-};
+basicTippingContractUtil.getClaims = states => aggregateStates(states, formatClaims);
 
 module.exports = basicTippingContractUtil;

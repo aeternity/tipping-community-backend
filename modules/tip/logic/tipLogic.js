@@ -79,7 +79,7 @@ const TipLogic = {
 
   async fetchAllLocalTips() {
     return Tip.findAll({ raw: true });
-  }
+  },
 
   async updateClaimsDB() {
     await lock.acquire('TipLogic.updateClaimsDB', async () => {

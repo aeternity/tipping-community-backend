@@ -5,45 +5,73 @@ var Sequelize = require('sequelize');
 /**
  * Actions summary:
  *
- * addColumn "timestamp" to table "Tips"
+ * addColumn "topics" to table "Tips"
+ * addColumn "title" to table "Tips"
  *
  **/
 
 var info = {
-    "revision": 13,
-    "name": "noname",
-    "created": "2021-03-03T17:07:58.945Z",
+    "revision": 8,
+    "name": "add tip title and topics",
+    "created": "2021-02-18T09:53:01.301Z",
     "comment": ""
 };
 
 var migrationCommands = function(transaction) {
     return [{
-        fn: "addColumn",
-        params: [
-            "Tips",
-            "timestamp",
-            {
-                "type": Sequelize.DATE,
-                "field": "timestamp",
-                "allowNull": false
-            },
-            {
-                transaction: transaction
-            }
-        ]
-    }];
+            fn: "addColumn",
+            params: [
+                "Tips",
+                "topics",
+                {
+                    "type": Sequelize.ARRAY(Sequelize.STRING),
+                    "field": "topics",
+                    "allowNull": false
+                },
+                {
+                    transaction: transaction
+                }
+            ]
+        },
+        {
+            fn: "addColumn",
+            params: [
+                "Tips",
+                "title",
+                {
+                    "type": Sequelize.STRING,
+                    "field": "title",
+                    "allowNull": false
+                },
+                {
+                    transaction: transaction
+                }
+            ]
+        }
+    ];
 };
 var rollbackCommands = function(transaction) {
     return [{
-        fn: "removeColumn",
-        params: [
-            "Tips",
-            "timestamp",
-            {
-                transaction: transaction
-            }
-        ]
-    }];
+            fn: "removeColumn",
+            params: [
+                "Tips",
+                "topics",
+                {
+                    transaction: transaction
+                }
+            ]
+        },
+        {
+            fn: "removeColumn",
+            params: [
+                "Tips",
+                "title",
+                {
+                    transaction: transaction
+                }
+            ]
+        }
+    ];
 };
 
 module.exports = {

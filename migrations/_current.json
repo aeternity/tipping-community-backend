@@ -1,5 +1,32 @@
 {
     "tables": {
+        "ChainNames": {
+            "tableName": "ChainNames",
+            "schema": {
+                "publicKey": {
+                    "primaryKey": true,
+                    "allowNull": false,
+                    "field": "publicKey",
+                    "seqType": "Sequelize.STRING"
+                },
+                "name": {
+                    "allowNull": false,
+                    "field": "name",
+                    "seqType": "Sequelize.STRING"
+                },
+                "createdAt": {
+                    "allowNull": false,
+                    "field": "createdAt",
+                    "seqType": "Sequelize.DATE"
+                },
+                "updatedAt": {
+                    "allowNull": false,
+                    "field": "updatedAt",
+                    "seqType": "Sequelize.DATE"
+                }
+            },
+            "indexes": []
+        },
         "IPFSEntries": {
             "tableName": "IPFSEntries",
             "schema": {
@@ -921,5 +948,5 @@
             "indexes": []
         }
     },
-    "revision": 17
+    "revision": 18
 }

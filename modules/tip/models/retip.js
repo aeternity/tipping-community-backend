@@ -9,7 +9,7 @@ module.exports = (sequelize, DataTypes) => sequelize.define('Retip', {
     type: DataTypes.STRING,
     allowNull: false,
   },
-  sender: {type: DataTypes.STRING},
+  sender: { type: DataTypes.STRING },
   token: {
     type: DataTypes.STRING,
     allowNull: true,

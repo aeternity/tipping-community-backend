@@ -3,7 +3,7 @@ const AsyncLock = require('async-lock');
 const { Op } = require('sequelize');
 
 const aeternity = require('../../aeternity/logic/aeternity');
-const { Tip, Retip, LinkPreview, Claim, sequelize } = require('../../../models');
+const { Tip, Retip, LinkPreview, Claim, ChainName, sequelize } = require('../../../models');
 const NotificationLogic = require('../../notification/logic/notificationLogic');
 const queueLogic = require('../../queue/logic/queueLogic');
 const { COUNT_COMMENTS, AGGREGATION_VIEW, TOTAL_AMOUNT_FOR_ORDER, SCORE } = require('../utils/tipAggregation');
@@ -69,7 +69,7 @@ const TipLogic = {
 
     return Tip.findAll({
       attributes: attributes,
-      include: [Retip, LinkPreview, Claim],
+      include: [Retip, LinkPreview, Claim, ChainName],
       where: whereArguments,
       offset: ((page || 1) - 1) * PAGE_LIMIT,
       limit: PAGE_LIMIT,

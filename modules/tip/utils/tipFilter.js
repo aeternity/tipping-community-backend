@@ -13,7 +13,7 @@ module.exports = {
           sequelize.fn('ARRAY_PREPEND',
             sequelize.fn('SIMILARITY', sequelize.col('Tip.url'), search),
             sequelize.fn('ARRAY_PREPEND',
-              sequelize.fn('SIMILARITY', sequelize.literal('(SELECT CONCAT("LinkPreviews"."description", "LinkPreviews"."title") FROM "LinkPreviews" WHERE "LinkPreviews"."requestUrl" = "Tip"."url")'), search),
+              sequelize.fn('SIMILARITY', sequelize.literal('(SELECT ("LinkPreviews"."description" || "LinkPreviews"."title") FROM "LinkPreviews" WHERE "LinkPreviews"."requestUrl" = "Tip"."url")'), search),
               sequelize.literal('ARRAY[0::REAL]')
             ))))
     ),

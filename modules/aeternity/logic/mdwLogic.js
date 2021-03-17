@@ -15,7 +15,7 @@ if (process.env.MIDDLEWARE_URL.match(/\/$/)) throw new Error('MIDDLEWARE_URL can
 
 const MdwLogic = {
    init() {
-     this.updateChainNamesDB();
+     setInterval(() => this.updateChainNamesDB(), 10 * 60 * 1000);
    },
 
   // fetches pages forwards, if no next its the last page, don't cache that
@@ -78,7 +78,7 @@ const MdwLogic = {
   },
 
    async updateChainNamesDB() {
-     await lock.acquire('TipLogic.updateTipsDB', async () => {
+     await lock.acquire('MdwLogic.updateChainNamesDB', async () => {
        const result = await this.getChainNames().then((res) => Object.entries(res).map(([publicKey, chainNames]) => {
          return { publicKey, name: chainNames[0] };
        }));

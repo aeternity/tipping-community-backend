@@ -24,6 +24,7 @@ const typeMapping = type => {
     case 'date':
     case 'text':
     case 'uuid':
+    case 'decimal':
       return 'string';
     case 'bigint':
       return 'number';

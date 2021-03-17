@@ -55,6 +55,7 @@ module.exports = {
       const transaction = await queryInterface.sequelize.transaction();
       await queryInterface.sequelize.query('CREATE EXTENSION IF NOT EXISTS pg_trgm;', { transaction });
       await queryInterface.sequelize.query('CREATE OR REPLACE FUNCTION sum_array(REAL[]) RETURNS NUMERIC AS \'SELECT sum(a) AS sum FROM (SELECT unnest($1) AS a) AS b\' LANGUAGE SQL IMMUTABLE;', { transaction });
+      await queryInterface.sequelize.query('CREATE INDEX LinkPreviews_idx_gin ON "LinkPreviews" USING GIN (("LinkPreviews"."description" || "LinkPreviews"."title") GIN_TRGM_OPS);', { transaction });
       await transaction.commit();
 
       return this.execute(queryInterface, Sequelize, migrationCommands);
@@ -62,8 +63,9 @@ module.exports = {
     down: async function(queryInterface, Sequelize)
     {
       const transaction = await queryInterface.sequelize.transaction();
-      await queryInterface.sequelize.query('DROP EXTENSION pg_trgm;', { transaction });
+      await queryInterface.sequelize.query('DROP INDEX LinkPreviews_idx_gin;', { transaction });
       await queryInterface.sequelize.query('DROP FUNCTION sum_array(REAL[]);', { transaction });
+      await queryInterface.sequelize.query('DROP EXTENSION pg_trgm;', { transaction });
       await transaction.commit();
 
       return this.execute(queryInterface, Sequelize, rollbackCommands);

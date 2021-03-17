@@ -5,61 +5,45 @@ var Sequelize = require('sequelize');
 /**
  * Actions summary:
  *
- * changeColumn "tipId" on table "BlacklistEntries"
- * changeColumn "tipId" on table "BlacklistEntries"
+ * addColumn "timestamp" to table "Tips"
  *
  **/
 
 var info = {
-    "revision": 15,
+    "revision": 14,
     "name": "noname",
-    "created": "2021-03-05T09:28:53.616Z",
+    "created": "2021-03-03T17:07:58.945Z",
     "comment": ""
 };
 
 var migrationCommands = function(transaction) {
     return [{
-            fn: "changeColumn",
-            params: [
-                "BlacklistEntries",
-                "tipId",
-                {
-                    "type": Sequelize.STRING,
-                    "onUpdate": "NO ACTION",
-                    "onDelete": "NO ACTION",
-                    "references": {
-                        "model": "Tips",
-                        "key": "id"
-                    },
-                    "field": "tipId",
-                    "primaryKey": true,
-                    "allowNull": false
-                },
-                {
-                    transaction: transaction
-                }
-            ]
-        }
-    ];
+        fn: "addColumn",
+        params: [
+            "Tips",
+            "timestamp",
+            {
+                "type": Sequelize.DATE,
+                "field": "timestamp",
+                "allowNull": false
+            },
+            {
+                transaction: transaction
+            }
+        ]
+    }];
 };
 var rollbackCommands = function(transaction) {
     return [{
-            fn: "changeColumn",
-            params: [
-                "BlacklistEntries",
-                "tipId",
-                {
-                    "type": Sequelize.STRING,
-                    "field": "tipId",
-                    "primaryKey": true,
-                    "allowNull": false
-                },
-                {
-                    transaction: transaction
-                }
-            ]
-        }
-    ];
+        fn: "removeColumn",
+        params: [
+            "Tips",
+            "timestamp",
+            {
+                transaction: transaction
+            }
+        ]
+    }];
 };
 
 module.exports = {
@@ -91,9 +75,13 @@ module.exports = {
             return run(null);
         }
     },
-    up: function(queryInterface, Sequelize)
+    up: async function(queryInterface, Sequelize)
     {
-        return this.execute(queryInterface, Sequelize, migrationCommands);
+      const transaction = await queryInterface.sequelize.transaction();
+      await queryInterface.sequelize.query('TRUNCATE TABLE "Tips" CASCADE;', { transaction });
+      await transaction.commit();
+
+      return this.execute(queryInterface, Sequelize, migrationCommands);
     },
     down: function(queryInterface, Sequelize)
     {

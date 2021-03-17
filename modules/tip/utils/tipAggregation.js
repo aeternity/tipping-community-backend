@@ -1,5 +1,7 @@
 const { sequelize } = require('../../../models');
 
+/* eslint-disable max-len */
+
 module.exports = {
   AGGREGATION_VIEW: [sequelize.literal('(SELECT ROW_TO_JSON("TipsAggregation".*) FROM TipsAggregation AS "TipsAggregation" WHERE "TipsAggregation"."id" = "Tip"."id")'), 'Aggregation'],
   TOTAL_AMOUNT_FOR_ORDER: [sequelize.literal('(SELECT "TipsAggregation"."totalamount" FROM TipsAggregation AS "TipsAggregation" WHERE "TipsAggregation"."id" = "Tip"."id")'), 'totalAmountForOrder'],

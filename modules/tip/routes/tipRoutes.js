@@ -8,7 +8,7 @@ const router = new Router();
  * /tips:
  *   get:
  *     tags:
- *       - cache
+ *       - tip
  *     summary: Returns an array of tips
  *     parameters:
  *       - in: query

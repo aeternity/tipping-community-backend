@@ -56,7 +56,7 @@ module.exports = {
       await queryInterface.sequelize.query(`
 CREATE MATERIALIZED VIEW TipsAggregation AS
 SELECT "Tip"."id",
-       SUM("Tip"."amount")::VARCHAR AS totalUrlAmount,
+       (SELECT (COALESCE((SELECT (SUM(COALESCE("Tips"."amount", 0))) + SUM((COALESCE("Retips"."amount", 0))) FROM "Tips" LEFT OUTER JOIN "Retips" ON "Tips"."id" = "Retips"."tipId" WHERE "Tips"."url" = "Tip"."url"), 0))::VARCHAR) AS totalUrlAmount,
        (COALESCE(SUM(COALESCE("Retip"."amount", 0)) + COALESCE("Tip"."amount", 0), 0))::VARCHAR AS totalAmount,
        (COALESCE(SUM(CASE
                         WHEN unclaimed("Retip"."claimGen", "Tip"."url", "Tip"."contractId")

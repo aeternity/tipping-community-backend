@@ -78,4 +78,29 @@ router.get('/', async (req, res) => {
   res.send(tips);
 });
 
+/**
+ * @swagger
+ * /tips/single:
+ *   get:
+ *     tags:
+ *       - tip
+ *     summary: Returns a single tip
+ *     parameters:
+ *       - in: query
+ *         name: id
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Returns a single tip
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Tip'
+ */
+router.get('/single', async (req, res) => {
+  const tip = await TipLogic.fetchTip(req.query.id);
+  return tip ? res.send(tip) : res.sendStatus(404);
+});
+
 module.exports = router;

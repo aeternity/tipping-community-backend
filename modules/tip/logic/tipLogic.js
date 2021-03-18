@@ -22,8 +22,8 @@ const PAGE_LIMIT = 30;
 const TipLogic = {
   init() {
     setTimeout(TipLogic.updateTipsDB, 5000);
-    setTimeout(this.updateRetipsDB, 5000);
-    setTimeout(this.updateClaimsDB, 5000);
+    setTimeout(TipLogic.updateRetipsDB, 5000);
+    setTimeout(TipLogic.updateClaimsDB, 5000);
 
     queueLogic.subscribeToMessage(MESSAGE_QUEUES.TIPS, MESSAGES.TIPS.COMMANDS.UPDATE_DB, async message => {
       await TipLogic.updateTipsDB();
@@ -51,7 +51,7 @@ const TipLogic = {
   }) {
     const attributes = Object.keys(Tip.rawAttributes).concat([COUNT_COMMENTS, AGGREGATION_VIEW, TOTAL_AMOUNT_FOR_ORDER, SCORE]);
     const whereArguments = [];
-    let order = sequelize.literal(`${this.orderByColumn(ordering)} DESC`);
+    let order = sequelize.literal(`${TipLogic.orderByColumn(ordering)} DESC`);
 
     if (address) whereArguments.push({ sender: address });
     if (blacklist !== 'false') whereArguments.push({ id: FILTER_BLACKLIST });

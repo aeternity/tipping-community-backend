@@ -67,13 +67,13 @@ SELECT "Tip"."id",
                                                ELSE 0 END))::VARCHAR                           AS totalUnclaimedAmount,
 
 
-       ARRAY(SELECT JSON_BUILD_OBJECT(COALESCE("Retips"."token", "Tip"."token"),
-                                      (SUM("Retips"."tokenAmount") + "Tip"."tokenAmount")::VARCHAR)
+       ARRAY(SELECT JSON_BUILD_OBJECT('token', COALESCE("Retips"."token", "Tip"."token"),
+                                      'amount', (SUM("Retips"."tokenAmount") + "Tip"."tokenAmount")::VARCHAR)
              FROM "Retips"
              WHERE "Retips"."tipId" = "Tip"."id"
                AND COALESCE("Retips"."token", "Tip"."token") IS NOT NULL
              GROUP BY COALESCE("Retips"."token", "Tip"."token"))                     AS totalTokenAmount,
-       ARRAY(SELECT JSON_BUILD_OBJECT(COALESCE("Retips"."token", "Tip"."token"), (SUM(CASE
+       ARRAY(SELECT JSON_BUILD_OBJECT('token', COALESCE("Retips"."token", "Tip"."token"), 'amount', (SUM(CASE
                                                                                          WHEN unclaimed("Retips"."claimGen", "Tip"."url", "Tip"."contractId")
                                                                                              THEN "Retips"."tokenAmount"
                                                                                          ELSE 0 END) + (CASE

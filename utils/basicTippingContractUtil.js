@@ -88,15 +88,16 @@ const formatTips = returnState => {
       default:
         data = tipTypeData; // Fallback for old contract state format
         data.type = 'AE_TIP';
+        data.claimGen = data.claim_gen;
+        data.urlId = data.url_id;
         break;
     }
 
     data.id = id + suffix;
     data.contractId = returnState.result.contractId;
 
-    data.url = data.url_id !== undefined ? findUrl(data.url_id, state.urls) : null;
-
-    data.claimGen = data.claim_gen === 'None' || data.claim_gen === undefined ? null : data.claim_gen;
+    data.url = data.urlId !== undefined ? findUrl(data.urlId, state.urls) : null;
+    data.claimGen = data.claimGen === 'None' || data.claimGen === undefined ? null : data.claimGen;
 
     data.token = data.token !== undefined ? data.token : null;
     data.tokenAmount = data.token_amount ? data.token_amount : '0';

@@ -13,9 +13,11 @@ const LIMIT = 100; // max 1000
 if (!process.env.MIDDLEWARE_URL) throw new Error('Env MIDDLEWARE_URL is not defined');
 if (process.env.MIDDLEWARE_URL.match(/\/$/)) throw new Error('MIDDLEWARE_URL can not end with a trailing slash');
 
-const MdwLogic ={
+const MdwLogic = {
+
   init() {
-    setInterval(() => this.updateChainNamesDB(), 10 * 60 * 1000);
+    MdwLogic.updateChainNamesDB();
+    setInterval(() => MdwLogic.updateChainNamesDB(), 10 * 60 * 1000);
   },
 
   // fetches pages forwards, if no next its the last page, don't cache that
@@ -79,7 +81,7 @@ const MdwLogic ={
 
   async updateChainNamesDB() {
     await lock.acquire('MdwLogic.updateChainNamesDB', async () => {
-      const result = await this.getChainNames()
+      const result = await MdwLogic.getChainNames()
         .then(res => Object.entries(res).map(([publicKey, chainNames]) => ({ publicKey, name: chainNames[0] })));
 
       const transaction = await sequelize.transaction();

@@ -49,12 +49,20 @@ const router = new Router();
  *         name: contractVersion
  *         required: false
  *         schema:
- *           type: string
- *           enum:
- *             - v1
- *             - v2
- *             - v3
+ *           type: array
+ *           items:
+ *             type: string
+ *             enum:
+ *               - v1
+ *               - v2
+ *               - v3
  *         description: use this parameter once or more times to only include tips from certain contract versions in your request
+ *       - in: query
+ *         name: blacklist
+ *         required: false
+ *         schema:
+ *           type: boolean
+ *         description: filter blacklisted tips
  *     responses:
  *       200:
  *         description: Returns an array of tips

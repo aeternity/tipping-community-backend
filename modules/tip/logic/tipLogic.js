@@ -94,6 +94,16 @@ const TipLogic = {
     });
   },
 
+  async fetchTip(id) {
+    const attributes = Object.keys(Tip.rawAttributes).concat([COUNT_COMMENTS, AGGREGATION_VIEW, TOTAL_AMOUNT_FOR_ORDER, SCORE]);
+
+    return Tip.findOne({
+      attributes,
+      include: [Retip, LinkPreview, Claim, ChainName],
+      where: { id },
+    });
+  }
+
   async fetchAllLocalTips() {
     return Tip.findAll({ raw: true });
   },

@@ -82,6 +82,7 @@ app.use('/consent', require('./modules/consent/routes/consentRoutes.js'));
 
 app.use('/images', require('./modules/media/routes/imageRoutes.js'));
 app.use('/tips', require('./modules/tip/routes/tipRoutes.js'));
+app.use('/stats', require('./modules/stats/routes/statsRoutes.js'));
 
 if (process.env.SENTRY_URL) {
   // log errors that come from controllers

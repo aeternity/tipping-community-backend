@@ -3,7 +3,7 @@ const Util = require('./util');
 
 const topicsRegex = /(#[a-zA-Z]+\b)(?!;)/g;
 
-const getTipTopics = tips => {
+const getTipTopics = tips => { // TODO move to db
   const avgTipScoreWeight = 1.5;
   const countScoreWeight = 0.8;
 

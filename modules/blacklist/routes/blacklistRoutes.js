@@ -1,7 +1,7 @@
 const { Router } = require('express');
 const { BlacklistEntry } = require('../../../models');
 const Logic = require('../logic/blacklistLogic');
-const CacheLogic = require('../../cache/logic/cacheLogic');
+const TipLogic = require('../../tip/logic/tipLogic');
 const { basicAuth, signatureAuth } = require('../../authentication/logic/authenticationLogic');
 
 const router = new Router();
@@ -79,7 +79,7 @@ router.get('/api/:tipId', async (req, res) => {
  *               type: string
  */
 router.get('/', basicAuth, async (req, res) => res.render('admin', {
-  allItems: await Logic.augmentAllItems(await CacheLogic.getTips()),
+  allItems: await Logic.augmentAllItems(await TipLogic.fetchAllLocalTips()),
 }));
 
 // Restricted api routes

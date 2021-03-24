@@ -105,7 +105,11 @@ const TipLogic = {
   }
 
   async fetchAllLocalTips() {
-    const attributes = Object.keys(Tip.rawAttributes).concat([AGGREGATION_VIEW]); // TODO remove when replaced with special logic
+    return Tip.findAll({ raw: true });
+  }
+
+  async fetchAllLocalTipsWithAggregation() {
+    const attributes = Object.keys(Tip.rawAttributes).concat([AGGREGATION_VIEW, SCORE]);
 
     return Tip.findAll({
       attributes,

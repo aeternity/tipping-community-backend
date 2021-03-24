@@ -356,7 +356,7 @@ const CacheLogic = {
     await CacheLogic.getWordSaleDetails(wordSale); // wait for cache update to let frontend know data availability
   },
 
-  async getUserStats(address) {
+  async getUserStats(address) { // TODO replace
     const claimedUrls = await CacheLogic.getOracleClaimedUrls(address);
     const allTips = await CacheLogic.getTips();
     const userTips = allTips.filter(tip => tip.sender === address);

@@ -55,7 +55,7 @@ router.get('/stats', async (req, res) => {
  *               type: object
  */
 router.get('/userStats', async (req, res) => {
-  res.send(await CacheLogic.getUserStats(req.query.address));
+  res.send(await CacheLogic.getUserStats(req.query.address)); // TODO update
 });
 
 /**

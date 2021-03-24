@@ -4,7 +4,7 @@ const { Op } = require('sequelize');
 
 const aeternity = require('../../aeternity/logic/aeternity');
 const {
-  Tip, Retip, LinkPreview, Claim, ChainName, sequelize,
+  Tip, Retip, LinkPreview, Claim, ChainName, sequelize, Sequelize
 } = require('../../../models');
 const NotificationLogic = require('../../notification/logic/notificationLogic');
 const queueLogic = require('../../queue/logic/queueLogic');
@@ -105,13 +105,21 @@ const TipLogic = {
   }
 
   async fetchAllLocalTips() {
-    const attributes = Object.keys(Tip.rawAttributes).concat([UNCLAIMED, AGGREGATION_VIEW]); // TODO remove when replaced with special logic
+    const attributes = Object.keys(Tip.rawAttributes).concat([AGGREGATION_VIEW]); // TODO remove when replaced with special logic
 
     return Tip.findAll({
       attributes,
       raw: true,
     });
   },
+
+  async fetchClaimedUrls() {
+    return Tip.findAll({
+      attributes: [sequelize.fn('DISTINCT', sequelize.col("Tip.url"))],
+      where: { [Op.not]: sequelize.fn('unclaimed', sequelize.col('Tip.claimGen'), sequelize.col('Tip.url'), sequelize.col('Tip.contractId')) },
+      raw: true,
+    }).then(res => res.map(({ url }) => url));
+  }
 
   async updateClaimsDB() {
     await lock.acquire('TipLogic.updateClaimsDB', async () => {

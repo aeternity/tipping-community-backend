@@ -900,11 +900,11 @@
                 },
                 "url": {
                     "allowNull": true,
+                    "field": "url",
                     "references": {
                         "model": "LinkPreviews",
                         "key": "requestUrl"
                     },
-                    "field": "url",
                     "onDelete": "NO ACTION",
                     "onUpdate": "NO ACTION",
                     "seqType": "Sequelize.TEXT"
@@ -948,5 +948,5 @@
             "indexes": []
         }
     },
-    "revision": 18
+    "revision": 19
 }

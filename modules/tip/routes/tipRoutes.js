@@ -129,7 +129,7 @@ router.get('/single', async (req, res) => {
  *                     type: integer
  */
 router.get('/topics', async (req, res) => {
-  const tips = await TipLogic.fetchAllLocalTips(); // TODO make extra db fetch function
+  const tips = await TipLogic.fetchAllLocalTipsWithAggregation();
   res.send(getTipTopics(tips));
 });
 

@@ -19,23 +19,20 @@ const cache = require('../../cache/utils/cache');
 const imageLogic = require('../../media/logic/imageLogic');
 const { MESSAGE_QUEUES, MESSAGES } = require('../../queue/constants/queue');
 const queueLogic = require('../../queue/logic/queueLogic');
-const CacheLogic = require('../../cache/logic/cacheLogic');
+const TipLogic = require('../../tip/logic/tipLogic');
 
 const logger = require('../../../utils/logger')(module);
 
 lngDetector.setLanguageType('iso2');
 
 const LinkPreviewLogic = {
+
   init() {
     queueLogic.subscribeToMessage(MESSAGE_QUEUES.LINKPREVIEW, MESSAGES.LINKPREVIEW.COMMANDS.UPDATE_DB,
       async message => {
-        await this.updateLinkpreviewDatabase();
+        await LinkPreviewLogic.updateLinkpreviewDatabase();
         await queueLogic.deleteMessage(MESSAGE_QUEUES.LINKPREVIEW, message.id);
       });
-  },
-
-  async fetchAllLinkPreviews() {
-    return LinkPreview.findAll({ raw: true });
   },
 
   async fetchAllUrls() {
@@ -44,14 +41,14 @@ const LinkPreviewLogic = {
   },
 
   async updateLinkpreviewDatabase() {
-    const tips = await CacheLogic.getTips();
-    const previews = await this.fetchAllUrls();
+    const tips = await TipLogic.fetchAllLocalTips();
+    const previews = await LinkPreviewLogic.fetchAllUrls();
     const tipUrls = [...new Set(tips.filter(tip => tip.url).map(tip => tip.url))];
 
     const difference = tipUrls.filter(url => !previews.includes(url));
 
     await difference.asyncMap(async url => {
-      await this.generatePreview(url).catch(logger.error);
+      await LinkPreviewLogic.generatePreview(url).catch(logger.error);
     });
 
     if (difference.length > 0) {
@@ -67,9 +64,9 @@ const LinkPreviewLogic = {
     const newUrl = (!urlProtocol ? `http://${url}` : url).trim();
 
     // Try easy version first
-    let data = await this.createPreviewForUrl(newUrl, this.querySimpleCustomCrawler);
+    let data = await LinkPreviewLogic.createPreviewForUrl(newUrl, LinkPreviewLogic.querySimpleCustomCrawler);
     // if it fails try more costly version
-    if (!data.querySucceeded) data = await this.createPreviewForUrl(newUrl, this.queryCostlyCustomCrawler);
+    if (!data.querySucceeded) data = await LinkPreviewLogic.createPreviewForUrl(newUrl, LinkPreviewLogic.queryCostlyCustomCrawler);
 
     const existingEntry = await LinkPreview.findOne({ where: { requestUrl: url } });
 
@@ -170,7 +167,7 @@ const LinkPreviewLogic = {
       data.description = data.description ? data.description.replace(/<(.|\n)*?>/g, '') : data.description;
 
       // Fetch image
-      data.image = await this.fetchImage(data.requestUrl, data.image);
+      data.image = await LinkPreviewLogic.fetchImage(data.requestUrl, data.image);
 
       return data;
     } catch (err) {

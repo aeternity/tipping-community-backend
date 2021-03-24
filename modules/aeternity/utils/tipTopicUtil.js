@@ -54,8 +54,7 @@ const getTipTopics = tips => { // TODO move to db
 
   return sortedTopic.slice(0, 10).map(([topic, topicData]) => [topic, {
     ...topicData,
-    amount_ae: Util.atomsToAe(topicData.amount).toFixed(),
-    token_amount: Object.entries(topicData.token_amount).map(([token, amount]) => ({ token, amount })),
+    tokenAmount: Object.entries(topicData.token_amount).map(([token, amount]) => ({ token, amount })),
   }]);
 };
 

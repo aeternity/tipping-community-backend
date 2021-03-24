@@ -1,14 +1,8 @@
 const { Router } = require('express');
-const BigNumber = require('bignumber.js');
-const Fuse = require('fuse.js');
 const { Op } = require('sequelize');
 const CacheLogic = require('../logic/cacheLogic');
 const ProfileLogic = require('../../profile/logic/profileLogic');
-const cacheAggregatorLogic = require('../logic/cacheAggregatorLogic');
-const { topicsRegex } = require('../../aeternity/utils/tipTopicUtil');
-const searchOptions = require('../constants/searchOptions');
 const queueLogic = require('../../queue/logic/queueLogic');
-const { getTipTopics } = require('../../aeternity/utils/tipTopicUtil');
 const { MESSAGES, MESSAGE_QUEUES } = require('../../queue/constants/queue');
 const { Event } = require('../../../models');
 
@@ -18,172 +12,6 @@ const wordbazaarMiddleware = (req, res, next) => {
   if (process.env.WORD_REGISTRY_CONTRACT) return next();
   return res.status(403).send('NotImplemented');
 };
-
-/**
- * @swagger
- * tags:
- * - name: "cache"
- *   description: "Caching blockchain information"
- */
-
-// Open api routes
-/**
- * @swagger
- * /cache/tip:
- *   get:
- *     tags:
- *       - cache
- *     summary: Returns a single tip
- *     parameters:
- *       - in: query
- *         name: id
- *         schema:
- *           type: string
- *     responses:
- *       200:
- *         description: Returns a single tip
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Tip'
- */
-router.get('/tip', async (req, res) => {
-  const tips = await cacheAggregatorLogic.getAllTips(false);
-  const result = tips.find(tip => tip.id === req.query.id);
-  return result ? res.send(result) : res.sendStatus(404);
-});
-
-/**
- * @swagger
- * /cache/tips:
- *   get:
- *     tags:
- *       - cache
- *     summary: Returns an array of tips
- *     parameters:
- *       - in: query
- *         name: address
- *         required: false
- *         schema:
- *           type: string
- *         description: users address to only query tips from this specific user
- *       - in: query
- *         name: search
- *         required: false
- *         schema:
- *           type: string
- *         description: string to look for in the tip body
- *       - in: query
- *         name: language
- *         required: false
- *         schema:
- *           type: string
- *         description: string to match against the automatically identified language code
- *       - in: query
- *         name: ordering
- *         required: false
- *         schema:
- *           type: string
- *           enum:
- *             - highest
- *             - hot
- *             - latest
- *         description: parameter to order the tips by
- *       - in: query
- *         name: page
- *         required: false
- *         schema:
- *           type: integer
- *         description: page number
- *       - in: query
- *         name: contractVersion
- *         required: false
- *         schema:
- *           type: array
- *           items:
- *             type: string
- *             enum:
- *               - v1
- *               - v2
- *               - v3
- *         description: use this parameter once or more times to only include tips from certain contract versions in your request
- *       - in: query
- *         name: blacklist
- *         required: false
- *         schema:
- *           type: boolean
- *         description: filter blacklisted tips
- *     responses:
- *       200:
- *         description: Returns an array of tips
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/Tip'
- */
-router.get('/tips', async (req, res) => {
-  const limit = 30;
-  let tips = await cacheAggregatorLogic.getAllTips(req.query.blacklist);
-
-  if (req.query.address) {
-    tips = tips.filter(tip => tip.sender === req.query.address);
-  }
-
-  if (req.query.contractVersion) {
-    const contractVersions = Array.isArray(req.query.contractVersion) ? req.query.contractVersion : [req.query.contractVersion];
-    tips = tips.filter(tip => contractVersions.includes((tip.id.split('_')[1] ? tip.id.split('_')[1] : 'v1')));
-  }
-
-  if (req.query.search) {
-    let searchTips = tips;
-
-    // if topics exist, only show topics
-    const searchTopics = req.query.search.match(topicsRegex);
-    if (searchTopics) {
-      searchTips = tips.filter(tip => searchTopics.every(topic => tip.topics.includes(topic)));
-    }
-
-    // otherwise fuzzy search all content
-    if (searchTopics === null || searchTips.length === 0) {
-      // TODO consider indexing
-      searchTips = new Fuse(tips, searchOptions).search(req.query.search).map(result => {
-        const tip = result.item;
-        tip.searchScore = result.item.score;
-        return tip;
-      });
-    }
-
-    tips = searchTips;
-  }
-  if (req.query.language) {
-    const requestedLanguages = req.query.language.split('|');
-    tips = tips.filter(tip => tip.preview && requestedLanguages.includes(tip.preview.lang)
-      && (!tip.contentLanguage || requestedLanguages.includes(tip.contentLanguage)));
-  }
-
-  if (req.query.ordering) {
-    switch (req.query.ordering) {
-      case 'hot':
-        tips.sort((a, b) => b.score - a.score);
-        break;
-      case 'latest':
-        tips.sort((a, b) => b.timestamp - a.timestamp);
-        break;
-      case 'highest':
-        tips.sort((a, b) => new BigNumber(b.total_amount).minus(a.total_amount).toNumber());
-        break;
-      default:
-    }
-  }
-
-  if (req.query.page) {
-    tips = tips.slice((req.query.page - 1) * limit, req.query.page * limit);
-  }
-
-  res.send(tips);
-});
 
 /**
  * @swagger
@@ -286,31 +114,21 @@ router.get('/price', async (req, res) => {
 
 /**
  * @swagger
- * /cache/topics:
+ * /cache/oracle:
  *   get:
  *     tags:
  *       - cache
- *     summary: Returns an scored list of all tip topics
+ *     summary: Returns the current state of the oracle contract
  *     responses:
  *       200:
- *         description: Returns an scored list of all tip topics
+ *         description: Returns the current state of the oracle contract
  *         content:
  *           application/json:
  *             schema:
- *               type: array
- *               items:
- *                 type: object
- *                 properties:
- *                   amount:
- *                     type: integer
- *                   totalScore:
- *                     type: integer
- *                   count:
- *                     type: integer
+ *               type: object
  */
-router.get('/topics', async (req, res) => {
-  const tips = await CacheLogic.getTips();
-  res.send(getTipTopics(tips));
+router.get('/oracle', async (req, res) => {
+  res.send(await CacheLogic.getOracleState());
 });
 
 /**

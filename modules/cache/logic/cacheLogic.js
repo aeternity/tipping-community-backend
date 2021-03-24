@@ -8,6 +8,7 @@ const aeternity = require('../../aeternity/logic/aeternity');
 const CommentLogic = require('../../comment/logic/commentLogic');
 const cache = require('../utils/cache');
 const queueLogic = require('../../queue/logic/queueLogic');
+const TipLogic = require('../../tip/logic/tipLogic');
 
 const lock = new AsyncLock();
 const Util = require('../../aeternity/utils/util');
@@ -22,7 +23,6 @@ const CacheLogic = {
 
     const keepHotFunction = async () => {
       await queueLogic.sendMessage(MESSAGE_QUEUES.CACHE, MESSAGES.CACHE.COMMANDS.KEEPHOT);
-      await CacheLogic.getTips();
       await CacheLogic.fetchMdwChainNames();
       await CacheLogic.fetchPrice();
       await CacheLogic.getTokenInfos();
@@ -31,14 +31,10 @@ const CacheLogic = {
       }
     };
 
-    setTimeout(async () => {
-      cache.setKeepHot(keepHotFunction);
-      await CacheLogic.fetchStats();
-    }, 5000);
+    setTimeout(async () => cache.setKeepHot(keepHotFunction), 5000);
 
     queueLogic.subscribeToMessage(MESSAGE_QUEUES.CACHE, MESSAGES.CACHE.COMMANDS.RENEW_TIPS, async message => {
       await CacheLogic.invalidateTipsCache();
-      await CacheLogic.getTips();
       await queueLogic.deleteMessage(MESSAGE_QUEUES.CACHE, message.id);
     });
   },
@@ -53,13 +49,7 @@ const CacheLogic = {
   },
 
   async getTips() {
-    return cache.getOrSet(['getTips'], async () => {
-      const tips = await aeternity.fetchTips();
-      // Renew Stats
-      await cache.del(['fetchStats']);
-      await queueLogic.sendMessage(MESSAGE_QUEUES.CACHE, MESSAGES.CACHE.EVENTS.RENEWED_TIPS);
-      return tips;
-    }, cache.shortCacheTime);
+    throw Error("no more tips from cache");
   },
 
   async triggerGetTokenContractIndex(tips) {
@@ -274,7 +264,7 @@ const CacheLogic = {
   },
 
   async fetchTokenInfos() {
-    const tips = await CacheLogic.getTips();
+    const tips = await TipLogic.fetchAllLocalTips();
     return CacheLogic.triggerGetTokenContractIndex(tips);
   },
 
@@ -405,20 +395,7 @@ const CacheLogic = {
   },
 
   async fetchStats() {
-    return cache.getOrSet(['fetchStats'], async () => {
-      const tips = await CacheLogic.getTips();
-
-      const groupedByUrl = Util.groupBy(tips, 'url');
-      const statsByUrl = Object.keys(groupedByUrl).map(url => ({
-        url,
-        ...CacheLogic.statsForTips(groupedByUrl[url]),
-      }));
-
-      return {
-        ...CacheLogic.statsForTips(tips),
-        by_url: statsByUrl,
-      };
-    }, cache.longCacheTime);
+    throw Error("no more stats from cache")
   },
 
   statsForTips(tips) {

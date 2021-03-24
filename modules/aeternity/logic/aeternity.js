@@ -1,6 +1,5 @@
 const { Universal, Node, MemoryAccount } = require('@aeternity/aepp-sdk');
 const requireESM = require('esm')(module); // use to handle es6 import/export
-const tippingContractUtil = require('tipping-contract/util/tippingContractUtil');
 const BigNumber = require('bignumber.js');
 const Sentry = require('@sentry/node');
 
@@ -18,10 +17,8 @@ const WORD_SALE_INTERFACE = require('wordbazaar-contracts/TokenSaleInterface.aes
 const TOKEN_VOTING_CONTRACT = require('wordbazaar-contracts/TokenVotingInterface.aes');
 
 const logger = require('../../../utils/logger')(module);
-const { topicsRegex } = require('../utils/tipTopicUtil');
 const basicTippingContractUtil = require('../../../utils/basicTippingContractUtil');
 const { TRACE_STATES } = require('../../payfortx/constants/traceStates');
-const Util = require('../utils/util');
 
 // private
 let client;
@@ -288,36 +285,6 @@ const aeternity = {
 
   async getUnsafeOracleAnswersForUrl(url) {
     return oracleContract.methods.unsafe_check_oracle_answers(url).then(x => x.decodedResult);
-  },
-
-  addAdditionalTipsData(tips) {
-    return tips.map(tip => ({
-      ...tip,
-      topics: [...new Set(tip.title.match(topicsRegex))].map(x => x.toLowerCase()),
-      amount_ae: Util.atomsToAe(tip.amount).toFixed(),
-      total_amount_ae: Util.atomsToAe(tip.total_amount).toFixed(),
-      total_unclaimed_amount_ae: Util.atomsToAe(tip.total_unclaimed_amount).toFixed(),
-      total_claimed_amount_ae: Util.atomsToAe(tip.total_claimed_amount).toFixed(),
-      retips: tip.retips.map(retip => ({
-        ...retip,
-        amount_ae: Util.atomsToAe(retip.amount).toFixed(),
-      })),
-    }));
-  },
-
-  async fetchTips() {
-    if (!client) throw new Error('Init sdk first');
-    try {
-      const fetchV1State = contractV1.methods.get_state();
-      const fetchV2State = process.env.CONTRACT_V2_ADDRESS ? contractV2.methods.get_state() : Promise.resolve(null);
-      const fetchV3State = process.env.CONTRACT_V3_ADDRESS ? contractV3.methods.get_state() : Promise.resolve(null);
-      const { tips } = tippingContractUtil.getTipsRetips(...[await fetchV1State, await fetchV2State, await fetchV3State].filter(state => state));
-      return aeternity.addAdditionalTipsData(tips);
-    } catch (e) {
-      logger.error(e.message);
-      Sentry.captureException(e);
-      return [];
-    }
   },
 
   async fetchStateBasic() {

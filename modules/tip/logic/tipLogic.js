@@ -9,7 +9,7 @@ const {
 const NotificationLogic = require('../../notification/logic/notificationLogic');
 const queueLogic = require('../../queue/logic/queueLogic');
 const {
-  COUNT_COMMENTS, AGGREGATION_VIEW, TOTAL_AMOUNT_FOR_ORDER, SCORE,
+  COUNT_COMMENTS, AGGREGATION_VIEW, TOTAL_AMOUNT_FOR_ORDER, SCORE, UNCLAIMED
 } = require('../utils/tipAggregation');
 const { FILTER_BLACKLIST, FILTER_SIMILARITY_SUM } = require('../utils/tipFilter');
 const { MESSAGES, MESSAGE_QUEUES } = require('../../queue/constants/queue');
@@ -105,7 +105,12 @@ const TipLogic = {
   }
 
   async fetchAllLocalTips() {
-    return Tip.findAll({ raw: true });
+    const attributes = Object.keys(Tip.rawAttributes).concat([UNCLAIMED, AGGREGATION_VIEW]); // TODO remove when replaced with special logic
+
+    return Tip.findAll({
+      attributes,
+      raw: true,
+    });
   },
 
   async updateClaimsDB() {

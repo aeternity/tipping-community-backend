@@ -21,10 +21,8 @@ chai.use(chaiHttp);
 describe('Cache', () => {
   before(async function () {
     this.timeout(20000);
-    await cache.del(['getTips']);
     await cache.del(['fetchPrice']);
     await cache.del(['getChainNames']);
-    await cache.del(['fetchStats']);
     await cache.delByPrefix(['getOracleClaimedUrls']);
     await cache.del(['getOracleAllClaimedUrls']);
     await cache.del(['contractEvents']);

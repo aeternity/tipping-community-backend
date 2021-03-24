@@ -1,5 +1,6 @@
 const { Router } = require('express');
 const TipLogic = require('../logic/tipLogic');
+const { getTipTopics } = require('../../aeternity/utils/tipTopicUtil');
 
 const router = new Router();
 
@@ -101,6 +102,35 @@ router.get('/', async (req, res) => {
 router.get('/single', async (req, res) => {
   const tip = await TipLogic.fetchTip(req.query.id);
   return tip ? res.send(tip) : res.sendStatus(404);
+});
+
+/**
+ * @swagger
+ * /tips/topics:
+ *   get:
+ *     tags:
+ *       - cache
+ *     summary: Returns an scored list of all tip topics
+ *     responses:
+ *       200:
+ *         description: Returns an scored list of all tip topics
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   amount:
+ *                     type: integer
+ *                   totalScore:
+ *                     type: integer
+ *                   count:
+ *                     type: integer
+ */
+router.get('/topics', async (req, res) => {
+  const tips = await TipLogic.fetchAllLocalTips(); // TODO make extra db fetch function
+  res.send(getTipTopics(tips));
 });
 
 module.exports = router;

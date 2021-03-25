@@ -356,44 +356,6 @@ const CacheLogic = {
     await CacheLogic.getWordSaleDetails(wordSale); // wait for cache update to let frontend know data availability
   },
 
-  async getUserStats(address) { // TODO replace
-    const claimedUrls = await CacheLogic.getOracleClaimedUrls(address);
-    const allTips = await CacheLogic.getTips();
-    const userTips = allTips.filter(tip => tip.sender === address);
-
-    const userReTips = allTips.flatMap(tip => tip.retips.filter(retip => retip.sender === address));
-    const totalTipAmount = userTips
-      .reduce((acc, tip) => acc.plus(tip.amount), new BigNumber(0))
-      .plus(userReTips.reduce((acc, tip) => acc.plus(tip.amount), new BigNumber(0))).toFixed();
-
-    const unclaimedAmount = allTips
-      .reduce((acc, tip) => (claimedUrls.includes(tip.url)
-        ? acc.plus(tip.total_unclaimed_amount)
-        : acc),
-      new BigNumber(0));
-
-    const claimedAmount = allTips
-      .reduce((acc, tip) => (claimedUrls.includes(tip.url)
-        ? acc.plus(tip.total_claimed_amount)
-        : acc),
-      new BigNumber(0));
-
-    return {
-      tipsLength: userTips.length,
-      retipsLength: userReTips.length,
-      claimedUrlsLength: claimedUrls.length,
-
-      totalTipAmount,
-      unclaimedAmount,
-      claimedAmount,
-      totalTipAmountAe: Util.atomsToAe(totalTipAmount).toFixed(),
-      unclaimedAmountAe: Util.atomsToAe(unclaimedAmount).toFixed(),
-      claimedAmountAe: Util.atomsToAe(claimedAmount).toFixed(),
-
-      userComments: await CommentLogic.fetchCommentCountForAddress(address),
-    };
-  },
-
   async fetchStats() {
     throw Error("no more stats from cache")
   },

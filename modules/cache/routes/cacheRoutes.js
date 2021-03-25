@@ -34,32 +34,6 @@ router.get('/stats', async (req, res) => {
 
 /**
  * @swagger
- * /cache/userStats:
- *   get:
- *     tags:
- *       - cache
- *     summary: Returns aggregated stats for a single address
- *     parameters:
- *       - in: query
- *         name: address
- *         required: true
- *         schema:
- *           type: string
- *         description: users address to only query stats for this specific user
- *     responses:
- *       200:
- *         description: Returns aggregated stats for a single address
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- */
-router.get('/userStats', async (req, res) => {
-  res.send(await CacheLogic.getUserStats(req.query.address)); // TODO update
-});
-
-/**
- * @swagger
  * /cache/chainNames:
  *   get:
  *     tags:

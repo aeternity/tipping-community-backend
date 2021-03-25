@@ -89,66 +89,6 @@ router.get('/api/author/:author', async (req, res) => {
   res.send(await CommentLogic.fetchCommentsForAuthor(req.params.author));
 });
 
-// Count routes
-/**
- * @swagger
- * /comment/count/tips:
- *   get:
- *     tags:
- *       - comment
- *     summary: Returns the count of comments for all tips
- *     responses:
- *       200:
- *         description: Returns the count of comments for all tips
- *         content:
- *           application/json:
- *             schema:
- *              type: array
- *              items:
- *                type: object
- *                properties:
- *                  tipId:
- *                    type: string
- *                  count:
- *                    type: integer
- *
- */
-router.get('/count/tips/', async (req, res) => {
-  res.send(await CommentLogic.fetchCommentCountForTips());
-});
-/**
- * @swagger
- * /comment/count/author/{author}:
- *   get:
- *     tags:
- *       - comment
- *     summary: Returns the count of comments for a single user
- *     parameters:
- *       - in: path
- *         name: author
- *         required: true
- *         schema:
- *           type: string
- *     responses:
- *       200:
- *         description: Returns the count of comments for a single user
- *         content:
- *           application/json:
- *             schema:
- *              type: object
- *              properties:
- *                author:
- *                  type: string
- *                count:
- *                  type: integer
- */
-router.get('/count/author/:author', async (req, res) => {
-  res.send({
-    count: await CommentLogic.fetchCommentCountForAddress(req.params.author),
-    author: req.params.author,
-  });
-});
-
 // Restricted api routes
 /**
  * @swagger

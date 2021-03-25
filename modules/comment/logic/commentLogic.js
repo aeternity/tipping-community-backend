@@ -70,6 +70,18 @@ const CommentLogic = {
     }).then(comments => comments.map(comment => comment.toJSON()));
   },
 
+  async updateItem(req, res) {
+    const { text, author, hidden } = req.body;
+    if (!author) return res.status(400).send({ err: 'Author required' });
+    if (!text && !hidden) return res.status(400).send({ err: 'Missing at least one updatable field' });
+    await Comment.update({
+      ...text && { text },
+      ...hidden && { hidden },
+    }, { where: { id: req.params.id }, raw: true });
+    const result = await Comment.findOne({ where: { id: req.params.id }, raw: true });
+    return result ? res.send(result) : res.sendStatus(404);
+  },
+
   async fetchCommentCountForAddress(address) {
     return Comment.count({ where: { author: address } });
   },

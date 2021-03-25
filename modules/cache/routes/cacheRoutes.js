@@ -15,25 +15,6 @@ const wordbazaarMiddleware = (req, res, next) => {
 
 /**
  * @swagger
- * /cache/stats:
- *   get:
- *     tags:
- *       - cache
- *     summary: Returns aggregated stats for superhero
- *     responses:
- *       200:
- *         description: Returns aggregated stats for superhero
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- */
-router.get('/stats', async (req, res) => {
-  res.send(await CacheLogic.fetchStats());
-});
-
-/**
- * @swagger
  * /cache/chainNames:
  *   get:
  *     tags:

@@ -197,14 +197,14 @@ CREATE TRIGGER refresh_senderstats_aggregation
     AFTER INSERT OR UPDATE OR DELETE OR TRUNCATE
     ON "Tips"
     FOR EACH STATEMENT
-EXECUTE PROCEDURE refresh_stats_aggregation();`, { transaction });
+EXECUTE PROCEDURE refresh_senderstats_aggregation();`, { transaction });
 
       await queryInterface.sequelize.query(`
 CREATE TRIGGER refresh_senderstats_aggregation
     AFTER INSERT OR UPDATE OR DELETE OR TRUNCATE
     ON "Retips"
     FOR EACH STATEMENT
-EXECUTE PROCEDURE refresh_stats_aggregation();`, { transaction });
+EXECUTE PROCEDURE refresh_senderstats_aggregation();`, { transaction });
 
       await transaction.commit();
       return this.execute(queryInterface, Sequelize, migrationCommands);

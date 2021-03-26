@@ -116,12 +116,22 @@ module.exports = {
     up: async function(queryInterface, Sequelize)
     {
       await this.execute(queryInterface, Sequelize, migrationCommands);
-      return queryInterface.sequelize.query('CREATE FUNCTION unclaimed(numeric, text, varchar) RETURNS boolean AS \'SELECT "claimGen" < $1 FROM "Claims" AS "Claim" WHERE "Claim"."url" = $2 AND "Claim"."contractId" = $3\' LANGUAGE SQL STABLE;');
+
+      const transaction = await queryInterface.sequelize.transaction();
+      await queryInterface.sequelize.query('CREATE FUNCTION unclaimed(numeric, text, varchar) RETURNS boolean AS \'SELECT "claimGen" < $1 FROM "Claims" AS "Claim" WHERE "Claim"."url" = $2 AND "Claim"."contractId" = $3\' LANGUAGE SQL STABLE;', { transaction });
+      await queryInterface.sequelize.query('CREATE FUNCTION unclaimed_amount(numeric, text, varchar, numeric) RETURNS numeric AS \'SELECT CASE WHEN unclaimed($1, $2, $3) THEN COALESCE($4, 0) ELSE 0 END\' LANGUAGE SQL STABLE;', { transaction });
+      await queryInterface.sequelize.query('CREATE FUNCTION claimed_amount(numeric, text, varchar, numeric) RETURNS numeric AS \'SELECT CASE WHEN unclaimed($1, $2, $3) THEN 0 ELSE COALESCE($4, 0) END\' LANGUAGE SQL STABLE;', { transaction });
+      return transaction.commit();
     },
     down: async function(queryInterface, Sequelize)
     {
-      await queryInterface.sequelize.query('DROP FUNCTION unclaimed(numeric, text, varchar);');
-      return this.execute(queryInterface, Sequelize, rollbackCommands, );
+      const transaction = await queryInterface.sequelize.transaction();
+      await queryInterface.sequelize.query('DROP FUNCTION claimed_amount(numeric, text, varchar, numeric);', { transaction });
+      await queryInterface.sequelize.query('DROP FUNCTION unclaimed_amount(numeric, text, varchar, numeric);', { transaction });
+      await queryInterface.sequelize.query('DROP FUNCTION unclaimed(numeric, text, varchar);', { transaction });
+      await transaction.commit();
+
+      return this.execute(queryInterface, Sequelize, rollbackCommands);
     },
     info: info
 };

@@ -46,6 +46,7 @@ class MessageBroker {
       message: MESSAGES.EVENTS.EVENTS.TIP_RECEIVED,
     }, [
       { queueName: MESSAGE_QUEUES.CACHE, message: MESSAGES.CACHE.COMMANDS.RENEW_TIPS },
+      { queueName: MESSAGE_QUEUES.TIPS, message: MESSAGES.TIPS.COMMANDS.UPDATE_DB },
     ]);
 
     // S: TIP CLAIMED

@@ -9,7 +9,7 @@ const {
 const NotificationLogic = require('../../notification/logic/notificationLogic');
 const queueLogic = require('../../queue/logic/queueLogic');
 const {
-  COUNT_COMMENTS, AGGREGATION_VIEW, TOTAL_AMOUNT_FOR_ORDER, SCORE, UNCLAIMED
+  COUNT_COMMENTS, AGGREGATION_VIEW, TOTAL_AMOUNT_FOR_ORDER, SCORE, URL_STATS_VIEW
 } = require('../utils/tipAggregation');
 const { FILTER_BLACKLIST, FILTER_SIMILARITY_SUM } = require('../utils/tipFilter');
 const { MESSAGES, MESSAGE_QUEUES } = require('../../queue/constants/queue');
@@ -49,7 +49,7 @@ const TipLogic = {
   async fetchTips({
     page, blacklist, address, contractVersion, search, language, ordering,
   }) {
-    const attributes = Object.keys(Tip.rawAttributes).concat([COUNT_COMMENTS, AGGREGATION_VIEW, TOTAL_AMOUNT_FOR_ORDER, SCORE]);
+    const attributes = Object.keys(Tip.rawAttributes).concat([COUNT_COMMENTS, AGGREGATION_VIEW, URL_STATS_VIEW, TOTAL_AMOUNT_FOR_ORDER, SCORE]);
     const whereArguments = [];
     let order = sequelize.literal(`${TipLogic.orderByColumn(ordering)} DESC`);
 
@@ -95,7 +95,7 @@ const TipLogic = {
   },
 
   async fetchTip(id) {
-    const attributes = Object.keys(Tip.rawAttributes).concat([COUNT_COMMENTS, AGGREGATION_VIEW, TOTAL_AMOUNT_FOR_ORDER, SCORE]);
+    const attributes = Object.keys(Tip.rawAttributes).concat([COUNT_COMMENTS, AGGREGATION_VIEW, URL_STATS_VIEW, TOTAL_AMOUNT_FOR_ORDER, SCORE]);
 
     return Tip.findOne({
       attributes,

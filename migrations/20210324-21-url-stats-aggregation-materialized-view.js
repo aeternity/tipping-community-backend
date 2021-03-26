@@ -58,11 +58,14 @@ module.exports = {
       await queryInterface.sequelize.query(`
 CREATE MATERIALIZED VIEW UrlStats AS
 SELECT "Tip"."url",
+
        (SELECT COUNT("Tips"."id") FROM "Tips" WHERE "Tips"."url" = "Tip"."url") AS tipsLength,
+
        (SELECT COUNT("Retips"."id")
         FROM "Tips"
                  LEFT OUTER JOIN "Retips" ON "Tips"."id" = "Retips"."tipId"
         WHERE "Tips"."url" = "Tip"."url")                                       AS retipsLength,
+
        ((SELECT COUNT("Retips"."id")
          FROM "Tips"
                   LEFT OUTER JOIN "Retips" ON "Tips"."id" = "Retips"."tipId"
@@ -70,95 +73,99 @@ SELECT "Tip"."url",
         (SELECT COUNT("Tips"."id")
          FROM "Tips"
          WHERE "Tips"."url" = "Tip"."url"))                                     AS totalTipsLength,
-       (SELECT (COALESCE((SELECT (SUM(COALESCE("Tips"."amount", 0))) +
-                                 SUM((COALESCE("Retips"."amount", 0)))
-                          FROM "Tips"
-                                   LEFT OUTER JOIN "Retips" ON "Tips"."id" = "Retips"."tipId"
-                          WHERE "Tips"."url" = "Tip"."url"),
-                         0))::VARCHAR)                                          AS totalAmount,
-       (SELECT (COALESCE((SELECT (SUM(CASE
-                                          WHEN unclaimed("Tips"."claimGen", "Tips"."url", "Tips"."contractId")
-                                              THEN COALESCE("Tips"."amount", 0)
-                                          ELSE 0 END)) +
-                                 SUM((CASE
-                                          WHEN unclaimed("Retips"."claimGen", "Tips"."url", "Tips"."contractId")
-                                              THEN COALESCE("Retips"."amount", 0)
-                                          ELSE 0 END))
-                          FROM "Tips"
-                                   LEFT OUTER JOIN "Retips" ON "Tips"."id" = "Retips"."tipId"
-                          WHERE "Tips"."url" = "Tip"."url"),
-                         0))::VARCHAR)                                          AS totalUnclaimedAmount,
-       (SELECT (COALESCE((SELECT (SUM(CASE
-                                          WHEN unclaimed("Tips"."claimGen", "Tips"."url", "Tips"."contractId")
-                                              THEN 0
-                                          ELSE COALESCE("Tips"."amount", 0) END)) +
-                                 SUM((CASE
-                                          WHEN unclaimed("Retips"."claimGen", "Tips"."url", "Tips"."contractId")
-                                              THEN 0
-                                          ELSE COALESCE("Retips"."amount", 0) END))
-                          FROM "Tips"
-                                   LEFT OUTER JOIN "Retips" ON "Tips"."id" = "Retips"."tipId"
-                          WHERE "Tips"."url" = "Tip"."url"),
-                         0))::VARCHAR)                                          AS totalClaimedAmount,
-       (ARRAY(SELECT JSON_BUILD_OBJECT('token', COALESCE("Retips"."token", "Tips"."token"),
-                                       'amount', ((SUM(COALESCE("Retips"."tokenAmount", 0))) +
-                                                  (SUM(COALESCE("Tips"."tokenAmount", 0))))::VARCHAR)
-              FROM "Tips"
-                       LEFT OUTER JOIN "Retips" ON "Tips"."id" = "Retips"."tipId"
-              WHERE "Tips"."url" = "Tip"."url"
 
-              GROUP BY COALESCE("Retips"."token", "Tips"."token")
-              HAVING COALESCE("Retips"."token", "Tips"."token") IS NOT NULL
-                 AND ((SUM(COALESCE("Retips"."tokenAmount", 0))) +
-                      (SUM(COALESCE("Tips"."tokenAmount", 0)))) >
-                     0))                                                        AS totalTokenAmount,
-       (ARRAY(SELECT JSON_BUILD_OBJECT('token', COALESCE("Retips"."token", "Tips"."token"),
-                                       'amount', ((SUM(CASE
-                                                           WHEN unclaimed("Retips"."claimGen", "Tips"."url", "Tips"."contractId")
-                                                               THEN COALESCE("Retips"."tokenAmount", 0)
-                                                           ELSE 0 END)) +
-                                                  (SUM(CASE
-                                                           WHEN unclaimed("Tips"."claimGen", "Tips"."url", "Tips"."contractId")
-                                                               THEN COALESCE("Tips"."tokenAmount", 0)
-                                                           ELSE 0 END)))::VARCHAR)
+       (SELECT COALESCE(SUM(amounts.amount), 0)::VARCHAR
+        FROM (SELECT SUM(COALESCE("Retips"."amount", 0)) AS amount
               FROM "Tips"
                        LEFT OUTER JOIN "Retips" ON "Tips"."id" = "Retips"."tipId"
               WHERE "Tips"."url" = "Tip"."url"
+              UNION
+              SELECT SUM(COALESCE("Tips"."amount", 0)) AS amount
+              FROM "Tips"
+              WHERE "Tips"."url" = "Tip"."url") AS amounts
+        WHERE amounts.amount > 0)           AS totalAmount,
 
-              GROUP BY COALESCE("Retips"."token", "Tips"."token")
-              HAVING COALESCE("Retips"."token", "Tips"."token") IS NOT NULL
-                 AND ((SUM(CASE
-                               WHEN unclaimed("Retips"."claimGen", "Tips"."url", "Tips"."contractId")
-                                   THEN COALESCE("Retips"."tokenAmount", 0)
-                               ELSE 0 END)) +
-                      (SUM(CASE
-                               WHEN unclaimed("Tips"."claimGen", "Tips"."url", "Tips"."contractId")
-                                   THEN COALESCE("Tips"."tokenAmount", 0)
-                               ELSE 0 END))) >
-                     0))                                                        AS totalTokenUnclaimedAmount,
-       (ARRAY(SELECT JSON_BUILD_OBJECT('token', COALESCE("Retips"."token", "Tips"."token"),
-                                       'amount', ((SUM(CASE
-                                                           WHEN unclaimed("Retips"."claimGen", "Tips"."url", "Tips"."contractId")
-                                                               THEN 0
-                                                           ELSE COALESCE("Retips"."tokenAmount", 0) END)) +
-                                                  (SUM(CASE
-                                                           WHEN unclaimed("Tips"."claimGen", "Tips"."url", "Tips"."contractId")
-                                                               THEN 0
-                                                           ELSE COALESCE("Tips"."tokenAmount", 0) END)))::VARCHAR)
+       (SELECT COALESCE(SUM(amounts.amount), 0)::VARCHAR
+        FROM (SELECT SUM(unclaimed_amount("Retips"."claimGen", "Tips"."url", "Tips"."contractId", "Retips"."amount")) AS amount
               FROM "Tips"
                        LEFT OUTER JOIN "Retips" ON "Tips"."id" = "Retips"."tipId"
               WHERE "Tips"."url" = "Tip"."url"
-              GROUP BY COALESCE("Retips"."token", "Tips"."token")
-              HAVING COALESCE("Retips"."token", "Tips"."token") IS NOT NULL
-                 AND ((SUM(CASE
-                               WHEN unclaimed("Retips"."claimGen", "Tips"."url", "Tips"."contractId")
-                                   THEN 0
-                               ELSE COALESCE("Retips"."tokenAmount", 0) END)) +
-                      (SUM(CASE
-                               WHEN unclaimed("Tips"."claimGen", "Tips"."url", "Tips"."contractId")
-                                   THEN 0
-                               ELSE COALESCE("Tips"."tokenAmount", 0) END))) >
-                     0))                                                        AS totalTokenClaimedAmount,
+              UNION
+              SELECT SUM(unclaimed_amount("Tips"."claimGen", "Tips"."url", "Tips"."contractId", "Tips"."amount")) AS amount
+              FROM "Tips"
+              WHERE "Tips"."url" = "Tip"."url") AS amounts
+        WHERE amounts.amount > 0)           AS totalUnclaimedAmount,
+
+       (SELECT COALESCE(SUM(amounts.amount), 0)::VARCHAR
+        FROM (SELECT SUM(claimed_amount("Retips"."claimGen", "Tips"."url", "Tips"."contractId", "Retips"."amount")) AS amount
+              FROM "Tips"
+                       LEFT OUTER JOIN "Retips" ON "Tips"."id" = "Retips"."tipId"
+              WHERE "Tips"."url" = "Tip"."url"
+              UNION
+              SELECT SUM(claimed_amount("Tips"."claimGen", "Tips"."url", "Tips"."contractId", "Tips"."amount")) AS amount
+              FROM "Tips"
+              WHERE "Tips"."url" = "Tip"."url") AS amounts
+        WHERE amounts.amount > 0)           AS totalClaimedAmount,
+
+       (ARRAY(SELECT JSON_BUILD_OBJECT('token', tokenAmounts.token,
+                                       'amount', SUM(tokenAmounts.amount)::VARCHAR)
+              FROM (SELECT "Retips"."token", SUM(COALESCE("Retips"."tokenAmount", 0)) AS amount
+                    FROM "Tips"
+                             LEFT OUTER JOIN "Retips" ON "Tips"."id" = "Retips"."tipId"
+                    WHERE "Tips"."url" = "Tip"."url"
+                      AND "Retips"."token" IS NOT NULL
+                    GROUP BY "Retips"."token"
+                    UNION
+                    SELECT "Tips"."token", SUM(COALESCE("Tips"."tokenAmount", 0)) AS amount
+                    FROM "Tips"
+                    WHERE "Tips"."url" = "Tip"."url"
+                      AND "Tips"."token" IS NOT NULL
+                    GROUP BY "Tips"."token") AS tokenAmounts
+              WHERE tokenAmounts.amount > 0
+              GROUP BY tokenAmounts.token))                                     AS totalTokenAmount,
+
+       (ARRAY(SELECT JSON_BUILD_OBJECT('token', tokenAmounts.token,
+                                       'amount', SUM(tokenAmounts.amount)::VARCHAR)
+              FROM (SELECT "Retips"."token",
+                           SUM(unclaimed_amount("Retips"."claimGen", "Tips"."url", "Tips"."contractId",
+                                                "Retips"."tokenAmount")) AS amount
+                    FROM "Tips"
+                             LEFT OUTER JOIN "Retips" ON "Tips"."id" = "Retips"."tipId"
+                    WHERE "Tips"."url" = "Tip"."url"
+                      AND "Retips"."token" IS NOT NULL
+                    GROUP BY "Retips"."token"
+                    UNION
+                    SELECT "Tips"."token",
+                           SUM(unclaimed_amount("Tips"."claimGen", "Tips"."url", "Tips"."contractId",
+                                                "Tips"."tokenAmount")) AS amount
+                    FROM "Tips"
+                    WHERE "Tips"."url" = "Tip"."url"
+                      AND "Tips"."token" IS NOT NULL
+                    GROUP BY "Tips"."token") AS tokenAmounts
+              WHERE tokenAmounts.amount > 0
+              GROUP BY tokenAmounts.token))                                     AS totalTokenUnclaimedAmount,
+
+       (ARRAY(SELECT JSON_BUILD_OBJECT('token', tokenAmounts.token,
+                                       'amount', SUM(tokenAmounts.amount)::VARCHAR)
+              FROM (SELECT "Retips"."token",
+                           SUM(claimed_amount("Retips"."claimGen", "Tips"."url", "Tips"."contractId",
+                                              "Retips"."tokenAmount")) AS amount
+                    FROM "Tips"
+                             LEFT OUTER JOIN "Retips" ON "Tips"."id" = "Retips"."tipId"
+                    WHERE "Tips"."url" = "Tip"."url"
+                      AND "Retips"."token" IS NOT NULL
+                    GROUP BY "Retips"."token"
+                    UNION
+                    SELECT "Tips"."token",
+                           SUM(claimed_amount("Tips"."claimGen", "Tips"."url", "Tips"."contractId",
+                                              "Tips"."tokenAmount")) AS amount
+                    FROM "Tips"
+                    WHERE "Tips"."url" = "Tip"."url"
+                      AND "Tips"."token" IS NOT NULL
+                    GROUP BY "Tips"."token") AS tokenAmounts
+              WHERE tokenAmounts.amount > 0
+              GROUP BY tokenAmounts.token))                                     AS totalTokenClaimedAmount,
+
        ARRAY((SELECT "Tips"."sender" FROM "Tips" WHERE "Tips"."url" = "Tip"."url" AND "Tips"."sender" IS NOT NULL)
              UNION
              DISTINCT
@@ -167,6 +174,7 @@ SELECT "Tip"."url",
                        LEFT OUTER JOIN "Retips" ON "Tips"."id" = "Retips"."tipId"
               WHERE "Tips"."url" = "Tip"."url"
                 AND "Retips"."sender" IS NOT NULL))                             AS senders,
+
        (SELECT COUNT(senders)
         FROM ((SELECT "Tips"."sender" FROM "Tips" WHERE "Tips"."url" = "Tip"."url" AND "Tips"."sender" IS NOT NULL)
               UNION
@@ -176,6 +184,7 @@ SELECT "Tip"."url",
                         LEFT OUTER JOIN "Retips" ON "Tips"."id" = "Retips"."tipId"
                WHERE "Tips"."url" = "Tip"."url"
                  AND "Retips"."sender" IS NOT NULL)) AS senders)                AS sendersLength
+
 FROM "Tips" as "Tip"
 GROUP BY "Tip"."url";
               `, { transaction });

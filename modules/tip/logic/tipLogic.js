@@ -9,25 +9,25 @@ const { MESSAGES, MESSAGE_QUEUES } = require('../../queue/constants/queue');
 
 const lock = new AsyncLock();
 
-class TipLogic {
-  constructor() {
+const TipLogic = {
+  init() {
     queueLogic.subscribeToMessage(MESSAGE_QUEUES.TIPS, MESSAGES.TIPS.COMMANDS.UPDATE_DB, async message => {
-      await this.updateTipsDB();
+      await TipLogic.updateTipsDB();
       await queueLogic.deleteMessage(MESSAGE_QUEUES.TIPS, message.id);
     });
     queueLogic.subscribeToMessage(MESSAGE_QUEUES.RETIPS, MESSAGES.RETIPS.COMMANDS.UPDATE_DB, async message => {
-      await this.updateRetipsDB();
+      await TipLogic.updateRetipsDB();
       await queueLogic.deleteMessage(MESSAGE_QUEUES.RETIPS, message.id);
     });
-  }
+  },
 
   async fetchAllLocalTips() {
     return Tip.findAll({ raw: true });
-  }
+  },
 
   async fetchAllLocalRetips() {
     return Retip.findAll({ raw: true });
-  }
+  },
 
   async updateTipsDB() {
     await lock.acquire('TipLogic.updateTipsDB', async () => {
@@ -68,12 +68,12 @@ class TipLogic {
       }
       await queueLogic.sendMessage(MESSAGE_QUEUES.TIPS, MESSAGES.TIPS.EVENTS.UPDATE_DB_FINISHED);
     });
-  }
+  },
 
   async updateRetipsDB() {
     await lock.acquire('RetipLogic.updateRetipsDB', async () => {
       const remoteTips = await CacheLogic.getTips();
-      const localRetips = await this.fetchAllLocalRetips();
+      const localRetips = await TipLogic.fetchAllLocalRetips();
       const remoteRetips = [...(remoteTips.map(tip => tip.retips.map(retip => ({
         ...retip,
         parentTip: tip,
@@ -100,8 +100,7 @@ class TipLogic {
           })),
       );
     });
-  }
-}
+  },
+};
 
-const tipLogic = new TipLogic();
-module.exports = tipLogic;
+module.exports = TipLogic;

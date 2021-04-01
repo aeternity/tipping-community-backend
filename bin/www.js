@@ -11,6 +11,9 @@ const queueLogic = require('../modules/queue/logic/queueLogic');
 const cacheLogic = require('../modules/cache/logic/cacheLogic');
 const chainListenerLogic = require('../modules/aeternity/logic/chainListenerLogic');
 const ipfsLogic = require('../modules/backup/logic/ipfsLogic');
+const linkPreviewLogic = require('../modules/linkPreview/logic/linkPreviewLogic');
+const tipLogic = require('../modules/tip/logic/tipLogic');
+const profileLogic = require('../modules/profile/logic/profileLogic');
 
 process
   .on('unhandledRejection', reason => {
@@ -63,8 +66,11 @@ const startup = async () => {
   await aeternity.init();
   await cache.init(aeternity);
   await cacheLogic.init();
-  await chainListenerLogic.startInvalidator();
+  chainListenerLogic.startInvalidator();
+  linkPreviewLogic.init();
   ipfsLogic.init();
+  tipLogic.init();
+  profileLogic.init();
 
   server.listen(port);
   server.on('error', onError);

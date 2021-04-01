@@ -9,14 +9,13 @@ const { IPFS_TYPES } = require('../../backup/constants/ipfsTypes');
 const queueLogic = require('../../queue/logic/queueLogic');
 const { MESSAGE_QUEUES, MESSAGES } = require('../../queue/constants/queue');
 
-class ProfileLogic {
-  constructor() {
-    queueLogic.subscribeToMessage(MESSAGE_QUEUES.PROFILE, MESSAGES.PROFILE.COMMANDS.UPDATE_PREFERRED_CHAIN_NAMES,
-      async message => {
-        await this.verifyPreferredChainNames();
-        await queueLogic.deleteMessage(MESSAGE_QUEUES.PROFILE, message.id);
-      });
-  }
+const ProfileLogic = {
+  init() {
+    queueLogic.subscribeToMessage(MESSAGE_QUEUES.PROFILE, MESSAGES.PROFILE.COMMANDS.UPDATE_PREFERRED_CHAIN_NAMES, async message => {
+      await ProfileLogic.verifyPreferredChainNames();
+      await queueLogic.deleteMessage(MESSAGE_QUEUES.PROFILE, message.id);
+    });
+  },
 
   async upsertProfile(req, res) {
     try {
@@ -66,12 +65,12 @@ class ProfileLogic {
       if (coverImage && coverImage[0].filename !== null) {
         await BackupLogic.backupImageToIPFS(coverImage[0].filename, author, IPFS_TYPES.COVER_IMAGE);
       }
-      return res.send(this.updateProfileForExternalAnswer(await this.getSingleItem(author)));
+      return res.send(ProfileLogic.updateProfileForExternalAnswer(await ProfileLogic.getSingleItem(author)));
     } catch (e) {
       logger.error(e);
       return res.status(500).send(e.message);
     }
-  }
+  },
 
   // TODO run this via message queue when chain names are updated
   async verifyPreferredChainNames() {
@@ -84,11 +83,11 @@ class ProfileLogic {
         await Profile.update({ preferredChainName: null }, { where: { author: profile.author } });
       }
     });
-  }
+  },
 
   async getSingleItem(author) {
     return Profile.findOne({ where: { author }, raw: true });
-  }
+  },
 
   updateProfileForExternalAnswer(profile) {
     return {
@@ -97,11 +96,11 @@ class ProfileLogic {
       coverImage: profile.coverImage ? `/images/${profile.coverImage}` : false,
       referrer: !!profile.referrer,
     };
-  }
+  },
 
   async getAllProfiles() {
     return Profile.findAll({ raw: true });
-  }
+  },
 
   // LEGACY
   async deleteImage(req, res) {
@@ -114,7 +113,7 @@ class ProfileLogic {
       imageChallenge: null,
     }, { where: { author: req.params.author }, raw: true });
     return res.sendStatus(200);
-  }
+  },
 
   async getImage(req, res) {
     const result = await Profile.findOne({ where: { author: req.params.author }, raw: true });
@@ -125,7 +124,7 @@ class ProfileLogic {
       logger.error(e.message);
       return res.sendStatus(500);
     }
-  }
+  },
 
   async verifyRequest(req, res, next) {
     // Get author
@@ -140,8 +139,7 @@ class ProfileLogic {
     if (queryResult) addresses = queryResult.pointers.filter(({ key }) => key === 'account_pubkey').map(({ id }) => id);
     // check if chain name points to author
     return addresses.includes(author) ? next() : res.status(400).send({ err: 'Chainname does not point to author' });
-  }
-}
+  },
+};
 
-const profileLogic = new ProfileLogic();
-module.exports = profileLogic;
+module.exports = ProfileLogic;

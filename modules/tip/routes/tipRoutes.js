@@ -109,7 +109,7 @@ router.get('/single', async (req, res) => {
  * /tips/topics:
  *   get:
  *     tags:
- *       - cache
+ *       - tips
  *     summary: Returns an scored list of all tip topics
  *     responses:
  *       200:
@@ -131,6 +131,22 @@ router.get('/single', async (req, res) => {
 router.get('/topics', async (req, res) => {
   const tips = await TipLogic.fetchAllLocalTipsWithAggregation();
   res.send(getTipTopics(tips));
+});
+
+/**
+ * @swagger
+ * /tips/await:
+ *   get:
+ *     tags:
+ *       - tips
+ *     summary: awaits tips/retips updated event
+ *     responses:
+ *       200:
+ *         description: Returns ok
+ */
+router.get('/await', async (req, res) => {
+  await TipLogic.awaitTipsUpdated();
+  res.send({ updated: true });
 });
 
 module.exports = router;

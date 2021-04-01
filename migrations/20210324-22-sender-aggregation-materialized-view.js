@@ -168,6 +168,11 @@ FROM "Tips" as "Tip"
 GROUP BY "Tip"."sender";
               `, { transaction });
 
+
+      await queryInterface.sequelize.query(`
+CREATE UNIQUE INDEX SenderStats_sender_idx
+    ON SenderStats (sender);`, { transaction });
+
       await queryInterface.sequelize.query(`
 CREATE FUNCTION refresh_senderstats_aggregation()
     RETURNS TRIGGER

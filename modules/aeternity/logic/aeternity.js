@@ -199,7 +199,8 @@ const aeternity = {
   decodeTransactionEventsFromMdw(data) {
     const decodedEvents = aeternity.decodeTransactionEvents(data.tx.log);
     return decodedEvents.map(decodedEvent => ({
-      event: decodedEvent.name,
+      event: decodedEvent.name, // Deprecated property TODO remove
+      name: decodedEvent.name,
       caller: data.tx.caller_id,
       nonce: data.tx.nonce,
       height: data.block_height,

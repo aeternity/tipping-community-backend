@@ -60,6 +60,11 @@ const MESSAGES = {
       CHECK_PERSIST_CLAIM: 'BLOCKCHAIN.EVENTS.CHECK_PERSIST_CLAIM',
     },
   },
+  EVENTS: {
+    EVENTS: {
+      NEW_EVENT: 'BLOCKCHAIN.EVENTS.NEW_EVENT',
+    },
+  },
 };
 
 if (process.env.NODE_ENV === 'test') {

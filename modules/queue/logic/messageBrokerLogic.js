@@ -70,7 +70,7 @@ class MessageBroker {
   setupForwarding(source, targets) {
     // SETUP LOGIC
     queueLogic.subscribeToMessage(source.queueName, source.message, async message => {
-      await Promise.all(targets.map(({ queueName, message: newMessage }) => queueLogic.sendMessage(queueName, newMessage)));
+      await Promise.all(targets.map(({ queueName, message: newMessage }) => queueLogic.sendMessage(queueName, newMessage, message.payload)));
       await queueLogic.deleteMessage(source.queueName, message.id);
     });
   }

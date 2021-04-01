@@ -190,6 +190,10 @@ GROUP BY "Tip"."url";
               `, { transaction });
 
       await queryInterface.sequelize.query(`
+CREATE UNIQUE INDEX UrlStats_url_idx
+    ON UrlStats (url);`, { transaction });
+
+      await queryInterface.sequelize.query(`
 CREATE FUNCTION refresh_urlstats_aggregation()
     RETURNS TRIGGER
     LANGUAGE plpgsql

@@ -18,6 +18,7 @@ const { topicsRegex } = require('../../aeternity/utils/tipTopicUtil');
 const lock = new AsyncLock();
 
 const PAGE_LIMIT = 30;
+let awaitTipSeq = 0;
 
 const TipLogic = {
   init() {
@@ -33,6 +34,11 @@ const TipLogic = {
       await TipLogic.updateRetipsDB();
       await queueLogic.deleteMessage(MESSAGE_QUEUES.RETIPS, message.id);
     });
+
+    queueLogic.subscribeToMessage(MESSAGE_QUEUES.RETIPS, MESSAGES.RETIPS.EVENTS.UPDATE_DB_FINISHED, () => {
+      awaitTipSeq = awaitTipSeq + 1
+    });
+
   },
 
   orderByColumn(ordering) {
@@ -102,11 +108,11 @@ const TipLogic = {
       include: [Retip, LinkPreview, Claim, ChainName],
       where: { id },
     });
-  }
+  },
 
   async fetchAllLocalTips() {
     return Tip.findAll({ raw: true });
-  }
+  },
 
   async fetchAllLocalTipsWithAggregation() {
     const attributes = Object.keys(Tip.rawAttributes).concat([AGGREGATION_VIEW, SCORE]);
@@ -123,7 +129,24 @@ const TipLogic = {
       where: { [Op.not]: sequelize.fn('unclaimed', sequelize.col('Tip.claimGen'), sequelize.col('Tip.url'), sequelize.col('Tip.contractId')) },
       raw: true,
     }).then(res => res.map(({ url }) => url));
-  }
+  },
+
+  async awaitTipsUpdated() {
+    const currentAwaitTipSeq = awaitTipSeq.valueOf();
+
+    return new Promise(function(resolve, reject) {
+      setTimeout(function () {
+        reject();
+      }, 30000);
+
+      function awaitLoop() {
+        if (awaitTipSeq > currentAwaitTipSeq) return resolve();
+        setTimeout(awaitLoop, 100);
+      }
+
+      setTimeout(awaitLoop, 0);
+    });
+  },
 
   async updateClaimsDB() {
     await lock.acquire('TipLogic.updateClaimsDB', async () => {
@@ -209,7 +232,9 @@ const TipLogic = {
       ));
 
       const retipsToInsert = newReTipIds.map(id => remoteRetips.find(({ id: retipId }) => id === retipId));
+
       await Retip.bulkCreate(retipsToInsert);
+      await queueLogic.sendMessage(MESSAGE_QUEUES.RETIPS, MESSAGES.RETIPS.EVENTS.UPDATE_DB_FINISHED);
     });
   },
 };

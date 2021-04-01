@@ -154,8 +154,8 @@ GROUP BY "Tip"."id";
 `, { transaction });
 
       await queryInterface.sequelize.query(`
-CREATE UNIQUE INDEX id_idx
-    ON tipsaggregation (id);`, { transaction });
+CREATE UNIQUE INDEX TipsAggregation_id_idx
+    ON TipsAggregation (id);`, { transaction });
 
       await queryInterface.sequelize.query(`
 CREATE FUNCTION refresh_tips_aggregation()

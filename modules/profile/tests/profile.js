@@ -11,6 +11,9 @@ const server = require('../../../server');
 const { IPFS_TYPES } = require('../../backup/constants/ipfsTypes');
 const ae = require('../../aeternity/logic/aeternity');
 const ipfs = require('../../backup/logic/ipfsLogic');
+const profileLogic = require('../logic/profileLogic');
+const queueLogic = require('../../queue/logic/queueLogic');
+const { MESSAGES, MESSAGE_QUEUES } = require('../../queue/constants/queue');
 const {
   publicKey,
   performSignedJSONRequest,
@@ -29,6 +32,7 @@ describe('Profile', () => {
     referrer: 'ak_aNTSYaqHmuSfKgBPjBm95eJz82JXKznCZVdchKKKh7jtDAJcW',
     location: 'awesome, location, country',
   };
+  const testImagePath = './modules/profile/tests/test.png';
 
   before(async () => { // Before all tests we empty the database once
     await Comment.destroy({
@@ -162,7 +166,7 @@ describe('Profile', () => {
     });
 
     it('it should allow an image upload on existing profile', done => {
-      performSignedMultipartFormRequest(server, 'post', `/profile/${publicKey}`, 'image', './test/test.png')
+      performSignedMultipartFormRequest(server, 'post', `/profile/${publicKey}`, 'image', testImagePath)
         .then(({ res, signature, challenge }) => {
           res.should.have.status(200);
           res.body.should.be.a('object');
@@ -181,7 +185,7 @@ describe('Profile', () => {
     });
 
     it('it should not overwrite an profile image if a cover image is uploaded', done => {
-      performSignedMultipartFormRequest(server, 'post', `/profile/${publicKey}`, 'coverImage', './test/test.png')
+      performSignedMultipartFormRequest(server, 'post', `/profile/${publicKey}`, 'coverImage', testImagePath)
         .then(({ res, signature, challenge }) => {
           res.should.have.status(200);
           res.body.should.be.a('object');
@@ -203,7 +207,7 @@ describe('Profile', () => {
 
     it('it should allow an image upload on new profile', done => {
       const { publicKey: localPublicKey, secretKey } = generateKeyPair();
-      performSignedMultipartFormRequest(server, 'post', `/profile/${localPublicKey}`, 'image', './test/test.png', secretKey)
+      performSignedMultipartFormRequest(server, 'post', `/profile/${localPublicKey}`, 'image', testImagePath, secretKey)
         .then(({ res, signature, challenge }) => {
           res.should.have.status(200);
           res.body.should.be.a('object');
@@ -273,7 +277,7 @@ describe('Profile', () => {
           res.should.have.header('content-type');
           res.header['content-type'].should.be.equal('image/png');
           res.should.have.header('content-length');
-          const size = fs.statSync('test/test.png').size.toString();
+          const size = fs.statSync(testImagePath).size.toString();
           res.header['content-length'].should.be.equal(size);
 
           // verify checksum
@@ -283,7 +287,7 @@ describe('Profile', () => {
     });
 
     it('it should allow overwriting of the profile image', done => {
-      performSignedMultipartFormRequest(server, 'post', `/profile/${publicKey}`, 'image', './test/test.png')
+      performSignedMultipartFormRequest(server, 'post', `/profile/${publicKey}`, 'image', testImagePath)
         .then(({ res }) => {
           res.should.have.status(200);
           done();
@@ -379,7 +383,7 @@ describe('Profile', () => {
     });
 
     it('it should allow an cover image upload on existing profile', done => {
-      performSignedMultipartFormRequest(server, 'post', `/profile/${publicKey}`, 'coverImage', './test/test.png')
+      performSignedMultipartFormRequest(server, 'post', `/profile/${publicKey}`, 'coverImage', testImagePath)
         .then(({ res, signature, challenge }) => {
           res.should.have.status(200);
           res.body.should.be.a('object');
@@ -398,7 +402,7 @@ describe('Profile', () => {
     });
 
     it('it should not overwrite an coverImage if a profile image is uploaded', done => {
-      performSignedMultipartFormRequest(server, 'post', `/profile/${publicKey}`, 'image', './test/test.png')
+      performSignedMultipartFormRequest(server, 'post', `/profile/${publicKey}`, 'image', testImagePath)
         .then(({ res, signature, challenge }) => {
           res.should.have.status(200);
           res.body.should.be.a('object');
@@ -420,7 +424,7 @@ describe('Profile', () => {
 
     it('it should allow an cover image upload on new profile', done => {
       const { publicKey: localPublicKey, secretKey } = generateKeyPair();
-      performSignedMultipartFormRequest(server, 'post', `/profile/${localPublicKey}`, 'coverImage', './test/test.png', secretKey)
+      performSignedMultipartFormRequest(server, 'post', `/profile/${localPublicKey}`, 'coverImage', testImagePath, secretKey)
         .then(({ res, signature, challenge }) => {
           res.should.have.status(200);
           res.body.should.be.a('object');
@@ -490,7 +494,7 @@ describe('Profile', () => {
           res.should.have.header('content-type');
           res.header['content-type'].should.be.equal('image/png');
           res.should.have.header('content-length');
-          const size = fs.statSync('test/test.png').size.toString();
+          const size = fs.statSync(testImagePath).size.toString();
           res.header['content-length'].should.be.equal(size);
 
           // verify checksum
@@ -500,7 +504,7 @@ describe('Profile', () => {
     });
 
     it('it should allow overwriting of the cover image', done => {
-      performSignedMultipartFormRequest(server, 'post', `/profile/${publicKey}`, 'coverImage', './test/test.png')
+      performSignedMultipartFormRequest(server, 'post', `/profile/${publicKey}`, 'coverImage', testImagePath)
         .then(({ res }) => {
           res.should.have.status(200);
           done();
@@ -547,7 +551,7 @@ describe('Profile', () => {
     const { publicKey: localPublicKey, secretKey } = generateKeyPair();
 
     it('POST /profile/image/ak_... (upload new image)', done => {
-      performSignedMultipartFormRequest(server, 'post', `/profile/image/${localPublicKey}`, 'image', './test/test.png', secretKey)
+      performSignedMultipartFormRequest(server, 'post', `/profile/image/${localPublicKey}`, 'image', testImagePath, secretKey)
         .then(({ res, signature, challenge }) => {
           res.should.have.status(200);
           res.body.should.be.a('object');
@@ -593,6 +597,19 @@ describe('Profile', () => {
           res.should.have.status(404);
           done();
         });
+    });
+  });
+
+  describe('Internals', () => {
+    it('it should verify the chain names on message', done => {
+      profileLogic.init();
+      const updateMock = sinon.stub(profileLogic, 'verifyPreferredChainNames').callsFake(async () => {});
+      queueLogic.sendMessage(MESSAGE_QUEUES.PROFILE, MESSAGES.PROFILE.COMMANDS.UPDATE_PREFERRED_CHAIN_NAMES);
+      setTimeout(() => {
+        updateMock.callCount.should.eql(1);
+        updateMock.restore();
+        done();
+      }, 100);
     });
   });
 });

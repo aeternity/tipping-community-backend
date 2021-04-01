@@ -25,23 +25,23 @@ const logger = require('../../../utils/logger')(module);
 
 lngDetector.setLanguageType('iso2');
 
-class LinkPreviewLogic {
-  constructor() {
+const LinkPreviewLogic = {
+  init() {
     queueLogic.subscribeToMessage(MESSAGE_QUEUES.LINKPREVIEW, MESSAGES.LINKPREVIEW.COMMANDS.UPDATE_DB,
       async message => {
         await this.updateLinkpreviewDatabase();
         await queueLogic.deleteMessage(MESSAGE_QUEUES.LINKPREVIEW, message.id);
       });
-  }
+  },
 
   async fetchAllLinkPreviews() {
     return LinkPreview.findAll({ raw: true });
-  }
+  },
 
   async fetchAllUrls() {
     return LinkPreview.aggregate('requestUrl', 'DISTINCT', { plain: false })
       .then(results => results.map(preview => preview.DISTINCT));
-  }
+  },
 
   async updateLinkpreviewDatabase() {
     const tips = await CacheLogic.getTips();
@@ -58,7 +58,7 @@ class LinkPreviewLogic {
       // queueLogic.sendMessage(MESSAGE_QUEUES.LINKPREVIEW, MESSAGES.LINKPREVIEW.EVENTS.CREATED_NEW_PREVIEWS);
       await cache.del(['StaticLogic.getStats']);
     }
-  }
+  },
 
   // General Functions
   async generatePreview(url) {
@@ -85,7 +85,7 @@ class LinkPreviewLogic {
       ...data,
       requestUrl: url,
     }, { raw: true });
-  }
+  },
 
   async fetchImage(requestUrl, imageUrl) {
     let newUrl = null;
@@ -140,7 +140,7 @@ class LinkPreviewLogic {
       }
     }
     return newUrl;
-  }
+  },
 
   async createPreviewForUrl(url, crawler) {
     try {
@@ -179,7 +179,7 @@ class LinkPreviewLogic {
         failReason: err.message ? err.message : err,
       };
     }
-  }
+  },
 
   async querySimpleCustomCrawler(url) {
     return (await axios.get(url, {
@@ -187,12 +187,11 @@ class LinkPreviewLogic {
         'Accept-Language': 'en-US',
       },
     })).data;
-  }
+  },
 
   async queryCostlyCustomCrawler(url) {
     return (await DomLoader.getHTMLfromURL(url) || {}).html;
-  }
-}
+  },
+};
 
-const linkPreviewLogic = new LinkPreviewLogic();
-module.exports = linkPreviewLogic;
+module.exports = LinkPreviewLogic;

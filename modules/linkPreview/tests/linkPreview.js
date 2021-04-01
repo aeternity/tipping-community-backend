@@ -48,13 +48,14 @@ describe('LinkPreview', () => {
     });
 
     it('it should call the update function when receiving a mq item', done => {
+      linkPreviewLogic.init();
       const updateMock = sinon.stub(linkPreviewLogic, 'updateLinkpreviewDatabase').callsFake(async () => {});
       queueLogic.sendMessage(MESSAGE_QUEUES.LINKPREVIEW, MESSAGES.LINKPREVIEW.COMMANDS.UPDATE_DB);
       setTimeout(() => {
         updateMock.callCount.should.eql(1);
         updateMock.restore();
         done();
-      }, 500);
+      }, 100);
     });
 
     it('it get an image for aeternity.com', done => {

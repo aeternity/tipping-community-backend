@@ -5,6 +5,8 @@ const sinon = require('sinon');
 const CacheLogic = require('../../cache/logic/cacheLogic');
 const TipLogic = require('../logic/tipLogic');
 const queueLogic = require('../../queue/logic/queueLogic');
+const { MESSAGES } = require('../../queue/constants/queue');
+const { MESSAGE_QUEUES } = require('../../queue/constants/queue');
 const { TIP_TYPES } = require('../constants/tipTypes');
 const { Tip, Retip, Notification } = require('../../../models');
 
@@ -331,6 +333,21 @@ describe('(Re)Tips', () => {
       retip.should.have.property('tipId', fakeData[0].id);
       retip.should.have.property('unclaimed', fakeData[0].retips[0].claim.unclaimed);
       retip.should.have.property('sender', 'ak_retip');
+    });
+  });
+
+  describe('Internals', () => {
+    it('it should verify the chain names on message', done => {
+      TipLogic.init();
+      // remove send sendMessage stub
+      sandbox.restore();
+      const updateMock = sinon.stub(TipLogic, 'updateTipsDB').callsFake(async () => {});
+      queueLogic.sendMessage(MESSAGE_QUEUES.TIPS, MESSAGES.TIPS.COMMANDS.UPDATE_DB);
+      setTimeout(() => {
+        updateMock.callCount.should.eql(1);
+        updateMock.restore();
+        done();
+      }, 100);
     });
   });
 });

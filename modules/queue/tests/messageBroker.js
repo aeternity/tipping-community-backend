@@ -34,6 +34,21 @@ describe('Message Broker', () => {
       queueLogic.sendMessage(MESSAGE_QUEUES.TEST, MESSAGES.TEST.EVENTS.TEST_EVENT);
     });
 
+    it('should be able to forward one message with payload to one queue', done => {
+      messageBroker.setupForwarding({
+        queueName: MESSAGE_QUEUES.TEST,
+        message: MESSAGES.TEST.EVENTS.TEST_EVENT,
+      }, [
+        { queueName: MESSAGE_QUEUES.TEST, message: MESSAGES.TEST.COMMANDS.TEST_COMMAND },
+      ]);
+      queueLogic.subscribeToMessage(MESSAGE_QUEUES.TEST, MESSAGES.TEST.COMMANDS.TEST_COMMAND, message => {
+        message.message.should.equal(MESSAGES.TEST.COMMANDS.TEST_COMMAND);
+        message.payload.should.have.property('test', 'test');
+        done();
+      });
+      queueLogic.sendMessage(MESSAGE_QUEUES.TEST, MESSAGES.TEST.EVENTS.TEST_EVENT, { test: 'test' });
+    });
+
     it('should remove all forwardings when queues are reset', done => {
       queueLogic.resetAll().then(() => {
         queueLogic.subscribe(MESSAGE_QUEUES.TEST, async message => {

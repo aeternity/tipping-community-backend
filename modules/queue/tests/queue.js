@@ -20,7 +20,7 @@ describe('Queue', () => {
 
   describe('Queue Methods', () => {
     it('should init all queues', async () => {
-      const initializedQueues = queueLogic.queues.map(q => q.name);
+      const initializedQueues = queueLogic.getQueues().map(q => q.name);
       initializedQueues.should.deep.equal(Object.values(MESSAGE_QUEUES));
     });
     it('should reject a message with no queue', done => {
@@ -59,15 +59,32 @@ describe('Queue', () => {
         done();
       });
     });
+    it('should reject a message that has an invalid payload', done => {
+      queueLogic.sendMessage(MESSAGE_QUEUES.TEST, 'TEST.EVENTS.TEST_EVENT', '').catch(e => {
+        e.message.should.eql('Payload has invalid type "string", expected "object"');
+        done();
+      });
+    });
     it('should send a message', async () => {
       await queueLogic.sendMessage(MESSAGE_QUEUES.TEST, MESSAGES.TEST.COMMANDS.TEST_COMMAND);
     });
-    it('should be able to subscribe to a queue', done => {
+    it('should send a message with payload', async () => {
+      await queueLogic.sendMessage(MESSAGE_QUEUES.TEST, MESSAGES.TEST.COMMANDS.TEST_COMMAND, { test: 'test' });
+    });
+    it('should be able to subscribe to a queue and receive a message', done => {
       queueLogic.subscribe(MESSAGE_QUEUES.TEST, message => {
         message.message.should.equal(MESSAGES.TEST.COMMANDS.TEST_COMMAND);
         done();
       });
       queueLogic.sendMessage(MESSAGE_QUEUES.TEST, MESSAGES.TEST.COMMANDS.TEST_COMMAND);
+    });
+    it('should be able to subscribe to a queue and receive a message with payload', done => {
+      queueLogic.subscribe(MESSAGE_QUEUES.TEST, message => {
+        message.message.should.equal(MESSAGES.TEST.COMMANDS.TEST_COMMAND);
+        message.payload.should.have.property('test', 'test');
+        done();
+      });
+      queueLogic.sendMessage(MESSAGE_QUEUES.TEST, MESSAGES.TEST.COMMANDS.TEST_COMMAND, { test: 'test' });
     });
     it('should be able to subscribe to a message', done => {
       queueLogic.subscribeToMessage(MESSAGE_QUEUES.TEST, MESSAGES.TEST.COMMANDS.TEST_COMMAND, message => {
@@ -79,22 +96,33 @@ describe('Queue', () => {
         queueLogic.sendMessage(MESSAGE_QUEUES.TEST, MESSAGES.TEST.COMMANDS.TEST_COMMAND);
       });
     });
+    it('should be able to subscribe to a message with payload', done => {
+      queueLogic.subscribeToMessage(MESSAGE_QUEUES.TEST, MESSAGES.TEST.COMMANDS.TEST_COMMAND, message => {
+        message.message.should.equal(MESSAGES.TEST.COMMANDS.TEST_COMMAND);
+        message.payload.should.have.property('test', 'test');
+        done();
+      });
+      // SEND TEST_EVENT FIRST
+      queueLogic.sendMessage(MESSAGE_QUEUES.TEST, MESSAGES.TEST.EVENTS.TEST_EVENT).then(() => {
+        queueLogic.sendMessage(MESSAGE_QUEUES.TEST, MESSAGES.TEST.COMMANDS.TEST_COMMAND, { test: 'test' });
+      });
+    });
     it('should be able to just pull a message', async () => {
       await queueLogic.sendMessage(MESSAGE_QUEUES.TEST, MESSAGES.TEST.COMMANDS.TEST_COMMAND);
       const message = await queueLogic.receiveMessage(MESSAGE_QUEUES.TEST);
-      message.message.should.equal(MESSAGES.TEST.COMMANDS.TEST_COMMAND);
+      message.message.should.equal(JSON.stringify({ message: MESSAGES.TEST.COMMANDS.TEST_COMMAND, payload: {} }));
     });
     it('should not be able to pull the same message twice in a short interval', async () => {
       await queueLogic.sendMessage(MESSAGE_QUEUES.TEST, MESSAGES.TEST.COMMANDS.TEST_COMMAND);
       const message = await queueLogic.receiveMessage(MESSAGE_QUEUES.TEST);
-      message.message.should.equal(MESSAGES.TEST.COMMANDS.TEST_COMMAND);
+      message.message.should.equal(JSON.stringify({ message: MESSAGES.TEST.COMMANDS.TEST_COMMAND, payload: {} }));
       const message2 = await queueLogic.receiveMessage(MESSAGE_QUEUES.TEST);
       message2.should.deep.equal({});
     });
     it('should be able to delete a message', async () => {
       await queueLogic.sendMessage(MESSAGE_QUEUES.TEST, MESSAGES.TEST.COMMANDS.TEST_COMMAND);
       const message = await queueLogic.receiveMessage(MESSAGE_QUEUES.TEST);
-      message.message.should.equal(MESSAGES.TEST.COMMANDS.TEST_COMMAND);
+      message.message.should.equal(JSON.stringify({ message: MESSAGES.TEST.COMMANDS.TEST_COMMAND, payload: {} }));
       await queueLogic.deleteMessage(MESSAGE_QUEUES.TEST, message.id);
     });
     it('should be able to clear all message queues', async () => {

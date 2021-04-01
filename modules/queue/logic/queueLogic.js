@@ -14,84 +14,93 @@ const rsmq = new RedisSMQ({
   ns: MQ_NAMESPACE,
   realtime: true,
 });
+let queues = [];
 
-class MessageQueue {
-  queues = [];
-
-  constructor() {
-    // Create initial subjects
-    Object.values(MESSAGE_QUEUES).map(qname => this.initQueueSubject(qname));
-    subscriber.on('message', channel => this.notifySubscriber(channel));
-    logger.info('All MQs registered locally');
-  }
-
+const QueueLogic = {
   async init() {
-    await Promise.all(Object.values(MESSAGE_QUEUES).map(qname => this.createQueue(qname).catch(e => logger.error(e))));
+    // Create initial subjects
+    Object.values(MESSAGE_QUEUES).map(qname => QueueLogic.initQueueSubject(qname));
+    subscriber.on('message', channel => QueueLogic.notifySubscriber(channel));
+    logger.info('All MQs registered locally');
+    await Promise.all(Object.values(MESSAGE_QUEUES).map(qname => QueueLogic.createQueue(qname).catch(e => logger.error(e))));
     logger.info('All MQs registered on redis');
-  }
+  },
+
+  getQueues() {
+    return queues;
+  },
 
   async getAllMessages(qname) {
     let fetchSuccess = true;
     const allMessages = [];
     while (fetchSuccess) {
       // eslint-disable-next-line no-await-in-loop
-      const message = await this.receiveMessage(qname).catch(e => logger.warn(`Reading queue ${qname} failed with ${e.message}`));
+      const message = await QueueLogic.receiveMessage(qname).catch(e => logger.warn(`Reading queue ${qname} failed with ${e.message}`));
       fetchSuccess = message && message.id;
       if (fetchSuccess) {
         allMessages.push(message);
       }
     }
     return allMessages;
-  }
+  },
 
   async notifySubscriber(channel) {
     const qname = channel.replace(`${MQ_NAMESPACE}:rt:`, '');
-    const messages = await this.getAllMessages(qname);
-    const queue = this.queues.find(q => q.name === qname);
-    messages.filter(message => message.id).map(message => queue.subject.next(message));
-  }
+    const messages = await QueueLogic.getAllMessages(qname);
+    const queue = queues.find(q => q.name === qname);
+    messages.filter(message => message.id).map(QueueLogic.parseMessage).map(message => queue.subject.next(message));
+  },
 
   initQueueSubject(qname) {
-    if (!this.queues.map(queue => queue.name).includes(qname)) {
-      this.queues.push({
+    if (!queues.map(queue => queue.name).includes(qname)) {
+      queues.push({
         name: qname,
         subject: new Subject(),
       });
-      this.registerDebugListener(qname);
+      QueueLogic.registerDebugListener(qname);
     }
-  }
+  },
 
   async createQueue(qname) {
     if (!Object.values(MESSAGE_QUEUES).includes(qname)) throw new Error(`Queue name ${qname} is not a valid queue name. Update the enums.`);
-    this.initQueueSubject(qname);
+    QueueLogic.initQueueSubject(qname);
     const openQueues = await rsmq.listQueuesAsync();
     logger.debug(`Subscribing to redis queue "${qname}"`);
     subscriber.subscribe(`${MQ_NAMESPACE}:rt:${qname}`);
     if (!openQueues.includes(qname)) {
       await rsmq.createQueueAsync({ qname, vt: 60 * 10 }); // 10 Minutes message receive timeout
     }
-  }
+  },
+
+  parseMessage(rawMessage) {
+    return {
+      ...rawMessage,
+      ...JSON.parse(rawMessage.message),
+    };
+  },
 
   subscribe(qname, callback) {
-    const selectedQueue = this.queues.find(queue => queue.name === qname);
+    const selectedQueue = queues.find(queue => queue.name === qname);
     if (!selectedQueue) throw new Error(`Queue ${qname} not found. Subscription impossible.`);
     return selectedQueue.subject.subscribe({ next: callback });
-  }
+  },
 
   subscribeToMessage(qname, requestedMessage, callback) {
-    const selectedQueue = this.queues.find(queue => queue.name === qname);
+    const selectedQueue = queues.find(queue => queue.name === qname);
     if (!selectedQueue) throw new Error(`Queue ${qname} not found. Subscription impossible.`);
     return selectedQueue.subject.pipe(filter(({ message }) => message === requestedMessage)).subscribe({ next: callback });
-  }
+  },
 
   registerDebugListener(qname) {
     logger.debug(`Subscribing locally to queue "${qname}"`);
-    this.subscribe(qname, message => logger.info(`NEW MESSAGE: { message: ${message.message}, id: ${message.id} }`));
-  }
+    QueueLogic.subscribe(qname, message => logger.info(`NEW MESSAGE: { message: ${message.message}, id: ${message.id} }`));
+  },
 
-  async receiveMessage(qname) { return rsmq.receiveMessageAsync({ qname }); }
+  async receiveMessage(qname) {
+    return rsmq.receiveMessageAsync({ qname });
+  },
 
-  async sendMessage(qname, message) {
+  async sendMessage(qname, message, payload = {}) {
     if (!qname) {
       throw new Error(`Queue ${qname} is not valid`);
     }
@@ -111,25 +120,28 @@ class MessageQueue {
     if (!MESSAGES[qname][messageQueueType][messageQueueAction]) {
       throw new Error(`Message action ${messageQueueAction} is unknown in queue ${qname} with message type ${messageQueueType}`);
     }
-    return rsmq.sendMessageAsync({ qname, message });
-  }
+    if (typeof payload !== 'object') {
+      throw new Error(`Payload has invalid type "${typeof payload}", expected "object"`);
+    }
+    return rsmq.sendMessageAsync({ qname, message: JSON.stringify({ message, payload }) });
+  },
 
-  async deleteMessage(qname, id) { return rsmq.deleteMessageAsync({ qname, id }); }
+  async deleteMessage(qname, id) {
+    return rsmq.deleteMessageAsync({ qname, id });
+  },
 
   async clearRedisQueues() {
     const openQueues = await rsmq.listQueuesAsync();
     await Promise.all(openQueues.map(qname => rsmq.deleteQueueAsync({ qname })));
-  }
+  },
 
   async resetAll() {
-    await this.clearRedisQueues();
+    await QueueLogic.clearRedisQueues();
     await subscriber.unsubscribe();
-    this.queues.map(queue => queue.subject.complete());
-    this.queues = [];
-    await this.init();
-  }
-}
+    queues.map(queue => queue.subject.complete());
+    queues = [];
+    await QueueLogic.init();
+  },
+};
 
-const queueLogic = new MessageQueue();
-
-module.exports = queueLogic;
+module.exports = QueueLogic;

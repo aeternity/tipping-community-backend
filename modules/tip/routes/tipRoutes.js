@@ -135,17 +135,43 @@ router.get('/topics', async (req, res) => {
 
 /**
  * @swagger
- * /tips/await:
+ * /tips/await/tip:
  *   get:
  *     tags:
  *       - tips
- *     summary: awaits tips/retips updated event
+ *     summary: awaits tips updated event
+ *     parameters:
+ *       - in: query
+ *         name: id
+ *         schema:
+ *           type: string
  *     responses:
  *       200:
  *         description: Returns ok
  */
-router.get('/await', async (req, res) => {
-  await TipLogic.awaitTipsUpdated();
+router.get('/await/tip', async (req, res) => {
+  await TipLogic.awaitTipsUpdated(req.query.id);
+  res.send({ updated: true });
+});
+
+/**
+ * @swagger
+ * /tips/await/retip:
+ *   get:
+ *     tags:
+ *       - tips
+ *     summary: awaits retips updated event
+ *     parameters:
+ *       - in: query
+ *         name: id
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Returns ok
+ */
+router.get('/await/retip', async (req, res) => {
+  await TipLogic.awaitTipsUpdated(req.query.id, true);
   res.send({ updated: true });
 });
 

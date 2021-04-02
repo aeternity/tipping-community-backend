@@ -90,6 +90,6 @@ const MdwLogic = {
       await transaction.commit();
     });
   },
-}
+};
 
 module.exports = MdwLogic;

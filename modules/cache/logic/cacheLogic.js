@@ -5,7 +5,6 @@ const requireESM = require('esm')(module);
 // use to handle es6 import/export
 const { decodeEvents, SOPHIA_TYPES } = requireESM('@aeternity/aepp-sdk/es/contract/aci/transformation');
 const aeternity = require('../../aeternity/logic/aeternity');
-const CommentLogic = require('../../comment/logic/commentLogic');
 const cache = require('../utils/cache');
 const queueLogic = require('../../queue/logic/queueLogic');
 const TipLogic = require('../../tip/logic/tipLogic');
@@ -49,7 +48,7 @@ const CacheLogic = {
   },
 
   async getTips() {
-    throw Error("no more tips from cache");
+    throw Error('no more tips from cache');
   },
 
   async triggerGetTokenContractIndex(tips) {
@@ -357,7 +356,7 @@ const CacheLogic = {
   },
 
   async fetchStats() {
-    throw Error("no more stats from cache")
+    throw Error('no more stats from cache');
   },
 
   statsForTips(tips) {

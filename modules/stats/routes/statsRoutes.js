@@ -48,7 +48,6 @@ router.get('/', async (req, res) => {
 router.get('/sender', async (req, res) => {
   const stats = await StatsLogic.fetchUserStats(req.query.address);
   return stats ? res.send(stats) : res.sendStatus(404);
-
 });
 
 module.exports = router;

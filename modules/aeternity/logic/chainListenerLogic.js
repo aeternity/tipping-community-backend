@@ -39,7 +39,7 @@ const handleWebsocketMessage = async message => {
         },
       });
       if (events.length > 0) {
-        events.map(event => handleContractEvent(event));
+        events.map(event => handleContractEvent(event, tx));
       }
     }
   }

@@ -35,6 +35,10 @@ const TipLogic = {
       await TipLogic.updateRetipsDB();
       await queueLogic.deleteMessage(MESSAGE_QUEUES.RETIPS, message.id);
     });
+    queueLogic.subscribeToMessage(MESSAGE_QUEUES.RETIPS, MESSAGES.RETIPS.COMMANDS.INSERT_RETIP, async message => {
+      await TipLogic.insertRetips([message.payload]);
+      await queueLogic.deleteMessage(MESSAGE_QUEUES.RETIPS, message.id);
+    });
   },
 
   orderByColumn(ordering) {
@@ -211,6 +215,11 @@ const TipLogic = {
     });
   },
 
+  async insertRetips(retipsToInsert) {
+    const inserted = await Retip.bulkCreate(retipsToInsert);
+    inserted.forEach(i => awaitRetips[i.dataValues.id.includes('v1') ? null : i.dataValues.id] = true);
+  },
+
   async updateRetipsDB() {
     await lock.acquire('RetipLogic.updateRetipsDB', async () => {
       const remoteRetips = (await aeternity.fetchStateBasic()).retips;
@@ -229,9 +238,7 @@ const TipLogic = {
       ));
 
       const retipsToInsert = newReTipIds.map(id => remoteRetips.find(({ id: retipId }) => id === retipId));
-
-      const inserted = await Retip.bulkCreate(retipsToInsert);
-      inserted.forEach(i => awaitRetips[i.dataValues.id.includes('v1') ? null : i.dataValues.id] = true);
+      await TipLogic.insertRetips(retipsToInsert);
     });
   },
 };

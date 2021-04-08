@@ -25,21 +25,23 @@ const formatClaims = returnState => {
   }) : [];
 };
 
+
+const formatSingleRetip = (contractId, suffix, id, tipTypeData) => {
+  const data = tipTypeData;
+  data.id = id + suffix;
+  data.tipId = data.tip_id + suffix;
+  data.contractId = contractId;
+  data.claimGen = data.claim_gen === 'None' || data.claim_gen === undefined ? null : data.claim_gen;
+  data.token = data.token !== undefined ? data.token : null;
+  data.tokenAmount = data.token_amount ? data.token_amount : '0';
+  return data;
+};
+
 const formatRetips = returnState => {
   const state = returnState.decodedResult;
   const suffix = `_${state.version || 'v1'}`;
 
-  return state.retips ? state.retips.map(([id, tipTypeData]) => {
-    const data = tipTypeData;
-    data.id = id + suffix;
-    data.tipId = data.tip_id + suffix;
-    data.contractId = returnState.result.contractId;
-    data.claimGen = data.claim_gen === 'None' || data.claim_gen === undefined ? null : data.claim_gen;
-    data.token = data.token !== undefined ? data.token : null;
-    data.tokenAmount = data.token_amount ? data.token_amount : '0';
-
-    return data;
-  }) : [];
+  return state.retips ? state.retips.map(([id, tipTypeData]) => formatSingleRetip(returnState.result.contractId, suffix, id, tipTypeData)) : [];
 };
 
 const formatTips = returnState => {
@@ -112,5 +114,7 @@ basicTippingContractUtil.getRetips = states => aggregateStates(states, formatRet
 basicTippingContractUtil.getTips = states => aggregateStates(states, formatTips);
 
 basicTippingContractUtil.getClaims = states => aggregateStates(states, formatClaims);
+
+basicTippingContractUtil.formatSingleRetip = formatSingleRetip;
 
 module.exports = basicTippingContractUtil;

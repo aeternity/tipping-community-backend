@@ -49,6 +49,15 @@ class MessageBroker {
       { queueName: MESSAGE_QUEUES.TIPS, message: MESSAGES.TIPS.COMMANDS.UPDATE_DB },
     ]);
 
+    // S: NEW TIP
+    // T: UPDATE TIPS
+    this.setupForwarding({
+      queueName: MESSAGE_QUEUES.BLOCKCHAIN,
+      message: MESSAGES.BLOCKCHAIN.EVENTS.RETIP_RECEIVED,
+    }, [
+      { queueName: MESSAGE_QUEUES.RETIPS, message: MESSAGES.RETIPS.COMMANDS.INSERT_RETIP },
+    ]);
+
     // S: TIP CLAIMED
     // T: UPDATE PREFERRED CHAIN NAMES
     this.setupForwarding({

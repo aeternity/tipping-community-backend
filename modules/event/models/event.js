@@ -17,7 +17,7 @@ module.exports = (sequelize, DataTypes) => sequelize.define('Event', {
     allowNull: false,
   },
   height: {
-    type: DataTypes.NUMBER,
+    type: DataTypes.INTEGER,
     allowNull: false,
   },
   addresses: {
@@ -25,8 +25,8 @@ module.exports = (sequelize, DataTypes) => sequelize.define('Event', {
     allowNull: false,
   },
   time: {
-    type: DataTypes.NUMBER,
-    allowNull: false,
+    type: DataTypes.INTEGER,
+    allowNull: true,
   },
   data: {
     type: DataTypes.JSONB,

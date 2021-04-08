@@ -298,6 +298,77 @@
             },
             "indexes": []
         },
+        "Events": {
+            "tableName": "Events",
+            "schema": {
+                "id": {
+                    "allowNull": false,
+                    "primaryKey": true,
+                    "autoIncrement": true,
+                    "field": "id",
+                    "seqType": "Sequelize.INTEGER"
+                },
+                "name": {
+                    "allowNull": false,
+                    "field": "name",
+                    "seqType": "Sequelize.ENUM('TipReceived', 'TipTokenReceived', 'ReTipReceived', 'ReTipTokenReceived', 'TipDirectReceived', 'TipDirectTokenReceived', 'PostWithoutTipReceived', 'TipWithdrawn', 'QueryOracle', 'CheckPersistClaim', 'Transfer', 'Allowance')"
+                },
+                "hash": {
+                    "allowNull": false,
+                    "field": "hash",
+                    "seqType": "Sequelize.STRING"
+                },
+                "contract": {
+                    "allowNull": false,
+                    "field": "contract",
+                    "seqType": "Sequelize.STRING"
+                },
+                "height": {
+                    "allowNull": false,
+                    "field": "height",
+                    "seqType": "Sequelize.INTEGER"
+                },
+                "addresses": {
+                    "allowNull": false,
+                    "field": "addresses",
+                    "seqType": "Sequelize.ARRAY(Sequelize.STRING)"
+                },
+                "time": {
+                    "allowNull": true,
+                    "field": "time",
+                    "seqType": "Sequelize.INTEGER"
+                },
+                "data": {
+                    "allowNull": false,
+                    "field": "data",
+                    "seqType": "Sequelize.JSONB"
+                },
+                "createdAt": {
+                    "allowNull": false,
+                    "field": "createdAt",
+                    "seqType": "Sequelize.DATE"
+                },
+                "updatedAt": {
+                    "allowNull": false,
+                    "field": "updatedAt",
+                    "seqType": "Sequelize.DATE"
+                }
+            },
+            "indexes": {
+                "2e3306922ca92d522ce0730298860e19ecefa4b6": {
+                    "fields": [
+                        "name",
+                        "height",
+                        "time"
+                    ],
+                    "name": "events_name_height_time",
+                    "options": {
+                        "indexName": "events_name_height_time",
+                        "name": "events_name_height_time"
+                    }
+                }
+            }
+        },
         "LinkPreviews": {
             "tableName": "LinkPreviews",
             "schema": {
@@ -716,5 +787,5 @@
             "indexes": []
         }
     },
-    "revision": 6
+    "revision": 9
 }

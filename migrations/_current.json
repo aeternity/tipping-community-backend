@@ -55,9 +55,9 @@
                     "field": "status",
                     "seqType": "Sequelize.ENUM('flagged', 'hidden')"
                 },
-                "flagger": {
+                "author": {
                     "allowNull": true,
-                    "field": "flagger",
+                    "field": "author",
                     "seqType": "Sequelize.STRING"
                 },
                 "createdAt": {

@@ -42,8 +42,8 @@ class MessageBroker {
     // S: NEW TIP
     // T: UPDATE TIPS
     this.setupForwarding({
-      queueName: MESSAGE_QUEUES.BLOCKCHAIN,
-      message: MESSAGES.BLOCKCHAIN.EVENTS.TIP_RECEIVED,
+      queueName: MESSAGE_QUEUES.EVENTS,
+      message: MESSAGES.EVENTS.EVENTS.TIP_RECEIVED,
     }, [
       { queueName: MESSAGE_QUEUES.CACHE, message: MESSAGES.CACHE.COMMANDS.RENEW_TIPS },
     ]);
@@ -51,8 +51,8 @@ class MessageBroker {
     // S: TIP CLAIMED
     // T: UPDATE PREFERRED CHAIN NAMES
     this.setupForwarding({
-      queueName: MESSAGE_QUEUES.BLOCKCHAIN,
-      message: MESSAGES.BLOCKCHAIN.EVENTS.TIP_WITHDRAWN,
+      queueName: MESSAGE_QUEUES.EVENTS,
+      message: MESSAGES.EVENTS.EVENTS.TIP_WITHDRAWN,
     }, [
       { queueName: MESSAGE_QUEUES.CACHE, message: MESSAGES.CACHE.COMMANDS.RENEW_TIPS },
     ]);
@@ -64,6 +64,15 @@ class MessageBroker {
       message: MESSAGES.CACHE.EVENTS.TIP_INVALIDATION_REQUEST,
     }, [
       { queueName: MESSAGE_QUEUES.CACHE, message: MESSAGES.CACHE.COMMANDS.RENEW_TIPS },
+    ]);
+
+    // S: CACHE KEEPHOT
+    // T: UPDATE EVENTS DB
+    this.setupForwarding({
+      queueName: MESSAGE_QUEUES.CACHE,
+      message: MESSAGES.CACHE.COMMANDS.KEEPHOT,
+    }, [
+      { queueName: MESSAGE_QUEUES.EVENTS, message: MESSAGES.EVENTS.COMMANDS.KEEPHOT },
     ]);
   }
 

@@ -27,13 +27,9 @@ const TipLogic = {
     setTimeout(TipLogic.updateRetipsDB, 5000);
     setTimeout(TipLogic.updateClaimsDB, 5000);
 
-    queueLogic.subscribeToMessage(MESSAGE_QUEUES.TIPS, MESSAGES.TIPS.COMMANDS.UPDATE_DB, async message => {
-      await TipLogic.updateTipsDB();
+    queueLogic.subscribeToMessage(MESSAGE_QUEUES.TIPS, MESSAGES.TIPS.COMMANDS.INSERT_TIP, async message => {
+      await TipLogic.insertTips([message.payload]);
       await queueLogic.deleteMessage(MESSAGE_QUEUES.TIPS, message.id);
-    });
-    queueLogic.subscribeToMessage(MESSAGE_QUEUES.RETIPS, MESSAGES.RETIPS.COMMANDS.UPDATE_DB, async message => {
-      await TipLogic.updateRetipsDB();
-      await queueLogic.deleteMessage(MESSAGE_QUEUES.RETIPS, message.id);
     });
     queueLogic.subscribeToMessage(MESSAGE_QUEUES.RETIPS, MESSAGES.RETIPS.COMMANDS.INSERT_RETIP, async message => {
       await TipLogic.insertRetips([message.payload]);
@@ -165,6 +161,44 @@ const TipLogic = {
     });
   },
 
+  async insertTips(tipsToInsert) {
+    const inserted = await Tip.bulkCreate(tipsToInsert.map(({
+                                                              id,
+                                                              lang,
+                                                              sender,
+                                                              media,
+                                                              url,
+                                                              topics,
+                                                              title,
+                                                              token,
+                                                              tokenAmount,
+                                                              amount,
+                                                              claimGen,
+                                                              type,
+                                                              contractId,
+                                                              timestamp,
+                                                            }) => ({
+      id: String(id),
+      language: lang,
+      sender,
+      media: media || [],
+      url,
+      topics,
+      title,
+      token,
+      tokenAmount,
+      amount,
+      claimGen,
+      type,
+      contractId,
+      timestamp,
+    })));
+    inserted.forEach(i => awaitTips[i.dataValues.id.includes('v1') ? null : i.dataValues.id] = true);
+
+    if (inserted.length > 0) await queueLogic.sendMessage(MESSAGE_QUEUES.TIPS, MESSAGES.TIPS.EVENTS.CREATED_NEW_LOCAL_TIPS);
+  },
+
+
   async updateTipsDB() {
     await lock.acquire('TipLogic.updateTipsDB', async () => {
       const remoteTips = (await aeternity.fetchStateBasic()).tips;
@@ -190,27 +224,7 @@ const TipLogic = {
         return { ...tip, lang };
       });
 
-      const inserted = await Tip.bulkCreate(result.map(({
-        id, lang, sender, media, url, topics, title, token, tokenAmount, amount, claimGen, type, contractId, timestamp,
-      }) => ({
-        id: String(id),
-        language: lang,
-        sender,
-        media: media || [],
-        url,
-        topics,
-        title,
-        token,
-        tokenAmount,
-        amount,
-        claimGen,
-        type,
-        contractId,
-        timestamp,
-      })));
-      inserted.forEach(i => awaitTips[i.dataValues.id.includes('v1') ? null : i.dataValues.id] = true);
-
-      if (inserted.length > 0) await queueLogic.sendMessage(MESSAGE_QUEUES.TIPS, MESSAGES.TIPS.EVENTS.CREATED_NEW_LOCAL_TIPS);
+      await TipLogic.insertTips(result)
       await queueLogic.sendMessage(MESSAGE_QUEUES.TIPS, MESSAGES.TIPS.EVENTS.UPDATE_DB_FINISHED);
     });
   },

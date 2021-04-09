@@ -11,6 +11,7 @@ const cache = require('../../cache/utils/cache');
 const { Trace: TraceModel } = require('../../../models');
 const { publicKey } = require('../../../utils/testingUtil');
 const CacheLogic = require('../../cache/logic/cacheLogic');
+const EventLogic = require('../../event/logic/eventLogic');
 
 chai.should();
 chai.use(chaiHttp);
@@ -56,7 +57,8 @@ describe('Trace', () => {
         });
     });
 
-    it('malformed request with claimamount 0 should not leave a trace', done => {
+    it('malformed request with claimamount 0 should not leave a trace', function (done) {
+      this.timeout(10000);
       chai.request(server).post('/claim/submit')
         .send({
           address: publicKey, // Random PK
@@ -99,28 +101,12 @@ describe('Trace', () => {
 
     it('it should GET all blockchain traces for a proper tip', function (done) {
       this.timeout(20000);
-      const stub = sinon.stub(CacheLogic, 'findContractEvents').callsFake(async () => ([{
+      const stub = sinon.stub(EventLogic, 'getEventsForURL').callsFake(async () => ([{
         event: 'TipReceived',
-        caller: 'ak_2fxchiLvnj9VADMAXHBiKPsaCEsTFehAspcmWJ3ZzF3pFK1hB5',
-        nonce: 6266,
-        height: 361810,
-        hash: 'th_2QfYoSti3DRzzTzxAcPHxWSMAwhrqLMc19sDUertFczg54JFSy',
-        time: 1608657074819,
-        contract: 'ct_2ZEoCKcqXkbz2uahRrsWeaPooZs9SdCv6pmC4kc55rD4MhqYSu',
-        address: 'ak_2fxchiLvnj9VADMAXHBiKPsaCEsTFehAspcmWJ3ZzF3pFK1hB5',
-        amount: '200000000000000000',
         url: 'example.com',
       },
       {
         event: 'TipReceived',
-        caller: 'ak_2fxchiLvnj9VADMAXHBiKPsaCEsTFehAspcmWJ3ZzF3pFK1hB5',
-        nonce: 6267,
-        height: 361810,
-        hash: 'th_26kUT6bE7djKs9GyCdNBmwSqCUvzDhj9rn46qZUJCkjiDsDsZg',
-        time: 1608657083819,
-        contract: 'ct_2ZEoCKcqXkbz2uahRrsWeaPooZs9SdCv6pmC4kc55rD4MhqYSu',
-        address: 'ak_2fxchiLvnj9VADMAXHBiKPsaCEsTFehAspcmWJ3ZzF3pFK1hB5',
-        amount: '200000000000000000',
         url: 'example.com',
       }]));
 
@@ -243,26 +229,10 @@ describe('Trace', () => {
           url_events: [
             {
               event: 'TipReceived',
-              caller: 'ak_2fxchiLvnj9VADMAXHBiKPsaCEsTFehAspcmWJ3ZzF3pFK1hB5',
-              nonce: 6266,
-              height: 361810,
-              hash: 'th_2QfYoSti3DRzzTzxAcPHxWSMAwhrqLMc19sDUertFczg54JFSy',
-              time: 1608657074819,
-              contract: 'ct_2ZEoCKcqXkbz2uahRrsWeaPooZs9SdCv6pmC4kc55rD4MhqYSu',
-              address: 'ak_2fxchiLvnj9VADMAXHBiKPsaCEsTFehAspcmWJ3ZzF3pFK1hB5',
-              amount: '200000000000000000',
               url: 'example.com',
             },
             {
               event: 'TipReceived',
-              caller: 'ak_2fxchiLvnj9VADMAXHBiKPsaCEsTFehAspcmWJ3ZzF3pFK1hB5',
-              nonce: 6267,
-              height: 361810,
-              hash: 'th_26kUT6bE7djKs9GyCdNBmwSqCUvzDhj9rn46qZUJCkjiDsDsZg',
-              time: 1608657083819,
-              contract: 'ct_2ZEoCKcqXkbz2uahRrsWeaPooZs9SdCv6pmC4kc55rD4MhqYSu',
-              address: 'ak_2fxchiLvnj9VADMAXHBiKPsaCEsTFehAspcmWJ3ZzF3pFK1hB5',
-              amount: '200000000000000000',
               url: 'example.com',
             },
           ],

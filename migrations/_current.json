@@ -333,10 +333,25 @@
                     "field": "addresses",
                     "seqType": "Sequelize.ARRAY(Sequelize.STRING)"
                 },
+                "url": {
+                    "allowNull": true,
+                    "field": "url",
+                    "seqType": "Sequelize.TEXT"
+                },
+                "amount": {
+                    "allowNull": true,
+                    "field": "amount",
+                    "seqType": "Sequelize.STRING"
+                },
+                "nonce": {
+                    "allowNull": true,
+                    "field": "nonce",
+                    "seqType": "Sequelize.INTEGER"
+                },
                 "time": {
                     "allowNull": true,
                     "field": "time",
-                    "seqType": "Sequelize.INTEGER"
+                    "seqType": "Sequelize.BIGINT"
                 },
                 "data": {
                     "allowNull": false,
@@ -355,16 +370,17 @@
                 }
             },
             "indexes": {
-                "2e3306922ca92d522ce0730298860e19ecefa4b6": {
+                "5a00ac97ec270b766e95354400caa6833bbcad26": {
                     "fields": [
                         "name",
+                        "url",
                         "height",
                         "time"
                     ],
-                    "name": "events_name_height_time",
+                    "name": "events_name_url_height_time",
                     "options": {
-                        "indexName": "events_name_height_time",
-                        "name": "events_name_height_time"
+                        "indexName": "events_name_url_height_time",
+                        "name": "events_name_url_height_time"
                     }
                 }
             }

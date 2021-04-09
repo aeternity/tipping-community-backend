@@ -65,12 +65,19 @@ describe('Events', () => {
   };
 
   it('should return empty array if no events are found', async () => {
-    const result = await EventLogic.getRelevantEventsFromDB(['ak_fake']);
+    const result = await EventLogic.getEventsForAddresses(['ak_fake']);
     result.should.be.an('array');
     result.should.have.length(0);
   });
   it('should return event if address is in addresses array', async () => {
-    const result = await EventLogic.getRelevantEventsFromDB(['ak_1']);
+    const result = await EventLogic.getEventsForAddresses(['ak_1']);
+    result.should.be.an('array');
+    result.should.have.length(1);
+  });
+
+  it('should return event if url is in data', async () => {
+    await Event.create(EventLogic.prepareEventForDB(sampleEvent));
+    const result = await EventLogic.getEventsForURL(sampleEvent.url);
     result.should.be.an('array');
     result.should.have.length(1);
   });
@@ -95,7 +102,7 @@ describe('Events', () => {
   });
 
   it('should handle keephot', done => {
-    const currentHeight = 20;
+    const currentHeight = 21;
     sinon.stub(aeternity, 'getHeight').callsFake(async () => currentHeight);
     const mdwSpy = sinon.stub(MdwLogic, 'middlewareContractTransactions').callsFake(async () => [sampleEvent]);
 

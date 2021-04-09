@@ -25,6 +25,10 @@ const typeMapping = type => {
     case 'text':
     case 'uuid':
       return 'string';
+    case 'bigint':
+      return 'number';
+    case 'jsonb':
+      return 'object';
     default:
       return type;
   }

@@ -31,19 +31,13 @@ describe('Middleware', () => {
           }],
         },
       }), 200)));
-      const transactions = await mdwLogic.middlewareContractTransactions(20);
+      const transactions = await mdwLogic.middlewareContractTransactions(20, 0);
       sinon.assert.calledWith(getStub,
-        `${process.env.MIDDLEWARE_URL}/txs/gen/0-0?contract=${process.env.CONTRACT_V1_ADDRESS}&type=contract_call&limit=100`);
+        `${process.env.MIDDLEWARE_URL}/txs/gen/20-0?contract=${process.env.CONTRACT_V1_ADDRESS}&type=contract_call&limit=100`);
       sinon.assert.calledWith(getStub,
-        `${process.env.MIDDLEWARE_URL}/txs/gen/0-0?contract=${process.env.CONTRACT_V2_ADDRESS}&type=contract_call&limit=100`);
+        `${process.env.MIDDLEWARE_URL}/txs/gen/20-0?contract=${process.env.CONTRACT_V2_ADDRESS}&type=contract_call&limit=100`);
       sinon.assert.calledWith(getStub,
-        `${process.env.MIDDLEWARE_URL}/txs/gen/0-0?contract=${process.env.CONTRACT_V3_ADDRESS}&type=contract_call&limit=100`);
-      sinon.assert.calledWith(getStub,
-        `${process.env.MIDDLEWARE_URL}/txs/backward?contract=${process.env.CONTRACT_V1_ADDRESS}&type=contract_call&limit=100`);
-      sinon.assert.calledWith(getStub,
-        `${process.env.MIDDLEWARE_URL}/txs/backward?contract=${process.env.CONTRACT_V2_ADDRESS}&type=contract_call&limit=100`);
-      sinon.assert.calledWith(getStub,
-        `${process.env.MIDDLEWARE_URL}/txs/backward?contract=${process.env.CONTRACT_V3_ADDRESS}&type=contract_call&limit=100`);
+        `${process.env.MIDDLEWARE_URL}/txs/gen/20-0?contract=${process.env.CONTRACT_V3_ADDRESS}&type=contract_call&limit=100`);
       transactions.should.be.an('array');
       getStub.restore();
     });
@@ -51,7 +45,7 @@ describe('Middleware', () => {
     it('it should return an empty array if the middleware is down', async () => {
       const originalUrl = process.env.MIDDLEWARE_URL;
       process.env.MIDDLEWARE_URL = 'https://localhost/';
-      const transactions = await mdwLogic.middlewareContractTransactions();
+      const transactions = await mdwLogic.middlewareContractTransactions(50, 0);
       transactions.should.be.an('array');
       transactions.should.have.length(0);
       process.env.MIDDLEWARE_URL = originalUrl;

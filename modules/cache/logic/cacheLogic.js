@@ -21,6 +21,7 @@ const CacheLogic = {
     // INIT ONCE
 
     const keepHotFunction = async () => {
+      await queueLogic.sendMessage(MESSAGE_QUEUES.CACHE, MESSAGES.CACHE.COMMANDS.KEEPHOT);
       await CacheLogic.getTips();
       await CacheLogic.fetchChainNames();
       await CacheLogic.fetchPrice();
@@ -47,8 +48,8 @@ const CacheLogic = {
   async findContractEvents() {
     const fetchContractEvents = async () => {
       const height = await aeternity.getHeight();
-      const contractTransactions = await MdwLogic.middlewareContractTransactions(height);
-      return contractTransactions.asyncMap(tx => aeternity.decodeTransactionEventsFromMdw(tx));
+      const contractTransactions = await MdwLogic.middlewareContractTransactions(height, 0);
+      return contractTransactions.asyncMap(tx => aeternity.decodeTransactionEvents(tx));
     };
 
     return cache.getOrSet(['contractEvents'], async () => fetchContractEvents().catch(logger.error), cache.shortCacheTime, false);
@@ -133,8 +134,7 @@ const CacheLogic = {
 
   async wordPriceHistory(wordSale) {
     const height = await aeternity.getHeight();
-    const txs = await MdwLogic.getContractTransactions(height, wordSale);
-
+    const txs = await MdwLogic.getContractTransactions(height, 0, wordSale);
     const eventsSchema = [
       { name: 'Buy', types: [SOPHIA_TYPES.address, SOPHIA_TYPES.int, SOPHIA_TYPES.int] },
       { name: 'Sell', types: [SOPHIA_TYPES.address, SOPHIA_TYPES.int, SOPHIA_TYPES.int] },

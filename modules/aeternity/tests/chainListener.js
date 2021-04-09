@@ -83,11 +83,11 @@ describe('Chain Listener', () => {
         .callsFake(event => {
           event.should.be.an('object');
           event.should.have.property('name', 'TipReceived');
-          event.should.have.property('parsedEvent');
-          event.parsedEvent.should.have.property('address', 'ak_y87WkN4C4QevzjTuEYHg6XLqiWx3rjfYDFLBmZiqiro5mkRag');
-          event.parsedEvent.should.have.property('amount', '120000000000000000');
-          event.parsedEvent.should.have.property('url', 'https://github.com/thepiwo');
-          event.parsedEvent.should.have.property('tokenContract', null);
+          event.should.have.property('address', 'ak_y87WkN4C4QevzjTuEYHg6XLqiWx3rjfYDFLBmZiqiro5mkRag');
+          event.should.have.property('amount', '120000000000000000');
+          event.should.have.property('url', 'https://github.com/thepiwo');
+          event.should.have.property('tokenContract', null);
+
           stub.restore();
           done();
         });
@@ -106,7 +106,7 @@ describe('Chain Listener', () => {
 
       const stub = sinon.stub(queueLogic, 'sendMessage').callsFake((queue, message) => {
         queue.should.equal(MESSAGE_QUEUES.BLOCKCHAIN);
-        message.should.equal(MESSAGES.BLOCKCHAIN.EVENTS.TIP_RECEIVED);
+        message.should.equal(MESSAGES.BLOCKCHAIN.EVENTS.EVENT_RECEIVED);
         stub.restore();
         done();
       });

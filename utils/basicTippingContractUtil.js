@@ -44,68 +44,89 @@ const formatRetips = returnState => {
   return state.retips ? state.retips.map(([id, tipTypeData]) => formatSingleRetip(returnState.result.contractId, suffix, id, tipTypeData)) : [];
 };
 
+const rawTipUrlId = (tipTypeData) => {
+  const [tipType, tipData] = Object.entries(tipTypeData)[0];
+  switch (tipType) {
+    case 'AeTip':
+      return tipData[1];
+    case 'TokenTip':
+      return tipData[1];
+    case 'DirectAeTip':
+      return null;
+    case 'DirectTokenTip':
+      return null;
+    case 'PostWithoutTip':
+      return null;
+    default:
+      return tipTypeData.url_id;
+  }
+}
+
+const formatSingleTip = (contractId, suffix, id, tipTypeData, url) => {
+  const [tipType, tipData] = Object.entries(tipTypeData)[0];
+  switch (tipType) {
+    case 'AeTip':
+      data = tipData[0];
+      data.type = 'AE_TIP';
+      data.amount = tipData[2];
+      data.claimGen = tipData[3];
+      break;
+    case 'TokenTip':
+      data = tipData[0];
+      data.type = 'TOKEN_TIP';
+      data.token = tipData[2].token;
+      data.token_amount = tipData[2].amount;
+      data.claimGen = tipData[3];
+      data.amount = 0;
+      break;
+    case 'DirectAeTip':
+      data = tipData[0];
+      data.type = 'DIRECT_AE_TIP';
+      data.receiver = tipData[1];
+      data.amount = tipData[2];
+      break;
+    case 'DirectTokenTip':
+      data = tipData[0];
+      data.type = 'DIRECT_TOKEN_TIP';
+      data.receiver = tipData[1];
+      data.token = tipData[2].token;
+      data.tokenAmount = tipData[2].amount;
+      data.amount = 0;
+      break;
+    case 'PostWithoutTip':
+      data = tipData[0];
+      data.type = 'POST_WITHOUT_TIP';
+      data.media = tipData[1];
+      data.amount = 0;
+      break;
+    default:
+      data = tipTypeData; // Fallback for old contract state format
+      data.type = 'AE_TIP';
+      data.claimGen = data.claim_gen;
+      break;
+  }
+
+  data.id = id + suffix;
+  data.contractId = contractId;
+
+  data.url = url;
+  data.claimGen = data.claimGen === 'None' || data.claimGen === undefined ? null : data.claimGen;
+
+  data.token = data.token !== undefined ? data.token : null;
+  data.tokenAmount = data.token_amount ? data.token_amount : '0';
+  data.topics = [...new Set(data.title.match(topicsRegex))].map(x => x.toLowerCase());
+
+  return data;
+};
+
 const formatTips = returnState => {
   const state = returnState.decodedResult;
   const suffix = `_${state.version || 'v1'}`;
 
   return state.tips.map(([id, tipTypeData]) => {
-    const [tipType, tipData] = Object.entries(tipTypeData)[0];
-    switch (tipType) {
-      case 'AeTip':
-        data = tipData[0];
-        data.type = 'AE_TIP';
-        data.urlId = tipData[1];
-        data.amount = tipData[2];
-        data.claimGen = tipData[3];
-        break;
-      case 'TokenTip':
-        data = tipData[0];
-        data.type = 'TOKEN_TIP';
-        data.urlId = tipData[1];
-        data.token = tipData[2].token;
-        data.token_amount = tipData[2].amount;
-        data.claimGen = tipData[3];
-        data.amount = 0;
-        break;
-      case 'DirectAeTip':
-        data = tipData[0];
-        data.type = 'DIRECT_AE_TIP';
-        data.receiver = tipData[1];
-        data.amount = tipData[2];
-        break;
-      case 'DirectTokenTip':
-        data = tipData[0];
-        data.type = 'DIRECT_TOKEN_TIP';
-        data.receiver = tipData[1];
-        data.token = tipData[2].token;
-        data.tokenAmount = tipData[2].amount;
-        data.amount = 0;
-        break;
-      case 'PostWithoutTip':
-        data = tipData[0];
-        data.type = 'POST_WITHOUT_TIP';
-        data.media = tipData[1];
-        data.amount = 0;
-        break;
-      default:
-        data = tipTypeData; // Fallback for old contract state format
-        data.type = 'AE_TIP';
-        data.claimGen = data.claim_gen;
-        data.urlId = data.url_id;
-        break;
-    }
-
-    data.id = id + suffix;
-    data.contractId = returnState.result.contractId;
-
-    data.url = data.urlId !== undefined ? findUrl(data.urlId, state.urls) : null;
-    data.claimGen = data.claimGen === 'None' || data.claimGen === undefined ? null : data.claimGen;
-
-    data.token = data.token !== undefined ? data.token : null;
-    data.tokenAmount = data.token_amount ? data.token_amount : '0';
-    data.topics = [...new Set(data.title.match(topicsRegex))].map(x => x.toLowerCase());
-
-    return data;
+    const urlId = rawTipUrlId(tipTypeData);
+    const url = urlId !== null ? findUrl(urlId, state.urls) : null;
+    return formatSingleTip(returnState.result.contractId, suffix, id, tipTypeData, url)
   });
 };
 
@@ -116,5 +137,8 @@ basicTippingContractUtil.getTips = states => aggregateStates(states, formatTips)
 basicTippingContractUtil.getClaims = states => aggregateStates(states, formatClaims);
 
 basicTippingContractUtil.formatSingleRetip = formatSingleRetip;
+
+basicTippingContractUtil.formatSingleTip = formatSingleTip;
+basicTippingContractUtil.rawTipUrlId = rawTipUrlId;
 
 module.exports = basicTippingContractUtil;

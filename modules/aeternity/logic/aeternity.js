@@ -204,6 +204,12 @@ const aeternity = {
     });
   },
 
+  async getTipV2(value) {
+    const tipId = await client.contractDecodeData('contract Decode =\n  entrypoint int(): int = 0', 'int', value, 'ok');
+    const rawTip = await contractV2Getter.methods.get_tip_by_id(process.env.CONTRACT_V2_ADDRESS, tipId).then(res => res.decodedResult);
+    const url = await contractV2Getter.methods.get_url_by_id(process.env.CONTRACT_V2_ADDRESS, basicTippingContractUtil.rawTipUrlId(rawTip)).then(res => res.decodedResult);
+    return basicTippingContractUtil.formatSingleTip(process.env.CONTRACT_V2_ADDRESS, '_v2', tipId, rawTip, url)
+  },
   async getRetipV2(value) {
     const retipId = await client.contractDecodeData('contract Decode =\n  entrypoint int(): int = 0', 'int', value, 'ok');
     return contractV2Getter.methods.get_retip_by_id(process.env.CONTRACT_V2_ADDRESS, retipId).then(res =>

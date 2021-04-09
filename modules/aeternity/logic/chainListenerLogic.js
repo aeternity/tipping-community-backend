@@ -13,43 +13,7 @@ const wsclient = new WebSocketClient();
 if (!process.env.WEBSOCKET_URL) throw new Error('WEBSOCKET_URL is not set');
 
 const handleContractEvent = async event => {
-  switch (event.name) {
-    case 'TipReceived':
-      // NEW TIP
-      await queueLogic.sendMessage(MESSAGE_QUEUES.BLOCKCHAIN, MESSAGES.BLOCKCHAIN.EVENTS.TIP_RECEIVED);
-      break;
-    case 'TipTokenReceived':
-      // NEW TOKEN TIP
-      await queueLogic.sendMessage(MESSAGE_QUEUES.BLOCKCHAIN, MESSAGES.BLOCKCHAIN.EVENTS.TIP_RECEIVED);
-      break;
-    case 'ReTipReceived':
-      // NEW RETIP
-      await queueLogic.sendMessage(MESSAGE_QUEUES.BLOCKCHAIN, MESSAGES.BLOCKCHAIN.EVENTS.TIP_RECEIVED);
-      break;
-    case 'ReTipTokenReceived':
-      // NEW TOKEN RETIP
-      await queueLogic.sendMessage(MESSAGE_QUEUES.BLOCKCHAIN, MESSAGES.BLOCKCHAIN.EVENTS.TIP_RECEIVED);
-      break;
-    case 'TipWithdrawn':
-      // CLAIM
-      await queueLogic.sendMessage(MESSAGE_QUEUES.BLOCKCHAIN, MESSAGES.BLOCKCHAIN.EVENTS.TIP_WITHDRAWN);
-      break;
-    case 'QueryOracle':
-      // ORACLE HAS RECEIVED A QUERY
-      break;
-    case 'CheckPersistClaim':
-      // ORACLE CHECKED CLAIM
-      break;
-    case 'Transfer':
-      // TRANSFER AEX9
-      break;
-    case 'Allowance':
-      // ALLOWANCE AEX9
-      break;
-    default:
-      logger.info('Unknown event:');
-      logger.info(event);
-  }
+  await queueLogic.sendMessage(MESSAGE_QUEUES.BLOCKCHAIN, MESSAGES.BLOCKCHAIN.EVENTS.EVENT_RECEIVED, event);
 };
 
 const subscribeToContract = contract => {
@@ -67,8 +31,16 @@ const handleWebsocketMessage = async message => {
     const data = JSON.parse(message.utf8Data);
     if (data.subscription === 'Object') {
       const tx = await CacheLogic.getTx(data.payload.hash);
-      const events = await aeternity.decodeTransactionEventsFromNode(tx);
-      if (events.length > 0) events.map(event => handleContractEvent(event));
+      const events = await aeternity.decodeTransactionEvents({
+        ...data.payload,
+        tx: {
+          ...data.payload.tx,
+          log: tx.log,
+        },
+      });
+      if (events.length > 0) {
+        events.map(event => handleContractEvent(event));
+      }
     }
   }
 };

@@ -22,10 +22,10 @@ const MdwLogic = {
   },
 
   async getContractTransactions(upperHeight, lowerHeight, contract) {
-    return MdwLogic.iterateMdw(contract, `txs/backward${upperHeight}-${lowerHeight}?contract=${contract}&type=contract_call&limit=${LIMIT}`, true);
+    return MdwLogic.iterateMdw(contract, `txs/gen/${upperHeight}-${lowerHeight}?contract=${contract}&type=contract_call&limit=${LIMIT}`, true);
   },
 
-  async middlewareContractTransactions(upperHeight, lowerHeight = upperHeight - 50) {
+  async middlewareContractTransactions(upperHeight, lowerHeight) {
     try {
       const result = await MdwLogic.getContractTransactions(upperHeight, lowerHeight, process.env.CONTRACT_V1_ADDRESS);
       if (process.env.CONTRACT_V2_ADDRESS) {
@@ -36,7 +36,7 @@ const MdwLogic = {
       }
       return result.reduce((acc, tx) => [
         ...acc,
-        ...aeternity.decodeTransactionEventsFromMdw(tx),
+        ...aeternity.decodeTransactionEvents(tx),
       ], []);
     } catch (e) {
       logger.error(`Could not fetch events from middleware: ${e.message}`);

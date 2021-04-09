@@ -108,7 +108,7 @@ const aeternity = {
     return client.getBalance(address);
   },
 
-  decodeTransactionEvents(log) {
+  decodeTransactionEventLog(log) {
     const eventsSchema = [
       { name: 'TipReceived', types: [SOPHIA_TYPES.address, SOPHIA_TYPES.int, SOPHIA_TYPES.string] },
       {
@@ -192,13 +192,13 @@ const aeternity = {
     });
   },
 
-  decodeTransactionEventsFromNode(tx) {
-    return aeternity.decodeTransactionEvents(tx.log);
+  decodeTransactionEvents(data) {
+    const decodedEvents = aeternity.decodeTransactionEventLog(data.tx.log);
+    return aeternity.flattenResultingEvents(decodedEvents, data);
   },
 
-  decodeTransactionEventsFromMdw(data) {
-    const decodedEvents = aeternity.decodeTransactionEvents(data.tx.log);
-    return decodedEvents.map(decodedEvent => ({
+  flattenResultingEvents(events, data) {
+    return events.map(decodedEvent => ({
       event: decodedEvent.name, // Deprecated property TODO remove
       name: decodedEvent.name,
       caller: data.tx.caller_id,
@@ -208,6 +208,7 @@ const aeternity = {
       time: data.micro_time,
       contract: data.tx.contract_id,
       ...decodedEvent.parsedEvent,
+      data,
     }));
   },
 

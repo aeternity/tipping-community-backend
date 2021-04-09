@@ -155,7 +155,7 @@ describe('Token Cache', () => {
     });
 
     it('it should get the word registry overview', async function () {
-      this.timeout(15000);
+      this.timeout(25000);
       cache.del(['wordRegistryData']);
       sandbox.stub(aeternity, 'fetchWordRegistryData').callsFake(async () => ({
         owner: 'ak_2VnwoJPQgrXvreUx2L9BVvd9BidWwpu1ASKK1AMre21soEgpRT',

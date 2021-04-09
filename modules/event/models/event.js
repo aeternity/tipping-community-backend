@@ -24,8 +24,20 @@ module.exports = (sequelize, DataTypes) => sequelize.define('Event', {
     type: DataTypes.ARRAY(DataTypes.STRING),
     allowNull: false,
   },
-  time: {
+  url: {
+    type: DataTypes.TEXT,
+    allowNull: true,
+  },
+  amount: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  nonce: {
     type: DataTypes.INTEGER,
+    allowNull: true,
+  },
+  time: {
+    type: DataTypes.BIGINT,
     allowNull: true,
   },
   data: {
@@ -35,7 +47,7 @@ module.exports = (sequelize, DataTypes) => sequelize.define('Event', {
 }, {
   indexes: [
     {
-      fields: ['name', 'height', 'time'],
+      fields: ['name', 'url', 'height', 'time'],
     },
   ],
   timestamps: true,

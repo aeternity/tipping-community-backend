@@ -24,7 +24,13 @@ const EventLogic = {
     });
   },
 
-  async getRelevantEventsFromDB(relevantAddresses) {
+  async getEventsForURL(url) {
+    return Event.findAll({
+      where: { url },
+    });
+  },
+
+  async getEventsForAddresses(relevantAddresses) {
     return Event.findAll({
       where: {
         addresses: {
@@ -97,7 +103,7 @@ const EventLogic = {
       });
 
       // get events until we hit db
-      const maxHeightInDB = await Event.max('height') ?? 0;
+      const maxHeightInDB = await Event.max('height') || 0;
       // go from current to lowest height
       const newEvents = await MdwLogic.middlewareContractTransactions(currentHeight, maxHeightInDB + 1);
       return Event.bulkCreate(newEvents.map(event => EventLogic.prepareEventForDB(event)));

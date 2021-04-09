@@ -1,6 +1,7 @@
 const { Router } = require('express');
 const BigNumber = require('bignumber.js');
 const Fuse = require('fuse.js');
+const { Op } = require('sequelize');
 const CacheLogic = require('../logic/cacheLogic');
 const cacheAggregatorLogic = require('../logic/cacheAggregatorLogic');
 const { topicsRegex } = require('../../aeternity/utils/tipTopicUtil');
@@ -8,6 +9,7 @@ const searchOptions = require('../constants/searchOptions');
 const queueLogic = require('../../queue/logic/queueLogic');
 const { getTipTopics } = require('../../aeternity/utils/tipTopicUtil');
 const { MESSAGES, MESSAGE_QUEUES } = require('../../queue/constants/queue');
+const { Event } = require('../../../models');
 
 const router = new Router();
 
@@ -365,12 +367,24 @@ router.get('/topics', async (req, res) => {
  *                 type: object
  */
 router.get('/events', async (req, res) => {
-  let contractEvents = await CacheLogic.findContractEvents();
-  if (req.query.address) contractEvents = contractEvents.filter(e => e.address === req.query.address);
-  if (req.query.event) contractEvents = contractEvents.filter(e => e.event === req.query.event);
-  contractEvents.sort((a, b) => b.time - a.time || b.nonce - a.nonce);
-  if (req.query.limit) contractEvents = contractEvents.slice(0, parseInt(req.query.limit, 10));
-  res.send(contractEvents);
+  res.send(await Event.findAll({
+    where: {
+      ...(typeof req.query.address !== 'undefined') && {
+        addresses: {
+          [Op.in]: req.query.address,
+        },
+      },
+      ...(typeof req.query.event !== 'undefined') && {
+        name: req.query.event,
+      },
+    },
+    order: [
+      ['height', 'DESC'],
+      ['time', 'DESC'],
+      ['nonce', 'DESC'],
+    ],
+    limit: req.query.limit ? req.query.limit : null,
+  }));
 });
 
 /**
@@ -408,6 +422,7 @@ router.get('/invalidate/oracle', async (req, res) => {
  * @swagger
  * /cache/invalidate/events:
  *   get:
+ *     deprecated: true
  *     tags:
  *       - cache
  *     summary: Invalidates the chain events cache
@@ -416,8 +431,6 @@ router.get('/invalidate/oracle', async (req, res) => {
  *         description: OK
  */
 router.get('/invalidate/events', async (req, res) => {
-  await CacheLogic.invalidateContractEvents();
-  CacheLogic.findContractEvents(); // just trigger cache update, so follow up requests may have it cached already
   if (res) res.send({ status: 'OK' });
 });
 /**

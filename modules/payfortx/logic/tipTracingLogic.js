@@ -3,6 +3,7 @@ const path = require('path');
 const aeternity = require('../../aeternity/logic/aeternity');
 const { Trace: TraceModel } = require('../../../models');
 const CacheLogic = require('../../cache/logic/cacheLogic');
+const EventLogic = require('../../event/logic/eventLogic');
 
 module.exports = class TipTracing {
   static async getAllTraces(req, res) {
@@ -42,8 +43,7 @@ module.exports = class TipTracing {
     const unsafeCheckOracleAnswers = await aeternity.getUnsafeOracleAnswersForUrl(tip.url);
 
     // Deliberately not cached
-    const events = await CacheLogic.findContractEvents()
-      .then(transactionEvents => transactionEvents.filter(e => e.url === tip.url));
+    const events = await EventLogic.getEventsForURL(tip.url);
 
     const result = {
       tip,

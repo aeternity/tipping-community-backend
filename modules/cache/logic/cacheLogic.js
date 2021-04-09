@@ -26,7 +26,6 @@ const CacheLogic = {
       await CacheLogic.fetchChainNames();
       await CacheLogic.fetchPrice();
       await CacheLogic.getOracleState();
-      await CacheLogic.findContractEvents();
       await CacheLogic.getTokenInfos();
       if (process.env.WORD_REGISTRY_CONTRACT) {
         await CacheLogic.refreshWordAndVoteData(); // keeps hot even if undefined is passed as argument
@@ -43,16 +42,6 @@ const CacheLogic = {
       await CacheLogic.getTips();
       await queueLogic.deleteMessage(MESSAGE_QUEUES.CACHE, message.id);
     });
-  },
-
-  async findContractEvents() {
-    const fetchContractEvents = async () => {
-      const height = await aeternity.getHeight();
-      const contractTransactions = await MdwLogic.middlewareContractTransactions(height, 0);
-      return contractTransactions.asyncMap(tx => aeternity.decodeTransactionEvents(tx));
-    };
-
-    return cache.getOrSet(['contractEvents'], async () => fetchContractEvents().catch(logger.error), cache.shortCacheTime, false);
   },
 
   async fetchPrice() {

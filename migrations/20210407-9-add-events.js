@@ -6,14 +6,14 @@ var Sequelize = require('sequelize');
  * Actions summary:
  *
  * createTable "Events", deps: []
- * addIndex "events_name_height_time" to table "Events"
+ * addIndex "events_name_url_height_time" to table "Events"
  *
  **/
 
 var info = {
-    "revision": 8,
+    "revision": 9,
     "name": "noname",
-    "created": "2021-04-07T14:28:33.827Z",
+    "created": "2021-04-09T13:27:25.009Z",
     "comment": ""
 };
 
@@ -55,8 +55,23 @@ var migrationCommands = function(transaction) {
                         "field": "addresses",
                         "allowNull": false
                     },
-                    "time": {
+                    "url": {
+                        "type": Sequelize.TEXT,
+                        "field": "url",
+                        "allowNull": true
+                    },
+                    "amount": {
+                        "type": Sequelize.STRING,
+                        "field": "amount",
+                        "allowNull": true
+                    },
+                    "nonce": {
                         "type": Sequelize.INTEGER,
+                        "field": "nonce",
+                        "allowNull": true
+                    },
+                    "time": {
+                        "type": Sequelize.BIGINT,
                         "field": "time",
                         "allowNull": true
                     },
@@ -85,10 +100,10 @@ var migrationCommands = function(transaction) {
             fn: "addIndex",
             params: [
                 "Events",
-                ["name", "height", "time"],
+                ["name", "url", "height", "time"],
                 {
-                    "indexName": "events_name_height_time",
-                    "name": "events_name_height_time",
+                    "indexName": "events_name_url_height_time",
+                    "name": "events_name_url_height_time",
                     "transaction": transaction
                 }
             ]

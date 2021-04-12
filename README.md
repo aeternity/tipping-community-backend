@@ -26,14 +26,15 @@ docker-compose up -d
 npm i
 ```
 
-
 #### Create Database
-(note that you need ipfs & redis & the above mentioned env)
 
 ```bash
 npm run db:makemigrations
 ```
 #### Start server
+
+In order to run the server, an **ipfs, redis & the above mentioned env** are required
+
 ```bash
-node server.js
+node bin/www.js
 ```

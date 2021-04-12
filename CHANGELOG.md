@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.9.1](https://www.github.com/aeternity/tipping-community-backend/compare/v1.9.0...v1.9.1) (2021-04-12)
+
+
+### Bug Fixes
+
+* **cache:** events can now be filtered without errors ([4161350](https://www.github.com/aeternity/tipping-community-backend/commit/4161350dae14a33a79f1f31beb961a20bebf3c90))
+
 ## [1.9.0](https://www.github.com/aeternity/tipping-community-backend/compare/v1.8.1...v1.9.0) (2021-04-12)
 
 

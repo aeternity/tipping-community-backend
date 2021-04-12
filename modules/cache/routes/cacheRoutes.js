@@ -371,7 +371,7 @@ router.get('/events', async (req, res) => {
     where: {
       ...(typeof req.query.address !== 'undefined') && {
         addresses: {
-          [Op.in]: req.query.address,
+          [Op.contains]: [req.query.address],
         },
       },
       ...(typeof req.query.event !== 'undefined') && {

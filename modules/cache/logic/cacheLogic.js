@@ -321,10 +321,6 @@ const CacheLogic = {
     await cache.del(['oracleState']);
   },
 
-  async invalidateContractEvents() {
-    await cache.del(['contractEvents']);
-  },
-
   async invalidateTokenCache(tokenContractAddress) {
     await cache.del(['getTokenAccounts', tokenContractAddress]);
   },

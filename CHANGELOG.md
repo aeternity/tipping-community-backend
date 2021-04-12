@@ -2,6 +2,76 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.9.0](https://www.github.com/aeternity/tipping-community-backend/compare/v1.8.1...v1.9.0) (2021-04-12)
+
+
+### Features
+
+* adds cacheBust query to image routes ([25dd764](https://www.github.com/aeternity/tipping-community-backend/commit/25dd764009dd1f59991cc6cfbc9757b45c3d24e6))
+* **blacklist:** renames flagger to author ([b2d28c2](https://www.github.com/aeternity/tipping-community-backend/commit/b2d28c2756ff7c4a485bd53ec266a471d5f71c23))
+* **contractutil:** update util for changed tip types ([9eb8f69](https://www.github.com/aeternity/tipping-community-backend/commit/9eb8f6980c7751a03fe4aaf4d1834eeff66515fe))
+* **dependencies:** update dependencies ([a9cef7c](https://www.github.com/aeternity/tipping-community-backend/commit/a9cef7c09e636a50e99b05e0ff0aa77edc32b925))
+* **events:** adds base implementation ([3e5bdca](https://www.github.com/aeternity/tipping-community-backend/commit/3e5bdcacd45d608e7abd6c360e2f029ba7ae583a))
+* **events:** adds migration ([323e4ce](https://www.github.com/aeternity/tipping-community-backend/commit/323e4cec9004d306054481316fb4e38a957d3b77))
+* **events:** new event logic with tests ([702f532](https://www.github.com/aeternity/tipping-community-backend/commit/702f532acb831d48b6d666c9b42094375dee75f5))
+* **events:** updates db table to allow for easier sorting & filtering ([bc0298d](https://www.github.com/aeternity/tipping-community-backend/commit/bc0298d7de394865108c0b77c9002a46c75ed862))
+* introduces api validation ([741f9ee](https://www.github.com/aeternity/tipping-community-backend/commit/741f9ee4b11e710d79b6e9c4e9f9f2dc0890c41f))
+* **queue:** adds events queue & moves blockchain events ([fb95b5f](https://www.github.com/aeternity/tipping-community-backend/commit/fb95b5ff1c22c3d39bcbabf45a23fe174dd62ee0))
+* **queue:** adds payload ([99db528](https://www.github.com/aeternity/tipping-community-backend/commit/99db52828d46da46fe9a567b1606dd6fd5ae9194))
+* **wordbazaar:** support less confirmation contracts ([27ccbd4](https://www.github.com/aeternity/tipping-community-backend/commit/27ccbd4b637c8eea368dca2b58126642baeae720))
+
+
+### Bug Fixes
+
+* **aeternity:** adjusts timeout in tests ([fa5257d](https://www.github.com/aeternity/tipping-community-backend/commit/fa5257d32805e13921962a49514c75c3c9f705cb))
+* **aeternity:** fixes crash on decoding empty event ([c50772a](https://www.github.com/aeternity/tipping-community-backend/commit/c50772a9da80c5d8f0e9fa45fed2ba259bd435c1))
+* allows all non-required fields to be null ([365c488](https://www.github.com/aeternity/tipping-community-backend/commit/365c488a56aad407df2066e4877f420323edf54e))
+* **auth:** openapi security schema ([16afd5c](https://www.github.com/aeternity/tipping-community-backend/commit/16afd5cef902da0da92176a77f81b287b5ea1eb9))
+* **blacklist:** fixes json model representation ([7feec9d](https://www.github.com/aeternity/tipping-community-backend/commit/7feec9d4302d682f4b1a14be7f7a6387359d5083))
+* **cache:** adjusts tests naming ([8903b81](https://www.github.com/aeternity/tipping-community-backend/commit/8903b81e3ed85b6ae881e7466495d2dcc1ea60a5))
+* **chainlistener:** reconnects on closed connection ([bce29fa](https://www.github.com/aeternity/tipping-community-backend/commit/bce29fa67289c4480e3c96418335f2284e232522))
+* **docs:** fixes doc type errors ([d898cb1](https://www.github.com/aeternity/tipping-community-backend/commit/d898cb14ebb558ebed443f196d7b54862a41c19f))
+* **linkpreview:** uses status code to determine response success ([d6e9b29](https://www.github.com/aeternity/tipping-community-backend/commit/d6e9b29a470595ceb41c2988bd74cc395c36942e))
+* **mq:** retips are now processed after tips ([541f65d](https://www.github.com/aeternity/tipping-community-backend/commit/541f65ddab08a8a7492cf001c142a85909246caf))
+* **names:** filters empty names properly ([5922652](https://www.github.com/aeternity/tipping-community-backend/commit/5922652434fcc43d8c7e5ac2658207940248bc94))
+* **profile:** image uploads no longer overwrite each other ([f410a05](https://www.github.com/aeternity/tipping-community-backend/commit/f410a050196c0464f2053ec77e03841ec17c3d0a))
+* **swagger:** moves to nullable property to satisfy linter ([8082407](https://www.github.com/aeternity/tipping-community-backend/commit/80824079e0063df3d44cd070a7de8b2bba11c4d9))
+* **wordbazaar:** increases timeout as registry gets bigger ([dd72d2c](https://www.github.com/aeternity/tipping-community-backend/commit/dd72d2c57dd827f773ae9b4e0e6e98431b09d80b))
+
+
+### CI / CD
+
+* adds package lock ([7f7fd55](https://www.github.com/aeternity/tipping-community-backend/commit/7f7fd55e892102cfa4057366f33209682a0583b0))
+* **docs:** ensures swagger file is available ([41df0e3](https://www.github.com/aeternity/tipping-community-backend/commit/41df0e301bec6c05b17e4384e3fff0917a60a441))
+* uses npm ci for ci ([1f14626](https://www.github.com/aeternity/tipping-community-backend/commit/1f146265c00f210fe5b333dc958c961510ad33e3))
+
+
+### Refactorings
+
+* **aeternity:** makes contract and client private & moves to module ([145d6a3](https://www.github.com/aeternity/tipping-community-backend/commit/145d6a3a7386923abea84bcedcf918c1fe2c9a1a))
+* **aggregator:** moves from class to module ([91f0d85](https://www.github.com/aeternity/tipping-community-backend/commit/91f0d8543cc65fa05b4a3c4f07e6455e515cce04))
+* **authentication:** creates singleton ([c2110b3](https://www.github.com/aeternity/tipping-community-backend/commit/c2110b3a59477ddb60d63f55af75f3430a2f2c76))
+* **backup:** creates singleton ([02a7802](https://www.github.com/aeternity/tipping-community-backend/commit/02a78028e5d4f077c5e33cb3063c8b4fd9bac4b3))
+* **blacklist:** creates singleton ([64574ad](https://www.github.com/aeternity/tipping-community-backend/commit/64574ad08b9b421a7f6d10fd63aef63259fb693e))
+* **blacklist:** fixes tests ([060e377](https://www.github.com/aeternity/tipping-community-backend/commit/060e3772cb5f298f228962ae4d78506693517489))
+* **blacklist:** moves from class to module ([f8fd89f](https://www.github.com/aeternity/tipping-community-backend/commit/f8fd89fd16d5207d334b3ee9c1b0ef57935b5861))
+* **cache:** moves from class to module ([b8b2f48](https://www.github.com/aeternity/tipping-community-backend/commit/b8b2f48223b7eb9d95d0a302465b34c4f62d2149))
+* **comment:** moves from class to module ([845068f](https://www.github.com/aeternity/tipping-community-backend/commit/845068f8f50a932e47d01038f9646bc626313db4))
+* **comment:** removes express handlers from module ([e52d183](https://www.github.com/aeternity/tipping-community-backend/commit/e52d183f3d2c4d9d73c6093d809da4b38dd96be1))
+* **ipfs:** fixes health test ([c1931bb](https://www.github.com/aeternity/tipping-community-backend/commit/c1931bbdf84d89db8ad1672acaeaad52a9eefa31))
+* **ipfs:** moves from class to module ([c1644c4](https://www.github.com/aeternity/tipping-community-backend/commit/c1644c40a1d8fa4a3055b52a90a14a5656134ef4))
+* **mdw:** moves from class to module ([77853e2](https://www.github.com/aeternity/tipping-community-backend/commit/77853e2364805b6f2a1015aead1137b9b107158a))
+* moves from classes to modules ([021330c](https://www.github.com/aeternity/tipping-community-backend/commit/021330cf5d9198fb193b03ef82464414f8b63932))
+
+
+### Miscellaneous
+
+* **ci:** adds refactorings as separate category ([c4d34d5](https://www.github.com/aeternity/tipping-community-backend/commit/c4d34d52d1154675a1a6fe9750f7ebe5f1b69836))
+* **comment:** removes unused function ([5c4a0ba](https://www.github.com/aeternity/tipping-community-backend/commit/5c4a0ba70991f12e936c87f19cc7fe3b6155cff8))
+* **dependencies:** update dependencies ([13fd7bc](https://www.github.com/aeternity/tipping-community-backend/commit/13fd7bc5c8cd151baf33bac81c64202f7c38f55a))
+* **docs:** updated local setup instructions ([def2e8c](https://www.github.com/aeternity/tipping-community-backend/commit/def2e8cfead122264b5a7115ecb84cd86ff6849d))
+* **logger:** log full error in link preview ([fd5904c](https://www.github.com/aeternity/tipping-community-backend/commit/fd5904c3cf5d48c7a4b8649a5a0abe4063a69c27))
+
 ### [1.8.1](https://www.github.com/aeternity/tipping-community-backend/compare/v1.8.0...v1.8.1) (2021-02-05)
 
 

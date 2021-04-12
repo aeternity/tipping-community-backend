@@ -8,7 +8,6 @@ const server = require('../../../server');
 const cache = require('../utils/cache');
 const CacheLogic = require('../logic/cacheLogic');
 const BlacklistLogic = require('../../blacklist/logic/blacklistLogic');
-const MdwLogic = require('../../aeternity/logic/mdwLogic');
 const aeternity = require('../../aeternity/logic/aeternity');
 const cacheAggregatorLogic = require('../logic/cacheAggregatorLogic');
 const { MESSAGES } = require('../../queue/constants/queue');
@@ -303,62 +302,32 @@ describe('Cache', () => {
       checkCachedRoute('/cache/topics', 'array', done);
     });
 
-    it('it should GET all cached events', done => {
-      const mockData = [
-        {
-          block_hash: 'mh_2fq2n5muPiZSPuvyQu3YK79zdnYMd6b4Hi2oTk7VuNVJjh5jDH',
-          block_height: 325384,
-          hash: 'th_mrVytfYRrcse1RP7zNX9eSciczCQtqmZXzxzuNdm4TXEZh7oD',
-          micro_index: 0,
-          micro_time: 1602082686948,
-          signatures: [
-            'sg_Ur673FGUiHoBFza9EuvoJgXXDr9NwhEUzhZoqjwufwyC24jTWoSzTiRzHgpYpCVwsabhjMngFKYgPfrA6rF1AYMmViDU',
-          ],
-          tx: {
-            abi_version: 3,
-            amount: 100000000000000000,
-            arguments: [
-              {
-                type: 'int',
-                value: 45,
-              },
-            ],
-            call_data: 'cb_KxEq+mD+G1qjoslB',
-            caller_id: 'ak_y87WkN4C4QevzjTuEYHg6XLqiWx3rjfYDFLBmZiqiro5mkRag',
-            contract_id: 'ct_2Cvbf3NYZ5DLoaNYAU71t67DdXLHeSXhodkSNifhgd7Xsw28Xd',
-            fee: 182220000000000,
-            function: 'retip',
-            gas: 1579000,
-            gas_price: 1000000000,
-            gas_used: 3267,
-            log: [
-              {
-                address: 'ct_2Cvbf3NYZ5DLoaNYAU71t67DdXLHeSXhodkSNifhgd7Xsw28Xd',
-                data: 'cb_aHR0cHM6Ly9naXRodWIuY29tL3RoZXBpd2+QKOcm',
-                topics: [
-                  '48681722754138618263354476717335781731040556347805491032746127333257780314942',
-                  '57639713195292369493552360805284271936076756489947923784567159882221348109905',
-                  '100000000000000000',
-                ],
-              },
-            ],
-            nonce: 917,
-            result: {
-              type: 'unit',
-              value: '',
-            },
-            return_type: 'ok',
-            type: 'ContractCallTx',
-            version: 1,
-          },
-          tx_index: 13883628,
-        },
-      ];
+    it('it should GET all cached events', async () => {
+      const res = await chai.request(server).get('/cache/events');
+      res.should.have.status(200);
+      res.body.should.be.an('array');
 
-      sinon.stub(MdwLogic, 'middlewareContractTransactions').callsFake(async () => mockData);
-      checkCachedRoute('/cache/events', 'array', () => {
-        done();
-      });
+      const resAddress = await chai.request(server).get('/cache/events?address=ak_2Cvbf3NYZ5DLoaNYAU71t67DdXLHeSXhodkSNifhgd7Xsw28Xd');
+      resAddress.should.have.status(200);
+      resAddress.body.should.be.an('array');
+
+      const resFakeAddress = await chai.request(server).get('/cache/events?address=ak_not_in_there');
+      resFakeAddress.should.have.status(200);
+      resFakeAddress.body.should.be.an('array');
+      resFakeAddress.body.should.have.length(0);
+
+      const resLimit = await chai.request(server).get('/cache/events?limit=1');
+      resLimit.should.have.status(200);
+      resLimit.body.should.be.an('array');
+      resLimit.body.should.have.length(1);
+
+      const resEventFilter = await chai.request(server).get('/cache/events?event=TipWithdrawn');
+      resEventFilter.should.have.status(200);
+      resEventFilter.body.should.be.an('array');
+
+      const resEventEmpty = await chai.request(server).get('/cache/events?event=TipReceived');
+      resEventEmpty.should.have.status(200);
+      resEventEmpty.body.should.be.an('array');
     });
 
     it(`it should GET all cached events in less than ${minimalTimeout}ms`, function (done) {

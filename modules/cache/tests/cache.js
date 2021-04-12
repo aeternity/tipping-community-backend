@@ -13,6 +13,7 @@ const cacheAggregatorLogic = require('../logic/cacheAggregatorLogic');
 const { MESSAGES } = require('../../queue/constants/queue');
 const { MESSAGE_QUEUES } = require('../../queue/constants/queue');
 const queueLogic = require('../../queue/logic/queueLogic');
+const { Event } = require('../../../models');
 
 chai.should();
 chai.use(chaiHttp);
@@ -303,13 +304,34 @@ describe('Cache', () => {
     });
 
     it('it should GET all cached events', async () => {
+      await Event.destroy({
+        where: {},
+        truncate: true,
+      });
+
+      const sampleEvent = {
+        name: 'TipWithdrawn',
+        hash: 'th_1',
+        contract: 'ct_1',
+        height: 0,
+        addresses: ['ak_in', 'ak_in_2'],
+        url: 'example.com',
+        amount: '1000',
+        nonce: 1,
+        time: 1000,
+        data: {},
+      };
+      await Event.bulkCreate([sampleEvent, sampleEvent, sampleEvent]);
+
       const res = await chai.request(server).get('/cache/events');
       res.should.have.status(200);
       res.body.should.be.an('array');
+      res.body.should.have.length(3);
 
-      const resAddress = await chai.request(server).get('/cache/events?address=ak_2Cvbf3NYZ5DLoaNYAU71t67DdXLHeSXhodkSNifhgd7Xsw28Xd');
+      const resAddress = await chai.request(server).get('/cache/events?address=ak_in');
       resAddress.should.have.status(200);
       resAddress.body.should.be.an('array');
+      resAddress.body.should.have.length(3);
 
       const resFakeAddress = await chai.request(server).get('/cache/events?address=ak_not_in_there');
       resFakeAddress.should.have.status(200);
@@ -324,10 +346,12 @@ describe('Cache', () => {
       const resEventFilter = await chai.request(server).get('/cache/events?event=TipWithdrawn');
       resEventFilter.should.have.status(200);
       resEventFilter.body.should.be.an('array');
+      resEventFilter.body.should.have.length(3);
 
       const resEventEmpty = await chai.request(server).get('/cache/events?event=TipReceived');
       resEventEmpty.should.have.status(200);
       resEventEmpty.body.should.be.an('array');
+      resEventEmpty.body.should.have.length(0);
     });
 
     it(`it should GET all cached events in less than ${minimalTimeout}ms`, function (done) {

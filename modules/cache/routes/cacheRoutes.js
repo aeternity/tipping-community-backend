@@ -364,7 +364,7 @@ router.get('/topics', async (req, res) => {
  *             schema:
  *               type: array
  *               items:
- *                 type: object
+ *                 $ref: '#/components/schemas/Event'
  */
 router.get('/events', async (req, res) => {
   res.send(await Event.findAll({

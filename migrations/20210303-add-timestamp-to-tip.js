@@ -5,57 +5,44 @@ var Sequelize = require('sequelize');
 /**
  * Actions summary:
  *
- * createTable "ChainNames", deps: []
+ * addColumn "timestamp" to table "Tips"
  *
  **/
 
 var info = {
-    "revision": 18,
-    "name": "noname",
-    "created": "2021-03-17T12:01:07.037Z",
+    "revision": 17,
+    "name": "add-timestamp-to-tip",
+    "created": "2021-03-03T17:07:58.945Z",
     "comment": ""
 };
 
 var migrationCommands = function(transaction) {
     return [{
-        fn: "createTable",
+        fn: "addColumn",
         params: [
-            "ChainNames",
+            "Tips",
+            "timestamp",
             {
-                "publicKey": {
-                    "type": Sequelize.STRING,
-                    "field": "publicKey",
-                    "allowNull": false,
-                    "primaryKey": true
-                },
-                "name": {
-                    "type": Sequelize.STRING,
-                    "field": "name",
-                    "allowNull": false
-                },
-                "createdAt": {
-                    "type": Sequelize.DATE,
-                    "field": "createdAt",
-                    "allowNull": false
-                },
-                "updatedAt": {
-                    "type": Sequelize.DATE,
-                    "field": "updatedAt",
-                    "allowNull": false
-                }
+                "type": Sequelize.DATE,
+                "field": "timestamp",
+                "allowNull": false
             },
             {
-                "transaction": transaction
+                transaction: transaction
             }
         ]
     }];
 };
 var rollbackCommands = function(transaction) {
     return [{
-        fn: "dropTable",
-        params: ["ChainNames", {
-            transaction: transaction
-        }]
+        fn: "removeColumn",
+        params: [
+            "Tips",
+            "timestamp",
+            {
+                transaction: transaction
+            }
+        ]
     }];
 };
 
@@ -88,9 +75,13 @@ module.exports = {
             return run(null);
         }
     },
-    up: function(queryInterface, Sequelize)
+    up: async function(queryInterface, Sequelize)
     {
-        return this.execute(queryInterface, Sequelize, migrationCommands);
+      const transaction = await queryInterface.sequelize.transaction();
+      await queryInterface.sequelize.query('TRUNCATE TABLE "Tips" CASCADE;', { transaction });
+      await transaction.commit();
+
+      return this.execute(queryInterface, Sequelize, migrationCommands);
     },
     down: function(queryInterface, Sequelize)
     {

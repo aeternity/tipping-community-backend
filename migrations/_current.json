@@ -124,7 +124,7 @@
                         "key": "id"
                     },
                     "onDelete": "NO ACTION",
-                    "onUpdate": "CASCADE",
+                    "onUpdate": "NO ACTION",
                     "seqType": "Sequelize.STRING"
                 },
                 "text": {
@@ -948,5 +948,5 @@
             "indexes": []
         }
     },
-    "revision": 21
+    "revision": 24
 }

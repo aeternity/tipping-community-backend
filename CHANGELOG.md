@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.9.2](https://www.github.com/aeternity/tipping-community-backend/compare/v1.9.1...v1.9.2) (2021-04-14)
+
+
+### Bug Fixes
+
+* **notifications:** allows peeked status to be set ([82e73cb](https://www.github.com/aeternity/tipping-community-backend/commit/82e73cbfc4e7c141c79c510f935c59ab8fbc92d0))
+* **profile:** adds tests to legacy endpoint and updates docs ([0bd8cf5](https://www.github.com/aeternity/tipping-community-backend/commit/0bd8cf5829ab782b1993788f04f2243e7be9fb2f))
+
 ### [1.9.1](https://www.github.com/aeternity/tipping-community-backend/compare/v1.9.0...v1.9.1) (2021-04-12)
 
 

@@ -8,9 +8,9 @@ var Sequelize = require('sequelize');
  **/
 
 var info = {
-    "revision": 21,
-    "name": "noname",
-    "created": "2021-03-24T17:52:44.945Z",
+    "revision": 18,
+    "name": "tips-aggregation-materialized-view",
+    "created": "2021-03-04T10:48:44.945Z",
     "comment": ""
 };
 
@@ -53,57 +53,41 @@ module.exports = {
     up: async function(queryInterface, Sequelize)
     {
       const transaction = await queryInterface.sequelize.transaction();
-      await queryInterface.sequelize.query('CREATE INDEX tip_sender_idx ON "Tips" ("sender");', { transaction });
-      await queryInterface.sequelize.query('CREATE INDEX retip_sender_idx ON "Retips" ("sender");', { transaction });
-
       await queryInterface.sequelize.query(`
-CREATE MATERIALIZED VIEW SenderStats AS
-SELECT "Tip"."sender",
-
-       (SELECT COUNT("Tips"."id") FROM "Tips" WHERE "Tips"."sender" = "Tip"."sender") AS tipsLength,
-
-       (SELECT COUNT("Retips"."id")
-        FROM "Retips"
-        WHERE "Retips"."sender" = "Tip"."sender")                                     AS retipsLength,
-
-       ((SELECT COUNT("Retips"."id")
-         FROM "Retips"
-         WHERE "Retips"."sender" = "Tip"."sender") +
-        (SELECT COUNT("Tips"."id")
-         FROM "Tips"
-         WHERE "Tips"."sender" = "Tip"."sender"))                                     AS totalTipsLength,
+CREATE MATERIALIZED VIEW TipsAggregation AS
+SELECT "Tip"."id",
 
        (SELECT COALESCE(SUM(amounts.amount), 0)::VARCHAR
         FROM (SELECT SUM(COALESCE("Retips"."amount", 0)) AS amount
               FROM "Tips"
                        LEFT OUTER JOIN "Retips" ON "Tips"."id" = "Retips"."tipId"
-              WHERE "Tips"."sender" = "Tip"."sender"
+              WHERE "Tips"."id" = "Tip"."id"
               UNION
               SELECT SUM(COALESCE("Tips"."amount", 0)) AS amount
               FROM "Tips"
-              WHERE "Tips"."sender" = "Tip"."sender") AS amounts
+              WHERE "Tips"."id" = "Tip"."id") AS amounts
         WHERE amounts.amount > 0)           AS totalAmount,
 
        (SELECT COALESCE(SUM(amounts.amount), 0)::VARCHAR
         FROM (SELECT SUM(unclaimed_amount("Retips"."claimGen", "Tips"."url", "Tips"."contractId", "Retips"."amount")) AS amount
               FROM "Tips"
                        LEFT OUTER JOIN "Retips" ON "Tips"."id" = "Retips"."tipId"
-              WHERE "Tips"."sender" = "Tip"."sender"
+              WHERE "Tips"."id" = "Tip"."id"
               UNION
               SELECT SUM(unclaimed_amount("Tips"."claimGen", "Tips"."url", "Tips"."contractId", "Tips"."amount")) AS amount
               FROM "Tips"
-              WHERE "Tips"."sender" = "Tip"."sender") AS amounts
+              WHERE "Tips"."id" = "Tip"."id") AS amounts
         WHERE amounts.amount > 0)           AS totalUnclaimedAmount,
 
        (SELECT COALESCE(SUM(amounts.amount), 0)::VARCHAR
         FROM (SELECT SUM(claimed_amount("Retips"."claimGen", "Tips"."url", "Tips"."contractId", "Retips"."amount")) AS amount
               FROM "Tips"
                        LEFT OUTER JOIN "Retips" ON "Tips"."id" = "Retips"."tipId"
-              WHERE "Tips"."sender" = "Tip"."sender"
+              WHERE "Tips"."id" = "Tip"."id"
               UNION
               SELECT SUM(claimed_amount("Tips"."claimGen", "Tips"."url", "Tips"."contractId", "Tips"."amount")) AS amount
               FROM "Tips"
-              WHERE "Tips"."sender" = "Tip"."sender") AS amounts
+              WHERE "Tips"."id" = "Tip"."id") AS amounts
         WHERE amounts.amount > 0)           AS totalClaimedAmount,
 
        (ARRAY(SELECT JSON_BUILD_OBJECT('token', tokenAmounts.token,
@@ -111,17 +95,17 @@ SELECT "Tip"."sender",
               FROM (SELECT "Retips"."token", SUM("Retips"."tokenAmount") AS amount
                     FROM "Tips"
                              LEFT OUTER JOIN "Retips" ON "Tips"."id" = "Retips"."tipId"
-                    WHERE "Tips"."sender" = "Tip"."sender"
+                    WHERE "Tips"."id" = "Tip"."id"
                       AND "Retips"."token" IS NOT NULL
                     GROUP BY "Retips"."token"
                     UNION
                     SELECT "Tips"."token", SUM("Tips"."tokenAmount") AS amount
                     FROM "Tips"
-                    WHERE "Tips"."sender" = "Tip"."sender"
+                    WHERE "Tips"."id" = "Tip"."id"
                       AND "Tips"."token" IS NOT NULL
                     GROUP BY "Tips"."token") AS tokenAmounts
               WHERE tokenAmounts.amount > 0
-              GROUP BY tokenAmounts.token))                                           AS totalTokenAmount,
+              GROUP BY tokenAmounts.token)) AS totalTokenAmount,
 
        (ARRAY(SELECT JSON_BUILD_OBJECT('token', tokenAmounts.token,
                                        'amount', SUM(tokenAmounts.amount)::VARCHAR)
@@ -130,7 +114,7 @@ SELECT "Tip"."sender",
                                                 "Retips"."tokenAmount")) AS amount
                     FROM "Tips"
                              LEFT OUTER JOIN "Retips" ON "Tips"."id" = "Retips"."tipId"
-                    WHERE "Tips"."sender" = "Tip"."sender"
+                    WHERE "Tips"."id" = "Tip"."id"
                       AND "Retips"."token" IS NOT NULL
                     GROUP BY "Retips"."token"
                     UNION
@@ -138,11 +122,11 @@ SELECT "Tip"."sender",
                            SUM(unclaimed_amount("Tips"."claimGen", "Tips"."url", "Tips"."contractId",
                                                 "Tips"."tokenAmount")) AS amount
                     FROM "Tips"
-                    WHERE "Tips"."sender" = "Tip"."sender"
+                    WHERE "Tips"."id" = "Tip"."id"
                       AND "Tips"."token" IS NOT NULL
                     GROUP BY "Tips"."token") AS tokenAmounts
               WHERE tokenAmounts.amount > 0
-              GROUP BY tokenAmounts.token))                                           AS totalTokenUnclaimedAmount,
+              GROUP BY tokenAmounts.token)) AS totalTokenUnclaimedAmount,
 
        (ARRAY(SELECT JSON_BUILD_OBJECT('token', tokenAmounts.token,
                                        'amount', SUM(tokenAmounts.amount)::VARCHAR)
@@ -151,7 +135,7 @@ SELECT "Tip"."sender",
                                               "Retips"."tokenAmount")) AS amount
                     FROM "Tips"
                              LEFT OUTER JOIN "Retips" ON "Tips"."id" = "Retips"."tipId"
-                    WHERE "Tips"."sender" = "Tip"."sender"
+                    WHERE "Tips"."id" = "Tip"."id"
                       AND "Retips"."token" IS NOT NULL
                     GROUP BY "Retips"."token"
                     UNION
@@ -159,45 +143,45 @@ SELECT "Tip"."sender",
                            SUM(claimed_amount("Tips"."claimGen", "Tips"."url", "Tips"."contractId",
                                               "Tips"."tokenAmount")) AS amount
                     FROM "Tips"
-                    WHERE "Tips"."sender" = "Tip"."sender"
+                    WHERE "Tips"."id" = "Tip"."id"
                       AND "Tips"."token" IS NOT NULL
                     GROUP BY "Tips"."token") AS tokenAmounts
               WHERE tokenAmounts.amount > 0
-              GROUP BY tokenAmounts.token))                                           AS totalTokenClaimedAmount
-FROM "Tips" as "Tip"
-GROUP BY "Tip"."sender";
-              `, { transaction });
+              GROUP BY tokenAmounts.token)) AS totalTokenClaimedAmount
 
-
-      await queryInterface.sequelize.query(`
-CREATE UNIQUE INDEX SenderStats_sender_idx
-    ON SenderStats (sender);`, { transaction });
+FROM "Tips" AS "Tip"
+GROUP BY "Tip"."id";
+`, { transaction });
 
       await queryInterface.sequelize.query(`
-CREATE FUNCTION refresh_senderstats_aggregation()
+CREATE UNIQUE INDEX TipsAggregation_id_idx
+    ON TipsAggregation (id);`, { transaction });
+
+      await queryInterface.sequelize.query(`
+CREATE FUNCTION refresh_tips_aggregation()
     RETURNS TRIGGER
     LANGUAGE plpgsql
 AS
 $$
 BEGIN
-    REFRESH MATERIALIZED VIEW SenderStats;
+    REFRESH MATERIALIZED VIEW TipsAggregation;
     RETURN NULL;
 END
 $$;`, { transaction });
 
       await queryInterface.sequelize.query(`
-CREATE TRIGGER refresh_senderstats_aggregation
+CREATE TRIGGER refresh_tips_aggregation
     AFTER INSERT OR UPDATE OR DELETE OR TRUNCATE
     ON "Tips"
     FOR EACH STATEMENT
-EXECUTE PROCEDURE refresh_senderstats_aggregation();`, { transaction });
+EXECUTE PROCEDURE refresh_tips_aggregation();`, { transaction });
 
       await queryInterface.sequelize.query(`
-CREATE TRIGGER refresh_senderstats_aggregation
+CREATE TRIGGER refresh_tips_aggregation
     AFTER INSERT OR UPDATE OR DELETE OR TRUNCATE
     ON "Retips"
     FOR EACH STATEMENT
-EXECUTE PROCEDURE refresh_senderstats_aggregation();`, { transaction });
+EXECUTE PROCEDURE refresh_tips_aggregation();`, { transaction });
 
       await transaction.commit();
       return this.execute(queryInterface, Sequelize, migrationCommands);
@@ -205,13 +189,8 @@ EXECUTE PROCEDURE refresh_senderstats_aggregation();`, { transaction });
     down: async function(queryInterface, Sequelize)
     {
       const transaction = await queryInterface.sequelize.transaction();
-      await queryInterface.sequelize.query('DROP MATERIALIZED VIEW SenderStats CASCADE;', { transaction });
-      await queryInterface.sequelize.query('DROP INDEX tip_sender_idx;', { transaction });
-      await queryInterface.sequelize.query('DROP INDEX retip_sender_idx;', { transaction });
-
-      await queryInterface.sequelize.query('DROP TRIGGER refresh_senderstats_aggregation ON "Tips" CASCADE;', { transaction });
-      await queryInterface.sequelize.query('DROP TRIGGER refresh_senderstats_aggregation ON "Retips" CASCADE;', { transaction });
-      await queryInterface.sequelize.query('DROP FUNCTION refresh_senderstats_aggregation CASCADE;', { transaction });
+      await queryInterface.sequelize.query('DROP MATERIALIZED VIEW TipsAggregation CASCADE;', { transaction });
+      await queryInterface.sequelize.query('DROP FUNCTION refresh_tips_aggregation CASCADE;', { transaction });
       await transaction.commit();
 
       return this.execute(queryInterface, Sequelize, rollbackCommands);

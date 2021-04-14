@@ -18,8 +18,8 @@ var Sequelize = require('sequelize');
  **/
 
 var info = {
-    "revision": 11,
-    "name": "noname",
+    "revision": 14,
+    "name": "update-retip-columns",
     "created": "2021-02-24T17:49:30.713Z",
     "comment": ""
 };
@@ -183,7 +183,7 @@ var rollbackCommands = function(transaction) {
                     "type": Sequelize.STRING,
                     "field": "tipId",
                     "onUpdate": "CASCADE",
-                    "onDelete": "SET NULL",
+                    "onDelete": "CASCADE",
                     "references": {
                         "model": "Tips",
                         "key": "id"

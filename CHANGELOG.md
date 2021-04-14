@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.9.4](https://www.github.com/aeternity/tipping-community-backend/compare/v1.9.3...v1.9.4) (2021-04-14)
+
+
+### Miscellaneous
+
+* **db:** adjust migration names ([a4ca40d](https://www.github.com/aeternity/tipping-community-backend/commit/a4ca40dc2b3825d95ba636e3dff8290fa10ec8b8))
+
 ### [1.9.3](https://www.github.com/aeternity/tipping-community-backend/compare/v1.9.2...v1.9.3) (2021-04-14)
 
 

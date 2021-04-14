@@ -8,8 +8,8 @@ module.exports = class ErrorReportLogic {
       } = req.body;
       const entry = await ErrorReport.create({
         appVersion,
-        browser: JSON.stringify(browser),
-        error: JSON.stringify(error),
+        browser,
+        error,
         time,
         platform,
         description,

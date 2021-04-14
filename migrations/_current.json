@@ -263,12 +263,12 @@
                 "browser": {
                     "allowNull": false,
                     "field": "browser",
-                    "seqType": "Sequelize.TEXT"
+                    "seqType": "Sequelize.JSONB"
                 },
                 "error": {
                     "allowNull": false,
                     "field": "error",
-                    "seqType": "Sequelize.TEXT"
+                    "seqType": "Sequelize.JSONB"
                 },
                 "platform": {
                     "allowNull": false,
@@ -283,7 +283,7 @@
                 "time": {
                     "allowNull": false,
                     "field": "time",
-                    "seqType": "Sequelize.STRING"
+                    "seqType": "Sequelize.BIGINT"
                 },
                 "createdAt": {
                     "allowNull": false,
@@ -803,5 +803,5 @@
             "indexes": []
         }
     },
-    "revision": 9
+    "revision": 10
 }

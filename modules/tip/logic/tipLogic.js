@@ -4,7 +4,7 @@ const { Op } = require('sequelize');
 
 const aeternity = require('../../aeternity/logic/aeternity');
 const {
-  Tip, Retip, LinkPreview, Claim, ChainName, sequelize, Sequelize,
+  Tip, Retip, LinkPreview, Claim, ChainName, sequelize,
 } = require('../../../models');
 const NotificationLogic = require('../../notification/logic/notificationLogic');
 const queueLogic = require('../../queue/logic/queueLogic');

@@ -5,45 +5,20 @@ var Sequelize = require('sequelize');
 /**
  * Actions summary:
  *
- * addColumn "timestamp" to table "Tips"
- *
  **/
 
 var info = {
-    "revision": 14,
-    "name": "noname",
-    "created": "2021-03-03T17:07:58.945Z",
+    "revision": 20,
+    "name": "search-changes",
+    "created": "2021-03-10T13:28:53.616Z",
     "comment": ""
 };
 
 var migrationCommands = function(transaction) {
-    return [{
-        fn: "addColumn",
-        params: [
-            "Tips",
-            "timestamp",
-            {
-                "type": Sequelize.DATE,
-                "field": "timestamp",
-                "allowNull": false
-            },
-            {
-                transaction: transaction
-            }
-        ]
-    }];
+    return [];
 };
 var rollbackCommands = function(transaction) {
-    return [{
-        fn: "removeColumn",
-        params: [
-            "Tips",
-            "timestamp",
-            {
-                transaction: transaction
-            }
-        ]
-    }];
+    return [];
 };
 
 module.exports = {
@@ -78,14 +53,22 @@ module.exports = {
     up: async function(queryInterface, Sequelize)
     {
       const transaction = await queryInterface.sequelize.transaction();
-      await queryInterface.sequelize.query('TRUNCATE TABLE "Tips" CASCADE;', { transaction });
+      await queryInterface.sequelize.query('CREATE EXTENSION IF NOT EXISTS pg_trgm;', { transaction });
+      await queryInterface.sequelize.query('CREATE OR REPLACE FUNCTION sum_array(REAL[]) RETURNS NUMERIC AS \'SELECT SUM(a)::NUMERIC AS sum FROM (SELECT UNNEST($1) AS a) AS b\' LANGUAGE SQL IMMUTABLE;', { transaction });
+      await queryInterface.sequelize.query('CREATE INDEX LinkPreviews_idx_gin ON "LinkPreviews" USING GIN (("LinkPreviews"."description" || "LinkPreviews"."title") GIN_TRGM_OPS);', { transaction });
       await transaction.commit();
 
       return this.execute(queryInterface, Sequelize, migrationCommands);
     },
-    down: function(queryInterface, Sequelize)
+    down: async function(queryInterface, Sequelize)
     {
-        return this.execute(queryInterface, Sequelize, rollbackCommands);
+      const transaction = await queryInterface.sequelize.transaction();
+      await queryInterface.sequelize.query('DROP INDEX LinkPreviews_idx_gin;', { transaction });
+      await queryInterface.sequelize.query('DROP FUNCTION sum_array(REAL[]);', { transaction });
+      await queryInterface.sequelize.query('DROP EXTENSION pg_trgm;', { transaction });
+      await transaction.commit();
+
+      return this.execute(queryInterface, Sequelize, rollbackCommands);
     },
     info: info
 };

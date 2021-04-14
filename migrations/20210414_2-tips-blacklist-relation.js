@@ -5,15 +5,15 @@ var Sequelize = require('sequelize');
 /**
  * Actions summary:
  *
- * changeColumn "requestUrl" on table "LinkPreviews"
- * changeColumn "url" on table "Tips"
+ * changeColumn "tipId" on table "BlacklistEntries"
+ * changeColumn "tipId" on table "BlacklistEntries"
  *
  **/
 
 var info = {
-    "revision": 12,
-    "name": "noname",
-    "created": "2021-02-25T09:10:22.402Z",
+    "revision": 19,
+    "name": "tips-blacklist-relation",
+    "created": "2021-03-05T09:28:53.616Z",
     "comment": ""
 };
 
@@ -21,28 +21,19 @@ var migrationCommands = function(transaction) {
     return [{
             fn: "changeColumn",
             params: [
-                "LinkPreviews",
-                "requestUrl",
+                "BlacklistEntries",
+                "tipId",
                 {
-                    "type": Sequelize.TEXT,
-                    "field": "requestUrl",
-                    "unique": true,
+                    "type": Sequelize.STRING,
+                    "onUpdate": "NO ACTION",
+                    "onDelete": "NO ACTION",
+                    "references": {
+                        "model": "Tips",
+                        "key": "id"
+                    },
+                    "field": "tipId",
+                    "primaryKey": true,
                     "allowNull": false
-                },
-                {
-                    transaction: transaction
-                }
-            ]
-        },
-        {
-          fn: "changeColumn",
-          params: [
-              "Tips",
-              "url",
-                {
-                    "type": Sequelize.TEXT,
-                    "field": "url",
-                    "allowNull": true
                 },
                 {
                     transaction: transaction
@@ -55,28 +46,13 @@ var rollbackCommands = function(transaction) {
     return [{
             fn: "changeColumn",
             params: [
-                "LinkPreviews",
-                "requestUrl",
-                {
-                    "type": Sequelize.TEXT,
-                    "field": "requestUrl",
-                    "allowNull": false,
-                    "unique": false,
-                },
-                {
-                    transaction: transaction
-                }
-            ]
-        },
-        {
-            fn: "changeColumn",
-            params: [
-                "Tips",
-                "url",
+                "BlacklistEntries",
+                "tipId",
                 {
                     "type": Sequelize.STRING,
-                    "field": "url",
-                    "allowNull": true
+                    "field": "tipId",
+                    "primaryKey": true,
+                    "allowNull": false
                 },
                 {
                     transaction: transaction
@@ -119,10 +95,9 @@ module.exports = {
     {
         return this.execute(queryInterface, Sequelize, migrationCommands);
     },
-    down: async function(queryInterface, Sequelize)
+    down: function(queryInterface, Sequelize)
     {
-      await queryInterface.removeConstraint("LinkPreviews", "LinkPreviews_requestUrl_key"); // hangs within transaction, so no transaction
-      return this.execute(queryInterface, Sequelize, rollbackCommands);
+        return this.execute(queryInterface, Sequelize, rollbackCommands);
     },
     info: info
 };

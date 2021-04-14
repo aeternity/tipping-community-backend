@@ -5,18 +5,15 @@ var Sequelize = require('sequelize');
 /**
  * Actions summary:
  *
- * changeColumn "tipId" on table "Comments"
- * changeColumn "tipId" on table "Comments"
- * changeColumn "claimGen" on table "Tips"
- * changeColumn "amount" on table "Tips"
- * changeColumn "tokenAmount" on table "Tips"
+ * changeColumn "requestUrl" on table "LinkPreviews"
+ * changeColumn "url" on table "Tips"
  *
  **/
 
 var info = {
-    "revision": 10,
-    "name": "noname",
-    "created": "2021-02-24T14:48:44.271Z",
+    "revision": 16,
+    "name": "link-preview-unique",
+    "created": "2021-02-25T09:10:22.402Z",
     "comment": ""
 };
 
@@ -24,18 +21,28 @@ var migrationCommands = function(transaction) {
     return [{
             fn: "changeColumn",
             params: [
-                "Comments",
-                "tipId",
+                "LinkPreviews",
+                "requestUrl",
                 {
-                    "type": Sequelize.STRING,
-                    "onUpdate": "CASCADE",
-                    "onDelete": "NO ACTION",
-                    "references": {
-                        "model": "Tips",
-                        "key": "id"
-                    },
-                    "field": "tipId",
+                    "type": Sequelize.TEXT,
+                    "field": "requestUrl",
+                    "unique": true,
                     "allowNull": false
+                },
+                {
+                    transaction: transaction
+                }
+            ]
+        },
+        {
+          fn: "changeColumn",
+          params: [
+              "Tips",
+              "url",
+                {
+                    "type": Sequelize.TEXT,
+                    "field": "url",
+                    "allowNull": true
                 },
                 {
                     transaction: transaction
@@ -48,12 +55,28 @@ var rollbackCommands = function(transaction) {
     return [{
             fn: "changeColumn",
             params: [
-                "Comments",
-                "tipId",
+                "LinkPreviews",
+                "requestUrl",
+                {
+                    "type": Sequelize.TEXT,
+                    "field": "requestUrl",
+                    "allowNull": false,
+                    "unique": false,
+                },
+                {
+                    transaction: transaction
+                }
+            ]
+        },
+        {
+            fn: "changeColumn",
+            params: [
+                "Tips",
+                "url",
                 {
                     "type": Sequelize.STRING,
-                    "field": "tipId",
-                    "allowNull": false
+                    "field": "url",
+                    "allowNull": true
                 },
                 {
                     transaction: transaction
@@ -94,19 +117,15 @@ module.exports = {
     },
     up: async function(queryInterface, Sequelize)
     {
-
       const transaction = await queryInterface.sequelize.transaction();
-      await queryInterface.sequelize.query('CREATE INDEX comment_tip_id_idx ON "Comments" ("tipId");', { transaction });
+      await queryInterface.sequelize.query('TRUNCATE TABLE "LinkPreviews" CASCADE;', { transaction });
       await transaction.commit();
 
       return this.execute(queryInterface, Sequelize, migrationCommands);
     },
     down: async function(queryInterface, Sequelize)
     {
-      const transaction = await queryInterface.sequelize.transaction();
-      await queryInterface.sequelize.query('DROP INDEX comment_tip_id_idx FROM "Comments";', { transaction });
-      await transaction.commit();
-
+      await queryInterface.removeConstraint("LinkPreviews", "LinkPreviews_requestUrl_key"); // hangs within transaction, so no transaction
       return this.execute(queryInterface, Sequelize, rollbackCommands);
     },
     info: info

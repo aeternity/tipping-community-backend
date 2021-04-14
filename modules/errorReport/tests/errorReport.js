@@ -18,20 +18,20 @@ describe('Error Reports', () => {
 
   const testData = {
     appVersion: '0.0.21',
-    browser: JSON.stringify({
+    browser: {
       name: 'chrome',
       os: 'Windows 10',
       version: '81.0.4044',
-    }),
-    error: JSON.stringify({
+    },
+    error: {
       message: 'Ooops something went very wrong somehwere',
       stack: `
       Some
       Multiline
       Info`,
       other: 'fields',
-    }),
-    time: '143489512334',
+    },
+    time: 143489512334,
     platform: 'extension',
     description: 'description',
   };
@@ -52,8 +52,10 @@ describe('Error Reports', () => {
         res.body.should.be.a('object');
         res.body.should.have.property('id');
         res.body.should.have.property('appVersion', testData.appVersion);
-        res.body.should.have.property('browser', JSON.stringify(testData.browser));
-        res.body.should.have.property('error', JSON.stringify(testData.error));
+        res.body.should.have.property('browser');
+        res.body.browser.should.eql(testData.browser);
+        res.body.should.have.property('error');
+        res.body.error.should.eql(testData.error);
         res.body.should.have.property('time', String(testData.time));
         res.body.should.have.property('platform', testData.platform);
         res.body.should.have.property('description', testData.description);

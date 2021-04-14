@@ -10,7 +10,7 @@ var Sequelize = require('sequelize');
  **/
 
 var info = {
-    "revision": 5,
+    "revision": 6,
     "name": "add-tip-media",
     "created": "2020-11-09T13:15:34.866Z",
     "comment": ""

@@ -5,15 +5,15 @@ var Sequelize = require('sequelize');
 /**
  * Actions summary:
  *
- * createTable "Events", deps: []
- * addIndex "events_name_url_height_time" to table "Events"
+ * createTable "Consents", deps: []
+ * addIndex "consents_author_scope" to table "Consents"
  *
  **/
 
 var info = {
-    "revision": 9,
-    "name": "noname",
-    "created": "2021-04-09T13:27:25.009Z",
+    "revision": 5,
+    "name": "add-consent",
+    "created": "2020-10-20T09:04:24.806Z",
     "comment": ""
 };
 
@@ -21,7 +21,7 @@ var migrationCommands = function(transaction) {
     return [{
             fn: "createTable",
             params: [
-                "Events",
+                "Consents",
                 {
                     "id": {
                         "type": Sequelize.INTEGER,
@@ -30,54 +30,29 @@ var migrationCommands = function(transaction) {
                         "primaryKey": true,
                         "allowNull": false
                     },
-                    "name": {
-                        "type": Sequelize.ENUM('TipReceived', 'TipTokenReceived', 'ReTipReceived', 'ReTipTokenReceived', 'TipDirectReceived', 'TipDirectTokenReceived', 'PostWithoutTipReceived', 'TipWithdrawn', 'QueryOracle', 'CheckPersistClaim', 'Transfer', 'Allowance'),
-                        "field": "name",
-                        "allowNull": false
-                    },
-                    "hash": {
+                    "author": {
                         "type": Sequelize.STRING,
-                        "field": "hash",
+                        "field": "author",
                         "allowNull": false
                     },
-                    "contract": {
+                    "scope": {
                         "type": Sequelize.STRING,
-                        "field": "contract",
+                        "field": "scope",
                         "allowNull": false
                     },
-                    "height": {
-                        "type": Sequelize.INTEGER,
-                        "field": "height",
+                    "status": {
+                        "type": Sequelize.ENUM('ALLOWED', 'REJECTED'),
+                        "field": "status",
                         "allowNull": false
                     },
-                    "addresses": {
-                        "type": Sequelize.ARRAY(Sequelize.STRING),
-                        "field": "addresses",
+                    "signature": {
+                        "type": Sequelize.STRING,
+                        "field": "signature",
                         "allowNull": false
                     },
-                    "url": {
+                    "challenge": {
                         "type": Sequelize.TEXT,
-                        "field": "url",
-                        "allowNull": true
-                    },
-                    "amount": {
-                        "type": Sequelize.STRING,
-                        "field": "amount",
-                        "allowNull": true
-                    },
-                    "nonce": {
-                        "type": Sequelize.INTEGER,
-                        "field": "nonce",
-                        "allowNull": true
-                    },
-                    "time": {
-                        "type": Sequelize.BIGINT,
-                        "field": "time",
-                        "allowNull": true
-                    },
-                    "data": {
-                        "type": Sequelize.JSONB,
-                        "field": "data",
+                        "field": "challenge",
                         "allowNull": false
                     },
                     "createdAt": {
@@ -99,11 +74,13 @@ var migrationCommands = function(transaction) {
         {
             fn: "addIndex",
             params: [
-                "Events",
-                ["name", "url", "height", "time"],
+                "Consents",
+                ["author", "scope"],
                 {
-                    "indexName": "events_name_url_height_time",
-                    "name": "events_name_url_height_time",
+                    "indexName": "consents_author_scope",
+                    "name": "consents_author_scope",
+                    "indicesType": "UNIQUE",
+                    "type": "UNIQUE",
                     "transaction": transaction
                 }
             ]
@@ -113,7 +90,7 @@ var migrationCommands = function(transaction) {
 var rollbackCommands = function(transaction) {
     return [{
         fn: "dropTable",
-        params: ["Events", {
+        params: ["Consents", {
             transaction: transaction
         }]
     }];

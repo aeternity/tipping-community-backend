@@ -11,7 +11,7 @@ var Sequelize = require('sequelize');
 
 var info = {
   "revision": 4,
-  "name": "add tipId postfix",
+  "name": "postfix-tip-id",
   "created": "2020-10-05T11:50:10.521Z",
   "comment": ""
 };

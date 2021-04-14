@@ -8,7 +8,7 @@
  **/
 
 var info = {
-    "revision": 6,
+    "revision": 7,
     "name": "add-peeked-status",
     "created": "2020-12-11T12:42:03.502Z",
     "comment": ""

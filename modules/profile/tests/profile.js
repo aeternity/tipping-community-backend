@@ -550,12 +550,51 @@ describe('Profile', () => {
   describe('Legacy API', () => {
     const { publicKey: localPublicKey, secretKey } = generateKeyPair();
 
+    it('it should CREATE a new profile', done => {
+      const stub = sinon.stub(ae, 'getAddressForChainName').callsFake(() => ({
+        pointers: [{ id: localPublicKey, key: 'account_pubkey' }],
+      }));
+      performSignedJSONRequest(server, 'post', '/profile/', {
+        ...testData,
+        author: localPublicKey,
+      }, secretKey)
+        .then(({ res, signature, challenge }) => {
+          res.should.have.status(200);
+          res.body.should.be.a('object');
+          res.body.should.have.property('biography', testData.biography);
+          res.body.should.have.property('author', localPublicKey);
+          res.body.should.have.property('preferredChainName', testData.preferredChainName);
+          res.body.should.have.property('referrer', true);
+          res.body.should.have.property('location', testData.location);
+          res.body.should.have.property('signature', signature);
+          res.body.should.have.property('challenge', challenge);
+          res.body.should.have.property('createdAt');
+          res.body.createdAt.should.contain('Z');
+          res.body.should.have.property('updatedAt');
+          res.body.updatedAt.should.contain('Z');
+          stub.called.should.equal(true);
+          stub.restore();
+          done();
+        });
+    });
+
+    const newBio = 'another updated bio';
+    it('it should allow to update an profile', done => {
+      performSignedJSONRequest(server, 'post', '/profile/', {
+        biography: newBio,
+        author: localPublicKey,
+      }, secretKey).then(({ res }) => {
+        res.should.have.status(200);
+        res.body.should.be.a('object');
+        res.body.should.have.property('biography', newBio);
+        done();
+      });
+    });
+
     it('POST /profile/image/ak_... (upload new image)', done => {
       performSignedMultipartFormRequest(server, 'post', `/profile/image/${localPublicKey}`, 'image', testImagePath, secretKey)
         .then(({ res, signature, challenge }) => {
           res.should.have.status(200);
-          res.body.should.be.a('object');
-          res.body.should.have.property('biography', null);
           res.body.should.have.property('author', localPublicKey);
           res.body.should.have.property('image');
           res.body.image.should.contain(`/images/${localPublicKey}`);

@@ -76,7 +76,7 @@ module.exports = class NotificationLogic {
     }
   }
 
-  static async markRead(req, res) {
+  static async updateNotificationState(req, res) {
     try {
       const { notificationId } = req.params;
       const { status } = req.body;

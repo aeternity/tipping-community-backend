@@ -4,6 +4,7 @@ const chaiHttp = require('chai-http');
 const { describe, it } = require('mocha');
 const sinon = require('sinon');
 
+const { Op } = require('sequelize');
 const server = require('../../../server');
 const TipLogic = require('../../tip/logic/tipLogic');
 const CacheLogic = require('../../cache/logic/cacheLogic');
@@ -330,53 +331,50 @@ describe('Notifications', () => {
       createdNotification2 = await Notification.create(testData);
     });
 
-    it('it should MODIFY a single notification for a user', done => {
-      performSignedJSONRequest(server, 'post', `/notification/${createdNotification.id}`, {
-        author: publicKey,
-        status: NOTIFICATION_STATES.READ,
-      })
-        .then(({ res }) => {
-          res.should.have.status(200);
-          res.body.should.be.a('object');
-          res.body.should.have.property('receiver', publicKey);
-          res.body.should.have.property('entityId', '0');
-          res.body.should.have.property('entityType', ENTITY_TYPES.COMMENT);
-          res.body.should.have.property('type', NOTIFICATION_TYPES.COMMENT_ON_COMMENT);
-          res.body.should.have.property('status', NOTIFICATION_STATES.READ);
-          done();
+    it('it should MODIFY a single notification for a user', async () => {
+      // eslint-disable-next-line no-restricted-syntax,guard-for-in
+      for (const notificationState of Object.values(NOTIFICATION_STATES)) {
+        // eslint-disable-next-line no-await-in-loop
+        const { res } = await performSignedJSONRequest(server, 'post', `/notification/${createdNotification.id}`, {
+          author: publicKey,
+          status: notificationState,
         });
+        res.should.have.status(200);
+        res.body.should.be.a('object');
+        res.body.should.have.property('receiver', publicKey);
+        res.body.should.have.property('entityId', '0');
+        res.body.should.have.property('entityType', ENTITY_TYPES.COMMENT);
+        res.body.should.have.property('type', NOTIFICATION_TYPES.COMMENT_ON_COMMENT);
+        res.body.should.have.property('status', notificationState);
+      }
     });
 
-    it('it should MODIFY a batch of notifications for a user', done => {
-      performSignedJSONRequest(server, 'post', '/notification/', {
-        author: publicKey,
-        status: NOTIFICATION_STATES.CREATED,
-        ids: [createdNotification.id, createdNotification2.id],
-      })
-        .then(async ({ res }) => {
-          res.should.have.status(200);
-          res.body.should.have.length(2);
-          res.body.should.contain(createdNotification.id);
-          res.body.should.contain(createdNotification2.id);
-          const dbNotification = await Notification.findOne({
-            where: {
-              id: createdNotification.id,
-            },
-            raw: true,
-          });
-          dbNotification.should.be.a('object');
-          dbNotification.should.have.property('status', NOTIFICATION_STATES.CREATED);
-
-          const dbNotification2 = await Notification.findOne({
-            where: {
-              id: createdNotification2.id,
-            },
-            raw: true,
-          });
-          dbNotification2.should.be.a('object');
-          dbNotification2.should.have.property('status', NOTIFICATION_STATES.CREATED);
-          done();
+    it('it should MODIFY a batch of notifications for a user', async () => {
+      // eslint-disable-next-line no-restricted-syntax,guard-for-in
+      for (const notificationState of Object.values(NOTIFICATION_STATES)) {
+        // eslint-disable-next-line no-await-in-loop
+        const { res } = await performSignedJSONRequest(server, 'post', '/notification/', {
+          author: publicKey,
+          status: notificationState,
+          ids: [createdNotification.id, createdNotification2.id],
         });
+        res.should.have.status(200);
+        res.body.should.have.length(2);
+        res.body.should.contain(createdNotification.id);
+        res.body.should.contain(createdNotification2.id);
+        // eslint-disable-next-line no-await-in-loop
+        const dbNotifications = await Notification.findAll({
+          attributes: ['id', 'status'],
+          where: {
+            id: {
+              [Op.in]: [createdNotification.id, createdNotification2.id],
+            },
+          },
+          raw: true,
+        });
+        dbNotifications.should.be.a('array');
+        dbNotifications.filter(({ status }) => status === notificationState).should.have.length(2);
+      }
     });
   });
 });

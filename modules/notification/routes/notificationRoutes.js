@@ -75,6 +75,7 @@ router.get('/user/:author', signatureAuth, NotificationLogic.getForUser);
  *                     type: string
  *                     enum:
  *                       - CREATED
+ *                       - PEEKED
  *                       - READ
  *                   author:
  *                     type: string
@@ -123,6 +124,7 @@ router.post('/', signatureAuth, async (req, res) => {
  *                     type: string
  *                     enum:
  *                       - CREATED
+ *                       - PEEKED
  *                       - READ
  *                   author:
  *                     type: string
@@ -137,6 +139,6 @@ router.post('/', signatureAuth, async (req, res) => {
  *                 - $ref: '#/components/schemas/SignatureResponse'
  *                 - $ref: '#/components/schemas/Notification'
  */
-router.post('/:notificationId', signatureAuth, NotificationLogic.markRead);
+router.post('/:notificationId', signatureAuth, NotificationLogic.updateNotificationState);
 
 module.exports = router;

@@ -203,10 +203,12 @@ router.delete(
  *       content:
  *         multipart/form-data:
  *           schema:
- *             $ref: '#/components/schemas/Profile'
+ *             $ref: '#/components/schemas/Profile-signature-challenge'
  *         application/json:
  *          schema:
- *            $ref: '#/components/schemas/SignatureRequest'
+ *            oneOf:
+ *              - $ref: '#/components/schemas/Profile-signature-challenge'
+ *              - $ref: '#/components/schemas/SignatureRequest'
  *     responses:
  *       200:
  *         description: Creates / Updates a profile

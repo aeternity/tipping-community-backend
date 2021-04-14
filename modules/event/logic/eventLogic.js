@@ -14,7 +14,7 @@ const EventLogic = {
   init() {
     // subscribe to chain listener
     queueLogic.subscribeToMessage(MESSAGE_QUEUES.BLOCKCHAIN, MESSAGES.BLOCKCHAIN.EVENTS.EVENT_RECEIVED, async ({ payload, id }) => {
-      await EventLogic.writeEventToDB(payload);
+      await EventLogic.writeEventToDB(payload.event);
       await EventLogic.sendMessages(payload);
       await queueLogic.deleteMessage(MESSAGE_QUEUES.BLOCKCHAIN, id);
     });
@@ -40,14 +40,23 @@ const EventLogic = {
     });
   },
 
-  async sendMessages(event) {
+  async sendMessages({ event, tx }) {
     switch (event.name) {
       case 'TipReceived':
+        // NEW TOKEN TIP
+        await queueLogic.sendMessage(MESSAGE_QUEUES.EVENTS, MESSAGES.EVENTS.EVENTS.TIP_RECEIVED, await aeternity.getTipV2(tx.returnValue));
+        break;
       case 'TipTokenReceived':
+        // NEW TOKEN TIP
+        await queueLogic.sendMessage(MESSAGE_QUEUES.EVENTS, MESSAGES.EVENTS.EVENTS.TIP_RECEIVED, await aeternity.getTipV2(tx.returnValue));
+        break;
       case 'ReTipReceived':
+        // NEW RETIP
+        await queueLogic.sendMessage(MESSAGE_QUEUES.EVENTS, MESSAGES.EVENTS.EVENTS.RETIP_RECEIVED, await aeternity.getRetipV2(tx.returnValue));
+        break;
       case 'ReTipTokenReceived':
         // NEW TOKEN RETIP
-        await queueLogic.sendMessage(MESSAGE_QUEUES.EVENTS, MESSAGES.EVENTS.EVENTS.TIP_RECEIVED);
+        await queueLogic.sendMessage(MESSAGE_QUEUES.EVENTS, MESSAGES.EVENTS.EVENTS.RETIP_RECEIVED, await aeternity.getRetipV2(tx.returnValue));
         break;
       case 'TipWithdrawn':
         // CLAIM

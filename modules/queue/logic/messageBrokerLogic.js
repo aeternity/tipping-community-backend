@@ -40,7 +40,7 @@ class MessageBroker {
     ]);
 
     // S: NEW TIP
-    // T: UPDATE TIPS
+    // T: INSERT TIP
     this.setupForwarding({
       queueName: MESSAGE_QUEUES.EVENTS,
       message: MESSAGES.EVENTS.EVENTS.TIP_RECEIVED,
@@ -48,11 +48,11 @@ class MessageBroker {
       { queueName: MESSAGE_QUEUES.TIPS, message: MESSAGES.TIPS.COMMANDS.INSERT_TIP },
     ]);
 
-    // S: NEW TIP
-    // T: UPDATE TIPS
+    // S: NEW RETIP
+    // T: INSERT RETIP
     this.setupForwarding({
-      queueName: MESSAGE_QUEUES.BLOCKCHAIN,
-      message: MESSAGES.BLOCKCHAIN.EVENTS.RETIP_RECEIVED,
+      queueName: MESSAGE_QUEUES.EVENTS,
+      message: MESSAGES.EVENTS.EVENTS.RETIP_RECEIVED,
     }, [
       { queueName: MESSAGE_QUEUES.RETIPS, message: MESSAGES.RETIPS.COMMANDS.INSERT_RETIP },
     ]);

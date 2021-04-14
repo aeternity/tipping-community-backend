@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.9.3](https://www.github.com/aeternity/tipping-community-backend/compare/v1.9.2...v1.9.3) (2021-04-14)
+
+
+### Bug Fixes
+
+* **errorreports:** migrates to jsonb ([067d611](https://www.github.com/aeternity/tipping-community-backend/commit/067d611a4cfff40e6a6e893f2627eaa55d7b113e))
+
 ### [1.9.2](https://www.github.com/aeternity/tipping-community-backend/compare/v1.9.1...v1.9.2) (2021-04-14)
 
 

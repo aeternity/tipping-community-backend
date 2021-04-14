@@ -1,6 +1,6 @@
 {
   "name": "tipping-community-backend",
-  "version": "1.9.2",
+  "version": "1.9.3",
   "description": "",
   "main": "bin/www.js",
   "scripts": {

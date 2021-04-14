@@ -23,7 +23,7 @@ var Sequelize = require('sequelize');
 
 var info = {
     "revision": 1,
-    "name": "initial-postgres",
+    "name": "postgres-initial",
     "created": "2020-08-31T12:06:35.069Z",
     "comment": ""
 };

@@ -11,7 +11,7 @@ var Sequelize = require('sequelize');
 
 var info = {
     "revision": 3,
-    "name": "noname",
+    "name": "adds-notification-sender",
     "created": "2020-09-21T15:50:10.521Z",
     "comment": ""
 };

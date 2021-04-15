@@ -25,7 +25,8 @@ describe('Cache', () => {
     await cache.del(['fetchPrice']);
     await cache.del(['getChainNames']);
     await cache.del(['fetchStats']);
-    await cache.del(['oracleState']);
+    await cache.delByPrefix(['getOracleClaimedUrls']);
+    await cache.del(['getOracleAllClaimedUrls']);
     await cache.del(['contractEvents']);
     await cache.del(['CacheLogic.getAllTips', 'all']);
     await cache.del(['CacheLogic.getAllTips', 'blacklisted']);
@@ -240,16 +241,6 @@ describe('Cache', () => {
       checkCachedRoute('/cache/tips', 'array', done);
     });
 
-    it('it should GET all oracle cache items', function (done) {
-      this.timeout(10000);
-      checkCachedRoute('/cache/oracle', 'object', done);
-    });
-
-    it(`it should GET all oracle cache items in less than ${minimalTimeout}ms`, function (done) {
-      this.timeout(minimalTimeout);
-      checkCachedRoute('/cache/oracle', 'object', done);
-    });
-
     it(`it should GET a single V1 tip cache item in less than ${minimalTimeout}ms`, function (done) {
       this.timeout(minimalTimeout);
       checkCachedRoute('/cache/tip?id=0_v1', 'object', done);
@@ -269,7 +260,13 @@ describe('Cache', () => {
 
     it(`it should GET all user stats for a single user in less than ${minimalTimeout}ms`, function (done) {
       this.timeout(minimalTimeout);
-      checkCachedRoute('/cache/userStats?address=ak_fUq2NesPXcYZ1CcqBcGC3StpdnQw3iVxMA3YSeCNAwfN4myQk', 'object', done);
+      const stub = sinon.stub(CacheLogic, 'getOracleClaimedUrls').callsFake(() => []);
+      chai.request(server).get('/cache/userStats?address=ak_fUq2NesPXcYZ1CcqBcGC3StpdnQw3iVxMA3YSeCNAwfN4myQk').end((err, res) => {
+        res.should.have.status(200);
+        res.body.should.be.a('object');
+        stub.callCount.should.eql(1);
+        done();
+      });
     });
 
     it('it should GET all chainnames cache items ', done => {

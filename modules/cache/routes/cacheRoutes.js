@@ -284,25 +284,6 @@ router.get('/price', async (req, res) => {
 
 /**
  * @swagger
- * /cache/oracle:
- *   get:
- *     tags:
- *       - cache
- *     summary: Returns the current state of the oracle contract
- *     responses:
- *       200:
- *         description: Returns the current state of the oracle contract
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- */
-router.get('/oracle', async (req, res) => {
-  res.send(await CacheLogic.getOracleState());
-});
-
-/**
- * @swagger
  * /cache/topics:
  *   get:
  *     tags:
@@ -415,7 +396,6 @@ router.get('/invalidate/tips', async (req, res) => {
  */
 router.get('/invalidate/oracle', async (req, res) => {
   await CacheLogic.invalidateOracle();
-  CacheLogic.getOracleState(); // just trigger cache update, so follow up requests may have it cached already
   if (res) res.send({ status: 'OK' });
 });
 /**

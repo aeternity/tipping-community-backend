@@ -8,6 +8,7 @@ const { decodeEvents, SOPHIA_TYPES } = requireESM('@aeternity/aepp-sdk/es/contra
 
 const TIPPING_V1_INTERFACE = require('tipping-contract/Tipping_v1_Interface.aes');
 const TIPPING_V2_INTERFACE = require('tipping-contract/Tipping_v2_Interface.aes');
+const TIPPING_V2_GETTER = require('tipping-contract/Tipping_v2_Getter.aes');
 const TIPPING_V3_INTERFACE = require('tipping-contract/Tipping_v3_Interface.aes');
 const ORACLE_SERVICE_INTERFACE = require('tipping-oracle-service/OracleServiceInterface.aes');
 const TOKEN_CONTRACT_INTERFACE = require('aeternity-fungible-token/FungibleTokenFullInterface.aes');
@@ -25,6 +26,7 @@ const Util = require('../utils/util');
 let client;
 let contractV1;
 let contractV2;
+let contractV2Getter;
 let contractV3;
 let oracleContract;
 let wordRegistryContract;
@@ -58,6 +60,13 @@ const aeternity = {
         logger.info('Starting WITH V2 contract');
       } else {
         logger.info('Starting WITHOUT V2 contract');
+      }
+
+      if (process.env.CONTRACT_V2_GETTER_ADDRESS) {
+        contractV2Getter = await client.getContractInstance(TIPPING_V2_GETTER, { contractAddress: process.env.CONTRACT_V2_GETTER_ADDRESS });
+        logger.info('Starting WITH V2 GETTER contract');
+      } else {
+        logger.info('Starting WITHOUT V2 GETTER contract');
       }
 
       if (process.env.CONTRACT_V3_ADDRESS) {
@@ -252,13 +261,33 @@ const aeternity = {
     return tokenContracts[contractAddress].methods.total_supply().then(res => res.decodedResult);
   },
 
-  async fetchOracleState() {
+  async fetchOracleClaimByUrl(url) {
     if (!client) throw new Error('Init sdk first');
-    return oracleContract.methods.get_state().then(res => res.decodedResult).catch(e => {
+    return contractV2Getter.methods.get_oracle_claim_by_url(process.env.CONTRACT_V2_ADDRESS, url).then(res => res.decodedResult).catch(e => {
       logger.error(e.message);
       Sentry.captureException(e);
       return [];
     });
+  },
+
+  async fetchOracleClaimedUrls(address) {
+    if (!client) throw new Error('Init sdk first');
+    return contractV2Getter.methods.get_oracle_claimed_urls_by_account(process.env.CONTRACT_V2_ADDRESS, address)
+      .then(res => res.decodedResult).catch(e => {
+        logger.error(e.message);
+        Sentry.captureException(e);
+        return [];
+      });
+  },
+
+  async getOracleAllClaimedUrls() {
+    if (!client) throw new Error('Init sdk first');
+    return contractV2Getter.methods.get_oracle_claimed_urls(process.env.CONTRACT_V2_ADDRESS)
+      .then(res => res.decodedResult).catch(e => {
+        logger.error(e.message);
+        Sentry.captureException(e);
+        return [];
+      });
   },
 
   async getUnsafeOracleAnswersForUrl(url) {

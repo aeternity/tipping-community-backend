@@ -50,6 +50,10 @@ const EventLogic = {
         // NEW TOKEN TIP
         await queueLogic.sendMessage(MESSAGE_QUEUES.EVENTS, MESSAGES.EVENTS.EVENTS.TIP_RECEIVED, await aeternity.getTipV2(tx.returnValue));
         break;
+      case 'PostWithoutTipReceived':
+        // NEW TOKEN TIP
+        await queueLogic.sendMessage(MESSAGE_QUEUES.EVENTS, MESSAGES.EVENTS.EVENTS.TIP_RECEIVED, await aeternity.getTipV3(tx.returnValue));
+        break;
       case 'ReTipReceived':
         // NEW RETIP
         await queueLogic.sendMessage(MESSAGE_QUEUES.EVENTS, MESSAGES.EVENTS.EVENTS.RETIP_RECEIVED, await aeternity.getRetipV2(tx.returnValue));

@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.9.6](https://www.github.com/aeternity/tipping-community-backend/compare/v1.9.5...v1.9.6) (2021-04-15)
+
+
+### Bug Fixes
+
+* **cache:** increases timeouts on flaky tests ([09f7713](https://www.github.com/aeternity/tipping-community-backend/commit/09f77131dc9e0edc598d49ca42e8abe95ed6d346))
+
+
+### Miscellaneous
+
+* **claim:** fix claim success await ([bdf31bb](https://www.github.com/aeternity/tipping-community-backend/commit/bdf31bb019d15f34b8648a68f9bc46e795f22ce1))
+
 ### [1.9.5](https://www.github.com/aeternity/tipping-community-backend/compare/v1.9.4...v1.9.5) (2021-04-14)
 
 

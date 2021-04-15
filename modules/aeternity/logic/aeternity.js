@@ -8,9 +8,9 @@ const { decodeEvents, SOPHIA_TYPES } = requireESM('@aeternity/aepp-sdk/es/contra
 
 const TIPPING_V1_INTERFACE = require('tipping-contract/Tipping_v1_Interface.aes');
 const TIPPING_V2_INTERFACE = require('tipping-contract/Tipping_v2_Interface.aes');
-const TIPPING_V2_GETTER = require('tipping-contract/Tipping_v2_Getter.aes');
 const TIPPING_V3_INTERFACE = require('tipping-contract/Tipping_v3_Interface.aes');
 const ORACLE_SERVICE_INTERFACE = require('tipping-oracle-service/OracleServiceInterface.aes');
+const ORACLE_GETTER = require('tipping-oracle-service/OracleGetter.aes');
 const TOKEN_CONTRACT_INTERFACE = require('aeternity-fungible-token/FungibleTokenFullInterface.aes');
 const TOKEN_REGISTRY = require('token-registry/TokenRegistryInterface.aes');
 const WORD_REGISTRY_INTERFACE = require('wordbazaar-contracts/WordRegistryInterface.aes');
@@ -26,7 +26,7 @@ const Util = require('../utils/util');
 let client;
 let contractV1;
 let contractV2;
-let contractV2Getter;
+let oracleGetter;
 let contractV3;
 let oracleContract;
 let wordRegistryContract;
@@ -62,13 +62,6 @@ const aeternity = {
         logger.info('Starting WITHOUT V2 contract');
       }
 
-      if (process.env.CONTRACT_V2_GETTER_ADDRESS) {
-        contractV2Getter = await client.getContractInstance(TIPPING_V2_GETTER, { contractAddress: process.env.CONTRACT_V2_GETTER_ADDRESS });
-        logger.info('Starting WITH V2 GETTER contract');
-      } else {
-        logger.info('Starting WITHOUT V2 GETTER contract');
-      }
-
       if (process.env.CONTRACT_V3_ADDRESS) {
         contractV3 = await client.getContractInstance(TIPPING_V3_INTERFACE, { contractAddress: process.env.CONTRACT_V3_ADDRESS });
         logger.info('Starting WITH V3 contract');
@@ -80,6 +73,13 @@ const aeternity = {
         ORACLE_SERVICE_INTERFACE,
         { contractAddress: process.env.ORACLE_CONTRACT_ADDRESS },
       );
+
+      if (process.env.ORACLE_GETTER_ADDRESS) {
+        oracleGetter = await client.getContractInstance(ORACLE_GETTER, { contractAddress: process.env.ORACLE_GETTER_ADDRESS });
+        logger.info('Starting WITH ORACLE GETTER contract');
+      } else {
+        logger.info('Starting WITHOUT ORACLE GETTER contract');
+      }
 
       if (process.env.WORD_REGISTRY_CONTRACT) {
         wordRegistryContract = await client.getContractInstance(
@@ -263,7 +263,7 @@ const aeternity = {
 
   async fetchOracleClaimByUrl(url) {
     if (!client) throw new Error('Init sdk first');
-    return contractV2Getter.methods.get_oracle_claim_by_url(process.env.CONTRACT_V2_ADDRESS, url).then(res => res.decodedResult).catch(e => {
+    return oracleGetter.methods.get_oracle_claim_by_url(process.env.ORACLE_CONTRACT_ADDRESS, url).then(res => res.decodedResult).catch(e => {
       logger.error(e.message);
       Sentry.captureException(e);
       return [];
@@ -272,7 +272,7 @@ const aeternity = {
 
   async fetchOracleClaimedUrls(address) {
     if (!client) throw new Error('Init sdk first');
-    return contractV2Getter.methods.get_oracle_claimed_urls_by_account(process.env.CONTRACT_V2_ADDRESS, address)
+    return oracleGetter.methods.get_oracle_claimed_urls_by_account(process.env.ORACLE_CONTRACT_ADDRESS, address)
       .then(res => res.decodedResult).catch(e => {
         logger.error(e.message);
         Sentry.captureException(e);
@@ -282,7 +282,7 @@ const aeternity = {
 
   async getOracleAllClaimedUrls() {
     if (!client) throw new Error('Init sdk first');
-    return contractV2Getter.methods.get_oracle_claimed_urls(process.env.CONTRACT_V2_ADDRESS)
+    return oracleGetter.methods.get_oracle_claimed_urls(process.env.ORACLE_CONTRACT_ADDRESS)
       .then(res => res.decodedResult).catch(e => {
         logger.error(e.message);
         Sentry.captureException(e);

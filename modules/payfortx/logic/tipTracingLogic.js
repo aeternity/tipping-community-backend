@@ -38,8 +38,7 @@ module.exports = class TipTracing {
     const urlStats = CacheLogic.statsForTips(tips);
 
     // Deliberately not cached
-    const oracle = await aeternity.fetchOracleState();
-    const oracleClaim = oracle.success_claimed_urls.find(([url]) => url === tip.url);
+    const oracleClaim = await aeternity.fetchOracleClaimByUrl(tip.url);
     const unsafeCheckOracleAnswers = await aeternity.getUnsafeOracleAnswersForUrl(tip.url);
 
     // Deliberately not cached
@@ -49,7 +48,7 @@ module.exports = class TipTracing {
       tip,
       url_stats: urlStats,
       url_tips: tips,
-      url_oracle_claim: oracleClaim ? oracleClaim[1] : null,
+      url_oracle_claim: oracleClaim,
       url_events: events,
       url_intermediate_oracle_answers: unsafeCheckOracleAnswers,
     };

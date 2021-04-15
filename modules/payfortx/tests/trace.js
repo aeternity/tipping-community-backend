@@ -110,6 +110,8 @@ describe('Trace', () => {
         url: 'example.com',
       }]));
 
+      const oracleStub = sinon.stub(ae, 'fetchOracleClaimByUrl').callsFake(async () => null);
+
       const cacheStub = sinon.stub(CacheLogic, 'getTips').callsFake(async () => ([{
         amount: '200000000000000000',
         claim_gen: 1,
@@ -240,6 +242,7 @@ describe('Trace', () => {
         });
         stub.restore();
         cacheStub.restore();
+        oracleStub.restore();
         done();
       });
     });

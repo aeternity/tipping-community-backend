@@ -28,18 +28,6 @@ describe('Aeternity', () => {
       sinon.restore();
     });
 
-    it('it should get the oracle state', async function () {
-      this.timeout(30000);
-      const result = await ae.fetchOracleState();
-      result.should.be.an('object');
-      result.should.have.property('minimum_amount_of_oracles');
-      result.should.have.property('oracle_queries');
-      result.should.have.property('owner');
-      result.should.have.property('success_claimed_urls');
-      result.should.have.property('trusted_oracle_seq');
-      result.should.have.property('trusted_oracles');
-    });
-
     it('it should get the tips', async function () {
       this.timeout(10000);
       const result = await ae.fetchTips();

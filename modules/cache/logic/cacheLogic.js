@@ -25,7 +25,6 @@ const CacheLogic = {
       await CacheLogic.getTips();
       await CacheLogic.fetchChainNames();
       await CacheLogic.fetchPrice();
-      await CacheLogic.getOracleState();
       await CacheLogic.getTokenInfos();
       if (process.env.WORD_REGISTRY_CONTRACT) {
         await CacheLogic.refreshWordAndVoteData(); // keeps hot even if undefined is passed as argument
@@ -244,8 +243,12 @@ const CacheLogic = {
     };
   },
 
-  async getOracleState() {
-    return cache.getOrSet(['oracleState'], () => aeternity.fetchOracleState(), cache.shortCacheTime);
+  async getOracleClaimedUrls(address) {
+    return cache.getOrSet(['getOracleClaimedUrls', address], () => aeternity.fetchOracleClaimedUrls(address), cache.shortCacheTime);
+  },
+
+  async getOracleAllClaimedUrls() {
+    return cache.getOrSet(['getOracleAllClaimedUrls'], () => aeternity.getOracleAllClaimedUrls(), cache.shortCacheTime);
   },
 
   async fetchChainNames() {
@@ -318,7 +321,8 @@ const CacheLogic = {
   },
 
   async invalidateOracle() {
-    await cache.del(['oracleState']);
+    await cache.delByPrefix(['getOracleClaimedUrls']);
+    await cache.del(['getOracleAllClaimedUrls']);
   },
 
   async invalidateTokenCache(tokenContractAddress) {
@@ -349,7 +353,7 @@ const CacheLogic = {
   },
 
   async getUserStats(address) {
-    const oracleState = await CacheLogic.getOracleState();
+    const claimedUrls = await CacheLogic.getOracleClaimedUrls(address);
     const allTips = await CacheLogic.getTips();
     const userTips = allTips.filter(tip => tip.sender === address);
 
@@ -357,11 +361,6 @@ const CacheLogic = {
     const totalTipAmount = userTips
       .reduce((acc, tip) => acc.plus(tip.amount), new BigNumber(0))
       .plus(userReTips.reduce((acc, tip) => acc.plus(tip.amount), new BigNumber(0))).toFixed();
-
-    const claimedUrls = oracleState.success_claimed_urls
-      ? oracleState.success_claimed_urls
-        .filter(([, data]) => data.success && data.account === address).map(([url]) => url)
-      : [];
 
     const unclaimedAmount = allTips
       .reduce((acc, tip) => (claimedUrls.includes(tip.url)

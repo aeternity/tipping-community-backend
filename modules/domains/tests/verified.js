@@ -13,14 +13,8 @@ chai.use(chaiHttp);
 describe('Verified', () => {
   describe('Verified API', () => {
     it('it should GET all the verified entries', done => {
-      const stub = sinon.stub(CacheLogic, 'getTips').callsFake(() => [
-        {
-          url: 'https://www.test.domain.com',
-          claim: {
-            unclaimed: false,
-          },
-        },
-      ]);
+      const stub = sinon.stub(CacheLogic, 'getOracleAllClaimedUrls')
+        .callsFake(() => ['https://www.test.domain.com']);
       chai.request(server).get('/verified/').end((err, res) => {
         res.should.have.status(200);
         res.body.should.be.a('array');

@@ -396,7 +396,7 @@ const aeternity = {
     if (amount.isZero()) return false;
 
     // pre-claim if necessary (if not already claimed successfully)
-    const claimSuccess = aeternity.checkClaimOnContract(address, url, trace, contract);
+    const claimSuccess = await aeternity.checkClaimOnContract(address, url, trace, contract);
 
     trace.update({ state: TRACE_STATES.INITIAL_PRECLAIM_RESULT, claimSuccess });
 

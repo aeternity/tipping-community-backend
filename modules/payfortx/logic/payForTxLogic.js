@@ -4,6 +4,7 @@ const tippingContractUtil = require('tipping-contract/util/tippingContractUtil')
 const logger = require('../../../utils/logger')(module);
 const aeternity = require('../../aeternity/logic/aeternity');
 const CacheLogic = require('../../cache/logic/cacheLogic');
+const TipLogic = require('../../tip/logic/tipLogic');
 const Trace = require('./traceLogic');
 const { TRACE_STATES } = require('../constants/traceStates');
 
@@ -106,6 +107,7 @@ module.exports = class PayForTxLogic {
 
     try {
       const tx = await aeternity.postTipToV3(title, media, author, signature);
+      await TipLogic.awaitTipsUpdated(`${tx.decodedResult}_v3`)
       return res.send({ tx });
     } catch (e) {
       return sendError(500, e.message);

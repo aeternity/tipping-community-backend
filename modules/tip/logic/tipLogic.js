@@ -128,9 +128,6 @@ const TipLogic = {
   },
 
   async awaitTipsUpdated(id, retip) {
-    if (retip) awaitRetips[id] = false;
-    else awaitTips[id] = false;
-
     return new Promise((resolve, reject) => {
       setTimeout(() => {
         reject();
@@ -197,7 +194,6 @@ const TipLogic = {
 
     if (inserted.length > 0) await queueLogic.sendMessage(MESSAGE_QUEUES.TIPS, MESSAGES.TIPS.EVENTS.CREATED_NEW_LOCAL_TIPS);
   },
-
 
   async updateTipsDB() {
     await lock.acquire('TipLogic.updateTipsDB', async () => {

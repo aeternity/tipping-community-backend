@@ -52,9 +52,12 @@ describe('Profile', () => {
   });
 
   describe('Profile API', () => {
-    it('it should 404 on non existing profile', done => {
+    it('it should fallback to empty profile on non existing profile', done => {
       chai.request(server).get(`/profile/${publicKey}`).end((err, res) => {
-        res.should.have.status(404);
+        res.should.have.status(200);
+        res.body.should.be.a('object');
+        res.body.should.have.property('author', publicKey);
+        res.body.should.have.property('createdAt');
         done();
       });
     });

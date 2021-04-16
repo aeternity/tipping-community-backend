@@ -3,6 +3,7 @@ const BigNumber = require('bignumber.js');
 const Fuse = require('fuse.js');
 const { Op } = require('sequelize');
 const CacheLogic = require('../logic/cacheLogic');
+const ProfileLogic = require('../../profile/logic/profileLogic');
 const cacheAggregatorLogic = require('../logic/cacheAggregatorLogic');
 const { topicsRegex } = require('../../aeternity/utils/tipTopicUtil');
 const searchOptions = require('../constants/searchOptions');
@@ -247,7 +248,8 @@ router.get('/userStats', async (req, res) => {
  *                 type: object
  */
 router.get('/chainNames', async (req, res) => {
-  res.send(await CacheLogic.fetchChainNames());
+  const profiles = await ProfileLogic.getAllProfiles();
+  res.send(await CacheLogic.fetchChainNames(profiles));
 });
 
 /**

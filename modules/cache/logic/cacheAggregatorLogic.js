@@ -12,7 +12,7 @@ const CacheAggregatorLogic = {
     const keys = ['CacheLogic.getAllTips'].concat(blacklist ? ['blacklisted'] : ['all']);
     return cache.getOrSet(keys, async () => {
       const [allTips, tipsPreview, chainNames, commentCounts, blacklistedIds, localTips, profiles] = await Promise.all([
-        CacheLogic.getTips(), LinkPreviewLogic.fetchAllLinkPreviews(), CacheLogic.fetchChainNames(),
+        CacheLogic.getTips(), LinkPreviewLogic.fetchAllLinkPreviews(), CacheLogic.fetchMdwChainNames(),
         CommentLogic.fetchCommentCountForTips(), BlacklistLogic.getBlacklistedIds(), tipLogic.fetchAllLocalTips(), profileLogic.getAllProfiles(),
       ]);
 

@@ -75,7 +75,7 @@ const ProfileLogic = {
   // TODO run this via message queue when chain names are updated
   async verifyPreferredChainNames() {
     const allProfiles = await Profile.findAll({ raw: true });
-    const chainNames = await CacheLogic.fetchChainNames();
+    const chainNames = await CacheLogic.fetchMdwChainNames();
     return allProfiles.asyncMap(async profile => {
       if (profile.preferredChainName && (
         !chainNames[profile.author] || !chainNames[profile.author].includes(profile.preferredChainName)
@@ -90,9 +90,7 @@ const ProfileLogic = {
 
     if (!profile) profile = { author, createdAt: '' };
     if (!profile.preferredChainName) {
-      profile.preferredChainName = await CacheLogic.fetchChainNames().then(chainNames => {
-        return chainNames[author] ? chainNames[author][0] : null
-      })
+      profile.preferredChainName = await CacheLogic.fetchMdwChainNames().then(chainNames => (chainNames[author] ? chainNames[author][0] : null));
     }
 
     return profile;

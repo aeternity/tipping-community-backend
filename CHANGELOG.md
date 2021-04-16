@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.9.7](https://www.github.com/aeternity/tipping-community-backend/compare/v1.9.6...v1.9.7) (2021-04-16)
+
+
+### Bug Fixes
+
+* **docker:** adds required env to compsoe ([73b1794](https://www.github.com/aeternity/tipping-community-backend/commit/73b179436a987d8190b932d3bf7db181b07dc9ee))
+
+
+### Refactorings
+
+* **oracle:** added missing tests for oracle getter ([a5a79bf](https://www.github.com/aeternity/tipping-community-backend/commit/a5a79bf45a12691e4468f2fe14095f39f08bea92))
+* **oracle:** use oracle getter contract ([aac74d3](https://www.github.com/aeternity/tipping-community-backend/commit/aac74d38eaa99209bb19a86b57fcbce43ef9b010))
+* **oracle:** use v2 getter contract to get claimed urls from oracle ([6595c5a](https://www.github.com/aeternity/tipping-community-backend/commit/6595c5ae862d87d948ec1dea866210f650329baa))
+
 ### [1.9.6](https://www.github.com/aeternity/tipping-community-backend/compare/v1.9.5...v1.9.6) (2021-04-15)
 
 

@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.10.0](https://www.github.com/aeternity/tipping-community-backend/compare/v1.9.7...v1.10.0) (2021-04-16)
+
+
+### Features
+
+* **profile:** fallback to empty profile and default chainname ([095a408](https://www.github.com/aeternity/tipping-community-backend/commit/095a4083dad77bbc6ba4de9cf7d0b8547093f1cb))
+* **profile:** only return preferred chainname ([fd8f740](https://www.github.com/aeternity/tipping-community-backend/commit/fd8f740e3d7d4e6e6017e1f3780bd6354e7aaf4f))
+
 ### [1.9.7](https://www.github.com/aeternity/tipping-community-backend/compare/v1.9.6...v1.9.7) (2021-04-16)
 
 

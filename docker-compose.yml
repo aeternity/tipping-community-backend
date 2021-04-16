@@ -28,6 +28,7 @@ services:
       - AUTHENTICATION_PASSWORD=password # used for blacklisting & flagging ui, replace with your own credentials
       - NODE_ENV=production
       - WEBSOCKET_URL=wss://mainnet.aeternity.io/mdw/websocket
+      - ORACLE_GETTER_ADDRESS=ct_anbp2U5VUsF6PkrX1ER1hSqj76Krpvqy97c5JBLmubBecCWui
       # all optional
       - POSTGRES_PASSWORD=postgres # replace with your own credentials
       - POSTGRES_USER=postgres # replace with your own credentials

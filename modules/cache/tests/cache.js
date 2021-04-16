@@ -270,7 +270,7 @@ describe('Cache', () => {
     });
 
     it('it should GET all chainnames cache items ', done => {
-      cache.del(['fetchChainNames']).then(() => {
+      cache.del(['fetchMdwChainNames']).then(() => {
         const messageStub = sinon.stub(queueLogic, 'sendMessage').callsFake(async () => {});
         checkCachedRoute('/cache/chainnames', 'object', () => {
           sinon.assert.calledWith(messageStub, MESSAGE_QUEUES.CACHE, MESSAGES.CACHE.EVENTS.RENEWED_CHAINNAMES);

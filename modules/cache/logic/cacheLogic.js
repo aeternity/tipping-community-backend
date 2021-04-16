@@ -23,7 +23,7 @@ const CacheLogic = {
     const keepHotFunction = async () => {
       await queueLogic.sendMessage(MESSAGE_QUEUES.CACHE, MESSAGES.CACHE.COMMANDS.KEEPHOT);
       await CacheLogic.getTips();
-      await CacheLogic.fetchChainNames();
+      await CacheLogic.fetchMdwChainNames();
       await CacheLogic.fetchPrice();
       await CacheLogic.getTokenInfos();
       if (process.env.WORD_REGISTRY_CONTRACT) {
@@ -251,8 +251,22 @@ const CacheLogic = {
     return cache.getOrSet(['getOracleAllClaimedUrls'], () => aeternity.getOracleAllClaimedUrls(), cache.shortCacheTime);
   },
 
-  async fetchChainNames() {
+  async fetchChainNames(profiles) {
     return cache.getOrSet(['fetchChainNames'], async () => {
+      const chainNames = await CacheLogic.fetchMdwChainNames();
+
+      return Object.entries(chainNames).reduce(((acc, [pubkey, names]) => {
+        const profile = profiles.find(p => p.author === pubkey);
+        const preferredChainName = profile ? profile.preferredChainName : null;
+
+        acc[pubkey] = preferredChainName || names[0];
+        return acc;
+      }), {});
+    }, cache.shortCacheTime);
+  },
+
+  async fetchMdwChainNames() {
+    return cache.getOrSet(['fetchMdwChainNames'], async () => {
       const chainNames = await MdwLogic.getChainNames();
       await queueLogic.sendMessage(MESSAGE_QUEUES.CACHE, MESSAGES.CACHE.EVENTS.RENEWED_CHAINNAMES);
       return chainNames;

@@ -86,7 +86,16 @@ const ProfileLogic = {
   },
 
   async getSingleItem(author) {
-    return Profile.findOne({ where: { author }, raw: true });
+    let profile = await Profile.findOne({ where: { author }, raw: true });
+
+    if (!profile) profile = { author, createdAt: '' };
+    if (!profile.preferredChainName) {
+      profile.preferredChainName = await CacheLogic.fetchChainNames().then(chainNames => {
+        return chainNames[author] ? chainNames[author][0] : null
+      })
+    }
+
+    return profile;
   },
 
   updateProfileForExternalAnswer(profile) {

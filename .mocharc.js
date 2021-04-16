@@ -36,8 +36,8 @@ process.env = {
   CONTRACT_V2_ADDRESS: 'ct_2ZEoCKcqXkbz2uahRrsWeaPooZs9SdCv6pmC4kc55rD4MhqYSu',
   CONTRACT_V3_ADDRESS: 'ct_WscpdLQf6ZZxoVqrsEwUwmuAEdzEkJii5W5TzG84rVgHeK6BW',
   WORD_REGISTRY_CONTRACT: 'ct_2vznPSL1yzceQLnqbHC476BoHZipR3jFaK74KnPzgtkCr7beLN',
-  WEBSOCKET_URL: 'wss://testnet.aeternity.io/mdw/websocket'
-
+  WEBSOCKET_URL: 'wss://testnet.aeternity.io/mdw/websocket',
+  ORACLE_GETTER_ADDRESS: 'ct_XabcJUxaZc1w5X4WxD2WUVTLPkZX97HFYzhuwkhQXc4ZzDqDF',
 }
 
 // GENERATE KEYPAIR

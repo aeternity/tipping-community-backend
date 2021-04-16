@@ -23,6 +23,35 @@ describe('Aeternity', () => {
       result.should.equal('ae_uat');
     });
   });
+  describe('Oracle', () => {
+    afterEach(() => {
+      sinon.restore();
+    });
+
+    it('it should get all oracle claimed urls', async function () {
+      this.timeout(30000);
+      const result = await ae.getOracleAllClaimedUrls();
+      result.should.be.an('array');
+      result.should.include('https://github.com/mradkov');
+    });
+
+    it('it should get the oracle claim by url', async function () {
+      this.timeout(30000);
+      const result = await ae.fetchOracleClaimByUrl('https://github.com/mradkov');
+      result.should.be.an('object');
+      result.should.have.property('success');
+      result.should.have.property('percentage');
+      result.should.have.property('account');
+    });
+
+    it('it should get the oracle claim by url', async function () {
+      this.timeout(30000);
+      const result = await ae.fetchOracleClaimedUrls('ak_YCwfWaW5ER6cRsG9Jg4KMyVU59bQkt45WvcnJJctQojCqBeG2');
+      result.should.be.an('array');
+      result.should.include('https://github.com/mradkov');
+    });
+  });
+
   describe('Claiming', () => {
     afterEach(() => {
       sinon.restore();

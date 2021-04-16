@@ -74,12 +74,7 @@ const aeternity = {
         { contractAddress: process.env.ORACLE_CONTRACT_ADDRESS },
       );
 
-      if (process.env.ORACLE_GETTER_ADDRESS) {
-        oracleGetter = await client.getContractInstance(ORACLE_GETTER, { contractAddress: process.env.ORACLE_GETTER_ADDRESS });
-        logger.info('Starting WITH ORACLE GETTER contract');
-      } else {
-        logger.info('Starting WITHOUT ORACLE GETTER contract');
-      }
+      oracleGetter = await client.getContractInstance(ORACLE_GETTER, { contractAddress: process.env.ORACLE_GETTER_ADDRESS });
 
       if (process.env.WORD_REGISTRY_CONTRACT) {
         wordRegistryContract = await client.getContractInstance(

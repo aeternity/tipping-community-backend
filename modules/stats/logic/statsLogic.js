@@ -8,12 +8,7 @@ module.exports = class StatsLogic {
   }
 
   static async fetchUserStats(address) {
-    const oracleState = await CacheLogic.getOracleState();
-
-    const claimedUrls = oracleState.success_claimed_urls
-      ? oracleState.success_claimed_urls
-        .filter(([, data]) => data.success && data.account === address).map(([url]) => url)
-      : [];
+    const claimedUrls = await CacheLogic.getOracleClaimedUrls(address);
 
     const [results] = await sequelize.query('SELECT ROW_TO_JSON(senderstats.*) as senderstats FROM senderstats WHERE sender = ?;',
       { replacements: [address], type: sequelize.QueryTypes.SELECT });

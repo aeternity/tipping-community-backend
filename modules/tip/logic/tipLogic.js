@@ -119,20 +119,13 @@ const TipLogic = {
     });
   },
 
-  async fetchClaimedUrls() {
-    return Tip.findAll({
-      attributes: [sequelize.fn('DISTINCT', sequelize.col('Tip.url'))],
-      where: { [Op.not]: sequelize.fn('unclaimed', sequelize.col('Tip.claimGen'), sequelize.col('Tip.url'), sequelize.col('Tip.contractId')) },
-      raw: true,
-    }).then(res => res.map(({ url }) => url));
-  },
-
   async awaitTipsUpdated(id, retip) {
     return new Promise((resolve, reject) => {
       setTimeout(() => {
         reject();
       }, 30000);
 
+      // eslint-disable-next-line consistent-return
       function awaitLoop() {
         if (retip ? awaitRetips[id] : awaitTips[id]) return resolve();
         setTimeout(awaitLoop, 100);
@@ -160,21 +153,21 @@ const TipLogic = {
 
   async insertTips(tipsToInsert) {
     const inserted = await Tip.bulkCreate(tipsToInsert.map(({
-                                                              id,
-                                                              lang,
-                                                              sender,
-                                                              media,
-                                                              url,
-                                                              topics,
-                                                              title,
-                                                              token,
-                                                              tokenAmount,
-                                                              amount,
-                                                              claimGen,
-                                                              type,
-                                                              contractId,
-                                                              timestamp,
-                                                            }) => ({
+      id,
+      lang,
+      sender,
+      media,
+      url,
+      topics,
+      title,
+      token,
+      tokenAmount,
+      amount,
+      claimGen,
+      type,
+      contractId,
+      timestamp,
+    }) => ({
       id: String(id),
       language: lang,
       sender,
@@ -190,7 +183,9 @@ const TipLogic = {
       contractId,
       timestamp,
     })));
-    inserted.forEach(i => awaitTips[i.dataValues.id.includes('v1') ? null : i.dataValues.id] = true);
+    inserted.forEach(i => {
+      awaitTips[i.dataValues.id.includes('v1') ? null : i.dataValues.id] = true;
+    });
 
     if (inserted.length > 0) await queueLogic.sendMessage(MESSAGE_QUEUES.TIPS, MESSAGES.TIPS.EVENTS.CREATED_NEW_LOCAL_TIPS);
   },
@@ -220,14 +215,16 @@ const TipLogic = {
         return { ...tip, lang };
       });
 
-      await TipLogic.insertTips(result)
+      await TipLogic.insertTips(result);
       await queueLogic.sendMessage(MESSAGE_QUEUES.TIPS, MESSAGES.TIPS.EVENTS.UPDATE_DB_FINISHED);
     });
   },
 
   async insertRetips(retipsToInsert) {
     const inserted = await Retip.bulkCreate(retipsToInsert);
-    inserted.forEach(i => awaitRetips[i.dataValues.id.includes('v1') ? null : i.dataValues.id] = true);
+    inserted.forEach(i => {
+      awaitRetips[i.dataValues.id.includes('v1') ? null : i.dataValues.id] = true;
+    });
   },
 
   async updateRetipsDB() {

@@ -26,9 +26,11 @@ const { TRACE_STATES } = require('../../payfortx/constants/traceStates');
 let client;
 let contractV1;
 let contractV2;
-let oracleGetter;
+let contractV2Getter;
 let contractV3;
+let contractV3Getter;
 let oracleContract;
+let oracleGetter;
 let wordRegistryContract;
 let tokenRegistry;
 const tokenContracts = {};
@@ -213,20 +215,21 @@ const aeternity = {
   async getTipV2(value) {
     const tipId = await client.contractDecodeData('contract Decode =\n  entrypoint int(): int = 0', 'int', value, 'ok');
     const rawTip = await contractV2Getter.methods.get_tip_by_id(process.env.CONTRACT_V2_ADDRESS, tipId).then(res => res.decodedResult);
-    const url = await contractV2Getter.methods.get_url_by_id(process.env.CONTRACT_V2_ADDRESS, basicTippingContractUtil.rawTipUrlId(rawTip)).then(res => res.decodedResult);
-    return basicTippingContractUtil.formatSingleTip(process.env.CONTRACT_V2_ADDRESS, '_v2', tipId, rawTip, url)
+    const url = await contractV2Getter.methods.get_url_by_id(process.env.CONTRACT_V2_ADDRESS,
+      basicTippingContractUtil.rawTipUrlId(rawTip)).then(res => res.decodedResult);
+    return basicTippingContractUtil.formatSingleTip(process.env.CONTRACT_V2_ADDRESS, '_v2', tipId, rawTip, url);
   },
 
   async getTipV3(value) {
     const tipId = await client.contractDecodeData('contract Decode =\n  entrypoint int(): int = 0', 'int', value, 'ok');
     const rawTip = await contractV3Getter.methods.get_tip_by_id(process.env.CONTRACT_V3_ADDRESS, tipId).then(res => res.decodedResult);
-    return basicTippingContractUtil.formatSingleTip(process.env.CONTRACT_V3_ADDRESS, '_v3', tipId, rawTip)
+    return basicTippingContractUtil.formatSingleTip(process.env.CONTRACT_V3_ADDRESS, '_v3', tipId, rawTip);
   },
 
   async getRetipV2(value) {
     const retipId = await client.contractDecodeData('contract Decode =\n  entrypoint int(): int = 0', 'int', value, 'ok');
-    return contractV2Getter.methods.get_retip_by_id(process.env.CONTRACT_V2_ADDRESS, retipId).then(res =>
-      basicTippingContractUtil.formatSingleRetip(process.env.CONTRACT_V2_ADDRESS, '_v2', retipId, res.decodedResult));
+    return contractV2Getter.methods.get_retip_by_id(process.env.CONTRACT_V2_ADDRESS, retipId)
+      .then(res => basicTippingContractUtil.formatSingleRetip(process.env.CONTRACT_V2_ADDRESS, '_v2', retipId, res.decodedResult));
   },
 
   decodeTransactionEvents(data) {

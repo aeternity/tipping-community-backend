@@ -12,7 +12,7 @@ const wsclient = new WebSocketClient();
 // Check if all envs are defined
 if (!process.env.WEBSOCKET_URL) throw new Error('WEBSOCKET_URL is not set');
 
-const handleContractEvent = async  (event, tx) => {
+const handleContractEvent = async (event, tx) => {
   await queueLogic.sendMessage(MESSAGE_QUEUES.BLOCKCHAIN, MESSAGES.BLOCKCHAIN.EVENTS.EVENT_RECEIVED, { event, tx });
 };
 

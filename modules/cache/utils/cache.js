@@ -2,6 +2,8 @@ const redis = require('redis');
 const { promisify } = require('util');
 const AsyncLock = require('async-lock');
 const logger = require('../../../utils/logger')(module);
+const queueLogic = require('../../queue/logic/queueLogic');
+const { MESSAGES, MESSAGE_QUEUES } = require('../../queue/constants/queue');
 
 if (!process.env.REDIS_HOST) throw Error('REDIS_HOST is not set');
 
@@ -19,7 +21,6 @@ cache.wsconnection = null;
 
 cache.shortCacheTime = process.env.SHORT_CACHE_TIME || 5 * 60;
 cache.longCacheTime = process.env.LONG_CACHE_TIME || 60 * 60;
-cache.keepHotInterval = process.env.KEEP_HOT_INTERVAL || cache.shortCacheTime * 1000;
 cache.networkKey = '';
 
 cache.init = async aeternity => {
@@ -96,8 +97,10 @@ cache.keepHot = keepHotFunction => {
     logger.info(`cache keepHot ${new Date().getTime() - start}ms`);
   });
 
-  keepHotLogic();
-  setInterval(keepHotLogic, cache.keepHotInterval);
+  queueLogic.subscribeToMessage(MESSAGE_QUEUES.SCHEDULED_EVENTS, MESSAGES.SCHEDULED_EVENTS.COMMANDS.CACHE_KEEPHOT, async message => {
+    await keepHotLogic();
+    await queueLogic.deleteMessage(MESSAGE_QUEUES.SCHEDULED_EVENTS, message.id);
+  });
 };
 
 module.exports = cache;

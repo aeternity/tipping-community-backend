@@ -9,6 +9,7 @@ const cache = require('../modules/cache/utils/cache');
 const broker = require('../modules/queue/logic/messageBrokerLogic');
 const queueLogic = require('../modules/queue/logic/queueLogic');
 const cacheLogic = require('../modules/cache/logic/cacheLogic');
+const SchedulerLogic = require('../modules/queue/logic/schedulerLogic');
 const chainListenerLogic = require('../modules/aeternity/logic/chainListenerLogic');
 const ipfsLogic = require('../modules/backup/logic/ipfsLogic');
 const linkPreviewLogic = require('../modules/linkPreview/logic/linkPreviewLogic');
@@ -73,6 +74,7 @@ const startup = async () => {
   tipLogic.init();
   profileLogic.init();
   EventLogic.init();
+  SchedulerLogic.init();
 
   server.listen(port);
   server.on('error', onError);

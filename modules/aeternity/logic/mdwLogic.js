@@ -5,6 +5,8 @@ const AsyncLock = require('async-lock');
 const logger = require('../../../utils/logger')(module);
 const aeternity = require('./aeternity');
 const { ChainName, sequelize } = require('../../../models');
+const queueLogic = require('../../queue/logic/queueLogic');
+const { MESSAGES, MESSAGE_QUEUES } = require('../../queue/constants/queue');
 
 const lock = new AsyncLock();
 
@@ -16,8 +18,10 @@ if (process.env.MIDDLEWARE_URL.match(/\/$/)) throw new Error('MIDDLEWARE_URL can
 const MdwLogic = {
 
   init() {
-    MdwLogic.updateChainNamesDB();
-    setInterval(() => MdwLogic.updateChainNamesDB(), 10 * 60 * 1000);
+    queueLogic.subscribeToMessage(MESSAGE_QUEUES.SCHEDULED_EVENTS, MESSAGES.SCHEDULED_EVENTS.COMMANDS.UPDATE_CHAIN_NAMES, async message => {
+      await MdwLogic.updateChainNamesDB();
+      await queueLogic.deleteMessage(MESSAGE_QUEUES.SCHEDULED_EVENTS, message.id);
+    });
   },
 
   // fetches pages forwards, if no next its the last page, don't cache that

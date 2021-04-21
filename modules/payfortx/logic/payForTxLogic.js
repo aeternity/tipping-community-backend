@@ -107,7 +107,7 @@ module.exports = class PayForTxLogic {
 
     try {
       const tx = await aeternity.postTipToV3(title, media, author, signature);
-      await TipLogic.awaitTipsUpdated(`${tx.decodedResult}_v3`)
+      await TipLogic.awaitTipsUpdated(`${tx.decodedResult}_v3`);
       return res.send({ tx });
     } catch (e) {
       return sendError(500, e.message);

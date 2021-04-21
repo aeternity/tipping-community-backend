@@ -1,10 +1,10 @@
 const { sequelize, Comment } = require('../../../models');
 const CacheLogic = require('../../cache/logic/cacheLogic');
-const { URL_STATS, SENDER_STATS } = require('../utils/statsAggregation');
+const { URL_STATS, SENDER_STATS, GLOBAL_STATS } = require('../utils/statsAggregation');
 
 module.exports = class StatsLogic {
   static async fetchStats() {
-    const [results] = await sequelize.query('SELECT ROW_TO_JSON(stats.*) as stats FROM stats');
+    const [results] = await sequelize.query(GLOBAL_STATS);
     return results.length ? results[0].stats : null;
   }
 

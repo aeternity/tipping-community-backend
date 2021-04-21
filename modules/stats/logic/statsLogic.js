@@ -1,5 +1,6 @@
 const { sequelize, Comment } = require('../../../models');
 const CacheLogic = require('../../cache/logic/cacheLogic');
+const { URL_STATS, SENDER_STATS } = require('../utils/statsAggregation');
 
 module.exports = class StatsLogic {
   static async fetchStats() {
@@ -10,12 +11,8 @@ module.exports = class StatsLogic {
   static async fetchUserStats(address) {
     const claimedUrls = await CacheLogic.getOracleClaimedUrls(address);
 
-    const [results] = await sequelize.query('SELECT ROW_TO_JSON(senderstats.*) as senderstats FROM senderstats WHERE sender = ?;',
-      { replacements: [address], type: sequelize.QueryTypes.SELECT });
-
-    const [urlStats] = await sequelize.query('SELECT SUM(urlstats.totaltipslength) AS totaltipslength, SUM(urlstats.totalamount::NUMERIC)::VARCHAR AS totalamount FROM urlstats WHERE url IN (?);',
-      { replacements: [claimedUrls], type: sequelize.QueryTypes.SELECT });
-
+    const [results] = await sequelize.query(SENDER_STATS, { replacements: [address], type: sequelize.QueryTypes.SELECT });
+    const [urlStats] = await sequelize.query(URL_STATS, { replacements: [claimedUrls], type: sequelize.QueryTypes.SELECT });
     const commentCount = await Comment.count({ where: { author: address } });
 
     return {

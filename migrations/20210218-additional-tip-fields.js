@@ -55,7 +55,7 @@ var migrationCommands = function(transaction) {
                 "Tips",
                 "url",
                 {
-                    "type": Sequelize.STRING,
+                    "type": Sequelize.TEXT,
                     "field": "url",
                     "allowNull": true
                 },

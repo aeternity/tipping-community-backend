@@ -12,7 +12,7 @@ module.exports = (sequelize, DataTypes) => sequelize.define('Tip', {
     allowNull: true,
   },
   media: {
-    type: DataTypes.ARRAY(DataTypes.STRING),
+    type: DataTypes.ARRAY(DataTypes.TEXT),
     allowNull: true,
   },
   type: {

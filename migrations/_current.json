@@ -768,7 +768,7 @@
                 "media": {
                     "allowNull": true,
                     "field": "media",
-                    "seqType": "Sequelize.ARRAY(Sequelize.STRING)"
+                    "seqType": "Sequelize.ARRAY(Sequelize.TEXT)"
                 },
                 "type": {
                     "defaultValue": {
@@ -803,5 +803,5 @@
             "indexes": []
         }
     },
-    "revision": 10
+    "revision": 11
 }

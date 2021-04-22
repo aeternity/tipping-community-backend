@@ -3,6 +3,7 @@
   "version": "1.10.0",
   "description": "",
   "main": "bin/www.js",
+  "prepare": "husky install",
   "scripts": {
     "test": "mocha modules/**/tests/*.js --exit",
     "benchmark": "node benchmark.js",
@@ -23,11 +24,6 @@
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/aeternity/tipping-community-backend/issues"
-  },
-  "husky": {
-    "hooks": {
-      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
-    }
   },
   "homepage": "https://github.com/aeternity/tipping-community-backend#readme",
   "dependencies": {
@@ -83,7 +79,7 @@
     "eslint": "^7.20.0",
     "eslint-config-airbnb-base": "^14.2.1",
     "eslint-plugin-import": "^2.22.1",
-    "husky": "^5.0.9",
+    "husky": "^6.0.0",
     "mocha": "^8.3.0",
     "rewire": "^5.0.0",
     "sequelize-auto-migrations": "github:scimonster/sequelize-auto-migrations#a063aa6535a3f580623581bf866cef2d609531ba",

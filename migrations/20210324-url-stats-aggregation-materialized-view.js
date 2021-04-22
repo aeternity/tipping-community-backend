@@ -59,12 +59,12 @@ module.exports = {
 CREATE MATERIALIZED VIEW UrlStats AS
 SELECT "Tip"."url",
 
-       (SELECT COUNT("Tips"."id") FROM "Tips" WHERE "Tips"."url" = "Tip"."url") AS tipsLength,
+       (SELECT COUNT("Tips"."id") FROM "Tips" WHERE "Tips"."url" = "Tip"."url") AS "tipsLength",
 
        (SELECT COUNT("Retips"."id")
         FROM "Tips"
                  LEFT OUTER JOIN "Retips" ON "Tips"."id" = "Retips"."tipId"
-        WHERE "Tips"."url" = "Tip"."url")                                       AS retipsLength,
+        WHERE "Tips"."url" = "Tip"."url")                                       AS "retipsLength",
 
        ((SELECT COUNT("Retips"."id")
          FROM "Tips"
@@ -72,7 +72,7 @@ SELECT "Tip"."url",
          WHERE "Tips"."url" = "Tip"."url") +
         (SELECT COUNT("Tips"."id")
          FROM "Tips"
-         WHERE "Tips"."url" = "Tip"."url"))                                     AS totalTipsLength,
+         WHERE "Tips"."url" = "Tip"."url"))                                     AS "totalTipsLength",
 
        (SELECT COALESCE(SUM(amounts.amount), 0)::VARCHAR
         FROM (SELECT SUM(COALESCE("Retips"."amount", 0)) AS amount
@@ -83,7 +83,7 @@ SELECT "Tip"."url",
               SELECT SUM(COALESCE("Tips"."amount", 0)) AS amount
               FROM "Tips"
               WHERE "Tips"."url" = "Tip"."url") AS amounts
-        WHERE amounts.amount > 0)           AS totalAmount,
+        WHERE amounts.amount > 0)           AS "totalAmount",
 
        (SELECT COALESCE(SUM(amounts.amount), 0)::VARCHAR
         FROM (SELECT SUM(unclaimed_amount("Retips"."claimGen", "Tips"."url", "Tips"."contractId", "Retips"."amount")) AS amount
@@ -94,7 +94,7 @@ SELECT "Tip"."url",
               SELECT SUM(unclaimed_amount("Tips"."claimGen", "Tips"."url", "Tips"."contractId", "Tips"."amount")) AS amount
               FROM "Tips"
               WHERE "Tips"."url" = "Tip"."url") AS amounts
-        WHERE amounts.amount > 0)           AS totalUnclaimedAmount,
+        WHERE amounts.amount > 0)           AS "totalUnclaimedAmount",
 
        (SELECT COALESCE(SUM(amounts.amount), 0)::VARCHAR
         FROM (SELECT SUM(claimed_amount("Retips"."claimGen", "Tips"."url", "Tips"."contractId", "Retips"."amount")) AS amount
@@ -105,7 +105,7 @@ SELECT "Tip"."url",
               SELECT SUM(claimed_amount("Tips"."claimGen", "Tips"."url", "Tips"."contractId", "Tips"."amount")) AS amount
               FROM "Tips"
               WHERE "Tips"."url" = "Tip"."url") AS amounts
-        WHERE amounts.amount > 0)           AS totalClaimedAmount,
+        WHERE amounts.amount > 0)           AS "totalClaimedAmount",
 
        (ARRAY(SELECT JSON_BUILD_OBJECT('token', tokenAmounts.token,
                                        'amount', SUM(tokenAmounts.amount)::VARCHAR)
@@ -122,7 +122,7 @@ SELECT "Tip"."url",
                       AND "Tips"."token" IS NOT NULL
                     GROUP BY "Tips"."token") AS tokenAmounts
               WHERE tokenAmounts.amount > 0
-              GROUP BY tokenAmounts.token))                                     AS totalTokenAmount,
+              GROUP BY tokenAmounts.token))                                     AS "totalTokenAmount",
 
        (ARRAY(SELECT JSON_BUILD_OBJECT('token', tokenAmounts.token,
                                        'amount', SUM(tokenAmounts.amount)::VARCHAR)
@@ -143,7 +143,7 @@ SELECT "Tip"."url",
                       AND "Tips"."token" IS NOT NULL
                     GROUP BY "Tips"."token") AS tokenAmounts
               WHERE tokenAmounts.amount > 0
-              GROUP BY tokenAmounts.token))                                     AS totalTokenUnclaimedAmount,
+              GROUP BY tokenAmounts.token))                                     AS "totalTokenUnclaimedAmount",
 
        (ARRAY(SELECT JSON_BUILD_OBJECT('token', tokenAmounts.token,
                                        'amount', SUM(tokenAmounts.amount)::VARCHAR)
@@ -164,7 +164,7 @@ SELECT "Tip"."url",
                       AND "Tips"."token" IS NOT NULL
                     GROUP BY "Tips"."token") AS tokenAmounts
               WHERE tokenAmounts.amount > 0
-              GROUP BY tokenAmounts.token))                                     AS totalTokenClaimedAmount,
+              GROUP BY tokenAmounts.token))                                     AS "totalTokenClaimedAmount",
 
        ARRAY((SELECT "Tips"."sender" FROM "Tips" WHERE "Tips"."url" = "Tip"."url" AND "Tips"."sender" IS NOT NULL)
              UNION
@@ -173,7 +173,7 @@ SELECT "Tip"."url",
               FROM "Tips"
                        LEFT OUTER JOIN "Retips" ON "Tips"."id" = "Retips"."tipId"
               WHERE "Tips"."url" = "Tip"."url"
-                AND "Retips"."sender" IS NOT NULL))                             AS senders,
+                AND "Retips"."sender" IS NOT NULL))                             AS "senders",
 
        (SELECT COUNT(senders)
         FROM ((SELECT "Tips"."sender" FROM "Tips" WHERE "Tips"."url" = "Tip"."url" AND "Tips"."sender" IS NOT NULL)
@@ -183,7 +183,7 @@ SELECT "Tip"."url",
                FROM "Tips"
                         LEFT OUTER JOIN "Retips" ON "Tips"."id" = "Retips"."tipId"
                WHERE "Tips"."url" = "Tip"."url"
-                 AND "Retips"."sender" IS NOT NULL)) AS senders)                AS sendersLength
+                 AND "Retips"."sender" IS NOT NULL)) AS senders)                AS "sendersLength"
 
 FROM "Tips" as "Tip"
 GROUP BY "Tip"."url";

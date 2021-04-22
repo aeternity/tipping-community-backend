@@ -21,6 +21,12 @@ const PAGE_LIMIT = 30;
 const awaitTips = {};
 const awaitRetips = {};
 
+const includes = [
+  { model: Retip, as: 'retips' },
+  { model: LinkPreview, as: 'linkPreview' },
+  { model: Claim, as: 'claim' },
+  { model: ChainName, as: 'chainName' }];
+
 const TipLogic = {
   init() {
     setTimeout(TipLogic.updateTipsDB, 5000);
@@ -88,7 +94,7 @@ const TipLogic = {
 
     return Tip.findAll({
       attributes,
-      include: [Retip, LinkPreview, Claim, ChainName],
+      include: includes,
       where: whereArguments,
       offset: ((page || 1) - 1) * PAGE_LIMIT,
       limit: PAGE_LIMIT,
@@ -101,7 +107,7 @@ const TipLogic = {
 
     return Tip.findOne({
       attributes,
-      include: [Retip, LinkPreview, Claim, ChainName],
+      include: includes,
       where: { id },
     });
   },

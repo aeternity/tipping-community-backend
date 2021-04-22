@@ -14,20 +14,20 @@ const getTipTopics = tips => { // TODO move to db
         // TODO optimize performance for token amount aggregation
         if (topic) {
           acc[topic] = acc[topic] ? {
-            amount: new BigNumber(acc[topic].amount).plus(tip.Aggregation.totalamount).toFixed(),
+            amount: new BigNumber(acc[topic].amount).plus(tip.aggregation.totalAmount).toFixed(),
             totalScore: acc[topic].totalScore + score,
             count: acc[topic].count + 1,
-            token_amount: tip.Aggregation.totaltokenamount.reduce((tokenAcc, tokenTip) => ({
+            token_amount: tip.aggregation.totalTokenAmount.reduce((tokenAcc, tokenTip) => ({
               ...tokenAcc,
               [tokenTip.token]: tokenAcc[tokenTip.token]
                 ? new BigNumber(tokenAcc[tokenTip.token]).plus(tokenTip.amount).toFixed()
                 : new BigNumber(tokenTip.amount).toFixed(),
             }), acc[topic].token_amount ? acc[topic].token_amount : {}),
           } : {
-            amount: tip.Aggregation.totalamount,
+            amount: tip.aggregation.totalAmount,
             totalScore: score,
             count: 1,
-            token_amount: tip.Aggregation.totaltokenamount.reduce((allTokenTipAmounts, tokenTip) => ({
+            token_amount: tip.aggregation.totalTokenAmount.reduce((allTokenTipAmounts, tokenTip) => ({
               ...allTokenTipAmounts,
               [tokenTip.token]: tokenTip.amount,
             }), {}),

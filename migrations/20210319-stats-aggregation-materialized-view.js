@@ -55,14 +55,14 @@ module.exports = {
       const transaction = await queryInterface.sequelize.transaction();
       await queryInterface.sequelize.query(`
 CREATE MATERIALIZED VIEW Stats AS
-SELECT (SELECT COUNT("Tips"."id") FROM "Tips")                                                             AS tipsLength,
-       (SELECT COUNT("Retips"."id") FROM "Retips")                                                         AS retipsLength,
+SELECT (SELECT COUNT("Tips"."id") FROM "Tips")                                                             AS "tipsLength",
+       (SELECT COUNT("Retips"."id") FROM "Retips")                                                         AS "retipsLength",
        ((SELECT COUNT("Retips"."id") FROM "Retips") +
-        (SELECT COUNT("Tips"."id") FROM "Tips"))                                                           AS totalTipsLength,
+        (SELECT COUNT("Tips"."id") FROM "Tips"))                                                           AS "totalTipsLength",
        (SELECT (COALESCE((SELECT (SUM(COALESCE("Tips"."amount", 0))) + SUM((COALESCE("Retips"."amount", 0)))
                           FROM "Tips"
                                    LEFT OUTER JOIN "Retips" ON "Tips"."id" = "Retips"."tipId"),
-                         0))::VARCHAR)                                                                     AS totalAmount,
+                         0))::VARCHAR)                                                                     AS "totalAmount",
        (SELECT (COALESCE((SELECT (SUM(CASE
                                           WHEN unclaimed("Tips"."claimGen", "Tips"."url", "Tips"."contractId")
                                               THEN COALESCE("Tips"."amount", 0)
@@ -72,7 +72,7 @@ SELECT (SELECT COUNT("Tips"."id") FROM "Tips")                                  
                                                                   ELSE 0 END))
                           FROM "Tips"
                                    LEFT OUTER JOIN "Retips" ON "Tips"."id" = "Retips"."tipId"),
-                         0))::VARCHAR)                                                                     AS totalUnclaimedAmount,
+                         0))::VARCHAR)                                                                     AS "totalUnclaimedAmount",
        (SELECT (COALESCE((SELECT (SUM(CASE
                                           WHEN unclaimed("Tips"."claimGen", "Tips"."url", "Tips"."contractId")
                                               THEN 0
@@ -82,14 +82,14 @@ SELECT (SELECT COUNT("Tips"."id") FROM "Tips")                                  
                                                                                              ELSE COALESCE("Retips"."amount", 0) END))
                           FROM "Tips"
                                    LEFT OUTER JOIN "Retips" ON "Tips"."id" = "Retips"."tipId"),
-                         0))::VARCHAR)                                                                     AS totalClaimedAmount,
+                         0))::VARCHAR)                                                                     AS "totalClaimedAmount",
        (ARRAY(SELECT JSON_BUILD_OBJECT('token', COALESCE("Retips"."token", "Tips"."token"),
                                        'amount', ((SUM(COALESCE("Retips"."tokenAmount", 0))) +
                                                   (SUM(COALESCE("Tips"."tokenAmount", 0))))::VARCHAR)
               FROM "Tips"
                        LEFT OUTER JOIN "Retips" ON "Tips"."id" = "Retips"."tipId"
               GROUP BY COALESCE("Retips"."token", "Tips"."token")
-              HAVING COALESCE("Retips"."token", "Tips"."token") IS NOT NULL))                              AS totalTokenAmount,
+              HAVING COALESCE("Retips"."token", "Tips"."token") IS NOT NULL))                              AS "totalTokenAmount",
        (ARRAY(SELECT JSON_BUILD_OBJECT('token', COALESCE("Retips"."token", "Tips"."token"),
                                        'amount', ((SUM(CASE
                                                            WHEN unclaimed("Retips"."claimGen", "Tips"."url", "Tips"."contractId")
@@ -102,7 +102,7 @@ SELECT (SELECT COUNT("Tips"."id") FROM "Tips")                                  
               FROM "Tips"
                        LEFT OUTER JOIN "Retips" ON "Tips"."id" = "Retips"."tipId"
               GROUP BY COALESCE("Retips"."token", "Tips"."token")
-              HAVING COALESCE("Retips"."token", "Tips"."token") IS NOT NULL))                              AS totalTokenUnclaimedAmount,
+              HAVING COALESCE("Retips"."token", "Tips"."token") IS NOT NULL))                              AS "totalTokenUnclaimedAmount",
        (ARRAY(SELECT JSON_BUILD_OBJECT('token', COALESCE("Retips"."token", "Tips"."token"),
                                        'amount', ((SUM(CASE
                                                            WHEN unclaimed("Retips"."claimGen", "Tips"."url", "Tips"."contractId")
@@ -115,13 +115,13 @@ SELECT (SELECT COUNT("Tips"."id") FROM "Tips")                                  
               FROM "Tips"
                        LEFT OUTER JOIN "Retips" ON "Tips"."id" = "Retips"."tipId"
               GROUP BY COALESCE("Retips"."token", "Tips"."token")
-              HAVING COALESCE("Retips"."token", "Tips"."token") IS NOT NULL))                              AS totalTokenClaimedAmount,
-       ARRAY((SELECT "Tips"."sender" FROM "Tips") UNION DISTINCT (SELECT "Retips"."sender" FROM "Retips")) AS senders,
+              HAVING COALESCE("Retips"."token", "Tips"."token") IS NOT NULL))                              AS "totalTokenClaimedAmount",
+       ARRAY((SELECT "Tips"."sender" FROM "Tips") UNION DISTINCT (SELECT "Retips"."sender" FROM "Retips")) AS "senders",
        (SELECT COUNT(senders)
         FROM ((SELECT "Tips"."sender" FROM "Tips")
               UNION
               DISTINCT
-              (SELECT "Retips"."sender" FROM "Retips")) AS senders)                                        AS sendersLength;
+              (SELECT "Retips"."sender" FROM "Retips")) AS senders)                                        AS "sendersLength";
               `, { transaction });
 
       await queryInterface.sequelize.query(`

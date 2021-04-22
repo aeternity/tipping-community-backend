@@ -872,12 +872,12 @@
                 "title": {
                     "allowNull": false,
                     "field": "title",
-                    "seqType": "Sequelize.STRING"
+                    "seqType": "Sequelize.TEXT"
                 },
                 "topics": {
                     "allowNull": false,
                     "field": "topics",
-                    "seqType": "Sequelize.ARRAY(Sequelize.STRING)"
+                    "seqType": "Sequelize.ARRAY(Sequelize.TEXT)"
                 },
                 "media": {
                     "allowNull": true,

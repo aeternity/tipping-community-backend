@@ -18,7 +18,7 @@ const handleContractEvent = async event => {
 
 const subscribeToContract = contract => {
   if (!wsconnection) throw new Error('init ws connection first');
-  logger.debug(`Subscribing to events from ${contract}`);
+  logger.info(`Subscribing to events from ${contract}`);
   wsconnection.send(JSON.stringify({
     op: 'Subscribe',
     payload: 'Object',
@@ -46,7 +46,7 @@ const handleWebsocketMessage = async message => {
 };
 
 const handleConnectionInit = async connection => {
-  logger.debug('WebSocket connected');
+  logger.info('WebSocket connected');
   wsconnection = connection;
   if (process.env.CONTRACT_V1_ADDRESS) subscribeToContract(process.env.CONTRACT_V1_ADDRESS);
   if (process.env.CONTRACT_V2_ADDRESS) subscribeToContract(process.env.CONTRACT_V2_ADDRESS);

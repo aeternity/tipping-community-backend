@@ -24,7 +24,7 @@ var migrationCommands = function(transaction) {
                 "Tips",
                 "topics",
                 {
-                    "type": Sequelize.ARRAY(Sequelize.STRING),
+                    "type": Sequelize.ARRAY(Sequelize.TEXT),
                     "field": "topics",
                     "allowNull": false
                 },
@@ -39,7 +39,7 @@ var migrationCommands = function(transaction) {
                 "Tips",
                 "title",
                 {
-                    "type": Sequelize.STRING,
+                    "type": Sequelize.TEXT,
                     "field": "title",
                     "allowNull": false
                 },

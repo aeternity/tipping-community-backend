@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.10.1](https://www.github.com/aeternity/tipping-community-backend/compare/v1.10.0...v1.10.1) (2021-04-22)
+
+
+### Miscellaneous
+
+* **chainlistener:** elevates websocket connection logs to info level ([4f2bcc0](https://www.github.com/aeternity/tipping-community-backend/commit/4f2bcc0c2463252632eb00082aa6d04143bc1e25))
+
+
+### CI / CD
+
+* **husky:** fixes husky pre commit integration ([497efd3](https://www.github.com/aeternity/tipping-community-backend/commit/497efd3c15609af20aed93aaedd7bd77cc7df486))
+
 ## [1.10.0](https://www.github.com/aeternity/tipping-community-backend/compare/v1.9.7...v1.10.0) (2021-04-16)
 
 

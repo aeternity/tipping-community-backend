@@ -66,7 +66,7 @@ SELECT "Tip"."id",
               SELECT SUM(COALESCE("Tips"."amount", 0)) AS amount
               FROM "Tips"
               WHERE "Tips"."id" = "Tip"."id") AS amounts
-        WHERE amounts.amount > 0)           AS totalAmount,
+        WHERE amounts.amount > 0)           AS "totalAmount",
 
        (SELECT COALESCE(SUM(amounts.amount), 0)::VARCHAR
         FROM (SELECT SUM(unclaimed_amount("Retips"."claimGen", "Tips"."url", "Tips"."contractId", "Retips"."amount")) AS amount
@@ -77,7 +77,7 @@ SELECT "Tip"."id",
               SELECT SUM(unclaimed_amount("Tips"."claimGen", "Tips"."url", "Tips"."contractId", "Tips"."amount")) AS amount
               FROM "Tips"
               WHERE "Tips"."id" = "Tip"."id") AS amounts
-        WHERE amounts.amount > 0)           AS totalUnclaimedAmount,
+        WHERE amounts.amount > 0)           AS "totalUnclaimedAmount",
 
        (SELECT COALESCE(SUM(amounts.amount), 0)::VARCHAR
         FROM (SELECT SUM(claimed_amount("Retips"."claimGen", "Tips"."url", "Tips"."contractId", "Retips"."amount")) AS amount
@@ -88,7 +88,7 @@ SELECT "Tip"."id",
               SELECT SUM(claimed_amount("Tips"."claimGen", "Tips"."url", "Tips"."contractId", "Tips"."amount")) AS amount
               FROM "Tips"
               WHERE "Tips"."id" = "Tip"."id") AS amounts
-        WHERE amounts.amount > 0)           AS totalClaimedAmount,
+        WHERE amounts.amount > 0)           AS "totalClaimedAmount",
 
        (ARRAY(SELECT JSON_BUILD_OBJECT('token', tokenAmounts.token,
                                        'amount', SUM(tokenAmounts.amount)::VARCHAR)
@@ -105,7 +105,7 @@ SELECT "Tip"."id",
                       AND "Tips"."token" IS NOT NULL
                     GROUP BY "Tips"."token") AS tokenAmounts
               WHERE tokenAmounts.amount > 0
-              GROUP BY tokenAmounts.token)) AS totalTokenAmount,
+              GROUP BY tokenAmounts.token)) AS "totalTokenAmount",
 
        (ARRAY(SELECT JSON_BUILD_OBJECT('token', tokenAmounts.token,
                                        'amount', SUM(tokenAmounts.amount)::VARCHAR)
@@ -126,7 +126,7 @@ SELECT "Tip"."id",
                       AND "Tips"."token" IS NOT NULL
                     GROUP BY "Tips"."token") AS tokenAmounts
               WHERE tokenAmounts.amount > 0
-              GROUP BY tokenAmounts.token)) AS totalTokenUnclaimedAmount,
+              GROUP BY tokenAmounts.token)) AS "totalTokenUnclaimedAmount",
 
        (ARRAY(SELECT JSON_BUILD_OBJECT('token', tokenAmounts.token,
                                        'amount', SUM(tokenAmounts.amount)::VARCHAR)
@@ -147,7 +147,7 @@ SELECT "Tip"."id",
                       AND "Tips"."token" IS NOT NULL
                     GROUP BY "Tips"."token") AS tokenAmounts
               WHERE tokenAmounts.amount > 0
-              GROUP BY tokenAmounts.token)) AS totalTokenClaimedAmount
+              GROUP BY tokenAmounts.token)) AS "totalTokenClaimedAmount"
 
 FROM "Tips" AS "Tip"
 GROUP BY "Tip"."id";

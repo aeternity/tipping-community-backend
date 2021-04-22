@@ -343,7 +343,7 @@ const aeternity = {
     } catch (e) {
       logger.error(e.message, e);
       Sentry.captureException(e);
-      return { tips: [], retips: [] };
+      return { tips: [], retips: [], claims: [] };
     }
   },
 

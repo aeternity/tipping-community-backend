@@ -12,15 +12,6 @@ class MessageBroker {
       { queueName: MESSAGE_QUEUES.TIPS, message: MESSAGES.TIPS.COMMANDS.UPDATE_DB },
     ]);
 
-    // S: UPDATED TIPS DB
-    // T: UPDATE RETIPS DB
-    this.setupForwarding({
-      queueName: MESSAGE_QUEUES.TIPS,
-      message: MESSAGES.TIPS.EVENTS.UPDATE_DB_FINISHED,
-    }, [
-      { queueName: MESSAGE_QUEUES.RETIPS, message: MESSAGES.RETIPS.COMMANDS.UPDATE_DB },
-    ]);
-
     // S: UPDATE TIPS DB
     // T: UPDATE LINKPREVIEWS
     this.setupForwarding({
@@ -58,30 +49,12 @@ class MessageBroker {
     ]);
 
     // S: TIP CLAIMED
-    // T: UPDATE PREFERRED CHAIN NAMES
+    // T: UPDATE CLAIMS
     this.setupForwarding({
       queueName: MESSAGE_QUEUES.EVENTS,
       message: MESSAGES.EVENTS.EVENTS.TIP_WITHDRAWN,
     }, [
-      { queueName: MESSAGE_QUEUES.CACHE, message: MESSAGES.CACHE.COMMANDS.RENEW_TIPS },
-    ]);
-
-    // S: INVALIDATION REQUEST
-    // T: UPDATE PREFERRED CHAIN NAMES
-    this.setupForwarding({
-      queueName: MESSAGE_QUEUES.CACHE,
-      message: MESSAGES.CACHE.EVENTS.TIP_INVALIDATION_REQUEST,
-    }, [
-      { queueName: MESSAGE_QUEUES.CACHE, message: MESSAGES.CACHE.COMMANDS.RENEW_TIPS },
-    ]);
-
-    // S: CACHE KEEPHOT
-    // T: UPDATE EVENTS DB
-    this.setupForwarding({
-      queueName: MESSAGE_QUEUES.CACHE,
-      message: MESSAGES.CACHE.COMMANDS.KEEPHOT,
-    }, [
-      { queueName: MESSAGE_QUEUES.EVENTS, message: MESSAGES.EVENTS.COMMANDS.KEEPHOT },
+      { queueName: MESSAGE_QUEUES.TIPS, message: MESSAGES.TIPS.COMMANDS.UPDATE_CLAIMS },
     ]);
   }
 

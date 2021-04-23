@@ -45,7 +45,8 @@ const EventLogic = {
     switch (event.name) {
       case 'TipReceived':
         // NEW TOKEN TIP
-        await queueLogic.sendMessage(MESSAGE_QUEUES.EVENTS, MESSAGES.EVENTS.EVENTS.TIP_RECEIVED, await aeternity.getTipV2(tx.returnValue));
+        const tip = event.contract === process.env.CONTRACT_V2_ADDRESS ? await aeternity.getTipV2(tx.returnValue) : null;
+        await queueLogic.sendMessage(MESSAGE_QUEUES.EVENTS, MESSAGES.EVENTS.EVENTS.TIP_RECEIVED, tip);
         break;
       case 'TipTokenReceived':
         // NEW TOKEN TIP
@@ -57,7 +58,8 @@ const EventLogic = {
         break;
       case 'ReTipReceived':
         // NEW RETIP
-        await queueLogic.sendMessage(MESSAGE_QUEUES.EVENTS, MESSAGES.EVENTS.EVENTS.RETIP_RECEIVED, await aeternity.getRetipV2(tx.returnValue));
+        const retip = event.contract === process.env.CONTRACT_V2_ADDRESS ? await aeternity.getRetipV2(tx.returnValue) : null;
+        await queueLogic.sendMessage(MESSAGE_QUEUES.EVENTS, MESSAGES.EVENTS.EVENTS.RETIP_RECEIVED, retip);
         break;
       case 'ReTipTokenReceived':
         // NEW TOKEN RETIP
@@ -65,7 +67,8 @@ const EventLogic = {
         break;
       case 'TipWithdrawn':
         // CLAIM
-        await queueLogic.sendMessage(MESSAGE_QUEUES.EVENTS, MESSAGES.EVENTS.EVENTS.TIP_WITHDRAWN);
+        const claim = await aeternity.getClaimV1V2(event.contract, event.url);
+        await queueLogic.sendMessage(MESSAGE_QUEUES.EVENTS, MESSAGES.EVENTS.EVENTS.TIP_WITHDRAWN, claim);
         break;
       case 'QueryOracle':
         // ORACLE HAS RECEIVED A QUERY

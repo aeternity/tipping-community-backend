@@ -6,6 +6,7 @@ const requireESM = require('esm')(module); // use to handle es6 import/export
 const { decodeEvents, SOPHIA_TYPES } = requireESM('@aeternity/aepp-sdk/es/contract/aci/transformation');
 
 const TIPPING_V1_INTERFACE = require('tipping-contract/Tipping_v1_Interface.aes');
+const TIPPING_V1_GETTER = require('tipping-contract/Tipping_v1_Getter.aes');
 const TIPPING_V2_INTERFACE = require('tipping-contract/Tipping_v2_Interface.aes');
 const TIPPING_V2_GETTER = require('tipping-contract/Tipping_v2_Getter.aes');
 const TIPPING_V3_GETTER = require('tipping-contract/Tipping_v3_Getter.aes');
@@ -25,6 +26,7 @@ const { TRACE_STATES } = require('../../payfortx/constants/traceStates');
 // private
 let client;
 let contractV1;
+let contractV1Getter;
 let contractV2;
 let contractV2Getter;
 let contractV3;
@@ -59,6 +61,15 @@ const aeternity = {
       });
 
       contractV1 = await client.getContractInstance(TIPPING_V1_INTERFACE, { contractAddress: process.env.CONTRACT_V1_ADDRESS });
+
+
+      if (process.env.CONTRACT_V1_GETTER_ADDRESS) {
+        contractV1Getter = await client.getContractInstance(TIPPING_V1_GETTER, { contractAddress: process.env.CONTRACT_V1_GETTER_ADDRESS });
+        logger.info('Starting WITH V1 GETTER contract');
+      } else {
+        logger.info('Starting WITHOUT V1 GETTER contract');
+      }
+
       if (process.env.CONTRACT_V2_ADDRESS) {
         contractV2 = await client.getContractInstance(TIPPING_V2_INTERFACE, { contractAddress: process.env.CONTRACT_V2_ADDRESS });
         logger.info('Starting WITH V2 contract');
@@ -220,6 +231,12 @@ const aeternity = {
     const url = await contractV2Getter.methods.get_url_by_id(process.env.CONTRACT_V2_ADDRESS,
       basicTippingContractUtil.rawTipUrlId(rawTip)).then(res => res.decodedResult);
     return basicTippingContractUtil.formatSingleTip(process.env.CONTRACT_V2_ADDRESS, '_v2', tipId, rawTip, url);
+  },
+
+  async getClaimV1V2(contract, url) {
+    const contractGetter = contract === process.env.CONTRACT_V2_ADDRESS ? contractV2Getter : contractV1Getter;
+    return contractGetter.methods.get_claim_by_url(contract, url)
+      .then(res => basicTippingContractUtil.formatSingleClaim(contract, url, res.decodedResult));
   },
 
   async getTipV3(value) {

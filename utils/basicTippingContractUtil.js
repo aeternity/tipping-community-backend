@@ -10,21 +10,25 @@ const aggregateStates = (states, formatFunction) => states.reduce((acc, cur) => 
 
 const findUrl = (urlId, urls) => urls.find(([_, id]) => urlId === id)[0];
 
+const formatSingleClaim = (contractId, url, [claimGen, amount]) => {
+  const data = {};
+  data.contractId = contractId;
+  data.url = url;
+  data.claimGen = claimGen;
+  data.amount = String(amount);
+  return data;
+};
+
 const formatClaims = returnState => {
   const state = returnState.decodedResult;
 
-  return state.claims ? state.claims.map(([url_id, [claim_gen, amount]]) => {
-    const data = {};
+  return state.claims ? state.claims.map(([url_id, rawClaim]) => {
+    const contractId = returnState.result.contractId;
+    const url = findUrl(url_id, state.urls);
 
-    data.contractId = returnState.result.contractId;
-    data.url = findUrl(url_id, state.urls);
-    data.claimGen = claim_gen;
-    data.amount = String(amount);
-
-    return data;
+    return formatSingleClaim(contractId, url, rawClaim);
   }) : [];
 };
-
 
 const formatSingleRetip = (contractId, suffix, id, tipTypeData) => {
   const data = tipTypeData;
@@ -137,8 +141,8 @@ basicTippingContractUtil.getTips = states => aggregateStates(states, formatTips)
 basicTippingContractUtil.getClaims = states => aggregateStates(states, formatClaims);
 
 basicTippingContractUtil.formatSingleRetip = formatSingleRetip;
-
 basicTippingContractUtil.formatSingleTip = formatSingleTip;
+basicTippingContractUtil.formatSingleClaim = formatSingleClaim;
 basicTippingContractUtil.rawTipUrlId = rawTipUrlId;
 
 module.exports = basicTippingContractUtil;

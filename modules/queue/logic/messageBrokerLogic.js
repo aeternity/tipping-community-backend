@@ -54,7 +54,7 @@ class MessageBroker {
       queueName: MESSAGE_QUEUES.EVENTS,
       message: MESSAGES.EVENTS.EVENTS.TIP_WITHDRAWN,
     }, [
-      { queueName: MESSAGE_QUEUES.TIPS, message: MESSAGES.TIPS.COMMANDS.UPDATE_CLAIMS },
+      { queueName: MESSAGE_QUEUES.TIPS, message: MESSAGES.TIPS.COMMANDS.INSERT_CLAIM },
     ]);
   }
 

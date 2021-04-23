@@ -7,6 +7,7 @@ const scheduledEvents = [
   { message: MESSAGES.SCHEDULED_EVENTS.COMMANDS.CACHE_KEEPHOT, interval: process.env.KEEP_HOT_INTERVAL || 5 * msInMin, onceAtStartup: true },
   { message: MESSAGES.SCHEDULED_EVENTS.COMMANDS.UPDATE_CHAIN_NAMES, interval: 10 * msInMin, onceAtStartup: true },
   { message: MESSAGES.SCHEDULED_EVENTS.COMMANDS.UPDATE_TIPS_RETIPS_CLAIMS, interval: 10 * msInMin, onceAtStartup: true },
+  { message: MESSAGES.SCHEDULED_EVENTS.COMMANDS.UPDATE_EVENTS, interval: 10 * msInMin, onceAtStartup: true },
 ];
 
 const SchedulerLogic = {

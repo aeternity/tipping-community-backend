@@ -29,14 +29,16 @@ const includes = [
 
 const TipLogic = {
   init() {
-    setTimeout(TipLogic.updateTipsDB, 5000);
-    setTimeout(TipLogic.updateRetipsDB, 5000);
-    setTimeout(TipLogic.updateClaimsDB, 5000);
+    queueLogic.subscribeToMessage(MESSAGE_QUEUES.SCHEDULED_EVENTS, MESSAGES.SCHEDULED_EVENTS.COMMANDS.UPDATE_TIPS_RETIPS_CLAIMS, async message => {
+      await TipLogic.updateTipsRetipsClaimsDB();
+      await queueLogic.deleteMessage(MESSAGE_QUEUES.SCHEDULED_EVENTS, message.id);
+    });
 
     queueLogic.subscribeToMessage(MESSAGE_QUEUES.TIPS, MESSAGES.TIPS.COMMANDS.INSERT_TIP, async message => {
       await TipLogic.insertTips([message.payload]);
       await queueLogic.deleteMessage(MESSAGE_QUEUES.TIPS, message.id);
     });
+
     queueLogic.subscribeToMessage(MESSAGE_QUEUES.RETIPS, MESSAGES.RETIPS.COMMANDS.INSERT_RETIP, async message => {
       await TipLogic.insertRetips([message.payload]);
       await queueLogic.deleteMessage(MESSAGE_QUEUES.RETIPS, message.id);
@@ -141,9 +143,15 @@ const TipLogic = {
     });
   },
 
-  async updateClaimsDB() {
+  async updateTipsRetipsClaimsDB() {
+    const basicState = await aeternity.fetchStateBasic()
+    await TipLogic.updateTipsDB(basicState.tips);
+    await TipLogic.updateRetipsDB(basicState.retips);
+    await TipLogic.updateClaimsDB(basicState.claims);
+  },
+
+  async updateClaimsDB(remoteClaims) {
     await lock.acquire('TipLogic.updateClaimsDB', async () => {
-      const remoteClaims = (await aeternity.fetchStateBasic()).claims;
       const localClaims = await Claim.findAll({ raw: true });
 
       const insertOrUpdateClaims = remoteClaims.filter(r => {
@@ -196,9 +204,8 @@ const TipLogic = {
     if (inserted.length > 0) await queueLogic.sendMessage(MESSAGE_QUEUES.TIPS, MESSAGES.TIPS.EVENTS.CREATED_NEW_LOCAL_TIPS);
   },
 
-  async updateTipsDB() {
+  async updateTipsDB(remoteTips) {
     await lock.acquire('TipLogic.updateTipsDB', async () => {
-      const remoteTips = (await aeternity.fetchStateBasic()).tips;
       const localTips = await Tip.findAll({ raw: true });
       const remoteTipIds = [...new Set(remoteTips.map(tip => tip.id))];
       const localTipIds = [...new Set(localTips.map(tip => tip.id))];
@@ -233,9 +240,8 @@ const TipLogic = {
     });
   },
 
-  async updateRetipsDB() {
+  async updateRetipsDB(remoteRetips) {
     await lock.acquire('RetipLogic.updateRetipsDB', async () => {
-      const remoteRetips = (await aeternity.fetchStateBasic()).retips;
       const localRetips = await Retip.findAll({ raw: true });
       const remoteRetipIds = [...new Set(remoteRetips.map(retip => retip.id))];
       const localRetipIds = [...new Set(localRetips.map(retip => retip.id))];

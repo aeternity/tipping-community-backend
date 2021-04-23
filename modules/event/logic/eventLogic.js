@@ -18,9 +18,10 @@ const EventLogic = {
       await EventLogic.sendMessages(payload);
       await queueLogic.deleteMessage(MESSAGE_QUEUES.BLOCKCHAIN, id);
     });
-    queueLogic.subscribeToMessage(MESSAGE_QUEUES.EVENTS, MESSAGES.EVENTS.COMMANDS.KEEPHOT, async ({ id }) => {
+
+    queueLogic.subscribeToMessage(MESSAGE_QUEUES.SCHEDULED_EVENTS, MESSAGES.SCHEDULED_EVENTS.COMMANDS.UPDATE_EVENTS, async ({ id }) => {
       await EventLogic.updateDatabaseAndClearForks();
-      await queueLogic.deleteMessage(MESSAGE_QUEUES.EVENTS, id);
+      await queueLogic.deleteMessage(MESSAGE_QUEUES.SCHEDULED_EVENTS, id);
     });
   },
 

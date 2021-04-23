@@ -21,7 +21,6 @@ const CacheLogic = {
     // INIT ONCE
 
     const keepHotFunction = async () => {
-      await queueLogic.sendMessage(MESSAGE_QUEUES.CACHE, MESSAGES.CACHE.COMMANDS.KEEPHOT);
       await CacheLogic.fetchMdwChainNames();
       await CacheLogic.fetchPrice();
       await CacheLogic.getTokenInfos();
@@ -30,12 +29,7 @@ const CacheLogic = {
       }
     };
 
-    setTimeout(async () => cache.setKeepHot(keepHotFunction), 5000);
-
-    queueLogic.subscribeToMessage(MESSAGE_QUEUES.CACHE, MESSAGES.CACHE.COMMANDS.RENEW_TIPS, async message => {
-      await CacheLogic.invalidateTipsCache();
-      await queueLogic.deleteMessage(MESSAGE_QUEUES.CACHE, message.id);
-    });
+    cache.setKeepHot(keepHotFunction);
   },
 
   async fetchPrice() {
@@ -307,16 +301,6 @@ const CacheLogic = {
       }
       return metaInfo;
     });
-  },
-
-  async invalidateTipsCache() {
-    await cache.del(['getTips']);
-    await cache.del(['CacheLogic.getAllTips', 'blacklisted']);
-    await cache.del(['CacheLogic.getAllTips', 'all']);
-  },
-
-  async invalidateBlacklistedTips() {
-    await cache.del(['CacheLogic.getAllTips', 'blacklisted']);
   },
 
   async invalidateStatsCache() {

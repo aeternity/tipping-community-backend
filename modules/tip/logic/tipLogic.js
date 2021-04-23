@@ -29,25 +29,24 @@ const includes = [
 
 const TipLogic = {
   init() {
-    // currently this can be all done together easily, so update claims separately wouldn't make much sense
-    queueLogic.subscribeToMessage(MESSAGE_QUEUES.TIPS, MESSAGES.TIPS.COMMANDS.UPDATE_CLAIMS, async message => {
-      await TipLogic.updateTipsRetipsClaimsDB();
-      await queueLogic.deleteMessage(MESSAGE_QUEUES.TIPS, message.id);
-    });
-
     queueLogic.subscribeToMessage(MESSAGE_QUEUES.SCHEDULED_EVENTS, MESSAGES.SCHEDULED_EVENTS.COMMANDS.UPDATE_TIPS_RETIPS_CLAIMS, async message => {
       await TipLogic.updateTipsRetipsClaimsDB();
       await queueLogic.deleteMessage(MESSAGE_QUEUES.SCHEDULED_EVENTS, message.id);
     });
 
     queueLogic.subscribeToMessage(MESSAGE_QUEUES.TIPS, MESSAGES.TIPS.COMMANDS.INSERT_TIP, async message => {
-      await TipLogic.insertTips([message.payload]);
+      if (message.payload) await TipLogic.insertTips([message.payload]);
       await queueLogic.deleteMessage(MESSAGE_QUEUES.TIPS, message.id);
     });
 
     queueLogic.subscribeToMessage(MESSAGE_QUEUES.RETIPS, MESSAGES.RETIPS.COMMANDS.INSERT_RETIP, async message => {
-      await TipLogic.insertRetips([message.payload]);
+      if (message.payload) await TipLogic.insertRetips([message.payload]);
       await queueLogic.deleteMessage(MESSAGE_QUEUES.RETIPS, message.id);
+    });
+
+    queueLogic.subscribeToMessage(MESSAGE_QUEUES.TIPS, MESSAGES.TIPS.COMMANDS.INSERT_CLAIM, async message => {
+      await TipLogic.insertClaims([message.payload]);
+      await queueLogic.deleteMessage(MESSAGE_QUEUES.TIPS, message.id);
     });
   },
 
@@ -156,6 +155,10 @@ const TipLogic = {
     await TipLogic.updateClaimsDB(basicState.claims);
   },
 
+  async insertClaims(claimsToInsert) {
+    return Claim.bulkCreate(claimsToInsert, { updateOnDuplicate: ['claimGen', 'amount', 'updatedAt'] });
+  },
+
   async updateClaimsDB(remoteClaims) {
     await lock.acquire('TipLogic.updateClaimsDB', async () => {
       const localClaims = await Claim.findAll({ raw: true });
@@ -167,7 +170,7 @@ const TipLogic = {
         return includesRemoteUpdated || notIncludesRemote;
       });
 
-      await Claim.bulkCreate(insertOrUpdateClaims, { updateOnDuplicate: ['claimGen', 'amount', 'updatedAt'] });
+      await TipLogic.insertClaims(insertOrUpdateClaims);
     });
   },
 

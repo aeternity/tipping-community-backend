@@ -29,6 +29,12 @@ const includes = [
 
 const TipLogic = {
   init() {
+    // currently this can be all done together easily, so update claims separately wouldn't make much sense
+    queueLogic.subscribeToMessage(MESSAGE_QUEUES.TIPS, MESSAGES.TIPS.COMMANDS.UPDATE_CLAIMS, async message => {
+      await TipLogic.updateTipsRetipsClaimsDB();
+      await queueLogic.deleteMessage(MESSAGE_QUEUES.TIPS, message.id);
+    });
+
     queueLogic.subscribeToMessage(MESSAGE_QUEUES.SCHEDULED_EVENTS, MESSAGES.SCHEDULED_EVENTS.COMMANDS.UPDATE_TIPS_RETIPS_CLAIMS, async message => {
       await TipLogic.updateTipsRetipsClaimsDB();
       await queueLogic.deleteMessage(MESSAGE_QUEUES.SCHEDULED_EVENTS, message.id);
@@ -229,7 +235,6 @@ const TipLogic = {
       });
 
       await TipLogic.insertTips(result);
-      await queueLogic.sendMessage(MESSAGE_QUEUES.TIPS, MESSAGES.TIPS.EVENTS.UPDATE_DB_FINISHED);
     });
   },
 

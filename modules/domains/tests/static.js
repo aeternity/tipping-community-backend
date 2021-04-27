@@ -3,7 +3,7 @@ const chai = require('chai');
 const chaiHttp = require('chai-http');
 const { describe, it, before } = require('mocha');
 const server = require('../../../server');
-const { BlacklistEntry } = require('../../../models');
+const { BlacklistEntry, Tip } = require('../../../models');
 
 chai.should();
 chai.use(chaiHttp);
@@ -12,28 +12,38 @@ describe('Static Routes', () => {
   describe('Stats', () => {
     before(async () => {
       // Test is based on Blacklist model
-      await BlacklistEntry.destroy({
-        where: {},
-        truncate: true,
+      let id = 1;
+      await Tip.truncate({
+        cascade: true,
       });
+      await Tip.bulkCreate(Array(5).fill(0).map(() => ({
+        id: `${id++}_v1`,
+        title: 'some',
+        type: 'AE_TIP',
+        contractId: 'ct_test',
+        timestamp: 0,
+        topics: [],
+      })));
+
+      await BlacklistEntry.truncate();
       await BlacklistEntry.create({
-        tipId: 1,
+        tipId: '1_v1',
         createdAt: new Date().setHours(0, 0, 0, 1),
       });
       await BlacklistEntry.create({
-        tipId: 2,
+        tipId: '2_v1',
         createdAt: new Date(new Date().setDate(new Date().getDate() - 1)).setHours(0, 0, 0, 1),
       });
       await BlacklistEntry.create({
-        tipId: 3,
+        tipId: '3_v1',
         createdAt: new Date(new Date().setDate(new Date().getDate() - 6)).setHours(0, 0, 0, 1),
       });
       await BlacklistEntry.create({
-        tipId: 4,
+        tipId: '4_v1',
         createdAt: new Date(new Date().setDate(new Date().getDate() - 20)).setHours(0, 0, 0, 1),
       });
       await BlacklistEntry.create({
-        tipId: 5,
+        tipId: '5_v1',
         createdAt: new Date(new Date().setDate(new Date().getDate() - 29)).setHours(0, 0, 0, 1),
       });
     });

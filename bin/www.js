@@ -67,7 +67,7 @@ const startup = async () => {
   await broker.init();
   await aeternity.init();
   await cache.init(aeternity);
-  await cacheLogic.init();
+  cacheLogic.init();
   chainListenerLogic.startInvalidator();
   linkPreviewLogic.init();
   ipfsLogic.init();

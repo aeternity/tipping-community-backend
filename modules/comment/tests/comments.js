@@ -34,56 +34,32 @@ describe('Comments', () => {
       object => Comment.update({ parentId: null }, { where: { id: object.id } }),
     ));
 
-    await Comment.destroy({
-      where: {},
-      truncate: true,
+    await Comment.truncate({
       cascade: true,
     });
 
-    await Notification.destroy({
-      where: {},
-      truncate: true,
-    });
+    await Notification.truncate();
 
-    await Retip.destroy({
-      where: {},
-      truncate: true,
-    });
+    await Retip.truncate();
 
-    await Tip.destroy({
-      where: {},
-      truncate: true,
+    await Tip.truncate({
       cascade: true,
     });
 
     await Tip.create({
       id: testData.tipId,
       sender: testData.author,
+      title: 'some',
+      type: 'AE_TIP',
+      contractId: 'ct_test',
+      timestamp: 0,
+      topics: [],
     });
 
     await aeternity.init();
   });
 
   describe('Comment API', () => {
-    it('it should GET a 0 count of comments for tips', done => {
-      chai.request(server).get('/comment/count/tips/').end((err, res) => {
-        res.should.have.status(200);
-        res.body.should.be.an('array');
-        res.body.length.should.be.eql(0);
-        done();
-      });
-    });
-
-    it(`it should GET a 0 count of comments for address ${publicKey}`, done => {
-      chai.request(server).get(`/comment/count/author/${publicKey}`).end((err, res) => {
-        res.should.have.status(200);
-        res.body.should.be.an('object');
-        res.body.should.have.property('count', 0);
-        res.body.should.have.property('author', publicKey);
-        done();
-      });
-    });
-
     it('it should return a signature challenge', done => {
       chai.request(server).post('/comment/api').send(testData).end((err, res) => {
         shouldBeValidChallengeResponse(res.body, testData);
@@ -164,27 +140,6 @@ describe('Comments', () => {
         res.body[0].should.have.property('Profile');
         const profile = res.body[0].Profile;
         profile.should.have.property('author', testData.author);
-        done();
-      });
-    });
-
-    it('it should GET a count of comments for tips', done => {
-      chai.request(server).get('/comment/count/tips/').end((err, res) => {
-        res.should.have.status(200);
-        res.body.should.be.an('array');
-        res.body.length.should.be.eql(1);
-        res.body[0].should.have.property('count', '1');
-        res.body[0].should.have.property('tipId', testData.tipId);
-        done();
-      });
-    });
-
-    it(`it should GET a count of comments for address${publicKey}`, done => {
-      chai.request(server).get(`/comment/count/author/${publicKey}`).end((err, res) => {
-        res.should.have.status(200);
-        res.body.should.be.an('object');
-        res.body.should.have.property('count', 1);
-        res.body.should.have.property('author', publicKey);
         done();
       });
     });

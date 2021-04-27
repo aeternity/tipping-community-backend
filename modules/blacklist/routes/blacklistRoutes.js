@@ -108,10 +108,12 @@ router.get('/', basicAuth, async (req, res) => res.render('admin', {
 router.post('/api', basicAuth, async (req, res) => {
   try {
     const { tipId } = req.body;
-    if (!tipId) return res.status(400).send('Missing required field tipId');
+    if (!(await TipLogic.checkTipExists(tipId))) {
+      return res.status(400).send({ error: `Tip with id ${tipId} is unknown` });
+    }
     return res.send(await Logic.addItem(tipId));
   } catch (e) {
-    return res.status(500).send(e.message);
+    return res.status(500).send({ error: e.message });
   }
 });
 /**

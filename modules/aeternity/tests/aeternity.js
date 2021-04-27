@@ -24,6 +24,10 @@ describe('Aeternity', () => {
     });
   });
   describe('Oracle', () => {
+    before(async function () {
+      this.timeout(20000);
+      await ae.init();
+    });
     afterEach(() => {
       sinon.restore();
     });
@@ -53,38 +57,53 @@ describe('Aeternity', () => {
   });
 
   describe('Claiming', () => {
+    before(async function () {
+      this.timeout(20000);
+      await ae.init();
+    });
     afterEach(() => {
       sinon.restore();
     });
 
-    it('it should get the tips', async function () {
-      this.timeout(10000);
-      const result = await ae.fetchTips();
-      result.should.be.an('array');
-      if (result.length > 0) {
-        const firstEntry = result[0];
-        firstEntry.should.have.property('amount');
-        firstEntry.should.have.property('claim_gen');
-        firstEntry.should.have.property('sender');
-        firstEntry.should.have.property('timestamp');
-        firstEntry.should.have.property('title');
-        firstEntry.should.have.property('url_id');
-        firstEntry.should.have.property('id');
-        firstEntry.id.should.be.an('String');
-        firstEntry.should.have.property('url');
-        firstEntry.should.have.property('topics');
-        firstEntry.should.have.property('retips');
-        firstEntry.should.have.property('claim');
-        firstEntry.should.have.property('amount_ae');
-        firstEntry.should.have.property('total_amount');
-        firstEntry.should.have.property('total_amount_ae');
-        firstEntry.should.have.property('total_claimed_amount');
-        firstEntry.should.have.property('total_claimed_amount_ae');
-        firstEntry.should.have.property('total_unclaimed_amount');
-        firstEntry.should.have.property('total_unclaimed_amount_ae');
-        firstEntry.should.have.property('token_total_amount');
-        firstEntry.should.have.property('token_total_unclaimed_amount');
-      }
+    it('it should get the tips, retips & claims', async function () {
+      this.timeout(15000);
+      const result = await ae.fetchStateBasic();
+      result.should.be.an('object');
+      result.should.have.property('tips');
+      result.should.have.property('retips');
+      result.should.have.property('claims');
+
+      const [firstTip] = result.tips;
+      firstTip.should.have.property('amount');
+      firstTip.should.have.property('sender');
+      firstTip.should.have.property('timestamp');
+      firstTip.should.have.property('title');
+      firstTip.should.have.property('type');
+      firstTip.should.have.property('claimGen');
+      firstTip.should.have.property('id');
+      firstTip.id.should.be.an('String');
+      firstTip.should.have.property('contractId');
+      firstTip.should.have.property('url');
+      firstTip.should.have.property('urlId');
+      firstTip.should.have.property('topics');
+      firstTip.should.have.property('token');
+      firstTip.should.have.property('tokenAmount');
+
+      const [firstRetip] = result.retips;
+      firstRetip.should.have.property('amount');
+      firstRetip.should.have.property('sender');
+      firstRetip.should.have.property('tipId');
+      firstRetip.should.have.property('id');
+      firstRetip.should.have.property('contractId');
+      firstRetip.should.have.property('claimGen');
+      firstRetip.should.have.property('token');
+      firstRetip.should.have.property('tokenAmount');
+
+      const [firstClaim] = result.claims;
+      firstClaim.should.have.property('contractId');
+      firstClaim.should.have.property('url');
+      firstClaim.should.have.property('claimGen');
+      firstClaim.should.have.property('amount');
     });
 
     it('it should fail pre-claiming an non existing tip', async function () {
@@ -199,9 +218,14 @@ describe('Aeternity', () => {
       client.selectedNode.instance.url = 'https://localhost';
       const staticStub = sinon.stub(client, 'contractCallStatic').callsFake(() => { throw new Error('NETWORK ERROR'); });
       const callStub = sinon.stub(client, 'contractCall').callsFake(() => { throw new Error('NETWORK ERROR'); });
-      const tips = await ae.fetchTips();
-      tips.should.be.an('array');
-      tips.should.have.length(0);
+      const state = await ae.fetchStateBasic();
+      state.should.be.an('object');
+      state.should.have.property('tips');
+      state.should.have.property('retips');
+      state.should.have.property('claims');
+      state.tips.should.have.length(0);
+      state.retips.should.have.length(0);
+      state.claims.should.have.length(0);
       const tokenBalances = await ae.fetchTokenAccountBalances('ct_2bCbmU7vtsysL4JiUdUZjJJ98LLbJWG1fRtVApBvqSFEM59D6W');
       should.equal(tokenBalances, null);
       const trace = new Trace();

@@ -28,7 +28,9 @@ const router = new Router();
  *         name: language
  *         required: false
  *         schema:
- *           type: string
+ *           type: array
+ *           items:
+ *             type: string
  *         description: string to match against the automatically identified language code
  *       - in: query
  *         name: ordering
@@ -81,14 +83,15 @@ router.get('/', async (req, res) => {
 
 /**
  * @swagger
- * /tips/single:
+ * /tips/single/{tipId}:
  *   get:
  *     tags:
  *       - tip
  *     summary: Returns a single tip
  *     parameters:
- *       - in: query
- *         name: id
+ *       - in: path
+ *         name: tipId
+ *         required: true
  *         schema:
  *           type: string
  *     responses:
@@ -99,8 +102,8 @@ router.get('/', async (req, res) => {
  *             schema:
  *               $ref: '#/components/schemas/Tip'
  */
-router.get('/single', async (req, res) => {
-  const tip = await TipLogic.fetchTip(req.query.id);
+router.get('/single/:tipId', async (req, res) => {
+  const tip = await TipLogic.fetchTip(req.params.tipId);
   return tip ? res.send(tip) : res.sendStatus(404);
 });
 
@@ -135,43 +138,45 @@ router.get('/topics', async (req, res) => {
 
 /**
  * @swagger
- * /tips/await/tip:
+ * /tips/await/tip/{tipId}:
  *   get:
  *     tags:
  *       - tips
  *     summary: awaits tips updated event
  *     parameters:
- *       - in: query
- *         name: id
+ *       - in: path
+ *         name: tipId
+ *         required: true
  *         schema:
  *           type: string
  *     responses:
  *       200:
  *         description: Returns ok
  */
-router.get('/await/tip', async (req, res) => {
-  await TipLogic.awaitTipsUpdated(req.query.id);
+router.get('/await/tip/:tipId', async (req, res) => {
+  await TipLogic.awaitTipsUpdated(req.params.tipId);
   res.send({ updated: true });
 });
 
 /**
  * @swagger
- * /tips/await/retip:
+ * /tips/await/retip/{retipId}:
  *   get:
  *     tags:
  *       - tips
  *     summary: awaits retips updated event
  *     parameters:
- *       - in: query
- *         name: id
+ *       - in: path
+ *         name: retipId
+ *         required: true
  *         schema:
  *           type: string
  *     responses:
  *       200:
  *         description: Returns ok
  */
-router.get('/await/retip', async (req, res) => {
-  await TipLogic.awaitTipsUpdated(req.query.id, true);
+router.get('/await/retip/:retipId', async (req, res) => {
+  await TipLogic.awaitTipsUpdated(req.params.retipId, true);
   res.send({ updated: true });
 });
 

@@ -9,7 +9,6 @@ const cache = require('../utils/cache');
 const CacheLogic = require('../logic/cacheLogic');
 const BlacklistLogic = require('../../blacklist/logic/blacklistLogic');
 const aeternity = require('../../aeternity/logic/aeternity');
-const cacheAggregatorLogic = require('../logic/cacheAggregatorLogic');
 const { MESSAGES } = require('../../queue/constants/queue');
 const { MESSAGE_QUEUES } = require('../../queue/constants/queue');
 const queueLogic = require('../../queue/logic/queueLogic');

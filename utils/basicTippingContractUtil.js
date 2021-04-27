@@ -38,6 +38,11 @@ const formatSingleRetip = (contractId, suffix, id, tipTypeData) => {
   data.claimGen = data.claim_gen === 'None' || data.claim_gen === undefined ? null : data.claim_gen;
   data.token = data.token !== undefined ? data.token : null;
   data.tokenAmount = data.token_amount ? data.token_amount : '0';
+
+  // formatting
+  delete data.claim_gen;
+  delete data.tip_id;
+
   return data;
 };
 
@@ -116,6 +121,11 @@ const formatSingleTip = (contractId, suffix, id, tipTypeData, url) => {
   data.url = url;
   data.claimGen = data.claimGen === 'None' || data.claimGen === undefined ? null : data.claimGen;
   data.media = data.media || [];
+
+  // formatting
+  data.urlId = data.url_id;
+  delete data.claim_gen;
+  delete data.url_id;
 
   data.token = data.token !== undefined ? data.token : null;
   data.tokenAmount = data.token_amount ? data.token_amount : '0';

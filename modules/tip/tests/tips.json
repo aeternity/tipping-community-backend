@@ -1,0 +1,194 @@
+{
+  "tips": [
+    {
+      "amount": "100000000000000000",
+      "claim_gen": 1,
+      "sender": "ak_sender1",
+      "timestamp": 1606211552360,
+      "title": "#test",
+      "url_id": 1,
+      "type": "AE_TIP",
+      "claimGen": 1,
+      "id": "1_v1",
+      "contractId": "ct_2Cvbf3NYZ5DLoaNYAU71t67DdXLHeSXhodkSNifhgd7Xsw28Xd",
+      "url": "example.com",
+      "token": null,
+      "tokenAmount": "0",
+      "topics": [
+        "#test"
+      ]
+    },
+    {
+      "amount": "100000000000000000",
+      "claim_gen": 0,
+      "sender": "ak_sender2",
+      "timestamp": 1606211552359,
+      "title": "#test2 ak_sender1",
+      "url_id": 1,
+      "type": "AE_TIP",
+      "claimGen": 0,
+      "id": "2_v1",
+      "contractId": "ct_2Cvbf3NYZ5DLoaNYAU71t67DdXLHeSXhodkSNifhgd7Xsw28Xd",
+      "url": "example.com/subpath",
+      "token": null,
+      "tokenAmount": "0",
+      "topics": [
+        "#test2"
+      ]
+    },
+    {
+      "sender": "ak_sender3",
+      "timestamp": 1600703003515,
+      "title": "#test",
+      "type": "TOKEN_TIP",
+      "token": "ct_2bCbmU7vtsysL4JiUdUZjJJ98LLbJWG1fRtVApBvqSFEM59D6W",
+      "token_amount": "1000000000000000000",
+      "claimGen": 1,
+      "amount": 0,
+      "id": "1_v2",
+      "contractId": "ct_2ZEoCKcqXkbz2uahRrsWeaPooZs9SdCv6pmC4kc55rD4MhqYSu",
+      "url": "https://github.com/stanislav-slavov",
+      "tokenAmount": "1000000000000000000",
+      "topics": [
+        "#test"
+      ]
+    },
+    {
+      "sender": "ak_2ZEoCKcqXkbz2uahRrsWeaPooZs9SdCv6pmC4kc55rD4MhqYSu",
+      "timestamp": 1615477653777,
+      "title": "ein deutscher tip, sowas gibts?",
+      "type": "TOKEN_TIP",
+      "token": "ct_2bCbmU7vtsysL4JiUdUZjJJ98LLbJWG1fRtVApBvqSFEM59D6W",
+      "token_amount": "100000000000000000",
+      "claimGen": 1,
+      "amount": 0,
+      "id": "2_v2",
+      "contractId": "ct_2ZEoCKcqXkbz2uahRrsWeaPooZs9SdCv6pmC4kc55rD4MhqYSu",
+      "url": "https://another.random.domain",
+      "tokenAmount": "100000000000000000",
+      "topics": []
+    },
+    {
+      "sender": "ak_2Cvbf3NYZ5DLoaNYAU71t67DdXLHeSXhodkSNifhgd7Xsw28Xd",
+      "timestamp": 1608018578066,
+      "title": "Randomest post",
+      "type": "POST_WITHOUT_TIP",
+      "media": [
+        "https://complicated.domain.test"
+      ],
+      "amount": 0,
+      "id": "1_v3",
+      "contractId": "ct_WscpdLQf6ZZxoVqrsEwUwmuAEdzEkJii5W5TzG84rVgHeK6BW",
+      "url": null,
+      "claimGen": null,
+      "token": null,
+      "tokenAmount": "0",
+      "topics": []
+    },
+    {
+      "sender": "ak_sender1",
+      "timestamp": 1607525986571,
+      "title": "#NationalLLamaDay",
+      "type": "POST_WITHOUT_TIP",
+      "media": [
+        "https://media1.giphy.com/media/zxt9AHjMEOtGM/giphy.gif?cid=685697e5mxi7ojt7y9tn7zflxdcalzp7u5ykrredwdqxc3a7&rid=giphy.gif",
+        "https://media2.giphy.com/media/RlH4gZYWOsAgg/giphy.gif?cid=685697e5mxi7ojt7y9tn7zflxdcalzp7u5ykrredwdqxc3a7&rid=giphy.gif"
+      ],
+      "amount": 0,
+      "id": "2_v3",
+      "contractId": "ct_WscpdLQf6ZZxoVqrsEwUwmuAEdzEkJii5W5TzG84rVgHeK6BW",
+      "url": null,
+      "claimGen": null,
+      "token": null,
+      "tokenAmount": "0",
+      "topics": [
+        "#nationalllamaday"
+      ]
+    }
+  ],
+  "retips": [
+    {
+      "amount": "10000000000000000",
+      "claim_gen": 1,
+      "sender": "ak_retip_sender1",
+      "tip_id": 26,
+      "id": "1_v1",
+      "tipId": "1_v1",
+      "contractId": "ct_2Cvbf3NYZ5DLoaNYAU71t67DdXLHeSXhodkSNifhgd7Xsw28Xd",
+      "claimGen": 1,
+      "token": null,
+      "tokenAmount": "0"
+    },
+    {
+      "amount": "20000000000000000",
+      "claim_gen": 1,
+      "sender": "ak_retip_sender2",
+      "tip_id": 26,
+      "id": "2_v1",
+      "tipId": "1_v1",
+      "contractId": "ct_2Cvbf3NYZ5DLoaNYAU71t67DdXLHeSXhodkSNifhgd7Xsw28Xd",
+      "claimGen": 1,
+      "token": null,
+      "tokenAmount": "0"
+    },
+    {
+      "amount": 0,
+      "claim_gen": 1,
+      "sender": "ak_retip_sender3",
+      "tip_id": 127,
+      "token": "ct_2bCbmU7vtsysL4JiUdUZjJJ98LLbJWG1fRtVApBvqSFEM59D6W",
+      "token_amount": "100000000000000000",
+      "id": "1_v2",
+      "tipId": "1_v2",
+      "contractId": "ct_2ZEoCKcqXkbz2uahRrsWeaPooZs9SdCv6pmC4kc55rD4MhqYSu",
+      "claimGen": 1,
+      "tokenAmount": "100000000000000000"
+    },
+    {
+      "amount": "100000000000000000",
+      "claim_gen": 15,
+      "sender": "ak_retip_sender4",
+      "tip_id": 2017,
+      "token": null,
+      "token_amount": 0,
+      "id": "2_v2",
+      "tipId": "1_v2",
+      "contractId": "ct_2ZEoCKcqXkbz2uahRrsWeaPooZs9SdCv6pmC4kc55rD4MhqYSu",
+      "claimGen": 1,
+      "tokenAmount": "0"
+    },
+    {
+      "amount": "100000000000000000",
+      "claim_gen": 10,
+      "sender": "ak_sender1",
+      "tip_id": 0,
+      "token": null,
+      "token_amount": 0,
+      "id": "12_v2",
+      "tipId": "1_v2",
+      "contractId": "ct_2ZEoCKcqXkbz2uahRrsWeaPooZs9SdCv6pmC4kc55rD4MhqYSu",
+      "claimGen": 1,
+      "tokenAmount": "0"
+    }
+  ],
+  "claims": [
+    {
+      "contractId": "ct_2Cvbf3NYZ5DLoaNYAU71t67DdXLHeSXhodkSNifhgd7Xsw28Xd",
+      "url": "example.com",
+      "claimGen": 0,
+      "amount": "235611213346200000000"
+    },
+    {
+      "contractId": "ct_2ZEoCKcqXkbz2uahRrsWeaPooZs9SdCv6pmC4kc55rD4MhqYSu",
+      "url": "https://github.com/stanislav-slavov",
+      "claimGen": 0,
+      "amount": "11700000000000000000"
+    },
+    {
+      "contractId": "ct_2ZEoCKcqXkbz2uahRrsWeaPooZs9SdCv6pmC4kc55rD4MhqYSu",
+      "url": "https://another.random.domain",
+      "claimGen": 0,
+      "amount": "100000000000000000"
+    }
+  ]
+}

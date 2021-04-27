@@ -69,7 +69,7 @@ const TipLogic = {
     let order = sequelize.literal(`${TipLogic.orderByColumn(ordering)} DESC`);
 
     if (address) whereArguments.push({ sender: address });
-    if (blacklist !== 'false') whereArguments.push({ id: FILTER_BLACKLIST });
+    if (blacklist !== false) whereArguments.push({ id: FILTER_BLACKLIST });
 
     if (contractVersion) {
       const contractVersions = Array.isArray(contractVersion) ? contractVersion : [contractVersion];
@@ -117,6 +117,11 @@ const TipLogic = {
       include: includes,
       where: { id },
     });
+  },
+
+  async checkTipExists(id) {
+    return Tip.findOne({ where: { id } })
+      .then(token => token !== null);
   },
 
   async fetchAllLocalTips() {

@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.10.2](https://www.github.com/aeternity/tipping-community-backend/compare/v1.10.1...v1.10.2) (2021-04-27)
+
+
+### Miscellaneous
+
+* **deps:** bump redis from 3.0.2 to 3.1.1 ([3d7fd2b](https://www.github.com/aeternity/tipping-community-backend/commit/3d7fd2bcfad0c456fa497a5724081ed30eae7dec))
+
 ### [1.10.1](https://www.github.com/aeternity/tipping-community-backend/compare/v1.10.0...v1.10.1) (2021-04-22)
 
 

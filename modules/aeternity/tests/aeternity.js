@@ -48,7 +48,7 @@ describe('Aeternity', () => {
       result.should.have.property('account');
     });
 
-    it('it should get the oracle claim by url', async function () {
+    it('it should get the oracle claim by address', async function () {
       this.timeout(30000);
       const result = await ae.fetchOracleClaimedUrls('ak_YCwfWaW5ER6cRsG9Jg4KMyVU59bQkt45WvcnJJctQojCqBeG2');
       result.should.be.an('array');

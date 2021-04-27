@@ -17,19 +17,18 @@ const { MESSAGES, MESSAGE_QUEUES } = require('../../queue/constants/queue');
 const logger = require('../../../utils/logger')(module);
 
 const CacheLogic = {
-  async init() {
+  init() {
     // INIT ONCE
+    cache.setKeepHot(CacheLogic.keepHotFunction);
+  },
 
-    const keepHotFunction = async () => {
-      await CacheLogic.fetchMdwChainNames();
-      await CacheLogic.fetchPrice();
-      await CacheLogic.getTokenInfos();
-      if (process.env.WORD_REGISTRY_CONTRACT) {
-        await CacheLogic.refreshWordAndVoteData(); // keeps hot even if undefined is passed as argument
-      }
-    };
-
-    cache.setKeepHot(keepHotFunction);
+  async keepHotFunction() {
+    await CacheLogic.fetchMdwChainNames();
+    await CacheLogic.fetchPrice();
+    await CacheLogic.getTokenInfos();
+    if (process.env.WORD_REGISTRY_CONTRACT) {
+      await CacheLogic.refreshWordAndVoteData(); // keeps hot even if undefined is passed as argument
+    }
   },
 
   async fetchPrice() {

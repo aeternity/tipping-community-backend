@@ -2,24 +2,22 @@
 const chai = require('chai');
 const chaiHttp = require('chai-http');
 const { describe, it, before } = require('mocha');
-const sinon = require('sinon');
 
 const server = require('../../../server');
-const { BlacklistEntry } = require('../../../models');
+const { BlacklistEntry, Tip } = require('../../../models');
 const ae = require('../../aeternity/logic/aeternity');
 const { BLACKLIST_STATUS } = require('../constants/blacklistStates');
 const { publicKey, performSignedJSONRequest } = require('../../../utils/testingUtil');
-const CacheLogic = require('../../cache/logic/cacheLogic');
 
 chai.should();
 chai.use(chaiHttp);
 // Our parent block
 describe('Blacklist', () => {
-  before(done => { // Before each test we empty the database
-    BlacklistEntry.destroy({
-      where: {},
-      truncate: true,
-    }).then(() => done());
+  before(async () => {
+    await BlacklistEntry.truncate();
+    await Tip.truncate({
+      cascade: true,
+    });
   });
 
   const tipId = '1_v1';
@@ -35,32 +33,52 @@ describe('Blacklist', () => {
       });
     });
 
-    it('it should CREATE a new blacklist entry via admin auth', done => {
-      const stub = sinon.stub(CacheLogic, 'getTips').callsFake(() => [{ id: tipId }]);
-      chai.request(server).post('/blacklist/api')
+    it('it should REJECT a new blacklist entry via admin auth for unkown id', async () => {
+      const res = await chai.request(server).post('/blacklist/api')
         .auth(process.env.AUTHENTICATION_USER, process.env.AUTHENTICATION_PASSWORD)
         .send({
           tipId,
-        })
-        .end((err, res) => {
-          res.should.have.status(200);
-          res.body.should.be.a('object');
-          res.body.should.have.property('tipId', String(tipId));
-          res.body.should.have.property('status', BLACKLIST_STATUS.HIDDEN);
-          res.body.should.have.property('createdAt');
-          res.body.should.have.property('updatedAt');
-          stub.restore();
-          done();
         });
+      res.should.have.status(400);
+      res.body.should.be.a('object');
+      res.body.should.have.property('error', `Tip with id ${tipId} is unknown`);
     });
 
-    it('it should CREATE a new blacklist entry via wallet auth', done => {
-      performSignedJSONRequest(server, 'post', '/blacklist/api/wallet/', {
-        tipId: walletTipId, author: publicKey,
-      }).then(({ res }) => {
-        res.should.have.status(200);
-        done();
+    it('it should CREATE a new blacklist entry via admin auth', async () => {
+      await Tip.create({
+        id: tipId,
+        title: 'some',
+        type: 'AE_TIP',
+        contractId: 'ct_test',
+        timestamp: 0,
+        topics: [],
       });
+      const res = await chai.request(server).post('/blacklist/api')
+        .auth(process.env.AUTHENTICATION_USER, process.env.AUTHENTICATION_PASSWORD)
+        .send({
+          tipId,
+        });
+      res.should.have.status(200);
+      res.body.should.be.a('object');
+      res.body.should.have.property('tipId', String(tipId));
+      res.body.should.have.property('status', BLACKLIST_STATUS.HIDDEN);
+      res.body.should.have.property('createdAt');
+      res.body.should.have.property('updatedAt');
+    });
+
+    it('it should CREATE a new blacklist entry via wallet auth', async () => {
+      await Tip.create({
+        id: walletTipId,
+        title: 'some',
+        type: 'AE_TIP',
+        contractId: 'ct_test',
+        timestamp: 0,
+        topics: [],
+      });
+      const { res } = await performSignedJSONRequest(server, 'post', '/blacklist/api/wallet/', {
+        tipId: walletTipId, author: publicKey,
+      });
+      res.should.have.status(200);
     });
 
     it('it should ALLOW overwriting a blacklist entry via wallet auth', done => {

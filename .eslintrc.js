@@ -21,5 +21,6 @@ module.exports = {
     'no-plusplus': 'off',
     'func-names': ['error', 'never'],
     'arrow-parens': ['error', 'as-needed'],
+    'no-await-in-loop': 'off',
   },
 };

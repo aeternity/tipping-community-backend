@@ -15,13 +15,11 @@ const BlacklistLogic = {
   },
 
   async resetCache() {
-    await CacheLogic.invalidateBlacklistedTips();
     await CacheLogic.invalidateStatsCache();
   },
 
   async addItem(tipId) {
     const entry = await BlacklistEntry.create({ tipId: String(tipId) });
-
     await BlacklistLogic.resetCache();
     return entry;
   },

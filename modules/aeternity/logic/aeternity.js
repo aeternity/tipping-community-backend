@@ -63,6 +63,7 @@ const aeternity = {
 
       contractV1 = await client.getContractInstance(TIPPING_V1_INTERFACE, { contractAddress: process.env.CONTRACT_V1_ADDRESS });
       /*
+      // TODO re-enable
       if (process.env.CONTRACT_V1_GETTER_ADDRESS) {
         contractV1Getter = await client.getContractInstance(TIPPING_V1_GETTER, { contractAddress: process.env.CONTRACT_V1_GETTER_ADDRESS });
         logger.info('Starting WITH V1 GETTER contract');

@@ -7,7 +7,6 @@ const server = require('../../../server');
 
 const { Pin } = require('../../../models');
 const { publicKey, signChallenge, performSignedJSONRequest } = require('../../../utils/testingUtil');
-const cacheAggregatorLogic = require('../../cache/logic/cacheAggregatorLogic');
 
 chai.should();
 chai.use(chaiHttp);

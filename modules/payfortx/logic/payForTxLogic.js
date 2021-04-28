@@ -74,7 +74,6 @@ module.exports = class PayForTxLogic {
   static async runAsyncClaim(address, url, trace) {
     try {
       await aeternity.claimTips(address, url, trace);
-      CacheLogic.invalidateTipsCache();
       CacheLogic.invalidateOracle();
       trace.finished({
         result: 'success',

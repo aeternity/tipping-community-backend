@@ -93,9 +93,7 @@ cache.del = async keys => {
 cache.keepHot = keepHotFunction => {
   const keepHotLogic = async () => lockNoTimeout.acquire('keepHotLogic', async () => {
     const start = new Date().getTime();
-    console.log('HELLO');
     await keepHotFunction();
-    console.log('HELLO3');
     logger.info(`cache keepHot ${new Date().getTime() - start}ms`);
   });
 

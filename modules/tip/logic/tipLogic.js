@@ -121,7 +121,12 @@ const TipLogic = {
 
   async checkTipExists(id) {
     return Tip.findOne({ where: { id } })
-      .then(token => token !== null);
+      .then(id => !!id);
+  },
+
+  async checkRetipExists(id) {
+    return Retip.findOne({ where: { id } })
+      .then(id => !!id);
   },
 
   async fetchAllLocalTips() {
@@ -138,6 +143,9 @@ const TipLogic = {
   },
 
   async awaitTipsUpdated(id, retip) {
+    const exists = retip ? await TipLogic.checkRetipExists(id) : await TipLogic.checkTipExists(id);
+    if (exists) return;
+
     return new Promise((resolve, reject) => {
       setTimeout(() => {
         reject();

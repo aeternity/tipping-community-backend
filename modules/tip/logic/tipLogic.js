@@ -143,8 +143,10 @@ const TipLogic = {
   },
 
   async awaitTipsUpdated(id, retip) {
-    const exists = retip ? await TipLogic.checkRetipExists(id) : await TipLogic.checkTipExists(id);
-    if (exists) return;
+    if (id !== 'v1') {
+      const exists = retip ? await TipLogic.checkRetipExists(id) : await TipLogic.checkTipExists(id);
+      if (exists) return;
+    }
 
     // eslint-disable-next-line consistent-return
     return new Promise((resolve, reject) => {
@@ -154,7 +156,10 @@ const TipLogic = {
 
       // eslint-disable-next-line consistent-return
       function awaitLoop() {
-        if (retip ? awaitRetips[id] : awaitTips[id]) return resolve();
+        if (retip ? awaitRetips[id] : awaitTips[id]) {
+          if (id === 'v1') retip ? awaitRetips[id] = false : awaitTips[id] = false;
+          return resolve();
+        }
         setTimeout(awaitLoop, 100);
       }
 
@@ -192,7 +197,7 @@ const TipLogic = {
     const inserted = await Tip.bulkCreate(tipsToInsert);
 
     inserted.forEach(i => {
-      awaitTips[i.dataValues.id.includes('v1') ? null : i.dataValues.id] = true;
+      awaitTips[i.dataValues.id.includes('v1') ? 'v1' : i.dataValues.id] = true;
     });
 
     if (inserted.length > 0) await queueLogic.sendMessage(MESSAGE_QUEUES.TIPS, MESSAGES.TIPS.EVENTS.CREATED_NEW_LOCAL_TIPS);
@@ -229,7 +234,7 @@ const TipLogic = {
   async insertRetips(retipsToInsert) {
     const inserted = await Retip.bulkCreate(retipsToInsert);
     inserted.forEach(i => {
-      awaitRetips[i.dataValues.id.includes('v1') ? null : i.dataValues.id] = true;
+      awaitRetips[i.dataValues.id.includes('v1') ? 'v1' : i.dataValues.id] = true;
     });
   },
 

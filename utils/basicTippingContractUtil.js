@@ -115,6 +115,7 @@ const formatSingleTip = (contractId, suffix, id, tipTypeData, url) => {
 
   data.url = url;
   data.claimGen = data.claimGen === 'None' || data.claimGen === undefined ? null : data.claimGen;
+  data.media = data.media || [];
 
   data.token = data.token !== undefined ? data.token : null;
   data.tokenAmount = data.token_amount ? data.token_amount : '0';

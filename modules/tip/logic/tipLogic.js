@@ -149,7 +149,7 @@ const TipLogic = {
   },
 
   async updateTipsRetipsClaimsDB() {
-    const basicState = await aeternity.fetchStateBasic()
+    const basicState = await aeternity.fetchStateBasic();
     await TipLogic.updateTipsDB(basicState.tips);
     await TipLogic.updateRetipsDB(basicState.retips);
     await TipLogic.updateClaimsDB(basicState.claims);
@@ -175,37 +175,8 @@ const TipLogic = {
   },
 
   async insertTips(tipsToInsert) {
-    const inserted = await Tip.bulkCreate(tipsToInsert.map(({
-      id,
-      lang,
-      sender,
-      media,
-      url,
-      topics,
-      title,
-      token,
-      tokenAmount,
-      amount,
-      claimGen,
-      type,
-      contractId,
-      timestamp,
-    }) => ({
-      id: String(id),
-      language: lang,
-      sender,
-      media: media || [],
-      url,
-      topics,
-      title,
-      token,
-      tokenAmount,
-      amount,
-      claimGen,
-      type,
-      contractId,
-      timestamp,
-    })));
+    const inserted = await Tip.bulkCreate(tipsToInsert);
+
     inserted.forEach(i => {
       awaitTips[i.dataValues.id.includes('v1') ? null : i.dataValues.id] = true;
     });
@@ -233,8 +204,8 @@ const TipLogic = {
         const tip = remoteTips.find(t => t.id === id);
         const titleToDetect = tip.title.replace(/[!0-9#.,?)-:'“@/\\]/g, '');
         const probability = await cld.detect(titleToDetect).catch(() => ({}));
-        const lang = probability.languages ? probability.languages[0].code : null;
-        return { ...tip, lang };
+        const language = probability.languages ? probability.languages[0].code : null;
+        return { ...tip, language };
       });
 
       await TipLogic.insertTips(result);

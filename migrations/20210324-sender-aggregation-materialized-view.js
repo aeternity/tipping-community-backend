@@ -199,6 +199,13 @@ CREATE TRIGGER refresh_senderstats_aggregation
     FOR EACH STATEMENT
 EXECUTE PROCEDURE refresh_senderstats_aggregation();`, { transaction });
 
+      await queryInterface.sequelize.query(`
+CREATE TRIGGER refresh_senderstats_aggregation
+    AFTER INSERT OR UPDATE OR DELETE OR TRUNCATE
+    ON "Claims"
+    FOR EACH STATEMENT
+EXECUTE PROCEDURE refresh_senderstats_aggregation();`, { transaction });
+
       await transaction.commit();
       return this.execute(queryInterface, Sequelize, migrationCommands);
     },

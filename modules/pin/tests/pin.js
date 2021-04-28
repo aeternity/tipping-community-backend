@@ -1,7 +1,6 @@
 const chai = require('chai');
 const chaiHttp = require('chai-http');
 const { describe, it, before } = require('mocha');
-const sinon = require('sinon');
 const { generateKeyPair } = require('@aeternity/aepp-sdk').Crypto;
 const server = require('../../../server');
 
@@ -18,15 +17,6 @@ describe('Pinning', () => {
       where: {},
       truncate: true,
     });
-    stub = sinon.stub(cacheAggregatorLogic, 'getAllTips').callsFake(() => [
-      {
-        id: 1,
-        url: 'https://www.test.domain.com',
-        claim: {
-          unclaimed: false,
-        },
-      },
-    ]);
   });
 
   const testData = {

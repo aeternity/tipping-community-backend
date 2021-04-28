@@ -219,6 +219,13 @@ CREATE TRIGGER refresh_urlstats_aggregation
     FOR EACH STATEMENT
 EXECUTE PROCEDURE refresh_urlstats_aggregation();`, { transaction });
 
+      await queryInterface.sequelize.query(`
+CREATE TRIGGER refresh_urlstats_aggregation
+    AFTER INSERT OR UPDATE OR DELETE OR TRUNCATE
+    ON "Claims"
+    FOR EACH STATEMENT
+EXECUTE PROCEDURE refresh_urlstats_aggregation();`, { transaction });
+
       await transaction.commit();
       return this.execute(queryInterface, Sequelize, migrationCommands);
     },

@@ -6,7 +6,7 @@ const requireESM = require('esm')(module); // use to handle es6 import/export
 const { decodeEvents, SOPHIA_TYPES } = requireESM('@aeternity/aepp-sdk/es/contract/aci/transformation');
 
 const TIPPING_V1_INTERFACE = require('tipping-contract/Tipping_v1_Interface.aes');
-// const TIPPING_V1_GETTER = require('tipping-contract/Tipping_v1_Getter.aes');
+const TIPPING_V1_GETTER = require('tipping-contract/Tipping_v1_Getter.aes');
 const TIPPING_V2_INTERFACE = require('tipping-contract/Tipping_v2_Interface.aes');
 const TIPPING_V2_GETTER = require('tipping-contract/Tipping_v2_Getter.aes');
 const TIPPING_V3_GETTER = require('tipping-contract/Tipping_v3_Getter.aes');
@@ -61,15 +61,12 @@ const aeternity = {
       });
 
       contractV1 = await client.getContractInstance(TIPPING_V1_INTERFACE, { contractAddress: process.env.CONTRACT_V1_ADDRESS });
-      /*
-      // TODO re-enable
       if (process.env.CONTRACT_V1_GETTER_ADDRESS) {
         contractV1Getter = await client.getContractInstance(TIPPING_V1_GETTER, { contractAddress: process.env.CONTRACT_V1_GETTER_ADDRESS });
         logger.info('Starting WITH V1 GETTER contract');
       } else {
         logger.info('Starting WITHOUT V1 GETTER contract');
       }
-       */
 
       if (process.env.CONTRACT_V2_ADDRESS) {
         contractV2 = await client.getContractInstance(TIPPING_V2_INTERFACE, { contractAddress: process.env.CONTRACT_V2_ADDRESS });

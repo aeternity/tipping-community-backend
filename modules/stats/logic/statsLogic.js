@@ -15,7 +15,10 @@ module.exports = class StatsLogic {
     const claimedUrls = await CacheLogic.getOracleClaimedUrls(address);
 
     const [results] = await sequelize.query(SENDER_STATS, { replacements: [address], type: sequelize.QueryTypes.SELECT });
-    const [urlStats] = claimedUrls.length ? await sequelize.query(SUM_URL_STATS_FOR_URLS, { replacements: [claimedUrls], type: sequelize.QueryTypes.SELECT }) : [{totalAmount: "0", totalTipsLength: "0"}];
+    const [urlStats] = claimedUrls.length
+      ? await sequelize.query(SUM_URL_STATS_FOR_URLS, { replacements: [claimedUrls], type: sequelize.QueryTypes.SELECT })
+      : [{ totalAmount: '0', totalTipsLength: '0' }];
+
     const commentCount = await Comment.count({ where: { author: address } });
 
     return {

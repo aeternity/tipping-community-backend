@@ -83,6 +83,21 @@ var migrationCommands = function(transaction) {
             fn: "addColumn",
             params: [
                 "Tips",
+                "receiver",
+                {
+                    "type": Sequelize.STRING,
+                    "field": "receiver",
+                    "allowNull": true
+                },
+                {
+                    transaction: transaction
+                }
+            ]
+        },
+        {
+            fn: "addColumn",
+            params: [
+                "Tips",
                 "tokenAmount",
                 {
                     "type": Sequelize.NUMERIC,

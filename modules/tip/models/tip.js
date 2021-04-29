@@ -38,6 +38,10 @@ module.exports = (sequelize, DataTypes) => sequelize.define('Tip', {
     type: DataTypes.TEXT,
     allowNull: true,
   },
+  receiver: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
   token: {
     type: DataTypes.STRING,
     allowNull: true,

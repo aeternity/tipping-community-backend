@@ -84,7 +84,7 @@ const formatSingleTip = (contractId, suffix, id, tipTypeData, url) => {
       data = tipData[0];
       data.type = 'TOKEN_TIP';
       data.token = tipData[2].token;
-      data.token_amount = tipData[2].amount;
+      data.tokenAmount = tipData[2].amount;
       data.claimGen = tipData[3];
       data.amount = 0;
       break;
@@ -128,7 +128,7 @@ const formatSingleTip = (contractId, suffix, id, tipTypeData, url) => {
   delete data.url_id;
 
   data.token = data.token !== undefined ? data.token : null;
-  data.tokenAmount = data.token_amount ? data.token_amount : '0';
+  data.tokenAmount = data.tokenAmount ? data.tokenAmount : '0';
   data.topics = [...new Set(data.title.match(topicsRegex))].map(x => x.toLowerCase());
 
   return data;

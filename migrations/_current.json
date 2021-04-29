@@ -909,6 +909,11 @@
                     "onUpdate": "NO ACTION",
                     "seqType": "Sequelize.TEXT"
                 },
+                "receiver": {
+                    "allowNull": true,
+                    "field": "receiver",
+                    "seqType": "Sequelize.STRING"
+                },
                 "token": {
                     "allowNull": true,
                     "field": "token",

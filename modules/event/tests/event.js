@@ -28,42 +28,39 @@ describe('Events', () => {
     EventLogic.init();
   });
 
-  const sampleEvent = {
-    event: 'ReTipReceived',
-    name: 'ReTipReceived',
-    caller: 'ak_rRVV9aDnmmLriPePDSvfTUvepZtR2rbYk2Mx4GCqGLcc1DMAq',
-    nonce: 69,
-    height: 411007,
-    hash: 'th_AkZrxnHFZrNEhT84ipY3D9t31hDFoC2zDWXj9wE8GTLp3h95J',
-    contract: 'ct_2AfnEfCSZCTEkxL5Yoi4Yfq6fF7YapHRaFKDJK3THMXMBspp5z',
-    address: 'ak_rRVV9aDnmmLriPePDSvfTUvepZtR2rbYk2Mx4GCqGLcc1DMAq',
-    amount: '50000000000000000',
-    url: 'https://superhero.com/user-profile/ak_QWxf7hEM8CFPi3SmWSNTByQDKE2E5fgntPbEDwi7xvfb7SWwY',
-    tokenContract: null,
-    data: {
-      tx: {
-        version: 1,
-        type: 'ContractCallTx',
-        nonce: 70,
-        gas_price: 1000000000,
-        gas: 1579000,
-        fee: 182220000000000,
-        contract_id: 'ct_2AfnEfCSZCTEkxL5Yoi4Yfq6fF7YapHRaFKDJK3THMXMBspp5z',
-        caller_id: 'ak_rRVV9aDnmmLriPePDSvfTUvepZtR2rbYk2Mx4GCqGLcc1DMAq',
-        call_data: 'cb_KxEq+mD+G2+CCpxN/43z',
-        amount: 50000000000000000,
-        abi_version: 3,
+  const sampleChainEvent = {
+    event: {
+      event: 'ReTipReceived',
+      name: 'ReTipReceived',
+      caller: 'ak_rRVV9aDnmmLriPePDSvfTUvepZtR2rbYk2Mx4GCqGLcc1DMAq',
+      nonce: 74,
+      height: 421337,
+      hash: 'th_dAzGJC75VdSZkVNb2SuR3qnbozkqEHfpgMGfE2Cu9q6dAtHrs',
+      contract: 'ct_2AfnEfCSZCTEkxL5Yoi4Yfq6fF7YapHRaFKDJK3THMXMBspp5z',
+      address: 'ak_rRVV9aDnmmLriPePDSvfTUvepZtR2rbYk2Mx4GCqGLcc1DMAq',
+      amount: '30000000000000000',
+      url: 'https://twitter.com/PetrusValent/status/1387419653522198531',
+      tokenContract: null,
+      data: {
+        tx: [Object],
+        signatures: [Array],
+        hash: 'th_dAzGJC75VdSZkVNb2SuR3qnbozkqEHfpgMGfE2Cu9q6dAtHrs',
+        block_height: 421337,
+        block_hash: 'mh_KXYDgit4ptzCdK9ycdRkRC4XyEcCLL7X5ueJwNyoJf35y8Kwq',
       },
-      signatures: [
-        'sg_LLgUvEG5QJuth4LuD8NP1hBqiD4FuGHawMWuLt4LpBB8XyvoN11VGZkuCezKFf6TQVZcPKWBZWhV5pcNTyiCiTST3EhHD',
-      ],
-      hash: 'th_tDiecd3JMWidzpeU6ggKHQB7DSenFB6fg2H29C8AyXJhZLije',
-      block_height: 411008,
-      block_hash: 'mh_e75WwUDtHL5ejCpKgUgSPDe68VJpdZXhxFZU42tSc8UKGddrG',
-      log: [[]],
+    },
+    tx: {
+      callerId: 'ak_rRVV9aDnmmLriPePDSvfTUvepZtR2rbYk2Mx4GCqGLcc1DMAq',
+      callerNonce: 74,
+      contractId: 'ct_2AfnEfCSZCTEkxL5Yoi4Yfq6fF7YapHRaFKDJK3THMXMBspp5z',
+      gasPrice: 1000000000,
+      gasUsed: 3987,
+      height: 421337,
+      log: [[Object]],
+      returnType: 'ok',
+      returnValue: 'cb_P4fvHVw=',
     },
   };
-
   it('should return empty array if no events are found', async () => {
     const result = await EventLogic.getEventsForAddresses(['ak_fake']);
     result.should.be.an('array');
@@ -76,27 +73,27 @@ describe('Events', () => {
   });
 
   it('should return event if url is in data', async () => {
-    await Event.create(EventLogic.prepareEventForDB(sampleEvent));
-    const result = await EventLogic.getEventsForURL(sampleEvent.url);
+    await Event.create(EventLogic.prepareEventForDB(sampleChainEvent.event));
+    const result = await EventLogic.getEventsForURL(sampleChainEvent.event.url);
     result.should.be.an('array');
     result.should.have.length(1);
   });
 
   it('should handle incoming events correctly', done => {
-    queueLogic.sendMessage(MESSAGE_QUEUES.BLOCKCHAIN, MESSAGES.BLOCKCHAIN.EVENTS.EVENT_RECEIVED, sampleEvent);
-    queueLogic.subscribeToMessage(MESSAGE_QUEUES.EVENTS, MESSAGES.EVENTS.EVENTS.TIP_RECEIVED, async () => {
+    queueLogic.sendMessage(MESSAGE_QUEUES.BLOCKCHAIN, MESSAGES.BLOCKCHAIN.EVENTS.EVENT_RECEIVED, sampleChainEvent);
+    queueLogic.subscribeToMessage(MESSAGE_QUEUES.EVENTS, MESSAGES.EVENTS.EVENTS.RETIP_RECEIVED, async () => {
       const event = await Event.findOne({
         where: {
-          hash: sampleEvent.hash,
+          hash: sampleChainEvent.event.hash,
         },
         raw: true,
       });
-      event.should.have.property('name', sampleEvent.name);
-      event.should.have.property('hash', sampleEvent.hash);
-      event.should.have.property('contract', sampleEvent.contract);
-      event.should.have.property('height', sampleEvent.height);
+      event.should.have.property('name', sampleChainEvent.event.name);
+      event.should.have.property('hash', sampleChainEvent.event.hash);
+      event.should.have.property('contract', sampleChainEvent.event.contract);
+      event.should.have.property('height', sampleChainEvent.event.height);
       event.should.have.property('addresses');
-      event.addresses.should.eql([sampleEvent.address]);
+      event.addresses.should.eql([sampleChainEvent.event.address]);
       done();
     });
   });
@@ -104,7 +101,7 @@ describe('Events', () => {
   it('should handle keephot', done => {
     const currentHeight = 21;
     sinon.stub(aeternity, 'getHeight').callsFake(async () => currentHeight);
-    const mdwSpy = sinon.stub(MdwLogic, 'middlewareContractTransactions').callsFake(async () => [sampleEvent]);
+    const mdwSpy = sinon.stub(MdwLogic, 'middlewareContractTransactions').callsFake(async () => [sampleChainEvent.event]);
 
     Event.bulkCreate([{
       name: 'TipTokenReceived',
@@ -122,9 +119,9 @@ describe('Events', () => {
       addresses: ['ak_1', 'ak_2'],
       time: 0,
       data: {},
-    }]).then(() => queueLogic.sendMessage(MESSAGE_QUEUES.EVENTS, MESSAGES.EVENTS.COMMANDS.KEEPHOT));
+    }]).then(() => queueLogic.sendMessage(MESSAGE_QUEUES.SCHEDULED_EVENTS, MESSAGES.SCHEDULED_EVENTS.COMMANDS.UPDATE_EVENTS));
 
-    queueLogic.subscribeToMessage(MESSAGE_QUEUES.EVENTS, MESSAGES.EVENTS.COMMANDS.KEEPHOT, () => {
+    queueLogic.subscribeToMessage(MESSAGE_QUEUES.SCHEDULED_EVENTS, MESSAGES.SCHEDULED_EVENTS.COMMANDS.UPDATE_EVENTS, () => {
       setTimeout(async () => {
         mdwSpy.calledOnce.should.equal(true);
         sinon.assert.calledWith(mdwSpy, currentHeight, currentHeight - 20);
@@ -150,7 +147,7 @@ describe('Events', () => {
         // sample event also there
         const event3 = await Event.findAll({
           where: {
-            hash: sampleEvent.hash,
+            hash: sampleChainEvent.event.hash,
           },
           raw: true,
         });

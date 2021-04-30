@@ -1,26 +1,22 @@
 const chai = require('chai');
 const chaiHttp = require('chai-http');
-const { describe, it, before } = require('mocha');
+const { describe, it } = require('mocha');
 const { generateKeyPair } = require('@aeternity/aepp-sdk').Crypto;
 const server = require('../../../server');
 
 const { Pin } = require('../../../models');
-const { publicKey, signChallenge, performSignedJSONRequest } = require('../../../utils/testingUtil');
+const {
+  publicKey, signChallenge, performSignedJSONRequest, fakeTipsAndUpdateDB,
+} = require('../../../utils/testingUtil');
 
 chai.should();
 chai.use(chaiHttp);
 // Our parent block
 describe('Pinning', () => {
-  let stub;
-  before(async () => { // Before each test we empty the database
-    await Pin.destroy({
-      where: {},
-      truncate: true,
-    });
-  });
+  const seedDB = fakeTipsAndUpdateDB([Pin]);
 
   const testData = {
-    entryId: '1',
+    entryId: '1_v1',
     type: 'TIP',
   };
 
@@ -58,14 +54,17 @@ describe('Pinning', () => {
         });
     });
 
-    it('it should GET one pinned entry for a user', done => {
-      chai.request(server).get(`/pin/${publicKey}`).end((err, res) => {
-        res.should.have.status(200);
-        res.body.should.be.a('array');
-        res.body.length.should.be.eql(1);
-        res.body[0].should.have.property('id', parseInt(testData.entryId, 10));
-        done();
-      });
+    it('it should GET one pinned tip for a user', async () => {
+      await seedDB({
+        tips: [{
+          id: testData.entryId,
+        }],
+      }, false);
+      const res = await chai.request(server).get(`/pin/${publicKey}`);
+      res.should.have.status(200);
+      res.body.should.be.a('array');
+      res.body.length.should.be.eql(1);
+      res.body[0].should.have.property('id', testData.entryId);
     });
 
     it('it should reject CREATING a new pin as another user', done => {
@@ -112,11 +111,6 @@ describe('Pinning', () => {
         res.body.length.should.be.eql(0);
         done();
       });
-    });
-
-    after(done => {
-      stub.restore();
-      done();
     });
   });
 });

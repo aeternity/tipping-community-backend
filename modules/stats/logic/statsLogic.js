@@ -1,10 +1,16 @@
 const { sequelize, Comment } = require('../../../models');
 const CacheLogic = require('../../cache/logic/cacheLogic');
 const {
-  SUM_URL_STATS_FOR_URLS, SENDER_STATS, GLOBAL_STATS, URL_STATS,
+  SUM_URL_STATS_FOR_URLS, SENDER_STATS, GLOBAL_STATS, URL_STATS, URL_STATS_BY_URL,
 } = require('../utils/statsAggregation');
 
 module.exports = class StatsLogic {
+
+  static async urlStats(url) {
+    const [urlStats] = await sequelize.query(URL_STATS_BY_URL, { replacements: [url], type: sequelize.QueryTypes.SELECT });
+    return urlStats;
+  }
+
   static async fetchStats() {
     const [stats] = await sequelize.query(GLOBAL_STATS);
     const [urlStats] = await sequelize.query(URL_STATS);

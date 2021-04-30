@@ -9,6 +9,7 @@ const BigNumber = require('bignumber.js');
 const ae = require('../../aeternity/logic/aeternity');
 const server = require('../../../server');
 const Trace = require('../logic/traceLogic');
+const TipLogic = require('../../tip/logic/tipLogic');
 const { TRACE_STATES } = require('../constants/traceStates');
 const { publicKey, secretKey } = require('../../../utils/testingUtil');
 
@@ -86,6 +87,9 @@ describe('Pay for TX', () => {
       this.timeout(25000);
       await ae.init();
     });
+    after(() => {
+      sinon.restore();
+    });
 
     it('it should post a contract without', async function () {
       this.timeout(20000);
@@ -100,14 +104,15 @@ describe('Pay for TX', () => {
       const hash = Crypto.hash(message);
       const signature = Crypto.signPersonalMessage(hash, Buffer.from(secretKey, 'hex'));
 
-      const postStub = sinon.stub(ae, 'postTipToV3').callsFake((title, media, author, passedSignature) => {
+      sinon.stub(ae, 'postTipToV3').callsFake((title, media, author, passedSignature) => {
         title.should.equal(testData.title);
         media.should.deep.equal(testData.media);
         author.should.equal(publicKey);
         const verified = Crypto.verifyPersonalMessage(hash, passedSignature, Crypto.decodeBase58Check(publicKey.substr(3)));
         verified.should.equal(true);
-        return { hash: 'hash' };
+        return { hash: 'hash', decodedResult: '1' };
       });
+      const awaitStub = sinon.stub(TipLogic, 'awaitTipsUpdated').callsFake(async () => {});
 
       const res = await chai.request(server).post('/payfortx/post').send({
         author: publicKey,
@@ -117,8 +122,8 @@ describe('Pay for TX', () => {
       });
 
       res.should.have.status(200);
-      res.body.should.deep.equal({ tx: { hash: 'hash' } });
-      postStub.restore();
+      res.body.should.deep.equal({ tx: { hash: 'hash', decodedResult: '1' } });
+      sinon.assert.calledWith(awaitStub, '1_v3');
     });
   });
 });

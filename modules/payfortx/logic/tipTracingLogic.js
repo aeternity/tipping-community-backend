@@ -2,14 +2,15 @@ const fs = require('fs');
 const path = require('path');
 const aeternity = require('../../aeternity/logic/aeternity');
 const { Trace: TraceModel } = require('../../../models');
-const CacheLogic = require('../../cache/logic/cacheLogic');
+const TipLogic = require('../../tip/logic/tipLogic');
+const StatsLogic = require('../../stats/logic/statsLogic');
 const EventLogic = require('../../event/logic/eventLogic');
 
 module.exports = class TipTracing {
   static async getAllTraces(req, res) {
     if (!req.query.id) return res.status(400).send('tip id parameter missing');
     const tipId = req.query.id;
-    const tip = await CacheLogic.getTips().then(ts => ts.find(t => t.id === tipId));
+    const tip = await TipLogic.fetchTip(tipId);
     if (!tip) return res.status(404).send('tip not found');
 
     const readFile = uuid => {
@@ -33,9 +34,8 @@ module.exports = class TipTracing {
     if (!req.query.id) throw Error('tip id parameter missing');
     const tipId = req.query.id;
 
-    const tip = await CacheLogic.getTips().then(ts => ts.find(t => t.id === tipId));
-    const tips = await CacheLogic.getTips().then(ts => ts.filter(t => t.url === tip.url));
-    const urlStats = CacheLogic.statsForTips(tips);
+    const tip = await TipLogic.fetchTip(tipId);
+    const urlStats = await StatsLogic.urlStats(tip.url);
 
     // Deliberately not cached
     const oracleClaim = await aeternity.fetchOracleClaimByUrl(tip.url);
@@ -46,11 +46,10 @@ module.exports = class TipTracing {
 
     const result = {
       tip,
-      url_stats: urlStats,
-      url_tips: tips,
-      url_oracle_claim: oracleClaim,
-      url_events: events,
-      url_intermediate_oracle_answers: unsafeCheckOracleAnswers,
+      urlStats: urlStats,
+      urlOracleClaim: oracleClaim,
+      urlEvents: events,
+      urlIntermediateOracleAnswers: unsafeCheckOracleAnswers,
     };
 
     res.send(result);

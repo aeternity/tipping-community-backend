@@ -40,10 +40,6 @@ const CacheLogic = {
     );
   },
 
-  async getTips() {
-    throw Error('no more tips from cache');
-  },
-
   async triggerGetTokenContractIndex(tips) {
     return lock.acquire('CacheLogic.triggerTokenContractIndex', async () => {
       const tokenContracts = tips.filter(t => t.token).map(t => t.token);

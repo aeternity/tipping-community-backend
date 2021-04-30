@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const aeternity = require('../../aeternity/logic/aeternity');
-const { Trace: TraceModel } = require('../../../models');
+const { Trace } = require('../../../models');
 const TipLogic = require('../../tip/logic/tipLogic');
 const StatsLogic = require('../../stats/logic/statsLogic');
 const EventLogic = require('../../event/logic/eventLogic');
@@ -22,7 +22,7 @@ module.exports = class TipTracing {
       }
     };
 
-    const allTracesDB = await TraceModel.findAll({ where: { url: tip.url }, raw: true });
+    const allTracesDB = await Trace.findAll({ where: { url: tip.url }, raw: true });
     const allTraces = allTracesDB.reduce((acc, trace) => {
       acc.push(readFile(trace.uuid));
       return acc;

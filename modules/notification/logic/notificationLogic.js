@@ -1,17 +1,14 @@
+const { Op } = require('sequelize');
 const {
   Notification, Comment, Retip, Tip,
 } = require('../../../models');
 const {
-  NOTIFICATION_TYPES, ENTITY_TYPES, NOTIFICATION_STATES, SOURCE_TYPES,
+  NOTIFICATION_TYPES, ENTITY_TYPES, SOURCE_TYPES,
 } = require('../constants/notification');
 
 const logger = require('../../../utils/logger')(module);
 
 module.exports = class NotificationLogic {
-  static async sendTypes(req, res) {
-    res.send({ NOTIFICATION_TYPES, ENTITY_TYPES, NOTIFICATION_STATES });
-  }
-
   static add = {
     [NOTIFICATION_TYPES.COMMENT_ON_TIP]: async (receiver, sender, commentId, tipId) => Notification.create({
       receiver,
@@ -65,6 +62,19 @@ module.exports = class NotificationLogic {
     }),
   };
 
+  static async handleDuplicateNotification(asyncInsertCall) {
+    try {
+      return await asyncInsertCall;
+    } catch (e) {
+      if (!e.name || !e.name.includes('SequelizeUniqueConstraintError')) {
+        logger.error(e);
+        return Promise.reject(e);
+      }
+      logger.debug('Duplicate notification');
+      return Promise.resolve({});
+    }
+  }
+
   static async getForUser(req, res) {
     try {
       const { author } = req.params;
@@ -105,51 +115,59 @@ module.exports = class NotificationLogic {
       }
       // Do not create notifications if the tip creator comments on his/her own tip
       if (comment.author === tip.sender) return;
-      try {
-        await NotificationLogic.add[NOTIFICATION_TYPES.TIP_ON_COMMENT](comment.author, tip.sender, tip.id, commentId);
-      } catch (e) {
-        if (!e.message.includes('SequelizeUniqueConstraintError')) {
-          logger.error(e);
-        } else {
-          logger.warn(`Duplicate notification for TIP_ON_COMMENT the comment ${commentId} on tip ${tip.id}`);
-        }
-      }
+      await NotificationLogic.handleDuplicateNotification(
+        NotificationLogic.add[NOTIFICATION_TYPES.TIP_ON_COMMENT](comment.author, tip.sender, tip.id, commentId),
+      );
     }
   }
 
   static async handleNewRetip(retip) {
     // RETIP ON TIP
-    // TODO Do not create notifications if the tip creator retips on his/her own tip
-    try {
-      await NotificationLogic.add[NOTIFICATION_TYPES.RETIP_ON_TIP](retip.sender, retip.sender, retip.tipId, retip.id);
-    } catch (e) {
-      if (!e.message.includes('SequelizeUniqueConstraintError')) {
-        logger.error(e);
-      } else {
-        logger.warn(`Duplicate notification for RETIP_ON_TIP the retip ${retip.parentTip.id} to tip ${retip.parentTip.id}`);
-      }
+    const parentTip = await Tip.findOne({
+      where: { id: retip.tipId },
+    });
+    if (parentTip.sender !== retip.sender) {
+      await NotificationLogic.handleDuplicateNotification(
+        NotificationLogic.add[NOTIFICATION_TYPES.RETIP_ON_TIP](parentTip.sender, retip.sender, retip.tipId, retip.id),
+      );
+    } else {
+      logger.info(`Skipping notification for RETIP_ON_TIP the retip ${retip.id} to tip ${parentTip.id} due to self retip`);
     }
   }
 
-  static async handleOldTip(localTip, remoteTip) {
-    if (localTip.unclaimed && remoteTip.claim && !remoteTip.claim.unclaimed) {
-      await NotificationLogic.add[NOTIFICATION_TYPES.CLAIM_OF_TIP](remoteTip.sender, remoteTip.id);
-      await Tip.update({ unclaimed: false }, {
-        where: {
-          id: remoteTip.id,
-        },
-      });
+  static async handleClaim(claim) {
+    if (claim.claimGen === 0) {
+      return;
     }
-  }
+    const relevantTips = await Tip.findAll({
+      where: {
+        url: claim.url,
+        contractId: claim.contractId,
+        claimGen: {
+          [Op.lt]: claim.claimGen,
+        },
+      },
+    });
 
-  static async handleOldRetip(localRetip, remoteRetip) {
-    if (localRetip.unclaimed && !remoteRetip.claim.unclaimed) {
-      await NotificationLogic.add[NOTIFICATION_TYPES.CLAIM_OF_RETIP](remoteRetip.sender, remoteRetip.parentTip.id, remoteRetip.id);
-      await Retip.update({ unclaimed: false }, {
-        where: {
-          id: remoteRetip.id,
+    const relevantRetips = await Retip.findAll({
+      where: {
+        tipId: {
+          [Op.in]: relevantTips.map(({ id }) => id),
         },
-      });
-    }
+        claimGen: {
+          [Op.lt]: claim.claimGen,
+        },
+      },
+    });
+    await Promise.all(relevantTips.map(async tip => {
+      await NotificationLogic.handleDuplicateNotification(
+        NotificationLogic.add[NOTIFICATION_TYPES.CLAIM_OF_TIP](tip.sender, tip.id),
+      );
+    }));
+    await Promise.all(relevantRetips.map(async retip => {
+      await NotificationLogic.handleDuplicateNotification(
+        NotificationLogic.add[NOTIFICATION_TYPES.CLAIM_OF_RETIP](retip.sender, retip.tipId, retip.id),
+      );
+    }));
   }
 };

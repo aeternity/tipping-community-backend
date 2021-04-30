@@ -1,9 +1,14 @@
 const { signPersonalMessage, generateKeyPair, hash } = require('@aeternity/aepp-sdk').Crypto;
 const chai = require('chai');
 const chaiHttp = require('chai-http');
+const fs = require('fs');
+const sinon = require('sinon');
+const aeternity = require('../modules/aeternity/logic/aeternity');
+const TipLogic = require('../modules/tip/logic/tipLogic');
+
+const { Tip } = require('../models');
 
 chai.use(chaiHttp);
-const fs = require('fs');
 
 const { publicKey, secretKey } = generateKeyPair();
 
@@ -75,6 +80,44 @@ const performSignedGETRequest = (server, url, privateKey = null) => new Promise(
     });
 });
 
+const fakeTipsAndUpdateDB = dbsToClear => async (fakeData, clearData = true) => {
+  if (clearData) {
+    await Promise.all(dbsToClear.map(async model => model.truncate({
+      cascade: true,
+    })));
+    await Tip.truncate({
+      cascade: true,
+    });
+  }
+  sinon.restore();
+  // seed fake data
+  const seedData = {
+    ...fakeData,
+  };
+  if (!seedData.tips) seedData.tips = [];
+  if (!seedData.retips) seedData.retips = [];
+  if (!seedData.claims) seedData.claims = [];
+  seedData.tips = seedData.tips.map(tip => ({
+    id: '1_v1',
+    title: 'some',
+    type: 'AE_TIP',
+    contractId: 'ct_test',
+    timestamp: 0,
+    topics: [],
+    ...tip,
+  }));
+
+  seedData.claims = seedData.claims.map(claim => ({
+    claimGen: 0,
+    url: 'example.com',
+    amount: 1,
+    contractId: 'ct_test',
+    ...claim,
+  }));
+  sinon.stub(aeternity, 'fetchStateBasic').callsFake(async () => seedData);
+  await TipLogic.updateTipsRetipsClaimsDB();
+};
+
 module.exports = {
   publicKey,
   secretKey,
@@ -83,4 +126,5 @@ module.exports = {
   performSignedJSONRequest,
   performSignedMultipartFormRequest,
   performSignedGETRequest,
+  fakeTipsAndUpdateDB,
 };

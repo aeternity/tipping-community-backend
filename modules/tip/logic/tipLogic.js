@@ -24,7 +24,7 @@ const awaitRetips = {};
 const includes = [
   { model: Retip, as: 'retips' },
   { model: LinkPreview, as: 'linkPreview' },
-  { model: Claim, as: 'claim' }
+  { model: Claim, as: 'claim' },
 ];
 
 const TipLogic = {

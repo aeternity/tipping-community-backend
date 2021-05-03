@@ -156,21 +156,23 @@ const TipLogic = {
         reject();
       }, 30000);
 
-      function awaitLoop() {
-        if (retip ? awaitRetips[id] : awaitTips[id]) {
-          if (id === 'v1') {
-            if (retip) {
-              awaitRetips[id] = false;
-            } else {
-              awaitTips[id] = false;
-            }
+      function awaitLoop(initialState = false) {
+        // initially reset the state for v1 so we can wait for the next occurrence
+        if (initialState && id === 'v1') {
+          if (retip) {
+            awaitRetips[id] = false;
+          } else {
+            awaitTips[id] = false;
           }
+        }
+        // check if the wait should be resolved
+        if (retip ? awaitRetips[id] : awaitTips[id]) {
           return resolve();
         }
         return setTimeout(awaitLoop, 100);
       }
 
-      setTimeout(awaitLoop, 0);
+      setTimeout(() => awaitLoop(retip ? awaitRetips[id] : awaitTips[id]), 100);
     });
   },
 

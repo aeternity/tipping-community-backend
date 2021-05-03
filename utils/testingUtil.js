@@ -103,6 +103,7 @@ const fakeTipsAndUpdateDB = dbsToClear => async (fakeData, clearData = true) => 
     type: 'AE_TIP',
     contractId: 'ct_test',
     timestamp: 0,
+    amount: 1,
     topics: [],
     ...tip,
   }));

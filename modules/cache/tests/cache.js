@@ -57,7 +57,8 @@ describe('Cache', () => {
   });
 
   describe('API', () => {
-    it('it should GET all chainnames ', async () => {
+    it('it should GET all chainnames ', async function () {
+      this.timeout(5000);
       await cache.del(['fetchMdwChainNames']);
       await cache.del(['fetchChainNames']);
 
@@ -168,7 +169,8 @@ describe('Cache', () => {
       checkCachedRoute(`/cache/invalidate/wordSale/${wordSaleCtAddress}`, 'object', done);
     });
 
-    it('it should invalidate the wordRegistry cache', done => {
+    it('it should invalidate the wordRegistry cache', function (done) {
+      this.timeout(25000);
       checkCachedRoute('/cache/invalidate/wordRegistry', 'object', done);
     });
 

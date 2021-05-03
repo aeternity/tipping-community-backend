@@ -42,7 +42,6 @@ describe('Token Cache', () => {
       sandbox.stub(CacheLogic, 'getTokenRegistryState').callsFake(async () => [
         [contractAddress],
       ]);
-      sandbox.stub(CacheLogic, 'getTips').callsFake(async () => []);
 
       // stub this to avoid errors because ct_contract is not a valid address
       const getTokenAccountsStub = sandbox.stub(CacheLogic, 'getTokenAccounts').callsFake(async () => {});

@@ -5,7 +5,7 @@ const sinon = require('sinon');
 const fs = require('fs');
 
 const TipLogic = require('../logic/tipLogic');
-const aeternity = require('../../aeternity/logic/aeternity');
+const NotificationLogic = require('../../notification/logic/notificationLogic');
 const queueLogic = require('../../queue/logic/queueLogic');
 const { MESSAGES } = require('../../queue/constants/queue');
 const { MESSAGE_QUEUES } = require('../../queue/constants/queue');
@@ -21,45 +21,39 @@ chai.should();
 chai.use(chaiHttp);
 
 describe('(Re)Tips', () => {
-  let sandbox;
-  beforeEach(() => {
-    sandbox = sinon.createSandbox();
-    sandbox.stub(queueLogic, 'sendMessage');
+  before(() => {
+    sinon.stub(queueLogic, 'sendMessage');
   });
 
-  afterEach(() => {
-    sandbox.restore();
+  after(() => {
+    sinon.restore();
   });
   const seedDB = fakeTipsAndUpdateDB([Claim, Retip, Notification, BlacklistEntry]);
-  let isDirty = true;
 
   describe('API', () => {
-    beforeEach(async () => {
-      if (isDirty) {
-        await seedDB(sampleTips);
-        isDirty = false;
-      }
-    });
-
-    it('it should respond with no tips when db is empty', async () => {
+    it('it should respond with no tips when db is empty', async function () {
+      this.timeout(5000);
       const fakeData = {
         tips: [],
         retips: [],
         claims: [],
       };
-      await fakeTipsAndUpdateDB(fakeData);
+      await seedDB(fakeData);
       const res = await chai.request(server).get('/tips');
       res.body.should.be.an('array');
       res.body.should.have.length(0);
     });
 
-    it('it should respond with tips', async () => {
+    it('it should respond with tips', async function () {
+      this.timeout(5000);
+      await seedDB(sampleTips);
       const res = await chai.request(server).get('/tips');
       res.body.should.be.an('array');
       res.body.should.have.length(6);
     });
 
-    it('it should apply pagination by default', async () => {
+    it('it should apply pagination by default', async function () {
+      this.timeout(5000);
       let id = 0;
       const fakeData = {
         tips: [...(Array(35).fill(sampleTips.tips[0]).map(tip => ({
@@ -69,7 +63,7 @@ describe('(Re)Tips', () => {
         retips: [],
         claims: [],
       };
-      await fakeTipsAndUpdateDB(fakeData);
+      await seedDB(fakeData);
 
       const res = await chai.request(server).get('/tips');
       res.body.should.be.an('array');
@@ -80,10 +74,9 @@ describe('(Re)Tips', () => {
       res2.body.should.have.length(5);
     });
 
-    it('it should apply blacklist by default', async () => {
-      // Reset db after this test
-      isDirty = true;
-
+    it('it should apply blacklist by default', async function () {
+      this.timeout(5000);
+      await seedDB(sampleTips);
       await BlacklistEntry.create({
         tipId: '1_v1',
       });
@@ -93,11 +86,10 @@ describe('(Re)Tips', () => {
       res.body.should.have.length(5);
       const ids = res.body.map(({ id }) => id);
       ids.should.not.contain('1_v1');
+      await BlacklistEntry.truncate();
     });
 
     it('it should allow to bypass the blacklist', async () => {
-      // Reset db after this test
-      isDirty = true;
       await BlacklistEntry.create({
         tipId: '1_v1',
       });
@@ -105,9 +97,12 @@ describe('(Re)Tips', () => {
       const res = await chai.request(server).get('/tips?blacklist=false');
       res.body.should.be.an('array');
       res.body.should.have.length(6);
+      await BlacklistEntry.truncate();
     });
 
-    it('it should allow to search by address', async () => {
+    it('it should allow to search by address', async function () {
+      this.timeout(5000);
+      await seedDB(sampleTips);
       const res = await chai.request(server).get('/tips?address=ak_sender1');
       res.body.should.be.an('array');
       res.body.should.have.length(2);
@@ -176,7 +171,14 @@ describe('(Re)Tips', () => {
       res.body.should.be.an('array');
       res.body.should.have.length(6);
       const ids = res.body.map(({ id }) => id);
-      ids.should.eql(['2_v2', '1_v3', '2_v3', '1_v1', '2_v1', '1_v2']);
+      ids.should.eql([
+        '2_v3',
+        '1_v3',
+        '2_v2',
+        '1_v2',
+        '2_v1',
+        '1_v1',
+      ]);
     });
 
     it('it should sorting by score', async () => {
@@ -189,8 +191,8 @@ describe('(Re)Tips', () => {
         '1_v2',
         '1_v1',
         '2_v1',
-        '2_v2',
         '1_v3',
+        '2_v2',
         '2_v3',
       ]);
     });
@@ -205,8 +207,8 @@ describe('(Re)Tips', () => {
         '1_v2',
         '1_v1',
         '2_v1',
-        '2_v2',
         '1_v3',
+        '2_v2',
         '2_v3',
       ]);
     });
@@ -226,25 +228,27 @@ describe('(Re)Tips', () => {
       res.body.aggregation.should.eql({
         id: '1_v1',
         totalAmount: '130000000000000000',
-        totalUnclaimedAmount: '0',
-        totalClaimedAmount: '130000000000000000',
+        totalUnclaimedAmount: '130000000000000000',
+        totalClaimedAmount: '0',
         totalTokenAmount: [],
         totalTokenUnclaimedAmount: [],
         totalTokenClaimedAmount: [],
       });
 
+      // sort the result to avoid flaky tests
+      res.body.urlStats.senders.sort();
       res.body.urlStats.should.eql({
         url: 'example.com',
         tipsLength: 1,
         retipsLength: 2,
         totalTipsLength: 3,
         totalAmount: '130000000000000000',
-        totalUnclaimedAmount: '0',
-        totalClaimedAmount: '130000000000000000',
+        totalUnclaimedAmount: '130000000000000000',
+        totalClaimedAmount: '0',
         totalTokenAmount: [],
         totalTokenUnclaimedAmount: [],
         totalTokenClaimedAmount: [],
-        senders: ['ak_retip_sender2', 'ak_retip_sender1', 'ak_sender1'],
+        senders: ['ak_retip_sender1', 'ak_retip_sender2', 'ak_sender1'],
         sendersLength: 3,
       });
 
@@ -295,72 +299,70 @@ describe('(Re)Tips', () => {
       ]);
     });
 
-    it.skip('it should resolve existing tips on await endpoint in less than 1000ms', async function () {
+    it('it should resolve existing tips on await endpoint in less than 1000ms', async function () {
       this.timeout(1000);
       await chai.request(server).get('/tips/await/tip/1_v2');
     });
 
-    it.skip('it should resolve new tips when they are added for v1', done => {
-      chai.request(server).get('/tips/await/tip/10_v1').then(res => {
+    it('it should resolve new tips when they are added for v1', function (done) {
+      this.timeout(5000);
+      chai.request(server).get('/tips/await/tip/v1').then(res => {
         res.should.have.status(200);
         done();
       });
       const fakeData = JSON.parse(JSON.stringify(sampleTips));
       fakeData.tips[fakeData.tips.length - 1].id = '10_v1';
-      fakeTipsAndUpdateDB(fakeData);
+      seedDB(fakeData);
     });
 
-    it('it should resolve new tips when they are added for v2', done => {
+    it('it should resolve new tips when they are added for v2', function (done) {
+      this.timeout(5000);
       chai.request(server).get('/tips/await/tip/10_v2').then(res => {
         res.should.have.status(200);
         done();
       });
       const fakeData = JSON.parse(JSON.stringify(sampleTips));
       fakeData.tips[fakeData.tips.length - 1].id = '10_v2';
-      fakeTipsAndUpdateDB(fakeData);
+      seedDB(fakeData);
     });
 
-    it('it should resolve new tips when they are added for v3', done => {
+    it('it should resolve new tips when they are added for v3', function (done) {
+      this.timeout(5000);
       chai.request(server).get('/tips/await/tip/10_v3').then(res => {
         res.should.have.status(200);
         done();
       });
       const fakeData = JSON.parse(JSON.stringify(sampleTips));
       fakeData.tips[fakeData.tips.length - 1].id = '10_v3';
-      fakeTipsAndUpdateDB(fakeData);
+      seedDB(fakeData);
     });
 
-    it.skip('it should resolve new re-tips when they are added for v1', done => {
-      chai.request(server).get('/tips/await/retip/10_v1').then(res => {
+    it('it should resolve new re-tips when they are added for v1', function (done) {
+      this.timeout(5000);
+      chai.request(server).get('/tips/await/retip/v1').then(res => {
         res.should.have.status(200);
         done();
       });
       const fakeData = JSON.parse(JSON.stringify(sampleTips));
       fakeData.retips[fakeData.retips.length - 1].id = '10_v1';
-      fakeTipsAndUpdateDB(fakeData);
+      seedDB(fakeData);
     });
 
-    it('it should resolve new re-tips when they are added for v2', done => {
+    it('it should resolve new re-tips when they are added for v2', function (done) {
+      this.timeout(5000);
       chai.request(server).get('/tips/await/retip/10_v2').then(res => {
         res.should.have.status(200);
         done();
       });
       const fakeData = JSON.parse(JSON.stringify(sampleTips));
       fakeData.retips[fakeData.retips.length - 1].id = '10_v2';
-      fakeTipsAndUpdateDB(fakeData);
+      seedDB(fakeData);
     });
   });
 
   describe('DB', () => {
-    isDirty = true;
-    beforeEach(async () => {
-      if (isDirty) {
-        await fakeTipsAndUpdateDB(sampleTips);
-        isDirty = false;
-      }
-    });
-
-    it.skip('it should treat inserted tips without claims as unclaimed', async () => {
+    it('it should treat inserted tips without claims as unclaimed', async () => {
+      await seedDB(sampleTips);
       const res = await chai.request(server).get('/tips/single/2_v2');
       res.body.should.have.property('id', '2_v2');
       res.body.should.have.property('aggregation');
@@ -381,7 +383,7 @@ describe('(Re)Tips', () => {
         claimGen: 1,
         amount: '0',
       });
-      await fakeTipsAndUpdateDB(fakeData, false);
+      await seedDB(fakeData, false);
       const res = await chai.request(server).get('/tips/single/2_v2');
       res.body.should.have.property('id', '2_v2');
       res.body.should.have.property('aggregation');
@@ -403,30 +405,36 @@ describe('(Re)Tips', () => {
     before(() => {
       TipLogic.init();
     });
-    it('it should update the tips on MESSAGES.TIPS.COMMANDS.UPDATE_CLAIMS', done => {
-      sandbox.restore();
-      const updateMock = sinon.stub(TipLogic, 'updateTipsRetipsClaimsDB').callsFake(async () => {});
-      queueLogic.sendMessage(MESSAGE_QUEUES.TIPS, MESSAGES.TIPS.COMMANDS.UPDATE_CLAIMS);
-      setTimeout(() => {
-        updateMock.callCount.should.eql(1);
-        updateMock.restore();
-        done();
-      }, 100);
+    beforeEach(() => {
+      sinon.restore();
     });
 
-    it('it should update the tips on MESSAGES.SCHEDULED_EVENTS.COMMANDS.UPDATE_TIPS_RETIPS_CLAIMS', done => {
-      sandbox.restore();
+    it('it should update everything on MESSAGES.SCHEDULED_EVENTS.COMMANDS.UPDATE_TIPS_RETIPS_CLAIMS', done => {
       const updateMock = sinon.stub(TipLogic, 'updateTipsRetipsClaimsDB').callsFake(async () => {});
       queueLogic.sendMessage(MESSAGE_QUEUES.SCHEDULED_EVENTS, MESSAGES.SCHEDULED_EVENTS.COMMANDS.UPDATE_TIPS_RETIPS_CLAIMS);
       setTimeout(() => {
         updateMock.callCount.should.eql(1);
-        updateMock.restore();
+        done();
+      }, 100);
+    });
+
+    it('it should insert the claim on MESSAGES.TIPS.COMMANDS.INSERT_CLAIM', done => {
+      const updateMock = sinon.stub(TipLogic, 'insertClaims').callsFake(async ([payload]) => payload);
+      const notificationMock = sinon.stub(NotificationLogic, 'handleClaim').callsFake(async () => {});
+      const payload = {
+        test: 'test',
+      };
+      queueLogic.sendMessage(MESSAGE_QUEUES.TIPS, MESSAGES.TIPS.COMMANDS.INSERT_CLAIM, payload);
+      setTimeout(() => {
+        updateMock.callCount.should.eql(1);
+        sinon.assert.calledWith(updateMock, [payload]);
+        notificationMock.callCount.should.eql(1);
+        sinon.assert.calledWith(notificationMock, payload);
         done();
       }, 100);
     });
 
     it('it should insert the payload on MESSAGES.TIPS.COMMANDS.INSERT_TIP', done => {
-      sandbox.restore();
       const updateMock = sinon.stub(TipLogic, 'insertTips').callsFake(async () => {});
       const payload = {
         test: 'test',
@@ -435,13 +443,11 @@ describe('(Re)Tips', () => {
       setTimeout(() => {
         updateMock.callCount.should.eql(1);
         sinon.assert.calledWith(updateMock, [payload]);
-        updateMock.restore();
         done();
       }, 100);
     });
 
     it('it should insert the payload on MESSAGES.RETIPS.COMMANDS.INSERT_RETIP', done => {
-      sandbox.restore();
       const updateMock = sinon.stub(TipLogic, 'insertRetips').callsFake(async () => {});
       const payload = {
         test: 'test',
@@ -450,7 +456,6 @@ describe('(Re)Tips', () => {
       setTimeout(() => {
         updateMock.callCount.should.eql(1);
         sinon.assert.calledWith(updateMock, [payload]);
-        updateMock.restore();
         done();
       }, 100);
     });

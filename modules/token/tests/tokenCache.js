@@ -49,8 +49,8 @@ describe('Token Cache', () => {
       sandbox.stub(aeternity, 'addTokenToRegistry').callsFake(async () => {});
 
       // Flush cache to force re-generation
-      cache.del(['getTokenInfos']);
-      cache.del(['getTokenMetaInfo', contractAddress]);
+      await cache.del(['getTokenInfos']);
+      await cache.del(['getTokenMetaInfo', contractAddress]);
       const res = await chai.request(server).get('/tokenCache/tokenInfo');
       res.should.have.status(200);
       res.body.should.be.a('object');
@@ -66,7 +66,7 @@ describe('Token Cache', () => {
       sinon.assert.calledWith(tokenMetaInfoStub, contractAddress);
 
       // Flush dirty cache
-      cache.del(['getTokenInfos']);
+      await cache.del(['getTokenInfos']);
     });
 
     it('it should ADD a token to be indexed', async () => {
@@ -79,7 +79,7 @@ describe('Token Cache', () => {
         name: 'SOFIA',
         symbol: 'SOF',
       }));
-      cache.del(['getTokenMetaInfo', contractAddress]);
+      await cache.del(['getTokenMetaInfo', contractAddress]);
       const res = await chai.request(server).post('/tokenCache/addToken')
         .send({ address: contractAddress });
       res.should.have.status(200);
@@ -89,7 +89,7 @@ describe('Token Cache', () => {
       registryStub.callCount.should.eql(1);
       getTokenInfosStub.callCount.should.eql(1);
       // clear dirty cache
-      cache.del(['getTokenMetaInfo', contractAddress]);
+      await cache.del(['getTokenMetaInfo', contractAddress]);
     });
 
     it('it shouldnt GET token info without address', done => {
@@ -156,7 +156,7 @@ describe('Token Cache', () => {
 
     it('it should get the word registry overview', async function () {
       this.timeout(25000);
-      cache.del(['wordRegistryData']);
+      await cache.del(['wordRegistryData']);
       sandbox.stub(aeternity, 'fetchWordRegistryData').callsFake(async () => ({
         owner: 'ak_2VnwoJPQgrXvreUx2L9BVvd9BidWwpu1ASKK1AMre21soEgpRT',
         tokens: [
@@ -181,7 +181,7 @@ describe('Token Cache', () => {
     });
 
     it('it should search the word registry', async () => {
-      cache.del(['wordRegistryData']);
+      await cache.del(['wordRegistryData']);
       sandbox.stub(aeternity, 'fetchWordRegistryData').callsFake(async () => ({
         owner: 'ak_2VnwoJPQgrXvreUx2L9BVvd9BidWwpu1ASKK1AMre21soEgpRT',
         tokens: [
@@ -226,9 +226,9 @@ describe('Token Cache', () => {
     it('it should get a word registry contract overview', async function () {
       this.timeout(15000);
       const ctAddress = 'ct_RJt3nE2xwpA1Y95pkwyH7M5VthQUBd2TcdxuDZguGatQzKrWM';
-      cache.del(['wordSaleState', ctAddress]);
-      cache.del(['fungibleTokenTotalSupply', ctAddress]);
-      cache.del(['wordSalePrice', ctAddress]);
+      await cache.del(['wordSaleState', ctAddress]);
+      await cache.del(['fungibleTokenTotalSupply', ctAddress]);
+      await cache.del(['wordSalePrice', ctAddress]);
 
       const res = await chai.request(server).get(`/tokenCache/wordSale/${ctAddress}`);
       res.should.have.status(200);
@@ -251,7 +251,7 @@ describe('Token Cache', () => {
         owner: '',
         tokens: [['TEST', wordCtAddress]],
       }));
-      cache.del(['wordRegistryData']);
+      await cache.del(['wordRegistryData']);
 
       const res = await chai.request(server).get(`/tokenCache/wordSaleByToken/${tokenCtAddress}`);
       res.should.have.status(200);

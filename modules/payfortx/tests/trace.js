@@ -9,7 +9,6 @@ const server = require('../../../server');
 const ae = require('../../aeternity/logic/aeternity');
 const { Trace } = require('../../../models');
 const { publicKey } = require('../../../utils/testingUtil');
-const CacheLogic = require('../../cache/logic/cacheLogic');
 const EventLogic = require('../../event/logic/eventLogic');
 const { fakeTipsAndUpdateDB } = require('../../../utils/testingUtil');
 
@@ -106,9 +105,15 @@ describe('Trace', () => {
       res.body.length.should.be.eql(1);
     });
 
-    it('it should GET all blockchain traces for a proper tip', function (done) {
-      this.timeout(20000);
-      const stub = sinon.stub(EventLogic, 'getEventsForURL').callsFake(async () => ([{
+    it('it should GET all blockchain traces for a proper tip', async function () {
+      this.timeout(10000);
+      await seedDB({
+        tips: [{
+          id: '462_v1',
+          url: 'example.com',
+        }],
+      }, false);
+      sinon.stub(EventLogic, 'getEventsForURL').callsFake(async () => ([{
         event: 'TipReceived',
         url: 'example.com',
       },
@@ -117,141 +122,51 @@ describe('Trace', () => {
         url: 'example.com',
       }]));
 
-      const oracleStub = sinon.stub(ae, 'fetchOracleClaimByUrl').callsFake(async () => null);
+      sinon.stub(ae, 'fetchOracleClaimByUrl').callsFake(async () => null);
 
-      const cacheStub = sinon.stub(CacheLogic, 'getTips').callsFake(async () => ([{
-        amount: '200000000000000000',
-        claim_gen: 1,
-        sender: 'ak_2fxchiLvnj9VADMAXHBiKPsaCEsTFehAspcmWJ3ZzF3pFK1hB5',
-        timestamp: 1606211552360,
-        title: '#test',
-        url_id: 1,
-        type: 'amount',
-        id: '462_v1',
-        contractId: 'ct_2Cvbf3NYZ5DLoaNYAU71t67DdXLHeSXhodkSNifhgd7Xsw28Xd',
+      const res = await chai.request(server).get('/tracing/blockchain?id=462_v1'); // 462_v1 == example.com
+      res.should.have.status(200);
+      res.body.should.be.a('object');
+
+      res.body.should.have.property('tip');
+      res.body.should.have.property('urlStats');
+      res.body.urlStats.should.eql({
+        retipsLength: '0',
+        senders: [],
+        sendersLength: '0',
+        tipsLength: '1',
+        totalAmount: '1',
+        totalClaimedAmount: '1',
+        totalTipsLength: '1',
+        totalTokenAmount: [],
+        totalTokenClaimedAmount: [],
+        totalTokenUnclaimedAmount: [],
+        totalUnclaimedAmount: '0',
         url: 'example.com',
-        retips: [],
-        claim: {
-          unclaimed: true,
-          claim_gen: 0,
-          unclaimed_amount: '233301213346200000000',
-          token_unclaimed_amount: [],
-        },
-        token: null,
-        token_amount: 0,
-        total_amount: '200000000000000000',
-        token_total_amount: [],
-        total_unclaimed_amount: '200000000000000000',
-        total_claimed_amount: '0',
-        token_total_unclaimed_amount: [],
-        topics: ['#test'],
-        amount_ae: '0.2',
-        total_amount_ae: '0.2',
-        total_unclaimed_amount_ae: '0.2',
-        total_claimed_amount_ae: '0',
-      }]));
-
-      chai.request(server).get('/tracing/blockchain?id=462_v1').end((err, res) => { // 462_v1 == example.com
-        res.should.have.status(200);
-        res.body.should.be.a('object');
-        res.body.should.deep.equal({
-          tip: {
-            amount: '200000000000000000',
-            claim_gen: 1,
-            sender: 'ak_2fxchiLvnj9VADMAXHBiKPsaCEsTFehAspcmWJ3ZzF3pFK1hB5',
-            timestamp: 1606211552360,
-            title: '#test',
-            url_id: 1,
-            type: 'amount',
-            id: '462_v1',
-            contractId: 'ct_2Cvbf3NYZ5DLoaNYAU71t67DdXLHeSXhodkSNifhgd7Xsw28Xd',
-            url: 'example.com',
-            retips: [],
-            claim: {
-              unclaimed: true,
-              claim_gen: 0,
-              unclaimed_amount: '233301213346200000000',
-              token_unclaimed_amount: [],
-            },
-            token: null,
-            token_amount: 0,
-            total_amount: '200000000000000000',
-            token_total_amount: [],
-            total_unclaimed_amount: '200000000000000000',
-            total_claimed_amount: '0',
-            token_total_unclaimed_amount: [],
-            topics: ['#test'],
-            amount_ae: '0.2',
-            total_amount_ae: '0.2',
-            total_unclaimed_amount_ae: '0.2',
-            total_claimed_amount_ae: '0',
-          },
-          url_stats: {
-            tips_length: 1,
-            retips_length: 0,
-            total_tips_length: 1,
-            total_amount: '200000000000000000',
-            total_unclaimed_amount: '200000000000000000',
-            total_claimed_amount: '0',
-            total_amount_ae: '0.2',
-            total_unclaimed_amount_ae: '0.2',
-            total_claimed_amount_ae: '0',
-            token_total_amount: [],
-            token_total_unclaimed_amount: [],
-            senders: ['ak_2fxchiLvnj9VADMAXHBiKPsaCEsTFehAspcmWJ3ZzF3pFK1hB5'],
-            senders_length: 1,
-          },
-          url_tips: [
-            {
-              amount: '200000000000000000',
-              claim_gen: 1,
-              sender: 'ak_2fxchiLvnj9VADMAXHBiKPsaCEsTFehAspcmWJ3ZzF3pFK1hB5',
-              timestamp: 1606211552360,
-              title: '#test',
-              url_id: 1,
-              type: 'amount',
-              id: '462_v1',
-              contractId: 'ct_2Cvbf3NYZ5DLoaNYAU71t67DdXLHeSXhodkSNifhgd7Xsw28Xd',
-              url: 'example.com',
-              retips: [],
-              claim: {
-                claim_gen: 0,
-                token_unclaimed_amount: [],
-                unclaimed: true,
-                unclaimed_amount: '233301213346200000000',
-              },
-              token: null,
-              token_amount: 0,
-              total_amount: '200000000000000000',
-              token_total_amount: [],
-              total_unclaimed_amount: '200000000000000000',
-              total_claimed_amount: '0',
-              token_total_unclaimed_amount: [],
-              topics: ['#test'],
-              amount_ae: '0.2',
-              total_amount_ae: '0.2',
-              total_unclaimed_amount_ae: '0.2',
-              total_claimed_amount_ae: '0',
-            },
-          ],
-          url_oracle_claim: null,
-          url_events: [
-            {
-              event: 'TipReceived',
-              url: 'example.com',
-            },
-            {
-              event: 'TipReceived',
-              url: 'example.com',
-            },
-          ],
-          url_intermediate_oracle_answers: [null],
-        });
-        stub.restore();
-        cacheStub.restore();
-        oracleStub.restore();
-        done();
       });
+      res.body.tip.should.have.property('aggregation');
+      res.body.tip.aggregation.should.eql(
+        {
+          id: '462_v1',
+          totalAmount: '1',
+          totalClaimedAmount: '1',
+          totalTokenAmount: [],
+          totalTokenClaimedAmount: [],
+          totalTokenUnclaimedAmount: [],
+          totalUnclaimedAmount: '0',
+        },
+      );
+      res.body.should.have.property('urlEvents');
+      res.body.urlEvents.should.eql([
+        {
+          event: 'TipReceived',
+          url: 'example.com',
+        },
+        {
+          event: 'TipReceived',
+          url: 'example.com',
+        },
+      ]);
     });
   });
 });

@@ -4,20 +4,20 @@ const {
   SUM_URL_STATS_FOR_URLS, SENDER_STATS, GLOBAL_STATS, URL_STATS, URL_STATS_BY_URL,
 } = require('../utils/statsAggregation');
 
-module.exports = class StatsLogic {
+const StatsLogic = {
 
-  static async urlStats(url) {
+  async urlStats(url) {
     const [urlStats] = await sequelize.query(URL_STATS_BY_URL, { replacements: [url], type: sequelize.QueryTypes.SELECT });
     return urlStats;
-  }
+  },
 
-  static async fetchStats() {
+  async fetchStats() {
     const [stats] = await sequelize.query(GLOBAL_STATS);
     const [urlStats] = await sequelize.query(URL_STATS);
     return stats.length ? { ...stats[0], urlStats } : null;
-  }
+  },
 
-  static async fetchUserStats(address) {
+  async fetchUserStats(address) {
     const claimedUrls = await CacheLogic.getOracleClaimedUrls(address);
 
     const [results] = await sequelize.query(SENDER_STATS, { replacements: [address], type: sequelize.QueryTypes.SELECT });
@@ -34,5 +34,7 @@ module.exports = class StatsLogic {
       urlStats,
       ...results ? results.senderstats : {},
     };
-  }
+  },
 };
+
+module.exports = StatsLogic;

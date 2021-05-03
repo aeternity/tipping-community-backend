@@ -82,9 +82,9 @@ const performSignedGETRequest = (server, url, privateKey = null) => new Promise(
 
 const fakeTipsAndUpdateDB = dbsToClear => async (fakeData, clearData = true) => {
   if (clearData) {
-    await Promise.all(dbsToClear.map(async model => model.truncate({
+    await dbsToClear.asyncMap(async model => model.truncate({
       cascade: true,
-    })));
+    }));
     await Tip.truncate({
       cascade: true,
     });

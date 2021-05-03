@@ -10,9 +10,10 @@ const queueLogic = require('../../queue/logic/queueLogic');
 const { MESSAGES } = require('../../queue/constants/queue');
 const { MESSAGE_QUEUES } = require('../../queue/constants/queue');
 const {
-  Tip, Retip, Notification, Claim, BlacklistEntry, Comment,
+  Retip, Notification, Claim, BlacklistEntry, Comment,
 } = require('../../../models');
 const server = require('../../../server');
+const { fakeTipsAndUpdateDB } = require('../../../utils/testingUtil');
 
 const sampleTips = JSON.parse(fs.readFileSync(`${__dirname}/tips.json`));
 
@@ -29,27 +30,13 @@ describe('(Re)Tips', () => {
   afterEach(() => {
     sandbox.restore();
   });
+  const seedDB = fakeTipsAndUpdateDB([Claim, Retip, Notification, BlacklistEntry]);
   let isDirty = true;
-  const fakeTipsAndUpdateDB = async (fakeData, clearData = true) => {
-    isDirty = true;
-    if (clearData) {
-      const dbsToClear = [Claim, Retip, Notification, BlacklistEntry];
-      await Promise.all(dbsToClear.map(async model => model.truncate({
-        cascade: true,
-      })));
-      await Tip.truncate({
-        cascade: true,
-      });
-    }
-    sandbox.restore();
-    sandbox.stub(aeternity, 'fetchStateBasic').callsFake(async () => fakeData);
-    await TipLogic.updateTipsRetipsClaimsDB();
-  };
 
   describe('API', () => {
     beforeEach(async () => {
       if (isDirty) {
-        await fakeTipsAndUpdateDB(sampleTips);
+        await seedDB(sampleTips);
         isDirty = false;
       }
     });

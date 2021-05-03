@@ -44,7 +44,7 @@ module.exports = class TipTracing {
 
     const result = {
       tip,
-      urlStats: urlStats,
+      urlStats,
       urlOracleClaim: oracleClaim,
       urlEvents: events,
       urlIntermediateOracleAnswers: unsafeCheckOracleAnswers,

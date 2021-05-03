@@ -304,59 +304,59 @@ describe('(Re)Tips', () => {
       await chai.request(server).get('/tips/await/tip/1_v2');
     });
 
-    it('it should resolve new tips when they are added for v1', function (done) {
+    it('it should resolve new tips when they are added for v1', async function () {
       this.timeout(5000);
-      chai.request(server).get('/tips/await/tip/v1').then(res => {
-        res.should.have.status(200);
-        done();
-      });
       const fakeData = JSON.parse(JSON.stringify(sampleTips));
       fakeData.tips[fakeData.tips.length - 1].id = '10_v1';
-      seedDB(fakeData);
+      const [res] = await Promise.all([
+        chai.request(server).get('/tips/await/tip/v1'),
+        seedDB(fakeData),
+      ]);
+      res.should.have.status(200);
     });
 
-    it('it should resolve new tips when they are added for v2', function (done) {
+    it('it should resolve new tips when they are added for v2', async function () {
       this.timeout(5000);
-      chai.request(server).get('/tips/await/tip/10_v2').then(res => {
-        res.should.have.status(200);
-        done();
-      });
       const fakeData = JSON.parse(JSON.stringify(sampleTips));
       fakeData.tips[fakeData.tips.length - 1].id = '10_v2';
-      seedDB(fakeData);
+      const [res] = await Promise.all([
+        chai.request(server).get('/tips/await/tip/10_v2'),
+        seedDB(fakeData),
+      ]);
+      res.should.have.status(200);
     });
 
-    it('it should resolve new tips when they are added for v3', function (done) {
+    it('it should resolve new tips when they are added for v3', async function () {
       this.timeout(5000);
-      chai.request(server).get('/tips/await/tip/10_v3').then(res => {
-        res.should.have.status(200);
-        done();
-      });
       const fakeData = JSON.parse(JSON.stringify(sampleTips));
       fakeData.tips[fakeData.tips.length - 1].id = '10_v3';
-      seedDB(fakeData);
+      const [res] = await Promise.all([
+        chai.request(server).get('/tips/await/tip/10_v3'),
+        seedDB(fakeData),
+      ]);
+      res.should.have.status(200);
     });
 
-    it('it should resolve new re-tips when they are added for v1', function (done) {
+    it('it should resolve new re-tips when they are added for v1', async function () {
       this.timeout(5000);
-      chai.request(server).get('/tips/await/retip/v1').then(res => {
-        res.should.have.status(200);
-        done();
-      });
       const fakeData = JSON.parse(JSON.stringify(sampleTips));
       fakeData.retips[fakeData.retips.length - 1].id = '10_v1';
-      seedDB(fakeData);
+      const [res] = await Promise.all([
+        chai.request(server).get('/tips/await/retip/v1'),
+        seedDB(fakeData),
+      ]);
+      res.should.have.status(200);
     });
 
-    it('it should resolve new re-tips when they are added for v2', function (done) {
+    it('it should resolve new re-tips when they are added for v2', async function () {
       this.timeout(5000);
-      chai.request(server).get('/tips/await/retip/10_v2').then(res => {
-        res.should.have.status(200);
-        done();
-      });
       const fakeData = JSON.parse(JSON.stringify(sampleTips));
       fakeData.retips[fakeData.retips.length - 1].id = '10_v2';
-      seedDB(fakeData);
+      const [res] = await Promise.all([
+        chai.request(server).get('/tips/await/retip/10_v2'),
+        seedDB(fakeData),
+      ]);
+      res.should.have.status(200);
     });
   });
 

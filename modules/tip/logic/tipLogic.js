@@ -45,8 +45,8 @@ const TipLogic = {
     });
 
     queueLogic.subscribeToMessage(MESSAGE_QUEUES.TIPS, MESSAGES.TIPS.COMMANDS.INSERT_CLAIM, async message => {
-      await NotificationLogic.handleClaim(message.payload);
-      await TipLogic.insertClaims([message.payload]);
+      const claim = await TipLogic.insertClaims([message.payload]);
+      await NotificationLogic.handleClaim(claim);
       await queueLogic.deleteMessage(MESSAGE_QUEUES.TIPS, message.id);
     });
   },
@@ -196,10 +196,9 @@ const TipLogic = {
         return includesRemoteUpdated || notIncludesRemote;
       });
 
+      const claims = await TipLogic.insertClaims(insertOrUpdateClaims);
       // Send appropriate notifications for claims
-      await insertOrUpdateClaims.asyncMap(NotificationLogic.handleClaim);
-
-      await TipLogic.insertClaims(insertOrUpdateClaims);
+      await claims.asyncMap(NotificationLogic.handleClaim);
     });
   },
 
@@ -211,6 +210,7 @@ const TipLogic = {
     });
 
     if (inserted.length > 0) await queueLogic.sendMessage(MESSAGE_QUEUES.TIPS, MESSAGES.TIPS.EVENTS.CREATED_NEW_LOCAL_TIPS);
+    return inserted;
   },
 
   async updateTipsDB(remoteTips) {
@@ -220,9 +220,6 @@ const TipLogic = {
 
       const newTips = remoteTips.filter(({ id }) => !localTipIds.includes(id));
 
-      // Send appropriate notifications for new tips
-      await newTips.asyncMap(NotificationLogic.handleNewTip);
-
       const result = await newTips.asyncMap(async tip => {
         const titleToDetect = tip.title.replace(/[!0-9#.,?)-:'“@/\\]/g, '');
         const probability = await cld.detect(titleToDetect).catch(() => ({}));
@@ -230,7 +227,9 @@ const TipLogic = {
         return { ...tip, language };
       });
 
-      await TipLogic.insertTips(result);
+      const insertedTips = await TipLogic.insertTips(result);
+      // Send appropriate notifications for new tips
+      await insertedTips.asyncMap(NotificationLogic.handleNewTip);
     });
   },
 

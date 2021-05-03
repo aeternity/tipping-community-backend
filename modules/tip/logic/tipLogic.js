@@ -18,8 +18,8 @@ const { topicsRegex } = require('../../aeternity/utils/tipTopicUtil');
 const lock = new AsyncLock();
 
 const PAGE_LIMIT = 30;
-const awaitTips = {};
-const awaitRetips = {};
+const awaitTips = { v1: 0 };
+const awaitRetips = { v1: 0 };
 
 const includes = [
   { model: Retip, as: 'retips' },
@@ -145,7 +145,12 @@ const TipLogic = {
     });
   },
 
+  getTipGen(id, retip) {
+    return (retip ? awaitRetips[id] : awaitTips[id]) || 0;
+  },
+
   async awaitTipsUpdated(id, retip) {
+    const baseGen = TipLogic.getTipGen(id, retip);
     if (id !== 'v1') {
       const exists = retip ? await TipLogic.checkRetipExists(id) : await TipLogic.checkTipExists(id);
       if (exists) return null;
@@ -156,23 +161,14 @@ const TipLogic = {
         reject();
       }, 30000);
 
-      function awaitLoop(initialState = false) {
-        // initially reset the state for v1 so we can wait for the next occurrence
-        if (initialState && id === 'v1') {
-          if (retip) {
-            awaitRetips[id] = false;
-          } else {
-            awaitTips[id] = false;
-          }
-        }
+      function awaitLoop() {
         // check if the wait should be resolved
-        if (retip ? awaitRetips[id] : awaitTips[id]) {
+        if (TipLogic.getTipGen(id, retip) > baseGen) {
           return resolve();
         }
         return setTimeout(awaitLoop, 100);
       }
-
-      setTimeout(() => awaitLoop(retip ? awaitRetips[id] : awaitTips[id]), 100);
+      awaitLoop();
     });
   },
 
@@ -208,7 +204,11 @@ const TipLogic = {
     const inserted = await Tip.bulkCreate(tipsToInsert);
 
     inserted.forEach(i => {
-      awaitTips[i.dataValues.id.includes('v1') ? 'v1' : i.dataValues.id] = true;
+      if (i.dataValues.id.includes('v1')) {
+        awaitTips.v1++;
+      } else {
+        awaitTips[i.dataValues.id] = 1;
+      }
     });
 
     if (inserted.length > 0) await queueLogic.sendMessage(MESSAGE_QUEUES.TIPS, MESSAGES.TIPS.EVENTS.CREATED_NEW_LOCAL_TIPS);
@@ -238,7 +238,11 @@ const TipLogic = {
   async insertRetips(retipsToInsert) {
     const inserted = await Retip.bulkCreate(retipsToInsert);
     inserted.forEach(i => {
-      awaitRetips[i.dataValues.id.includes('v1') ? 'v1' : i.dataValues.id] = true;
+      if (i.dataValues.id.includes('v1')) {
+        awaitRetips.v1++;
+      } else {
+        awaitRetips[i.dataValues.id] = 1;
+      }
     });
   },
 

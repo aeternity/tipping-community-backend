@@ -5,10 +5,12 @@ const { describe, it, before } = require('mocha');
 
 const server = require('../../../server');
 const {
-  Comment, sequelize, Notification, Tip, Retip,
+  Comment, sequelize, Notification, Retip,
 } = require('../../../models');
 const { ENTITY_TYPES, NOTIFICATION_TYPES } = require('../../notification/constants/notification');
-const { publicKey, performSignedJSONRequest, shouldBeValidChallengeResponse } = require('../../../utils/testingUtil');
+const {
+  publicKey, performSignedJSONRequest, shouldBeValidChallengeResponse, getDBSeedFunction,
+} = require('../../../utils/testingUtil');
 const aeternity = require('../../aeternity/logic/aeternity');
 
 chai.should();
@@ -34,26 +36,18 @@ describe('Comments', () => {
       object => Comment.update({ parentId: null }, { where: { id: object.id } }),
     ));
 
-    await Comment.truncate({
-      cascade: true,
-    });
+    const seedDB = getDBSeedFunction([Comment, Notification, Retip]);
 
-    await Notification.truncate();
-
-    await Retip.truncate();
-
-    await Tip.truncate({
-      cascade: true,
-    });
-
-    await Tip.create({
-      id: testData.tipId,
-      sender: testData.author,
-      title: 'some',
-      type: 'AE_TIP',
-      contractId: 'ct_test',
-      timestamp: 0,
-      topics: [],
+    await seedDB({
+      tips: [{
+        id: testData.tipId,
+        sender: testData.author,
+        title: 'some',
+        type: 'AE_TIP',
+        contractId: 'ct_test',
+        timestamp: 0,
+        topics: [],
+      }],
     });
 
     await aeternity.init();

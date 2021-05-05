@@ -18,7 +18,7 @@ var Sequelize = require('sequelize');
  **/
 
 var info = {
-    "revision": 14,
+    "revision": 11,
     "name": "update-retip-columns",
     "created": "2021-02-24T17:49:30.713Z",
     "comment": ""

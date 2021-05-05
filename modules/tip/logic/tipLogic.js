@@ -213,7 +213,6 @@ const TipLogic = {
     await inserted.asyncMap(NotificationLogic.handleNewTip);
 
     if (inserted.length > 0) await queueLogic.sendMessage(MESSAGE_QUEUES.TIPS, MESSAGES.TIPS.EVENTS.CREATED_NEW_LOCAL_TIPS);
-    return inserted;
   },
 
   async updateTipsDB(remoteTips) {
@@ -230,16 +229,12 @@ const TipLogic = {
         return { ...tip, language };
       });
 
-      const insertedTips = await TipLogic.insertTips(result);
-      // Send appropriate notifications for new tips
-      await insertedTips.asyncMap(NotificationLogic.handleNewTip);
+      await TipLogic.insertTips(result);
     });
   },
 
   async insertRetips(retipsToInsert) {
     const inserted = await Retip.bulkCreate(retipsToInsert);
-
-    await inserted.asyncMap(NotificationLogic.handleNewRetip);
 
     inserted.forEach(i => {
       if (i.dataValues.id.includes('v1')) {
@@ -248,6 +243,8 @@ const TipLogic = {
         awaitRetips[i.dataValues.id] = 1;
       }
     });
+
+    await inserted.asyncMap(NotificationLogic.handleNewRetip);
   },
 
   async updateRetipsDB(remoteRetips) {

@@ -8,7 +8,7 @@ var Sequelize = require('sequelize');
  **/
 
 var info = {
-    "revision": 23,
+    "revision": 19,
     "name": "sender-aggregation-materialized-view",
     "created": "2021-03-24T17:52:44.945Z",
     "comment": ""

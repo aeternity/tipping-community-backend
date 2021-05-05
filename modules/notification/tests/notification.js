@@ -6,7 +6,7 @@ const sinon = require('sinon');
 const { Op } = require('sequelize');
 const server = require('../../../server');
 const {
-  publicKey, performSignedGETRequest, performSignedJSONRequest, fakeTipsAndUpdateDB,
+  publicKey, performSignedGETRequest, performSignedJSONRequest, getDBSeedFunction,
 } = require('../../../utils/testingUtil');
 const {
   Notification, Comment, Retip,
@@ -27,7 +27,7 @@ describe('Notifications', () => {
     type: NOTIFICATION_TYPES.COMMENT_ON_COMMENT,
   };
 
-  const seedDB = fakeTipsAndUpdateDB([Retip, Notification, Comment]);
+  const seedDB = getDBSeedFunction([Retip, Notification, Comment]);
 
   after(() => {
     sinon.restore();

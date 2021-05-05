@@ -12,7 +12,7 @@ const {
   Retip, Notification, Claim, BlacklistEntry, Comment,
 } = require('../../../models');
 const server = require('../../../server');
-const { fakeTipsAndUpdateDB } = require('../../../utils/testingUtil');
+const { getDBSeedFunction } = require('../../../utils/testingUtil');
 
 const sampleTips = JSON.parse(fs.readFileSync(`${__dirname}/tips.json`));
 
@@ -27,7 +27,7 @@ describe('(Re)Tips', () => {
   after(() => {
     sinon.restore();
   });
-  const seedDB = fakeTipsAndUpdateDB([Claim, Retip, Notification, BlacklistEntry]);
+  const seedDB = getDBSeedFunction([Claim, Retip, Notification, BlacklistEntry]);
 
   describe('API', () => {
     it('it should respond with no tips when db is empty', async function () {

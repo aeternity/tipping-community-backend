@@ -14,53 +14,17 @@ var Sequelize = require('sequelize');
  **/
 
 var info = {
-    "revision": 13,
-    "name": "comment-tip-relation",
+    "revision": 20,
+    "name": "comment-index",
     "created": "2021-02-24T14:48:44.271Z",
     "comment": ""
 };
 
 var migrationCommands = function(transaction) {
-    return [{
-            fn: "changeColumn",
-            params: [
-                "Comments",
-                "tipId",
-                {
-                    "type": Sequelize.STRING,
-                    "onUpdate": "NO ACTION",
-                    "onDelete": "NO ACTION",
-                    "references": {
-                        "model": "Tips",
-                        "key": "id"
-                    },
-                    "field": "tipId",
-                    "allowNull": false
-                },
-                {
-                    transaction: transaction
-                }
-            ]
-        }
-    ];
+    return [];
 };
 var rollbackCommands = function(transaction) {
-    return [{
-            fn: "changeColumn",
-            params: [
-                "Comments",
-                "tipId",
-                {
-                    "type": Sequelize.STRING,
-                    "field": "tipId",
-                    "allowNull": false
-                },
-                {
-                    transaction: transaction
-                }
-            ]
-        }
-    ];
+    return [];
 };
 
 module.exports = {
@@ -94,10 +58,19 @@ module.exports = {
     },
     up: async function(queryInterface, Sequelize)
     {
+
+      const transaction = await queryInterface.sequelize.transaction();
+      await queryInterface.sequelize.query('CREATE INDEX comment_tip_id_idx ON "Comments" ("tipId");', { transaction });
+      await transaction.commit();
+
       return this.execute(queryInterface, Sequelize, migrationCommands);
     },
     down: async function(queryInterface, Sequelize)
     {
+      const transaction = await queryInterface.sequelize.transaction();
+      await queryInterface.sequelize.query('DROP INDEX comment_tip_id_idx;', { transaction });
+      await transaction.commit();
+
       return this.execute(queryInterface, Sequelize, rollbackCommands);
     },
     info: info

@@ -36,11 +36,13 @@ const TipLogic = {
 
     queueLogic.subscribeToMessage(MESSAGE_QUEUES.TIPS, MESSAGES.TIPS.COMMANDS.INSERT_TIP, async message => {
       if (message.payload) await TipLogic.insertTips([message.payload]);
+      else await TipLogic.updateTipsRetipsClaimsDB(true);
       await queueLogic.deleteMessage(MESSAGE_QUEUES.TIPS, message.id);
     });
 
     queueLogic.subscribeToMessage(MESSAGE_QUEUES.RETIPS, MESSAGES.RETIPS.COMMANDS.INSERT_RETIP, async message => {
       if (message.payload) await TipLogic.insertRetips([message.payload]);
+      else await TipLogic.updateTipsRetipsClaimsDB(true);
       await queueLogic.deleteMessage(MESSAGE_QUEUES.RETIPS, message.id);
     });
 
@@ -171,8 +173,8 @@ const TipLogic = {
     });
   },
 
-  async updateTipsRetipsClaimsDB() {
-    const basicState = await aeternity.fetchStateBasic();
+  async updateTipsRetipsClaimsDB(onlyV1 = false) {
+    const basicState = await aeternity.fetchStateBasic(onlyV1);
     await TipLogic.updateTipsDB(basicState.tips);
     await TipLogic.updateRetipsDB(basicState.retips);
     await TipLogic.updateClaimsDB(basicState.claims);

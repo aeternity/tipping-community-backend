@@ -37,11 +37,9 @@ module.exports = class TipTracing {
     const tip = await TipLogic.fetchTip(tipId);
     const urlStats = await StatsLogic.urlStats(tip.url);
 
-    // Deliberately not cached
     const oracleClaim = await aeternity.fetchOracleClaimByUrl(tip.url);
     const unsafeCheckOracleAnswers = await aeternity.getUnsafeOracleAnswersForUrl(tip.url);
 
-    // Deliberately not cached
     const events = await EventLogic.getEventsForURL(tip.url);
 
     const result = {

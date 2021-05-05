@@ -10,7 +10,6 @@ const queueLogic = require('../../queue/logic/queueLogic');
 const TipLogic = require('../../tip/logic/tipLogic');
 
 const lock = new AsyncLock();
-const Util = require('../../aeternity/utils/util');
 const MdwLogic = require('../../aeternity/logic/mdwLogic');
 const { MESSAGES, MESSAGE_QUEUES } = require('../../queue/constants/queue');
 
@@ -332,60 +331,6 @@ const CacheLogic = {
     await cache.del(['wordSaleState', wordSale]);
     await cache.del(['fungibleTokenTotalSupply', tokenAddress]);
     await CacheLogic.getWordSaleDetails(wordSale); // wait for cache update to let frontend know data availability
-  },
-
-  async fetchStats() {
-    throw Error('no more stats from cache');
-  },
-
-  statsForTips(tips) {
-    const senders = [...new Set(tips
-      .reduce((acc, tip) => acc
-        .concat([tip.sender, ...tip.retips.map(retip => retip.sender)]), []))];
-
-    const retipsLength = tips.reduce((acc, tip) => acc + tip.retips.length, 0);
-
-    const totalAmount = tips.reduce((acc, tip) => acc.plus(tip.total_amount), new BigNumber('0')).toFixed();
-    const totalUnclaimedAmount = tips.reduce((acc, tip) => acc.plus(tip.total_unclaimed_amount), new BigNumber('0')).toFixed();
-    const totalClaimedAmount = tips.reduce((acc, tip) => acc.plus(tip.total_claimed_amount), new BigNumber('0')).toFixed();
-
-    const tokenTotalAmount = Object.entries(tips.reduce((acc, tip) => {
-      tip.token_total_amount.forEach(t => {
-        acc[t.token] = acc[t.token]
-          ? new BigNumber(acc[t.token]).plus(t.amount).toFixed()
-          : new BigNumber(t.amount).toFixed();
-      });
-      return acc;
-    }, {})).map(([token, amount]) => ({ token, amount }));
-
-    const tokenTotalUnclaimedAmount = Object.entries(tips.reduce((acc, tip) => {
-      tip.token_total_unclaimed_amount.forEach(t => {
-        acc[t.token] = acc[t.token]
-          ? new BigNumber(acc[t.token]).plus(t.amount).toFixed()
-          : new BigNumber(t.amount).toFixed();
-      });
-      return acc;
-    }, {})).map(([token, amount]) => ({ token, amount }));
-
-    return {
-      tips_length: tips.length,
-      retips_length: retipsLength,
-      total_tips_length: tips.length + retipsLength,
-
-      total_amount: totalAmount,
-      total_unclaimed_amount: totalUnclaimedAmount,
-      total_claimed_amount: totalClaimedAmount,
-
-      total_amount_ae: Util.atomsToAe(totalAmount).toFixed(),
-      total_unclaimed_amount_ae: Util.atomsToAe(totalUnclaimedAmount).toFixed(),
-      total_claimed_amount_ae: Util.atomsToAe(totalClaimedAmount).toFixed(),
-
-      token_total_amount: tokenTotalAmount,
-      token_total_unclaimed_amount: tokenTotalUnclaimedAmount,
-
-      senders,
-      senders_length: senders.length,
-    };
   },
 
   async getTx(hash) {

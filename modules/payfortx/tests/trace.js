@@ -10,7 +10,7 @@ const ae = require('../../aeternity/logic/aeternity');
 const { Trace } = require('../../../models');
 const { publicKey } = require('../../../utils/testingUtil');
 const EventLogic = require('../../event/logic/eventLogic');
-const { fakeTipsAndUpdateDB } = require('../../../utils/testingUtil');
+const { getDBSeedFunction } = require('../../../utils/testingUtil');
 
 chai.should();
 chai.use(chaiHttp);
@@ -23,7 +23,7 @@ describe('Trace', () => {
     await ae.init();
   });
 
-  const seedDB = fakeTipsAndUpdateDB([Trace]);
+  const seedDB = getDBSeedFunction([Trace]);
 
   describe('TraceLogic API Backend', () => {
     it('it should GET zero traces for non existing tip id', done => {

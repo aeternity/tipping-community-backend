@@ -5,7 +5,6 @@ const sinon = require('sinon');
 const fs = require('fs');
 
 const TipLogic = require('../logic/tipLogic');
-const NotificationLogic = require('../../notification/logic/notificationLogic');
 const queueLogic = require('../../queue/logic/queueLogic');
 const { MESSAGES } = require('../../queue/constants/queue');
 const { MESSAGE_QUEUES } = require('../../queue/constants/queue');
@@ -420,7 +419,6 @@ describe('(Re)Tips', () => {
 
     it('it should insert the claim on MESSAGES.TIPS.COMMANDS.INSERT_CLAIM', done => {
       const updateMock = sinon.stub(TipLogic, 'insertClaims').callsFake(async ([payload]) => payload);
-      const notificationMock = sinon.stub(NotificationLogic, 'handleClaim').callsFake(async () => {});
       const payload = {
         test: 'test',
       };
@@ -428,8 +426,6 @@ describe('(Re)Tips', () => {
       setTimeout(() => {
         updateMock.callCount.should.eql(1);
         sinon.assert.calledWith(updateMock, [payload]);
-        notificationMock.callCount.should.eql(1);
-        sinon.assert.calledWith(notificationMock, payload);
         done();
       }, 100);
     });

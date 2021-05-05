@@ -12,7 +12,7 @@ var Sequelize = require('sequelize');
  **/
 
 var info = {
-    "revision": 10,
+    "revision": 22,
     "name": "update-errorreport-field-types",
     "created": "2021-04-14T09:14:58.469Z",
     "comment": ""

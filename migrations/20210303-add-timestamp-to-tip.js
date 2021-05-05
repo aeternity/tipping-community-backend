@@ -10,7 +10,7 @@ var Sequelize = require('sequelize');
  **/
 
 var info = {
-    "revision": 17,
+    "revision": 14,
     "name": "add-timestamp-to-tip",
     "created": "2021-03-03T17:07:58.945Z",
     "comment": ""

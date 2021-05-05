@@ -10,7 +10,7 @@ var Sequelize = require('sequelize');
  **/
 
 var info = {
-  "revision": 8,
+  "revision": 10,
   "name": "rename-blacklist-column",
   "created": "2021-02-24T11:50:10.521Z",
   "comment": ""

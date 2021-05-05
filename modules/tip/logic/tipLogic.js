@@ -4,7 +4,7 @@ const { Op } = require('sequelize');
 
 const aeternity = require('../../aeternity/logic/aeternity');
 const {
-  Tip, Retip, LinkPreview, Claim, ChainName, sequelize,
+  Tip, Retip, LinkPreview, Claim, sequelize,
 } = require('../../../models');
 const NotificationLogic = require('../../notification/logic/notificationLogic');
 const queueLogic = require('../../queue/logic/queueLogic');
@@ -66,7 +66,7 @@ const TipLogic = {
   }) {
     const attributes = Object.keys(Tip.rawAttributes).concat([COUNT_COMMENTS, AGGREGATION_VIEW, URL_STATS_VIEW, TOTAL_AMOUNT_FOR_ORDER, SCORE]);
     const whereArguments = [];
-    let order = sequelize.literal(`${TipLogic.orderByColumn(ordering)} DESC`);
+    let order = [sequelize.literal(`${TipLogic.orderByColumn(ordering)} DESC`)];
 
     if (address) whereArguments.push({ sender: address });
     if (blacklist !== false) whereArguments.push({ id: FILTER_BLACKLIST });
@@ -95,9 +95,11 @@ const TipLogic = {
         );
 
         attributes.push([FILTER_SIMILARITY_SUM(search), 'searchScore']);
-        order = sequelize.literal('"searchScore" DESC');
+        order = [sequelize.literal('"searchScore" DESC')];
       }
     }
+
+    order.push(sequelize.literal('"timestamp" DESC'));
 
     return Tip.findAll({
       attributes,

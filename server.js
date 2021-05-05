@@ -9,6 +9,10 @@ const app = express();
 const exphbs = require('express-handlebars');
 const cors = require('cors');
 const OpenApiValidator = require('express-openapi-validator');
+
+// Require util to add asyncMap
+require('./modules/aeternity/utils/util');
+
 // SENTRY
 if (process.env.SENTRY_URL) {
   Sentry.init({

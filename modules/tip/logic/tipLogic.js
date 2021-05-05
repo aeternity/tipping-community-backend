@@ -45,8 +45,7 @@ const TipLogic = {
     });
 
     queueLogic.subscribeToMessage(MESSAGE_QUEUES.TIPS, MESSAGES.TIPS.COMMANDS.INSERT_CLAIM, async message => {
-      const claim = await TipLogic.insertClaims([message.payload]);
-      await NotificationLogic.handleClaim(claim);
+      await TipLogic.insertClaims([message.payload]);
       await queueLogic.deleteMessage(MESSAGE_QUEUES.TIPS, message.id);
     });
   },
@@ -180,7 +179,9 @@ const TipLogic = {
   },
 
   async insertClaims(claimsToInsert) {
-    return Claim.bulkCreate(claimsToInsert, { updateOnDuplicate: ['claimGen', 'amount', 'updatedAt'] });
+    const insertedClaims = await Claim.bulkCreate(claimsToInsert, { updateOnDuplicate: ['claimGen', 'amount', 'updatedAt'] });
+    await insertedClaims.asyncMap(NotificationLogic.handleClaim);
+    return insertedClaims;
   },
 
   async updateClaimsDB(remoteClaims) {
@@ -194,9 +195,7 @@ const TipLogic = {
         return includesRemoteUpdated || notIncludesRemote;
       });
 
-      const claims = await TipLogic.insertClaims(insertOrUpdateClaims);
-      // Send appropriate notifications for claims
-      await claims.asyncMap(NotificationLogic.handleClaim);
+      await TipLogic.insertClaims(insertOrUpdateClaims);
     });
   },
 
@@ -210,6 +209,8 @@ const TipLogic = {
         awaitTips[i.dataValues.id] = 1;
       }
     });
+
+    await inserted.asyncMap(NotificationLogic.handleNewTip);
 
     if (inserted.length > 0) await queueLogic.sendMessage(MESSAGE_QUEUES.TIPS, MESSAGES.TIPS.EVENTS.CREATED_NEW_LOCAL_TIPS);
     return inserted;
@@ -237,6 +238,9 @@ const TipLogic = {
 
   async insertRetips(retipsToInsert) {
     const inserted = await Retip.bulkCreate(retipsToInsert);
+
+    await inserted.asyncMap(NotificationLogic.handleNewRetip);
+
     inserted.forEach(i => {
       if (i.dataValues.id.includes('v1')) {
         awaitRetips.v1++;
@@ -252,9 +256,6 @@ const TipLogic = {
       const localRetipIds = [...new Set(localRetips.map(retip => retip.id))];
 
       const newReTips = remoteRetips.filter(({ id }) => !localRetipIds.includes(id));
-
-      // Send appropriate notifications for new tips
-      await newReTips.asyncMap(NotificationLogic.handleNewRetip);
 
       await TipLogic.insertRetips(newReTips);
     });

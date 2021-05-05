@@ -268,7 +268,7 @@ module.exports = {
     up: async function(queryInterface, Sequelize)
     {
       const transaction = await queryInterface.sequelize.transaction();
-      await queryInterface.sequelize.query('ALTER TYPE "enum_Tips_type" ADD VALUE \'POST_WITHOUT_TIP\';');
+      await queryInterface.sequelize.query('ALTER TYPE "enum_Tips_type" ADD VALUE \'POST_WITHOUT_TIP\';', { transaction });
       await queryInterface.sequelize.query('TRUNCATE TABLE "Tips" CASCADE;', { transaction });
       await transaction.commit();
 
@@ -277,7 +277,7 @@ module.exports = {
     down: async function(queryInterface, Sequelize)
     {
       const transaction = await queryInterface.sequelize.transaction();
-      await queryInterface.sequelize.query('DROP TYPE "enum_Tips_type" CASCADE;');
+      await queryInterface.sequelize.query('DROP TYPE "enum_Tips_type" CASCADE;', { transaction });
       await transaction.commit();
 
       return this.execute(queryInterface, Sequelize, rollbackCommands);

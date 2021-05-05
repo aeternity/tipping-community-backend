@@ -6,14 +6,14 @@ const server = require('../../../server');
 
 const { Pin } = require('../../../models');
 const {
-  publicKey, signChallenge, performSignedJSONRequest, fakeTipsAndUpdateDB,
+  publicKey, signChallenge, performSignedJSONRequest, getDBSeedFunction,
 } = require('../../../utils/testingUtil');
 
 chai.should();
 chai.use(chaiHttp);
 // Our parent block
 describe('Pinning', () => {
-  const seedDB = fakeTipsAndUpdateDB([Pin]);
+  const seedDB = getDBSeedFunction([Pin]);
 
   const testData = {
     entryId: '1_v1',

@@ -125,7 +125,10 @@ module.exports = {
     },
     down: async function(queryInterface, Sequelize)
     {
-      await queryInterface.removeConstraint("LinkPreviews", "LinkPreviews_requestUrl_key"); // hangs within transaction, so no transaction
+      const transaction = await queryInterface.sequelize.transaction();
+      await queryInterface.removeConstraint("LinkPreviews", "LinkPreviews_requestUrl_key", { transaction });
+      await transaction.commit();
+
       return this.execute(queryInterface, Sequelize, rollbackCommands);
     },
     info: info

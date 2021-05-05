@@ -23,8 +23,7 @@ module.exports = {
     },
     down: function(queryInterface)
     {
-      const query = `DELETE FROM pg_enum WHERE enumlabel = 'PEEKED' AND enumtypid = ( SELECT oid FROM pg_type WHERE typname = 'enum_Notifications_status')`;
-      return queryInterface.sequelize.query(query);
+      return queryInterface.sequelize.query(`DELETE FROM pg_enum WHERE enumlabel = 'PEEKED' AND enumtypid = ( SELECT oid FROM pg_type WHERE typname = 'enum_Notifications_status')`);
     },
     info: info
 };

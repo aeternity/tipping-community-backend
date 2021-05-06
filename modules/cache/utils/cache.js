@@ -2,8 +2,6 @@ const redis = require('redis');
 const { promisify } = require('util');
 const AsyncLock = require('async-lock');
 const logger = require('../../../utils/logger')(module);
-const queueLogic = require('../../queue/logic/queueLogic');
-const { MESSAGES, MESSAGE_QUEUES } = require('../../queue/constants/queue');
 
 if (!process.env.REDIS_HOST) throw Error('REDIS_HOST is not set');
 
@@ -26,10 +24,6 @@ cache.networkKey = '';
 cache.init = async aeternity => {
   cache.networkKey = await aeternity.networkId();
   logger.info(`cache networkKey ${cache.networkKey}`);
-};
-
-cache.setKeepHot = keepHotFunction => {
-  cache.keepHot(keepHotFunction);
 };
 
 const buildKey = keys => [cache.networkKey, ...keys].join(':');
@@ -88,19 +82,6 @@ cache.del = async keys => {
   const key = buildKey(keys);
   logger.info(`cache del ${key}`);
   await del(key);
-};
-
-cache.keepHot = keepHotFunction => {
-  const keepHotLogic = async () => lockNoTimeout.acquire('keepHotLogic', async () => {
-    const start = new Date().getTime();
-    await keepHotFunction();
-    logger.info(`cache keepHot ${new Date().getTime() - start}ms`);
-  });
-
-  queueLogic.subscribeToMessage(MESSAGE_QUEUES.SCHEDULED_EVENTS, MESSAGES.SCHEDULED_EVENTS.COMMANDS.CACHE_KEEPHOT, async message => {
-    await keepHotLogic();
-    await queueLogic.deleteMessage(MESSAGE_QUEUES.SCHEDULED_EVENTS, message.id);
-  });
 };
 
 module.exports = cache;

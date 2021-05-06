@@ -17,8 +17,7 @@ const logger = require('../../../utils/logger')(module);
 
 const CacheLogic = {
   init() {
-    // INIT ONCE
-    cache.setKeepHot(CacheLogic.keepHotFunction);
+    CacheLogic.keepHot();
   },
 
   async keepHotFunction() {
@@ -28,6 +27,19 @@ const CacheLogic = {
     if (process.env.WORD_REGISTRY_CONTRACT) {
       await CacheLogic.refreshWordAndVoteData(); // keeps hot even if undefined is passed as argument
     }
+  },
+
+  async keepHot() {
+    const keepHotLogic = async () => lock.acquire('keepHotLogic', async () => {
+      const start = new Date().getTime();
+      await CacheLogic.keepHotFunction();
+      logger.info(`cache keepHot ${new Date().getTime() - start}ms`);
+    });
+
+    queueLogic.subscribeToMessage(MESSAGE_QUEUES.SCHEDULED_EVENTS, MESSAGES.SCHEDULED_EVENTS.COMMANDS.CACHE_KEEPHOT, async message => {
+      await keepHotLogic();
+      await queueLogic.deleteMessage(MESSAGE_QUEUES.SCHEDULED_EVENTS, message.id);
+    });
   },
 
   async fetchPrice() {

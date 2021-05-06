@@ -1,6 +1,9 @@
-const { Comment, Profile, Tip } = require('../../../models');
+const BigNumber = require('bignumber.js');
+const { Comment, Profile } = require('../../../models');
 const NotificationLogic = require('../../notification/logic/notificationLogic');
 const cache = require('../../cache/utils/cache');
+const TipLogic = require('../../tip/logic/tipLogic');
+const MdwLogic = require('../../aeternity/logic/mdwLogic');
 const { NOTIFICATION_TYPES } = require('../../notification/constants/notification');
 
 const CommentLogic = {
@@ -8,11 +11,29 @@ const CommentLogic = {
     const parentComment = (typeof parentId !== 'undefined' && parentId !== '')
       ? await Comment.findOne({ where: { id: parentId } }) : null;
     if (parentComment === null && typeof parentId !== 'undefined' && parentId !== '') {
-      throw Error(`Could not find parent comment with id ${parentId}`);
+      throw new Error(`Could not find parent comment with id ${parentId}`);
     }
 
-    const relevantTip = await Tip.findOne({ where: { id: tipId } });
-    if (!relevantTip) throw Error(`Could not find tip with id ${tipId}`);
+    const relevantTip = await TipLogic.fetchTip(tipId);
+    if (!relevantTip) throw new Error(`Could not find tip with id ${tipId}`);
+    const parsedTip = relevantTip.toJSON();
+    // if ae --> pass
+    // check if user has balance in at least one
+    if (parsedTip.aggregation.totalAmount === '0' && parsedTip.aggregation.totalTokenAmount.length > 0) {
+      // get balances for user on all tokens
+      let foundTokenWithBalance = false;
+      // eslint-disable-next-line no-restricted-syntax
+      for (const { token } of parsedTip.aggregation.totalTokenAmount) {
+        const { amount } = await MdwLogic.fetchTokenBalanceForAddress(token, author).catch(() => '0');
+        if (new BigNumber(amount).gt(new BigNumber('0'))) {
+          foundTokenWithBalance = true;
+          break;
+        }
+      }
+      if (!foundTokenWithBalance) {
+        throw new Error('The commenting user needs to own at least one token the tip has been tipped or retipped with.');
+      }
+    }
 
     const entry = await Comment.create({
       tipId, text, author, signature, challenge, parentId,

@@ -3,6 +3,7 @@ const chai = require('chai');
 const chaiHttp = require('chai-http');
 const { describe, it, before } = require('mocha');
 
+const sinon = require('sinon');
 const server = require('../../../server');
 const {
   Comment, sequelize, Notification, Retip,
@@ -12,6 +13,7 @@ const {
   publicKey, performSignedJSONRequest, shouldBeValidChallengeResponse, getDBSeedFunction,
 } = require('../../../utils/testingUtil');
 const aeternity = require('../../aeternity/logic/aeternity');
+const MdwLogic = require('../../aeternity/logic/mdwLogic');
 
 chai.should();
 chai.use(chaiHttp);
@@ -19,6 +21,11 @@ chai.use(chaiHttp);
 describe('Comments', () => {
   const testData = {
     tipId: '0_v1',
+    text: 'What an awesome website',
+    author: publicKey,
+  };
+  const testDataWithTokens = {
+    tipId: '1_v2',
     text: 'What an awesome website',
     author: publicKey,
   };
@@ -47,6 +54,21 @@ describe('Comments', () => {
         contractId: 'ct_test',
         timestamp: 0,
         topics: [],
+      }, {
+        sender: 'ak_sender3',
+        title: '#test',
+        type: 'TOKEN_TIP',
+        token: 'ct_2bCbmU7vtsysL4JiUdUZjJJ98LLbJWG1fRtVApBvqSFEM59D6W',
+        token_amount: '1000000000000000000',
+        claimGen: 1,
+        amount: 0,
+        id: testDataWithTokens.tipId,
+        contractId: 'ct_2ZEoCKcqXkbz2uahRrsWeaPooZs9SdCv6pmC4kc55rD4MhqYSu',
+        url: 'https://github.com/stanislav-slavov',
+        tokenAmount: '1000000000000000000',
+        topics: [
+          '#test',
+        ],
       }],
     });
 
@@ -89,6 +111,33 @@ describe('Comments', () => {
           notification.should.be.a('object');
           done();
         });
+      });
+    });
+
+    it('it should REJECT a new comment entry for a tip with tokens when user has no tokens', done => {
+      performSignedJSONRequest(server, 'post', '/comment/api', testDataWithTokens).then(({ res }) => {
+        res.should.have.status(500);
+        res.body.should.be.a('object');
+        res.body.should.have.property('error', 'The commenting user needs to own at least one token the tip has been tipped or retipped with.');
+        done();
+      });
+    });
+
+    it('it should CREATE a new comment entry for a tip with tokens when user has tokens', done => {
+      sinon.stub(MdwLogic, 'fetchTokenBalanceForAddress').callsFake(async () => ({ amount: '100000000000000' }));
+      performSignedJSONRequest(server, 'post', '/comment/api', testDataWithTokens).then(({ res, challenge, signature }) => {
+        res.should.have.status(200);
+        res.body.should.be.a('object');
+        res.body.should.have.property('id');
+        res.body.should.have.property('tipId', testDataWithTokens.tipId);
+        res.body.should.have.property('text', testData.text);
+        res.body.should.have.property('author', testData.author);
+        res.body.should.have.property('challenge', challenge);
+        res.body.should.have.property('signature', signature);
+        res.body.should.have.property('hidden', false);
+        res.body.should.have.property('createdAt');
+        res.body.should.have.property('updatedAt');
+        done();
       });
     });
 
@@ -142,7 +191,7 @@ describe('Comments', () => {
       chai.request(server).get(`/comment/api/author/${testData.author}`).end((err, res) => {
         res.should.have.status(200);
         res.body.should.be.a('array');
-        res.body.length.should.be.eql(1);
+        res.body.length.should.be.eql(2);
         res.body[0].should.have.property('id', commentId);
         res.body[0].should.have.property('Profile');
         const profile = res.body[0].Profile;
@@ -254,7 +303,7 @@ describe('Comments', () => {
       const nestedTestData = { ...testData, parentId: 0 };
       performSignedJSONRequest(server, 'post', '/comment/api', nestedTestData).then(({ res }) => {
         res.should.have.status(500);
-        res.text.should.equal(`Could not find parent comment with id ${nestedTestData.parentId}`);
+        res.body.should.have.property('error', `Could not find parent comment with id ${nestedTestData.parentId}`);
         done();
       });
     });

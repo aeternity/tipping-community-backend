@@ -120,15 +120,11 @@ router.post('/api', signatureAuth, async (req, res) => {
   const {
     tipId, text, author, signature, challenge, parentId,
   } = req.body;
-  if (tipId === null || tipId === undefined || !text || !author || !signature || !challenge) {
-    res.status(400).send('Missing required field');
-  } else {
-    try {
-      const result = await CommentLogic.addItem(tipId, text, author, signature, challenge, parentId);
-      res.send(result);
-    } catch (e) {
-      res.status(500).send(e.message);
-    }
+  try {
+    const result = await CommentLogic.addItem(tipId, text, author, signature, challenge, parentId);
+    res.send(result);
+  } catch (e) {
+    res.status(500).send({ error: e.message });
   }
 });
 /**

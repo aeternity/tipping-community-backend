@@ -12,10 +12,10 @@ const scheduledEvents = [
 
 const SchedulerLogic = {
   init() {
-    setTimeout(() => scheduledEvents.forEach(async ({ message, interval, onceAtStartup }) => {
+    scheduledEvents.forEach(async ({ message, interval, onceAtStartup }) => {
       if (onceAtStartup) await queueLogic.sendMessage(MESSAGE_QUEUES.SCHEDULED_EVENTS, message);
       setInterval(() => queueLogic.sendMessage(MESSAGE_QUEUES.SCHEDULED_EVENTS, message), interval);
-    }), 1000);
+    });
   },
 };
 

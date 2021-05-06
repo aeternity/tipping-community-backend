@@ -94,6 +94,10 @@ const MdwLogic = {
       await transaction.commit();
     });
   },
+
+  async fetchTokenBalanceForAddress(tokenContract, accountAddress) {
+    return axios.get(`${process.env.MIDDLEWARE_URL}/aex9/balance/${tokenContract}/${accountAddress}`).then(({ data }) => data);
+  },
 };
 
 module.exports = MdwLogic;

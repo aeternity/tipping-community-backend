@@ -124,7 +124,9 @@ describe('Comments', () => {
     });
 
     it('it should CREATE a new comment entry for a tip with tokens when user has tokens', done => {
-      sinon.stub(MdwLogic, 'fetchTokenBalanceForAddress').callsFake(async () => ({ amount: '100000000000000' }));
+      sinon.stub(MdwLogic, 'fetchTokenBalancesForAddress').callsFake(async () => [
+        { amount: '100000000000000', contract_id: 'ct_2bCbmU7vtsysL4JiUdUZjJJ98LLbJWG1fRtVApBvqSFEM59D6W' },
+      ]);
       performSignedJSONRequest(server, 'post', '/comment/api', testDataWithTokens).then(({ res, challenge, signature }) => {
         res.should.have.status(200);
         res.body.should.be.a('object');

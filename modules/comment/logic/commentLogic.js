@@ -19,7 +19,7 @@ const CommentLogic = {
     const parsedTip = relevantTip.toJSON();
     // if ae --> pass
     // check if user has balance in at least one
-    if (parsedTip.aggregation.totalAmount === '0' && parsedTip.aggregation.totalTokenAmount.length > 0) {
+    if (new BigNumber(parsedTip.aggregation.totalAmount).eq(new BigNumber('0')) && parsedTip.aggregation.totalTokenAmount.length > 0) {
       // get balances for user on all tokens
       let foundTokenWithBalance = false;
       // eslint-disable-next-line no-restricted-syntax
@@ -101,14 +101,6 @@ const CommentLogic = {
     }, { where: { id: req.params.id }, raw: true });
     const result = await Comment.findOne({ where: { id: req.params.id }, raw: true });
     return result ? res.send(result) : res.sendStatus(404);
-  },
-
-  async fetchCommentCountForAddress(address) {
-    return Comment.count({ where: { author: address } });
-  },
-
-  fetchCommentCountForTips() {
-    return Comment.count({ group: ['tipId'] });
   },
 
   async verifyAuthor(req, res, next) {

@@ -19,18 +19,11 @@ const CommentLogic = {
     const parsedTip = relevantTip.toJSON();
     // if ae --> pass
     // check if user has balance in at least one
-    if (new BigNumber(parsedTip.aggregation.totalAmount).eq(new BigNumber('0')) && parsedTip.aggregation.totalTokenAmount.length > 0) {
+    if (new BigNumber(parsedTip.aggregation.totalAmount).isZero() && parsedTip.aggregation.totalTokenAmount.length > 0) {
       // get balances for user on all tokens
-      let foundTokenWithBalance = false;
-      // eslint-disable-next-line no-restricted-syntax
-      for (const { token } of parsedTip.aggregation.totalTokenAmount) {
-        const { amount } = await MdwLogic.fetchTokenBalanceForAddress(token, author).catch(() => '0');
-        if (new BigNumber(amount).gt(new BigNumber('0'))) {
-          foundTokenWithBalance = true;
-          break;
-        }
-      }
-      if (!foundTokenWithBalance) {
+      const userToken = await MdwLogic.fetchTokenBalancesForAddress(author).catch(() => []);
+      const requiredToken = parsedTip.aggregation.totalTokenAmount.map(({ token }) => token);
+      if (!userToken.some(({ amount, contract_id: contractId }) => new BigNumber(amount).gt('0') && requiredToken.includes(contractId))) {
         throw new Error('The commenting user needs to own at least one token the tip has been tipped or retipped with.');
       }
     }

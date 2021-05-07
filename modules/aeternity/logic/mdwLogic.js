@@ -95,8 +95,8 @@ const MdwLogic = {
     });
   },
 
-  async fetchTokenBalanceForAddress(tokenContract, accountAddress) {
-    return axios.get(`${process.env.MIDDLEWARE_URL}/aex9/balance/${tokenContract}/${accountAddress}`).then(({ data }) => data);
+  async fetchTokenBalancesForAddress(accountAddress) {
+    return axios.get(`${process.env.MIDDLEWARE_URL}/mdw/aex9/balances/account/${accountAddress}`).then(({ data }) => data);
   },
 };
 

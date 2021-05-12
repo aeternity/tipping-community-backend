@@ -58,7 +58,7 @@ describe('Aeternity', () => {
     });
 
     it('it should get the tips', async function () {
-      this.timeout(10000);
+      this.timeout(20000);
       const result = await ae.fetchTips();
       result.should.be.an('array');
       if (result.length > 0) {
@@ -229,6 +229,7 @@ describe('Aeternity', () => {
       error.should.contain('connect ECONNREFUSED 127.0.0.1:443');
       process.env.NODE_URL = originalUrl;
     });
+
     it('should crash for a non responding compiler on startup', async function () {
       this.timeout(10000);
       const originalUrl = process.env.COMPILER_URL;
@@ -239,9 +240,10 @@ describe('Aeternity', () => {
       } catch (e) {
         error = e.message;
       }
-      error.should.contain('Compiler not defined');
+      error.should.contain('connect ECONNREFUSED 127.0.0.1:443');
       process.env.COMPILER_URL = originalUrl;
     });
+
     after(async function () {
       this.timeout(10000);
       ae.client = null;

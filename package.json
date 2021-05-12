@@ -27,7 +27,7 @@
   },
   "homepage": "https://github.com/aeternity/tipping-community-backend#readme",
   "dependencies": {
-    "@aeternity/aepp-sdk": "^7.7.0",
+    "@aeternity/aepp-sdk": "8.0.0-beta.2",
     "@sentry/node": "^6.2.0",
     "@sentry/tracing": "^6.2.0",
     "aeternity-fungible-token": "github:aeternity/aeternity-fungible-token#v1.0.0",

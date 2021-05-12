@@ -35,6 +35,8 @@ const tokenContracts = {};
 const wordSaleContracts = {};
 const tokenVotingContracts = {};
 
+const tempCallOptions = { gas: 100000000000 };
+
 const aeternity = {
   async init() {
     if (!client) {
@@ -218,56 +220,57 @@ const aeternity = {
 
   async fetchWordRegistryData() {
     if (!client) throw new Error('Init sdk first');
-    return wordRegistryContract.methods.get_state().then(res => res.decodedResult);
+    return wordRegistryContract.methods.get_state(tempCallOptions).then(res => res.decodedResult);
   },
 
   async wordSaleTokenAddress(contractAddress) {
     await aeternity.initWordSaleContractIfUnknown(contractAddress);
-    return wordSaleContracts[contractAddress].methods.get_token().then(res => res.decodedResult);
+    return wordSaleContracts[contractAddress].methods.get_token(tempCallOptions).then(res => res.decodedResult);
   },
 
   async wordSaleState(contractAddress) {
     await aeternity.initWordSaleContractIfUnknown(contractAddress);
-    return wordSaleContracts[contractAddress].methods.get_state().then(res => res.decodedResult);
+    return wordSaleContracts[contractAddress].methods.get_state(tempCallOptions).then(res => res.decodedResult);
   },
 
   async wordSalePrice(contractAddress) {
     await aeternity.initWordSaleContractIfUnknown(contractAddress);
-    return wordSaleContracts[contractAddress].methods.prices().then(res => res.decodedResult);
+    return wordSaleContracts[contractAddress].methods.prices(tempCallOptions).then(res => res.decodedResult);
   },
 
   async wordSaleVotes(contractAddress) {
     await aeternity.initWordSaleContractIfUnknown(contractAddress);
-    return wordSaleContracts[contractAddress].methods.votes().then(res => res.decodedResult);
+    return wordSaleContracts[contractAddress].methods.votes(tempCallOptions).then(res => res.decodedResult);
   },
 
   async wordSaleVoteTimeout(contractAddress) {
     await aeternity.initWordSaleContractIfUnknown(contractAddress);
-    return wordSaleContracts[contractAddress].methods.vote_timeout().then(res => res.decodedResult);
+    return wordSaleContracts[contractAddress].methods.vote_timeout(tempCallOptions).then(res => res.decodedResult);
   },
 
   async wordSaleVoteState(contractAddress) {
     await aeternity.initTokenVotingContractIfUnknown(contractAddress);
-    return tokenVotingContracts[contractAddress].methods.get_state().then(res => res.decodedResult);
+    return tokenVotingContracts[contractAddress].methods.get_state(tempCallOptions).then(res => res.decodedResult);
   },
 
   async fungibleTokenTotalSupply(contractAddress) {
     await aeternity.initTokenContractIfUnknown(contractAddress);
-    return tokenContracts[contractAddress].methods.total_supply().then(res => res.decodedResult);
+    return tokenContracts[contractAddress].methods.total_supply(tempCallOptions).then(res => res.decodedResult);
   },
 
   async fetchOracleClaimByUrl(url) {
     if (!client) throw new Error('Init sdk first');
-    return oracleGetter.methods.get_oracle_claim_by_url(process.env.ORACLE_CONTRACT_ADDRESS, url).then(res => res.decodedResult).catch(e => {
-      logger.error(e.message);
-      Sentry.captureException(e);
-      return [];
-    });
+    return oracleGetter.methods.get_oracle_claim_by_url(process.env.ORACLE_CONTRACT_ADDRESS, url, tempCallOptions)
+      .then(res => res.decodedResult).catch(e => {
+        logger.error(e.message);
+        Sentry.captureException(e);
+        return [];
+      });
   },
 
   async fetchOracleClaimedUrls(address) {
     if (!client) throw new Error('Init sdk first');
-    return oracleGetter.methods.get_oracle_claimed_urls_by_account(process.env.ORACLE_CONTRACT_ADDRESS, address)
+    return oracleGetter.methods.get_oracle_claimed_urls_by_account(process.env.ORACLE_CONTRACT_ADDRESS, address, tempCallOptions)
       .then(res => res.decodedResult).catch(e => {
         logger.error(e.message);
         Sentry.captureException(e);
@@ -277,7 +280,7 @@ const aeternity = {
 
   async getOracleAllClaimedUrls() {
     if (!client) throw new Error('Init sdk first');
-    return oracleGetter.methods.get_oracle_claimed_urls(process.env.ORACLE_CONTRACT_ADDRESS)
+    return oracleGetter.methods.get_oracle_claimed_urls(process.env.ORACLE_CONTRACT_ADDRESS, tempCallOptions)
       .then(res => res.decodedResult).catch(e => {
         logger.error(e.message);
         Sentry.captureException(e);
@@ -286,7 +289,7 @@ const aeternity = {
   },
 
   async getUnsafeOracleAnswersForUrl(url) {
-    return oracleContract.methods.unsafe_check_oracle_answers(url).then(x => x.decodedResult);
+    return oracleContract.methods.unsafe_check_oracle_answers(url, tempCallOptions).then(x => x.decodedResult);
   },
 
   addAdditionalTipsData(tips) {
@@ -307,9 +310,9 @@ const aeternity = {
   async fetchTips() {
     if (!client) throw new Error('Init sdk first');
     try {
-      const fetchV1State = contractV1.methods.get_state();
-      const fetchV2State = process.env.CONTRACT_V2_ADDRESS ? contractV2.methods.get_state() : Promise.resolve(null);
-      const fetchV3State = process.env.CONTRACT_V3_ADDRESS ? contractV3.methods.get_state() : Promise.resolve(null);
+      const fetchV1State = contractV1.methods.get_state(tempCallOptions);
+      const fetchV2State = process.env.CONTRACT_V2_ADDRESS ? contractV2.methods.get_state(tempCallOptions) : Promise.resolve(null);
+      const fetchV3State = process.env.CONTRACT_V3_ADDRESS ? contractV3.methods.get_state(tempCallOptions) : Promise.resolve(null);
       const { tips } = tippingContractUtil.getTipsRetips(...[await fetchV1State, await fetchV2State, await fetchV3State].filter(state => state));
       return aeternity.addAdditionalTipsData(tips);
     } catch (e) {
@@ -320,7 +323,7 @@ const aeternity = {
   },
 
   async fetchTokenRegistryState() {
-    return tokenRegistry.methods.get_state().then(r => r.decodedResult).catch(e => {
+    return tokenRegistry.methods.get_state(tempCallOptions).then(r => r.decodedResult).catch(e => {
       logger.error(e.message);
       Sentry.captureException(e);
       return [];
@@ -354,7 +357,7 @@ const aeternity = {
   async fetchTokenMetaInfo(contractAddress) {
     await aeternity.initTokenContractIfUnknown(contractAddress);
 
-    return tokenContracts[contractAddress].methods.meta_info().then(r => r.decodedResult).catch(e => {
+    return tokenContracts[contractAddress].methods.meta_info(tempCallOptions).then(r => r.decodedResult).catch(e => {
       logger.error(e.message);
       Sentry.captureException(e);
       return null;
@@ -373,7 +376,7 @@ const aeternity = {
   async fetchTokenAccountBalances(contractAddress) {
     await aeternity.initTokenContractIfUnknown(contractAddress);
 
-    return tokenContracts[contractAddress].methods.balances()
+    return tokenContracts[contractAddress].methods.balances(tempCallOptions)
       .then(r => r.decodedResult)
       .catch(e => {
         logger.error(e.message);
@@ -396,7 +399,7 @@ const aeternity = {
       state: TRACE_STATES.STARTED_PRE_CLAIM,
     });
 
-    const claimAmount = await contract.methods.unclaimed_for_url(url)
+    const claimAmount = await contract.methods.unclaimed_for_url(url, tempCallOptions)
       .then(r => (Array.isArray(r.decodedResult)
         ? r.decodedResult[1].reduce((acc, cur) => acc.plus(cur[1]), new BigNumber(r.decodedResult[0])) // sum token amounts
         : String(r.decodedResult))).catch(trace.catchError(new BigNumber('0')));
@@ -411,7 +414,7 @@ const aeternity = {
   },
 
   async checkClaimOnContract(address, url, trace, contract) {
-    return contract.methods.check_claim(url, address).then(r => r.decodedResult.success).catch(trace.catchError(false));
+    return contract.methods.check_claim(url, address, tempCallOptions).then(r => r.decodedResult.success).catch(trace.catchError(false));
   },
 
   async preClaim(address, url, trace, contract) {
@@ -425,7 +428,7 @@ const aeternity = {
     trace.update({ state: TRACE_STATES.INITIAL_PRECLAIM_RESULT, claimSuccess });
 
     if (!claimSuccess) {
-      const fee = await oracleContract.methods.estimate_query_fee();
+      const fee = await oracleContract.methods.estimate_query_fee(tempCallOptions);
       trace.update({ state: TRACE_STATES.ESTIMATED_FEE, fee: fee.decodedResult });
 
       await contract.methods.pre_claim(url, address, { amount: fee.decodedResult });

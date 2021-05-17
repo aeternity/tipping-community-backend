@@ -131,6 +131,12 @@ describe('(Re)Tips', () => {
       res.body.should.have.length(4);
     });
 
+    it('it should allow filtering by token', async () => {
+      const res = await chai.request(server).get('/tips?token=ct_2bCbmU7vtsysL4JiUdUZjJJ98LLbJWG1fRtVApBvqSFEM59D6W');
+      res.body.should.be.an('array');
+      res.body.should.have.length(2);
+    });
+
     it('it should allow searching by title', async () => {
       const res = await chai.request(server).get('/tips?search=test');
       res.body.should.be.an('array');

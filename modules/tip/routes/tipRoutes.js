@@ -66,6 +66,12 @@ const router = new Router();
  *         schema:
  *           type: boolean
  *         description: filter blacklisted tips
+ *       - in: query
+ *         name: token
+ *         required: false
+ *         schema:
+ *           type: string
+ *         description: filter tips for token
  *     responses:
  *       200:
  *         description: Returns an array of tips

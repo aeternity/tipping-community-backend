@@ -49,7 +49,7 @@ describe('Cache', () => {
 
   describe('Keep Hot', () => {
     it('should update the cache (keep hot simulation)', async function () {
-      this.timeout(15000);
+      this.timeout(25000);
       const messageStub = sinon.stub(queueLogic, 'sendMessage').callsFake(async () => {});
       await CacheLogic.getTips();
       sinon.assert.calledWith(messageStub, MESSAGE_QUEUES.CACHE, MESSAGES.CACHE.EVENTS.RENEWED_TIPS);
@@ -271,11 +271,13 @@ describe('Cache', () => {
 
     it('it should GET all chainnames cache items ', done => {
       cache.del(['fetchMdwChainNames']).then(() => {
-        const messageStub = sinon.stub(queueLogic, 'sendMessage').callsFake(async () => {});
-        checkCachedRoute('/cache/chainnames', 'object', () => {
-          sinon.assert.calledWith(messageStub, MESSAGE_QUEUES.CACHE, MESSAGES.CACHE.EVENTS.RENEWED_CHAINNAMES);
-          messageStub.restore();
-          done();
+        cache.del(['fetchChainNames']).then(() => {
+          const messageStub = sinon.stub(queueLogic, 'sendMessage').callsFake(async () => {});
+          checkCachedRoute('/cache/chainnames', 'object', () => {
+            sinon.assert.calledWith(messageStub, MESSAGE_QUEUES.CACHE, MESSAGES.CACHE.EVENTS.RENEWED_CHAINNAMES);
+            messageStub.restore();
+            done();
+          });
         });
       });
     });
@@ -461,7 +463,7 @@ describe('Cache', () => {
     });
 
     it('it should update the stats when the tip cache is invalidated', async function () {
-      this.timeout(10000);
+      this.timeout(20000);
       await cache.del(['getTips']);
       const stub = sinon.stub(CacheLogic, 'statsForTips').callsFake(() => []);
       // Fake keep hot

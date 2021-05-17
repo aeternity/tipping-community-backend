@@ -11,7 +11,7 @@ const queueLogic = require('../../queue/logic/queueLogic');
 const {
   COUNT_COMMENTS, AGGREGATION_VIEW, TOTAL_AMOUNT_FOR_ORDER, SCORE, URL_STATS_VIEW,
 } = require('../utils/tipAggregation');
-const { FILTER_BLACKLIST, FILTER_SIMILARITY_SUM } = require('../utils/tipFilter');
+const { FILTER_BLACKLIST, FILTER_TOKEN, FILTER_SIMILARITY_SUM } = require('../utils/tipFilter');
 const { MESSAGES, MESSAGE_QUEUES } = require('../../queue/constants/queue');
 const { topicsRegex } = require('../../aeternity/utils/tipTopicUtil');
 
@@ -64,7 +64,7 @@ const TipLogic = {
   },
 
   async fetchTips({
-    page, blacklist, address, contractVersion, search, language, ordering,
+    page, blacklist, address, contractVersion, search, language, ordering, token,
   }) {
     const attributes = Object.keys(Tip.rawAttributes).concat([COUNT_COMMENTS, AGGREGATION_VIEW, URL_STATS_VIEW, TOTAL_AMOUNT_FOR_ORDER, SCORE]);
     const whereArguments = [];
@@ -81,6 +81,14 @@ const TipLogic = {
     if (language) {
       const languages = Array.isArray(language) ? language : [language];
       whereArguments.push({ language: { [Op.in]: languages } });
+    }
+
+    if (token) {
+      try {
+        whereArguments.push({ id: FILTER_TOKEN(token) });
+      } catch (e) {
+        console.error(e);
+      }
     }
 
     if (search) {

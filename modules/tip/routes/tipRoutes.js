@@ -9,7 +9,7 @@ const router = new Router();
  * /tips:
  *   get:
  *     tags:
- *       - tip
+ *       - tips
  *     summary: Returns an array of tips
  *     parameters:
  *       - in: query
@@ -86,7 +86,7 @@ router.get('/', async (req, res) => {
  * /tips/single/{tipId}:
  *   get:
  *     tags:
- *       - tip
+ *       - tips
  *     summary: Returns a single tip
  *     parameters:
  *       - in: path

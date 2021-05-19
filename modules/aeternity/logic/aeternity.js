@@ -225,27 +225,29 @@ const aeternity = {
 
   async getTipV2(value) {
     const tipId = await client.contractDecodeData('contract Decode =\n  entrypoint int(): int = 0', 'int', value, 'ok');
-    const rawTip = await contractV2Getter.methods.get_tip_by_id(process.env.CONTRACT_V2_ADDRESS, tipId).then(res => res.decodedResult);
+    const rawTip = await contractV2Getter.methods.get_tip_by_id(process.env.CONTRACT_V2_ADDRESS, tipId, tempCallOptions)
+      .then(res => res.decodedResult);
     const url = await contractV2Getter.methods.get_url_by_id(process.env.CONTRACT_V2_ADDRESS,
-      basicTippingContractUtil.rawTipUrlId(rawTip)).then(res => res.decodedResult);
+      basicTippingContractUtil.rawTipUrlId(rawTip), tempCallOptions).then(res => res.decodedResult);
     return basicTippingContractUtil.formatSingleTip(process.env.CONTRACT_V2_ADDRESS, '_v2', tipId, rawTip, url);
   },
 
   async getClaimV1V2(contract, url) {
     const contractGetter = contract === process.env.CONTRACT_V2_ADDRESS ? contractV2Getter : contractV1Getter;
-    return contractGetter.methods.get_claim_by_url(contract, url)
+    return contractGetter.methods.get_claim_by_url(contract, url, tempCallOptions)
       .then(res => basicTippingContractUtil.formatSingleClaim(contract, url, res.decodedResult));
   },
 
   async getTipV3(value) {
     const tipId = await client.contractDecodeData('contract Decode =\n  entrypoint int(): int = 0', 'int', value, 'ok');
-    const rawTip = await contractV3Getter.methods.get_tip_by_id(process.env.CONTRACT_V3_ADDRESS, tipId).then(res => res.decodedResult);
+    const rawTip = await contractV3Getter.methods.get_tip_by_id(process.env.CONTRACT_V3_ADDRESS, tipId, tempCallOptions)
+      .then(res => res.decodedResult);
     return basicTippingContractUtil.formatSingleTip(process.env.CONTRACT_V3_ADDRESS, '_v3', tipId, rawTip);
   },
 
   async getRetipV2(value) {
     const retipId = await client.contractDecodeData('contract Decode =\n  entrypoint int(): int = 0', 'int', value, 'ok');
-    return contractV2Getter.methods.get_retip_by_id(process.env.CONTRACT_V2_ADDRESS, retipId)
+    return contractV2Getter.methods.get_retip_by_id(process.env.CONTRACT_V2_ADDRESS, retipId, tempCallOptions)
       .then(res => basicTippingContractUtil.formatSingleRetip(process.env.CONTRACT_V2_ADDRESS, '_v2', retipId, res.decodedResult));
   },
 
@@ -346,9 +348,9 @@ const aeternity = {
   async fetchStateBasic(onlyV1 = false) {
     if (!client) throw new Error('Init sdk first');
     try {
-      const fetchV1State = contractV1.methods.get_state();
-      const fetchV2State = !onlyV1 && process.env.CONTRACT_V2_ADDRESS ? contractV2.methods.get_state() : Promise.resolve(null);
-      const fetchV3State = !onlyV1 && process.env.CONTRACT_V3_ADDRESS ? contractV3.methods.get_state() : Promise.resolve(null);
+      const fetchV1State = contractV1.methods.get_state(tempCallOptions);
+      const fetchV2State = !onlyV1 && process.env.CONTRACT_V2_ADDRESS ? contractV2.methods.get_state(tempCallOptions) : Promise.resolve(null);
+      const fetchV3State = !onlyV1 && process.env.CONTRACT_V3_ADDRESS ? contractV3.methods.get_state(tempCallOptions) : Promise.resolve(null);
       return {
         tips: basicTippingContractUtil.getTips([await fetchV1State, await fetchV2State, await fetchV3State].filter(state => state)),
         retips: basicTippingContractUtil.getRetips([await fetchV1State, await fetchV2State, await fetchV3State].filter(state => state)),

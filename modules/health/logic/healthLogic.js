@@ -14,7 +14,7 @@ module.exports = class HealthLogic {
     try {
       await Promise.all(Object.keys(models)
         .filter(key => key.toLowerCase() !== 'sequelize')
-        .map(async key => models[key].findAll({ raw: true })));
+        .map(async key => models[key].findOne({ raw: true })));
       return true;
     } catch (e) {
       return false;

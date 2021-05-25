@@ -84,11 +84,7 @@ const TipLogic = {
     }
 
     if (token) {
-      try {
-        whereArguments.push({ id: FILTER_TOKEN(token) });
-      } catch (e) {
-        console.error(e);
-      }
+      whereArguments.push({ id: FILTER_TOKEN(token) });
     }
 
     if (search) {

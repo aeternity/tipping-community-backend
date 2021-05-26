@@ -29,7 +29,7 @@ npm i
 #### Create Database
 
 ```bash
-npm run db:makemigrations
+npm run db:create
 ```
 #### Start server
 

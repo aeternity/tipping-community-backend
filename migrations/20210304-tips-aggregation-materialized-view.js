@@ -90,7 +90,7 @@ SELECT "Tip"."id",
               WHERE "Tips"."id" = "Tip"."id") AS amounts
         WHERE amounts.amount > 0)           AS "totalClaimedAmount",
 
-       (ARRAY_TO_JSON(ARRAY(SELECT JSON_BUILD_OBJECT('token', tokenAmounts.token,
+       (TO_JSONB(ARRAY(SELECT JSONB_BUILD_OBJECT('token', tokenAmounts.token,
                                        'amount', SUM(tokenAmounts.amount)::VARCHAR)
               FROM (SELECT "Retips"."token", SUM("Retips"."tokenAmount") AS amount
                     FROM "Tips"
@@ -105,9 +105,9 @@ SELECT "Tip"."id",
                       AND "Tips"."token" IS NOT NULL
                     GROUP BY "Tips"."token") AS tokenAmounts
               WHERE tokenAmounts.amount > 0
-              GROUP BY tokenAmounts.token)))::jsonb AS "totalTokenAmount",
+              GROUP BY tokenAmounts.token))) AS "totalTokenAmount",
 
-       (ARRAY_TO_JSON(ARRAY(SELECT JSON_BUILD_OBJECT('token', tokenAmounts.token,
+       (TO_JSONB(ARRAY(SELECT JSONB_BUILD_OBJECT('token', tokenAmounts.token,
                                        'amount', SUM(tokenAmounts.amount)::VARCHAR)
               FROM (SELECT "Retips"."token",
                            SUM(unclaimed_amount("Retips"."claimGen", "Tips"."url", "Tips"."contractId",
@@ -126,9 +126,9 @@ SELECT "Tip"."id",
                       AND "Tips"."token" IS NOT NULL
                     GROUP BY "Tips"."token") AS tokenAmounts
               WHERE tokenAmounts.amount > 0
-              GROUP BY tokenAmounts.token)))::jsonb AS "totalTokenUnclaimedAmount",
+              GROUP BY tokenAmounts.token))) AS "totalTokenUnclaimedAmount",
 
-       (ARRAY_TO_JSON(ARRAY(SELECT JSON_BUILD_OBJECT('token', tokenAmounts.token,
+       (TO_JSONB(ARRAY(SELECT JSONB_BUILD_OBJECT('token', tokenAmounts.token,
                                        'amount', SUM(tokenAmounts.amount)::VARCHAR)
               FROM (SELECT "Retips"."token",
                            SUM(claimed_amount("Retips"."claimGen", "Tips"."url", "Tips"."contractId",
@@ -147,7 +147,7 @@ SELECT "Tip"."id",
                       AND "Tips"."token" IS NOT NULL
                     GROUP BY "Tips"."token") AS tokenAmounts
               WHERE tokenAmounts.amount > 0
-              GROUP BY tokenAmounts.token)))::jsonb AS "totalTokenClaimedAmount"
+              GROUP BY tokenAmounts.token))) AS "totalTokenClaimedAmount"
 
 FROM "Tips" AS "Tip"
 GROUP BY "Tip"."id";

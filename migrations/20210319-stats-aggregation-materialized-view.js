@@ -83,14 +83,14 @@ SELECT (SELECT COUNT("Tips"."id") FROM "Tips")                                  
                           FROM "Tips"
                                    LEFT OUTER JOIN "Retips" ON "Tips"."id" = "Retips"."tipId"),
                          0))::VARCHAR)                                                                     AS "totalClaimedAmount",
-       (ARRAY_TO_JSON(ARRAY(SELECT JSON_BUILD_OBJECT('token', COALESCE("Retips"."token", "Tips"."token"),
+       (TO_JSONB(ARRAY(SELECT JSONB_BUILD_OBJECT('token', COALESCE("Retips"."token", "Tips"."token"),
                                        'amount', ((SUM(COALESCE("Retips"."tokenAmount", 0))) +
                                                   (SUM(COALESCE("Tips"."tokenAmount", 0))))::VARCHAR)
               FROM "Tips"
                        LEFT OUTER JOIN "Retips" ON "Tips"."id" = "Retips"."tipId"
               GROUP BY COALESCE("Retips"."token", "Tips"."token")
-              HAVING COALESCE("Retips"."token", "Tips"."token") IS NOT NULL)))::jsonb                              AS "totalTokenAmount",
-       (ARRAY_TO_JSON(ARRAY(SELECT JSON_BUILD_OBJECT('token', COALESCE("Retips"."token", "Tips"."token"),
+              HAVING COALESCE("Retips"."token", "Tips"."token") IS NOT NULL)))                              AS "totalTokenAmount",
+       (TO_JSONB(ARRAY(SELECT JSONB_BUILD_OBJECT('token', COALESCE("Retips"."token", "Tips"."token"),
                                        'amount', ((SUM(CASE
                                                            WHEN unclaimed("Retips"."claimGen", "Tips"."url", "Tips"."contractId")
                                                                THEN COALESCE("Retips"."tokenAmount", 0)
@@ -102,8 +102,8 @@ SELECT (SELECT COUNT("Tips"."id") FROM "Tips")                                  
               FROM "Tips"
                        LEFT OUTER JOIN "Retips" ON "Tips"."id" = "Retips"."tipId"
               GROUP BY COALESCE("Retips"."token", "Tips"."token")
-              HAVING COALESCE("Retips"."token", "Tips"."token") IS NOT NULL)))::jsonb                              AS "totalTokenUnclaimedAmount",
-       (ARRAY_TO_JSON(ARRAY(SELECT JSON_BUILD_OBJECT('token', COALESCE("Retips"."token", "Tips"."token"),
+              HAVING COALESCE("Retips"."token", "Tips"."token") IS NOT NULL)))                              AS "totalTokenUnclaimedAmount",
+       (TO_JSONB(ARRAY(SELECT JSONB_BUILD_OBJECT('token', COALESCE("Retips"."token", "Tips"."token"),
                                        'amount', ((SUM(CASE
                                                            WHEN unclaimed("Retips"."claimGen", "Tips"."url", "Tips"."contractId")
                                                                THEN 0
@@ -115,7 +115,7 @@ SELECT (SELECT COUNT("Tips"."id") FROM "Tips")                                  
               FROM "Tips"
                        LEFT OUTER JOIN "Retips" ON "Tips"."id" = "Retips"."tipId"
               GROUP BY COALESCE("Retips"."token", "Tips"."token")
-              HAVING COALESCE("Retips"."token", "Tips"."token") IS NOT NULL)))::jsonb                              AS "totalTokenClaimedAmount",
+              HAVING COALESCE("Retips"."token", "Tips"."token") IS NOT NULL)))                              AS "totalTokenClaimedAmount",
        ARRAY((SELECT "Tips"."sender" FROM "Tips") UNION DISTINCT (SELECT "Retips"."sender" FROM "Retips")) AS "senders",
        (SELECT COUNT(senders)
         FROM ((SELECT "Tips"."sender" FROM "Tips")

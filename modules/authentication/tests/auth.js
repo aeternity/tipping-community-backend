@@ -23,6 +23,36 @@ describe('Authenticator', () => {
     location: 'awesome, location, country',
   };
 
+  describe('Basic Authentication', () => {
+    it('it should return a request for authentication', done => {
+      chai.request(server).get('/blacklist').end((err, res) => {
+        res.should.have.status(401);
+        res.header.should.have.property('www-authenticate', 'Basic realm="Please enter user and password."');
+        done();
+      });
+    });
+
+    it('it should reject a wrong authentication', done => {
+      chai.request(server).get('/blacklist')
+        .auth(process.env.AUTHENTICATION_USER, `${process.env.AUTHENTICATION_PASSWORD}_invalid`)
+        .end((err, res) => {
+          res.should.have.status(401);
+          res.header.should.have.property('www-authenticate', 'Basic realm="Please enter user and password."');
+          done();
+        });
+    });
+
+    it('it should allow access with correct auth', function (done) {
+      this.timeout(10000);
+      chai.request(server).get('/blacklist/api')
+        .auth(process.env.AUTHENTICATION_USER, process.env.AUTHENTICATION_PASSWORD)
+        .end((err, res) => {
+          res.should.have.status(200);
+          done();
+        });
+    });
+  });
+
   describe('Notification Authentication', () => {
     it('it should return a signature challenge', done => {
       chai.request(server).get(`/notification/user/${publicKey}`).end((err, res) => {

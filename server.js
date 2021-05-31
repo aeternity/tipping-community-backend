@@ -54,6 +54,10 @@ if (fs.existsSync('./swagger.json')) {
     OpenApiValidator.middleware({
       apiSpec: './swagger.json',
       fileUploader: false,
+      // Skip basic auth test for now until this is fixed in the validation package
+      // https://github.com/cdimascio/express-openapi-validator/pull/563/files
+      // TODO re-enable
+      validateSecurity: false,
       // TODO take care of the errors
       // validateResponses: true, // <-- to validate responses
     }),

@@ -10,7 +10,7 @@ const MemoryQueue = [];
 const VERSION = '2-0-0';
 
 const authenticationLogic = {
-  async basicAuth(req, res, next) {
+  basicAuth(req, res, next) {
     const auth = { login: process.env.AUTHENTICATION_USER, password: process.env.AUTHENTICATION_PASSWORD };
     const b64auth = (req.headers.authorization || '').split(' ')[1] || '';
     const [login, password] = Buffer.from(b64auth, 'base64').toString().split(':');

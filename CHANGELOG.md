@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.10.3](https://www.github.com/aeternity/tipping-community-backend/compare/v1.10.2...v1.10.3) (2021-06-02)
+
+
+### Miscellaneous
+
+* **deps:** bump hosted-git-info from 2.8.8 to 2.8.9 ([4e026b4](https://www.github.com/aeternity/tipping-community-backend/commit/4e026b490dfb1f8a01baf87e19dc86abd277078c))
+* **deps:** bump lodash from 4.17.20 to 4.17.21 ([605812c](https://www.github.com/aeternity/tipping-community-backend/commit/605812c7ead53b363de851458587668412518863))
+* **deps:** bump underscore from 1.12.0 to 1.13.1 ([449e6ea](https://www.github.com/aeternity/tipping-community-backend/commit/449e6eaab53e281cc83cb3186ddb035a628f7ef8))
+* **deps:** update sdk to final version ([dca8956](https://www.github.com/aeternity/tipping-community-backend/commit/dca8956f029e66714b1446f58434441b7ac26937))
+* **deps:** upgrade sdk to 8.1.0 ([91fed3d](https://www.github.com/aeternity/tipping-community-backend/commit/91fed3d54b4a6628fce0a1a0f0221f585461a3ac))
+* **sdk:** update sdk for iris, add dry-run workaround ([1c68cac](https://www.github.com/aeternity/tipping-community-backend/commit/1c68cace751abb54529063ffbd66f22eb23bf394))
+
 ### [1.10.2](https://www.github.com/aeternity/tipping-community-backend/compare/v1.10.1...v1.10.2) (2021-04-27)
 
 

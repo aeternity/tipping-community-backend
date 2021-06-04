@@ -2,10 +2,53 @@
   html, body {
     margin: 0;
     padding: 0;
+    font-family: Arial, sans-serif;
   }
 
   button {
     display: inline-block;
+  }
+
+  header {
+    display: flex;
+    align-items: baseline;
+    padding-left: 10px;
+  }
+
+  h1 {
+    margin: 5px;
+  }
+
+  h1 a {
+    text-decoration: none;
+    color: inherit;
+  }
+
+  img {
+    width: 200px;
+    height: 150px;
+    object-fit: cover;
+  }
+
+  p {
+    margin: 5px 0;
+  }
+
+  ul {
+    display:flex;
+    margin: 5px;
+    padding: 0;
+    flex-wrap: wrap;
+    list-style:none;
+  }
+
+  li {
+    margin-right: 5px;
+  }
+
+  .pagination {
+    margin: 5px;
+    padding-left: 10px;
   }
 
   .card {
@@ -15,6 +58,18 @@
     width: calc(100% - 10px);
     margin: 5px;
     box-sizing: border-box;
+  }
+
+  .container {
+    display: flex;
+    flex-wrap: wrap;
+    padding: 5px;
+  }
+
+  @media screen and (min-width: 1025px) {
+    .card {
+      width: 48%;
+    }
   }
 
   .blocked {
@@ -29,6 +84,10 @@
     margin: 10px 0;
   }
 
+  .second-row span{
+    margin-right: 10px;
+  }
+
   .address {
     overflow: hidden;
     text-overflow: ellipsis;
@@ -38,37 +97,17 @@
     border: none;
     height: 1px;
     background-color: #ccc;
+    margin: 5px 0;
   }
-
 </style>
 
-<h1>Admin Panel</h1>
-{{#each allItems}}
-  <div class="card">
-    <div class="action">
-      {{#if this.hidden}}
-        <button onclick="removeFromBlacklist('{{this.id}}')">SHOW</button>
-        <span class="blocked">BLACKLISTED</span>
-      {{else}}
-        {{#if this.flagged}}
-          <button onclick="updateFlaggedToBlocked('{{this.id}}')">BLOCK</button>
-          <span class="blocked">FLAGGED</span>
-        {{else}}
-          <button onclick="addToBlacklist('{{this.id}}')">BLOCK</button>
-          <span class="visible">VISIBLE</span>
-        {{/if}}
-      {{/if}}
-    </div>
-    <hr>
-    <div class="address">
-      <a href="{{this.url}}" target="_blank">{{this.url}}</a>
-    </div>
-    <hr>
-    <div>{{this.title}}</div>
-    <hr>
-    <div class="address">{{this.sender}}</div>
-  </div>
+{{>header type=query.type ordering=query.ordering}}
+{{>pagination page=query.page address=query.address id=query.id}}
+<div class="container">
+{{#each items}}
+{{>card this}}
 {{/each}}
+</div>
 
 <script type="text/javascript">
   function addToBlacklist (id) {
@@ -97,5 +136,35 @@
       },
       body: JSON.stringify({status: 'hidden'})
     }).finally(() => window.location.reload());
+  }
+
+  function setParams (params) {
+    const query = new URLSearchParams(window.location.search)
+    for (const param in params) {
+      query.set(param, params[param])
+    }
+    window.location.search = query;
+  }
+
+  function deleteParam (param) {
+    const query = new URLSearchParams(window.location.search)
+    query.delete(param)
+    window.location.search = query
+  }
+
+  function goToPage () {
+    const {min, max, value} = document.querySelector('#page');
+    if ( +value >= +min && +value <= +max) setParams({page: value});
+  }
+
+  function sortAndFilter (param) {
+    const { value } = document.querySelector(`#${param}`);
+    if (value) setParams({[param]: value, page: '1'});
+    else deleteParam(param);
+  }
+
+  function goToAuthor () {
+    const { value } = document.querySelector('#address');
+    window.location.href = `/blacklist?address=${value}`
   }
 </script>

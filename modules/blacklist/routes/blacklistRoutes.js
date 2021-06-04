@@ -122,9 +122,49 @@ router.get('/api/:tipId', async (req, res) => {
  *             schema:
  *               type: string
  */
-router.get('/', basicAuth, async (req, res) => res.render('admin', {
-  allItems: await Logic.augmentAllItems(await TipLogic.fetchAllLocalTips()),
-}));
+router.get('/', basicAuth, async (req, res) => {
+  const ordering = req.query.ordering || 'latest';
+  const {
+    page, type, address, id, search,
+  } = req.query;
+  let contractVersion;
+
+  if (type) {
+    switch (type) {
+      case 'posts':
+        contractVersion = 'v3';
+        break;
+      case 'tips':
+        contractVersion = ['v1', 'v2'];
+        break;
+      default:
+    }
+  }
+
+  const tips = id
+    ? [await TipLogic.fetchTip(id)]
+    : await Logic.augmentAllItems(await TipLogic.fetchTips({
+      page,
+      blacklist: false,
+      address,
+      contractVersion,
+      ordering,
+      search,
+    }));
+
+  const items = tips.map(({ hidden, flagged, dataValues }) => ({ hidden, flagged, ...dataValues }));
+
+  return res.render('admin', {
+    items,
+    query: {
+      page,
+      type,
+      ordering,
+      address,
+      search,
+    },
+  });
+});
 
 // Restricted api routes
 /**

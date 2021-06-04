@@ -1,0 +1,46 @@
+<div class="card">
+  <div class="first-row">
+    <div class="action">
+      {{#if this.hidden}}
+        <button onclick="removeFromBlacklist('{{this.id}}')">SHOW</button>
+        <span class="blocked">BLACKLISTED</span>
+      {{else}}
+        {{#if this.flagged}}
+          <button onclick="updateFlaggedToBlocked('{{this.id}}')">BLOCK</button>
+          <span class="blocked">FLAGGED</span>
+        {{else}}
+          <button onclick="addToBlacklist('{{this.id}}')">BLOCK</button>
+          <span class="visible">VISIBLE</span>
+        {{/if}}
+      {{/if}}
+    </div>
+    <div class="address">
+      Author:
+      <a href="/blacklist?address={{this.sender}}">{{this.sender}}</a>
+    </div>
+  </div>
+  <hr />
+  <div class="second-row">
+    <span>ID: <a href="/blacklist?id={{this.id}}">{{this.id}}</a></span>
+    <span>Date : {{formatDate this.timestamp}}</span>
+    <span>Type: {{this.type}}</span>
+  </div>
+
+  <hr />
+  {{#if this.url}}
+    <div class="address">
+      URL:
+      <a href="{{this.url}}" target="_blank">{{this.url}}</a>
+    </div>
+  {{/if}}
+  <div>
+    <p>{{this.title}}</p>
+  </div>
+  {{#if this.media}}
+    <div>
+      {{#each this.media}}
+        <img src="{{this}}" />
+      {{/each}}
+    </div>
+  {{/if}}
+</div>

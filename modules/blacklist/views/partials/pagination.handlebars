@@ -1,0 +1,11 @@
+<div class="pagination">
+  Page 
+    <input id="pagenum" type="number" value="{{page}}" min="1" max="{{length}}">
+     / {{length}} 
+    <button onclick="goToPage()">GO</button>
+
+   Show 
+    <input id="limit" type="number" value="{{limit}}" min="1" max="100">
+    per page
+    <button onclick="changeLimit()">SHOW</button>
+</div>

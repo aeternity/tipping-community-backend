@@ -1,4 +1,5 @@
 const { Router } = require('express');
+const BigNumber = require('bignumber.js');
 const { BlacklistEntry } = require('../../../models');
 const Logic = require('../logic/blacklistLogic');
 const TipLogic = require('../../tip/logic/tipLogic');
@@ -131,9 +132,72 @@ router.get('/api/:tipId', async (req, res) => {
  *             schema:
  *               type: string
  */
-router.get('/', basicAuth, async (req, res) => res.render('admin', {
-  allItems: await Logic.augmentAllItems(await TipLogic.fetchAllLocalTips()),
-}));
+router.get('/', async (req, res) => {
+  const limit = req.query.limit || 30;
+  const page = req.query.page || 1;
+  const ordering = req.query.ordering || 'latest';
+  const { show, type } = req.query;
+  let items = await Logic.augmentAllItems(await TipLogic.fetchAllLocalTips());
+
+  if (req.query.id) {
+    items = [items.find(e => e.id === req.query.id)];
+  }
+
+  if (req.query.address) {
+    items = items.filter(e => e.sender === req.query.address);
+  }
+
+  if (show) {
+    switch (show) {
+      case 'hidden':
+        items = items.filter(e => e.hidden);
+        break;
+      case 'flagged':
+        items = items.filter(e => e.flagged);
+        break;
+      default:
+    }
+  }
+
+  if (type) {
+    switch (type) {
+      case 'posts':
+        items = items.filter(e => e.type === 'POST_WITHOUT_TIP');
+        break;
+      case 'tips':
+        items = items.filter(e => e.type === 'AE_TIP');
+        break;
+      default:
+    }
+  }
+
+  switch (ordering) {
+    case 'hot':
+      items.sort((a, b) => b.score - a.score);
+      break;
+    case 'latest':
+      items.sort((a, b) => b.timestamp - a.timestamp);
+      break;
+    case 'highest':
+      items.sort((a, b) => new BigNumber(b.total_amount).minus(a.total_amount).toNumber());
+      break;
+    default:
+  }
+  const length = Math.ceil(items.length / limit);
+  items = items.slice((page - 1) * limit, page * limit);
+
+  return res.render('admin', {
+    items,
+    length,
+    query: {
+      page,
+      limit,
+      show,
+      type,
+      ordering,
+    },
+  });
+});
 
 // Restricted api routes
 /**

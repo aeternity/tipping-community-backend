@@ -55,6 +55,7 @@ const aeternity = {
         address: process.env.PUBLIC_KEY,
         compilerUrl: process.env.COMPILER_URL,
       });
+      client.api.protectedDryRunTxs = client.api.dryRunTxs;
 
       contractV1 = await client.getContractInstance(TIPPING_V1_INTERFACE, { contractAddress: process.env.CONTRACT_V1_ADDRESS });
       if (process.env.CONTRACT_V2_ADDRESS) {

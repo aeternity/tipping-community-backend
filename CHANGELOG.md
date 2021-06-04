@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.10.4](https://www.github.com/aeternity/tipping-community-backend/compare/v1.10.3...v1.10.4) (2021-06-04)
+
+
+### Bug Fixes
+
+* **aeternity:** force old dry run endpoints to be used ([799cf43](https://www.github.com/aeternity/tipping-community-backend/commit/799cf4369d6246570e1a56b85d85f007b3ccca24))
+* **auth:** bypasses broken basic auth verification ([a9d08c2](https://www.github.com/aeternity/tipping-community-backend/commit/a9d08c2b771fe43c43fb59ae75196e7cdfe28094))
+* **health:** adds limit one to health db queries ([ecc7f0a](https://www.github.com/aeternity/tipping-community-backend/commit/ecc7f0ab26f234e78e010200b88a1d94975e36fd))
+* **linkpreview:** allow superhero previews to be crawled ([a03d235](https://www.github.com/aeternity/tipping-community-backend/commit/a03d2354bb579f193abafed1eea02ed4e5c2301b))
+
+
+### Miscellaneous
+
+* **deps:** bump ws from 7.4.3 to 7.4.6 ([200f172](https://www.github.com/aeternity/tipping-community-backend/commit/200f1727206164c03bb005b7c676dc099fe497ec))
+
 ### [1.10.3](https://www.github.com/aeternity/tipping-community-backend/compare/v1.10.2...v1.10.3) (2021-06-02)
 
 

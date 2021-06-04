@@ -50,7 +50,11 @@ module.exports = class DomLoader {
         throw new Error('Got caught on login.php');
       }
 
-      if (response.status() >= 200 && response.status() < 300) {
+      if (
+        // proper response
+        (response.status() >= 200 && response.status() < 300)
+        // superhero responds with 404 for everything :(
+        || (response.status() === 404 && (new URL(page.url())).hostname === 'superhero.com')) {
         const filename = `preview-${uuidv4()}.jpg`;
         if (screenshot) await page.screenshot({ path: imageLogic.getImagePath(filename) });
         const html = await page.content();

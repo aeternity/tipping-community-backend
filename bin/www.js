@@ -61,7 +61,6 @@ function onListening() {
 }
 
 const startup = async () => {
-  // first initialize aeternity sdk and cache before starting server
   await queueLogic.init();
   await broker.init();
   await aeternity.init();

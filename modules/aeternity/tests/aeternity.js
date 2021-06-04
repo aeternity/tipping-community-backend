@@ -24,6 +24,10 @@ describe('Aeternity', () => {
     });
   });
   describe('Oracle', () => {
+    before(async function () {
+      this.timeout(20000);
+      await ae.init();
+    });
     afterEach(() => {
       sinon.restore();
     });

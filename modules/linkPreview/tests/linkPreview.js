@@ -15,6 +15,7 @@ chai.use(chaiHttp);
 // Our parent block
 describe('LinkPreview', () => {
   const requestUrl = 'https://aeternity.com/';
+  const superHeroUrl = 'https://superhero.com/tip/0_v1';
 
   before(async function () {
     this.timeout(25000);
@@ -40,6 +41,25 @@ describe('LinkPreview', () => {
       preview.should.have.property('url', 'https://aeternity.com');
       preview.should.have.property('requestUrl', requestUrl);
       preview.should.have.property('responseUrl', 'https://aeternity.com');
+      preview.should.have.property('querySucceeded', true);
+      preview.should.have.property('updatedAt');
+      preview.should.have.property('createdAt');
+      preview.should.have.property('failReason', null);
+      imageUrl = preview.image;
+    });
+
+    it('it get link preview for superhero.com', async function () {
+      this.timeout(10000);
+      const dbResult = await linkPreviewLogic.generatePreview(superHeroUrl);
+      const preview = dbResult.toJSON();
+      preview.should.have.property('id');
+      preview.should.have.property('image');
+      preview.image.should.contain('/images/compressed-preview');
+      preview.should.have.property('lang', 'en');
+      preview.should.have.property('title', 'Comments for a Tip - Superhero.com');
+      preview.should.have.property('url', superHeroUrl);
+      preview.should.have.property('requestUrl', superHeroUrl);
+      preview.should.have.property('responseUrl', superHeroUrl);
       preview.should.have.property('querySucceeded', true);
       preview.should.have.property('updatedAt');
       preview.should.have.property('createdAt');

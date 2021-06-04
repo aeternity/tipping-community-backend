@@ -70,6 +70,59 @@ router.get('/api/:tipId', async (req, res) => {
  *     summary: Returns Userinterface to flag / unflag / remove tips
  *     security:
  *       - basicAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: limit
+ *         required: false
+ *         schema:
+ *           type: integer
+ *         description: set limit of shown tips
+ *       - in: query
+ *         name: address
+ *         required: false
+ *         schema:
+ *           type: string
+ *         description: users address to only query tips from this specific user
+ *       - in: query
+ *         name: id
+ *         required: false
+ *         schema:
+ *           type: string
+ *         description: show specific tip by id
+ *       - in: query
+ *         name: type
+ *         required: false
+ *         schema:
+ *            type: string
+ *            enum:
+ *              - posts
+ *              - tips
+ *         description: filter only posts or tips
+ *       - in: query
+ *         name: ordering
+ *         required: false
+ *         schema:
+ *           type: string
+ *           enum:
+ *             - highest
+ *             - hot
+ *             - latest
+ *         description: parameter to order the tips by
+ *       - in: query
+ *         name: page
+ *         required: false
+ *         schema:
+ *           type: integer
+ *         description: page number
+ *       - in: query
+ *         name: show
+ *         required: false
+ *         schema:
+ *           type: string
+ *           enum:
+ *             - hidden
+ *             - flagged
+ *         description: filter the hidden or flagged post
  *     responses:
  *       200:
  *         description: OK

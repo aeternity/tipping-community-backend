@@ -89,28 +89,31 @@ const LinkPreviewLogic = {
 
   async fetchImage(requestUrl, imageUrl) {
     let newUrl = null;
+    let filename = null;
 
-    // Get Ext name
-    let extension = path.extname(imageUrl);
-    // Remove any query / hash params
-    extension = extension.match(/(^[a-zA-Z0-9]+)/);
-    let filename = `preview-${uuidv4()}${extension ? extension[1] : '.jpg'}`;
+    if (imageUrl) {
+      // Get Ext name
+      let extension = path.extname(imageUrl);
+      // Remove any query / hash params
+      extension = extension.match(/(^[a-zA-Z0-9]+)/);
+      filename = `preview-${uuidv4()}${extension ? extension[1] : '.jpg'}`;
 
-    try {
-      const response = await axios.get(imageUrl, { responseType: 'stream' });
-      const writer = response.data.pipe(fs.createWriteStream(imageLogic.getImagePath(filename)));
-      await new Promise((resolve, reject) => {
-        writer.on('finish', resolve);
-        writer.on('error', reject);
-      });
+      try {
+        const response = await axios.get(imageUrl, { responseType: 'stream' });
+        const writer = response.data.pipe(fs.createWriteStream(imageLogic.getImagePath(filename)));
+        await new Promise((resolve, reject) => {
+          writer.on('finish', resolve);
+          writer.on('error', reject);
+        });
 
-      newUrl = `/images/${filename}`;
+        newUrl = `/images/${filename}`;
 
-      // Image too small
-      const metaData = await sharp(imageLogic.getImagePath(filename)).metadata();
-      if (metaData.width < 300 && metaData.height < 200) newUrl = null;
-    } catch (e) {
-      logger.error('Could not appropriate fetch image');
+        // Image too small
+        const metaData = await sharp(imageLogic.getImagePath(filename)).metadata();
+        if (metaData.width < 300 && metaData.height < 200) newUrl = null;
+      } catch (e) {
+        logger.error('Could not appropriate fetch image');
+      }
     }
 
     // Get Screenshot if needed
@@ -154,7 +157,7 @@ const LinkPreviewLogic = {
         ...result,
         responseUrl: result.url,
         requestUrl: url,
-        querySucceeded: (!!result.title && (!!result.description || !!result.image)),
+        querySucceeded: !!result.title,
       };
 
       if (data.querySucceeded && data.lang === null) {
@@ -167,7 +170,7 @@ const LinkPreviewLogic = {
       data.description = data.description ? data.description.replace(/<(.|\n)*?>/g, '') : data.description;
 
       // Fetch image
-      if (data.image) data.image = await this.fetchImage(data.requestUrl, data.image);
+      data.image = await this.fetchImage(data.requestUrl, data.image);
 
       return data;
     } catch (err) {

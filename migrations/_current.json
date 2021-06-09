@@ -350,7 +350,7 @@
                 "name": {
                     "allowNull": false,
                     "field": "name",
-                    "seqType": "Sequelize.ENUM('TipReceived', 'TipTokenReceived', 'ReTipReceived', 'ReTipTokenReceived', 'TipDirectReceived', 'TipDirectTokenReceived', 'PostWithoutTipReceived', 'TipWithdrawn', 'QueryOracle', 'CheckPersistClaim', 'Transfer', 'Allowance')"
+                    "seqType": "Sequelize.ENUM('TipReceived', 'TipTokenReceived', 'ReTipReceived', 'ReTipTokenReceived', 'TipDirectReceived', 'TipDirectTokenReceived', 'PostWithoutTipReceived', 'PostViaBurnReceived', 'TipWithdrawn', 'QueryOracle', 'CheckPersistClaim', 'Transfer', 'Allowance')"
                 },
                 "hash": {
                     "allowNull": false,
@@ -887,7 +887,7 @@
                 "type": {
                     "allowNull": false,
                     "field": "type",
-                    "seqType": "Sequelize.ENUM('AE_TIP', 'TOKEN_TIP', 'DIRECT_AE_TIP', 'DIRECT_TOKEN_TIP', 'POST_WITHOUT_TIP')"
+                    "seqType": "Sequelize.ENUM('AE_TIP', 'TOKEN_TIP', 'DIRECT_AE_TIP', 'DIRECT_TOKEN_TIP', 'POST_WITHOUT_TIP', 'POST_VIA_BURN')"
                 },
                 "sender": {
                     "field": "sender",

@@ -6,6 +6,7 @@ const EVENT_TYPES = {
   TIP_DIRECT_RECEIVED: 'TipDirectReceived',
   TIP_DIRECT_TOKEN_RECEIVED: 'TipDirectTokenReceived',
   POST_WITHOUT_TIP_RECEIVED: 'PostWithoutTipReceived',
+  POST_VIA_BURN_RECEIVED: 'PostViaBurnReceived',
   TIP_WITHDRAWN: 'TipWithdrawn',
   QUERY_ORACLE: 'QueryOracle',
   CHECK_PERSIST_CLAIM: 'CheckPersistClaim',

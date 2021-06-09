@@ -11,6 +11,7 @@ const TIPPING_V2_INTERFACE = require('tipping-contract/Tipping_v2_Interface.aes'
 const TIPPING_V2_GETTER = require('tipping-contract/Tipping_v2_Getter.aes');
 const TIPPING_V3_GETTER = require('tipping-contract/Tipping_v3_Getter.aes');
 const TIPPING_V3_INTERFACE = require('tipping-contract/Tipping_v3_Interface.aes');
+const TIPPING_V4_INTERFACE = require('tipping-contract/Tipping_v4_Interface.aes');
 const ORACLE_SERVICE_INTERFACE = require('tipping-oracle-service/OracleServiceInterface.aes');
 const ORACLE_GETTER = require('tipping-oracle-service/OracleGetter.aes');
 const TOKEN_CONTRACT_INTERFACE = require('aeternity-fungible-token/FungibleTokenFullInterface.aes');
@@ -31,6 +32,7 @@ let contractV2;
 let contractV2Getter;
 let contractV3;
 let contractV3Getter;
+let contractV4;
 let oracleContract;
 let oracleGetter;
 let wordRegistryContract;
@@ -95,6 +97,13 @@ const aeternity = {
         logger.info('Starting WITH V3 contract');
       } else {
         logger.info('Starting WITHOUT V3 contract');
+      }
+
+      if (process.env.CONTRACT_V4_ADDRESS) {
+        contractV4 = await client.getContractInstance(TIPPING_V4_INTERFACE, { contractAddress: process.env.CONTRACT_V4_ADDRESS });
+        logger.info('Starting WITH V4 contract');
+      } else {
+        logger.info('Starting WITHOUT V4 contract');
       }
 
       oracleContract = await client.getContractInstance(
@@ -246,6 +255,12 @@ const aeternity = {
     return basicTippingContractUtil.formatSingleTip(process.env.CONTRACT_V3_ADDRESS, '_v3', tipId, rawTip);
   },
 
+  async getTipV4(value) {
+    const tipId = await client.contractDecodeData('contract Decode =\n  entrypoint int(): int = 0', 'int', value, 'ok');
+    const rawTip = await contractV4.methods.get_tip_by_id(tipId, tempCallOptions).then(res => res.decodedResult);
+    return basicTippingContractUtil.formatSingleTip(process.env.CONTRACT_V4_ADDRESS, '_v4', tipId, rawTip);
+  },
+
   async getRetipV2(value) {
     const retipId = await client.contractDecodeData('contract Decode =\n  entrypoint int(): int = 0', 'int', value, 'ok');
     return contractV2Getter.methods.get_retip_by_id(process.env.CONTRACT_V2_ADDRESS, retipId, tempCallOptions)
@@ -352,10 +367,11 @@ const aeternity = {
       const fetchV1State = contractV1.methods.get_state(tempCallOptions);
       const fetchV2State = !onlyV1 && process.env.CONTRACT_V2_ADDRESS ? contractV2.methods.get_state(tempCallOptions) : Promise.resolve(null);
       const fetchV3State = !onlyV1 && process.env.CONTRACT_V3_ADDRESS ? contractV3.methods.get_state(tempCallOptions) : Promise.resolve(null);
+      const fetchV4State = !onlyV1 && process.env.CONTRACT_V4_ADDRESS ? contractV4.methods.get_state(tempCallOptions) : Promise.resolve(null);
       return {
-        tips: basicTippingContractUtil.getTips([await fetchV1State, await fetchV2State, await fetchV3State].filter(state => state)),
-        retips: basicTippingContractUtil.getRetips([await fetchV1State, await fetchV2State, await fetchV3State].filter(state => state)),
-        claims: basicTippingContractUtil.getClaims([await fetchV1State, await fetchV2State, await fetchV3State].filter(state => state)),
+        tips: basicTippingContractUtil.getTips([await fetchV1State, await fetchV2State, await fetchV3State, await fetchV4State].filter(state => state)),
+        retips: basicTippingContractUtil.getRetips([await fetchV1State, await fetchV2State, await fetchV3State, await fetchV4State].filter(state => state)),
+        claims: basicTippingContractUtil.getClaims([await fetchV1State, await fetchV2State, await fetchV3State, await fetchV4State].filter(state => state)),
       };
     } catch (e) {
       logger.error(e.message, e);

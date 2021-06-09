@@ -59,6 +59,11 @@ const EventLogic = {
         await queueLogic.sendMessage(MESSAGE_QUEUES.EVENTS, MESSAGES.EVENTS.EVENTS.TIP_RECEIVED,
           await aeternity.getTipV3(tx.returnValue));
         break;
+      case 'PostViaBurnReceived':
+        // NEW TOKEN TIP
+        await queueLogic.sendMessage(MESSAGE_QUEUES.EVENTS, MESSAGES.EVENTS.EVENTS.TIP_RECEIVED,
+          await aeternity.getTipV4(tx.returnValue));
+        break;
       case EVENT_TYPES.RETIP_RECEIVED:
         // NEW RETIP
         await queueLogic.sendMessage(MESSAGE_QUEUES.EVENTS, MESSAGES.EVENTS.EVENTS.RETIP_RECEIVED,

@@ -238,7 +238,7 @@ describe('Trace', () => {
               url: 'example.com',
             },
           ],
-          url_intermediate_oracle_answers: [],
+          url_intermediate_oracle_answers: [null],
         });
         stub.restore();
         cacheStub.restore();

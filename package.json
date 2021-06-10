@@ -61,14 +61,14 @@
     "sequelize-hierarchy": "^2.0.4",
     "sharp": "^0.27.1",
     "swagger-ui-express": "^4.1.6",
-    "tipping-contract": "github:aeternity/tipping-contract#v3.0.1-alpha1",
-    "tipping-oracle-service": "github:aeternity/tipping-oracle-service#v0.3.4",
-    "token-registry": "github:aeternity/token-registry#v1.0.0",
+    "tipping-contract": "github:aeternity/tipping-contract#v3.1.0-alpha2",
+    "tipping-oracle-service": "github:aeternity/tipping-oracle-service#v0.3.6",
+    "token-registry": "github:aeternity/token-registry#v1.0.1",
     "uuid": "^8.3.2",
     "websocket": "^1.0.33",
     "winston": "^3.3.3",
     "winston-daily-rotate-file": "^4.5.0",
-    "wordbazaar-contracts": "github:aeternity/wordbazaar-contracts#v0.0.3-alpha2"
+    "wordbazaar-contracts": "github:aeternity/wordbazaar-contracts#v0.0.4-alpha2"
   },
   "devDependencies": {
     "@commitlint/cli": "^11.0.0",

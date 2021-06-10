@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.10.5](https://www.github.com/aeternity/tipping-community-backend/compare/v1.10.4...v1.10.5) (2021-06-10)
+
+
+### Miscellaneous
+
+* **contracts:** fix for new compiler ([3f1dcba](https://www.github.com/aeternity/tipping-community-backend/commit/3f1dcbac75b99f4bde134616c9fb2c90353d1bd8))
+* **deps:** bump glob-parent from 5.1.1 to 5.1.2 ([b6c380e](https://www.github.com/aeternity/tipping-community-backend/commit/b6c380ed501d52c4be4ccc1c729c63c7ec70f0db))
+* **deps:** bump normalize-url from 5.3.0 to 5.3.1 ([39afb99](https://www.github.com/aeternity/tipping-community-backend/commit/39afb993206d25d13f9f94a725ec8359bab2f75b))
+* **deps:** bump trim-newlines from 3.0.0 to 3.0.1 ([d65b145](https://www.github.com/aeternity/tipping-community-backend/commit/d65b14516ba21f833022903ec3da38ea21f8d5d0))
+
 ### [1.10.4](https://www.github.com/aeternity/tipping-community-backend/compare/v1.10.3...v1.10.4) (2021-06-04)
 
 

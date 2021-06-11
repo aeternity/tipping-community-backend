@@ -5,12 +5,8 @@ var Sequelize = require('sequelize');
 /**
  * Actions summary:
  *
- * changeColumn "tipId" on table "Comments"
- * changeColumn "name" on table "Events"
- * changeColumn "type" on table "Tips"
- * changeColumn "media" on table "Tips"
- * changeColumn "topics" on table "Tips"
- * changeColumn "title" on table "Tips"
+ * enum_Tips_type add POST_VIA_BURN
+ * enum_Events_name add PostViaBurnReceived
  *
  **/
 

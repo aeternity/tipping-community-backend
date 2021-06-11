@@ -368,10 +368,12 @@ const aeternity = {
       const fetchV2State = !onlyV1 && process.env.CONTRACT_V2_ADDRESS ? contractV2.methods.get_state(tempCallOptions) : Promise.resolve(null);
       const fetchV3State = !onlyV1 && process.env.CONTRACT_V3_ADDRESS ? contractV3.methods.get_state(tempCallOptions) : Promise.resolve(null);
       const fetchV4State = !onlyV1 && process.env.CONTRACT_V4_ADDRESS ? contractV4.methods.get_state(tempCallOptions) : Promise.resolve(null);
+
+      const states = [await fetchV1State, await fetchV2State, await fetchV3State, await fetchV4State].filter(state => state);
       return {
-        tips: basicTippingContractUtil.getTips([await fetchV1State, await fetchV2State, await fetchV3State, await fetchV4State].filter(state => state)),
-        retips: basicTippingContractUtil.getRetips([await fetchV1State, await fetchV2State, await fetchV3State, await fetchV4State].filter(state => state)),
-        claims: basicTippingContractUtil.getClaims([await fetchV1State, await fetchV2State, await fetchV3State, await fetchV4State].filter(state => state)),
+        tips: basicTippingContractUtil.getTips(states),
+        retips: basicTippingContractUtil.getRetips(states),
+        claims: basicTippingContractUtil.getClaims(states),
       };
     } catch (e) {
       logger.error(e.message, e);
@@ -576,6 +578,8 @@ const aeternity = {
         return process.env.CONTRACT_V2_ADDRESS;
       case 'v3':
         return process.env.CONTRACT_V3_ADDRESS;
+      case 'v4':
+        return process.env.CONTRACT_V4_ADDRESS;
       default:
         return '';
     }

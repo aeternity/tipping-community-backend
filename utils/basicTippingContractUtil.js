@@ -22,7 +22,7 @@ const formatSingleClaim = (contractId, url, [claimGen, amount]) => {
 const formatClaims = returnState => {
   const state = returnState.decodedResult;
 
-  return state.claims ? state.claims.map(([url_id, rawClaim]) => {
+  return state.claims && state.urls ? state.claims.map(([url_id, rawClaim]) => {
     const contractId = returnState.result.contractId;
     const url = findUrl(url_id, state.urls);
 
@@ -147,7 +147,7 @@ const formatTips = returnState => {
 
   return state.tips.map(([id, tipTypeData]) => {
     const urlId = rawTipUrlId(tipTypeData);
-    const url = urlId !== null ? findUrl(urlId, state.urls) : null;
+    const url = urlId !== null && state.urls ? findUrl(urlId, state.urls) : null;
     return formatSingleTip(returnState.result.contractId, suffix, id, tipTypeData, url)
   });
 };

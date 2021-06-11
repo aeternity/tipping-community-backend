@@ -59,6 +59,7 @@ const router = new Router();
  *               - v1
  *               - v2
  *               - v3
+ *               - v4
  *         description: use this parameter once or more times to only include tips from certain contract versions in your request
  *       - in: query
  *         name: blacklist

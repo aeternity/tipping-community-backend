@@ -1,13 +1,14 @@
 // Require the dev-dependencies
 const chai = require('chai');
 const chaiHttp = require('chai-http');
-const { describe, it, before } = require('mocha');
+const {
+  describe, it, before,
+} = require('mocha');
 
 const server = require('../../../server');
 const { BlacklistEntry, Tip } = require('../../../models');
-const ae = require('../../aeternity/logic/aeternity');
 const { BLACKLIST_STATUS } = require('../constants/blacklistStates');
-const { publicKey, performSignedJSONRequest } = require('../../../utils/testingUtil');
+const { publicKey, performSignedJSONRequest, getDBSeedFunction } = require('../../../utils/testingUtil');
 
 chai.should();
 chai.use(chaiHttp);
@@ -163,19 +164,93 @@ describe('Blacklist', () => {
   });
 
   describe('Blacklist Frontend', () => {
-    before(async function () {
-      this.timeout(25000);
+    const seedDB = getDBSeedFunction();
 
-      await ae.init();
+    it('it should 200 on getting the frontend', async () => {
+      await seedDB({
+        tips: [{
+          id: '1_v1',
+          title: 'test title',
+        }],
+      }, true);
+      const res = await chai.request(server).get('/blacklist/').auth(process.env.AUTHENTICATION_USER, process.env.AUTHENTICATION_PASSWORD);
+      res.should.have.status(200);
     });
 
-    it('it should 200 on getting the frontend', function (done) {
-      this.timeout(25000);
-      chai.request(server).get('/blacklist/').auth(process.env.AUTHENTICATION_USER, process.env.AUTHENTICATION_PASSWORD)
-        .end((err, res) => {
-          res.should.have.status(200);
-          done();
-        });
+    it('it should be possible to search the blacklist ui', async () => {
+      await seedDB({
+        tips: [{
+          id: '1_v1',
+          title: 'test title2',
+        }],
+      }, true);
+      const res = await chai.request(server).get('/blacklist?search=test')
+        .auth(process.env.AUTHENTICATION_USER, process.env.AUTHENTICATION_PASSWORD);
+      res.text.should.contain('<p>test title2</p>');
+      res.should.have.status(200);
+    });
+
+    it('it should show tips only by a certain address', async () => {
+      const sender1 = 'ak_TestTestTest';
+      const sender2 = 'ak_NotNotNot';
+      await seedDB({
+        tips: [{
+          id: '2_v1',
+          title: 'test title2',
+          sender: sender1,
+        }, {
+          id: '3_v1',
+          title: 'test title3',
+          sender: sender2,
+        }],
+      }, true);
+      const res = await chai.request(server).get(`/blacklist?address=${sender1}`)
+        .auth(process.env.AUTHENTICATION_USER, process.env.AUTHENTICATION_PASSWORD);
+      res.should.have.status(200);
+      res.text.should.contain(`<a href="/blacklist?address=${sender1}">${sender1}</a>`);
+      res.text.should.not.contain(`<a href="/blacklist?address=${sender2}">${sender2}</a>`);
+    });
+
+    it('it should show tip by id', async () => {
+      await seedDB({
+        tips: [{
+          id: '9999_v1',
+          title: 'test title4',
+        }],
+      }, true);
+      const res = await chai.request(server).get('/blacklist?id=9999_v1')
+        .auth(process.env.AUTHENTICATION_USER, process.env.AUTHENTICATION_PASSWORD);
+      res.should.have.status(200);
+      res.text.should.contain('<a href="/blacklist?id=9999_v1">9999_v1</a>');
+    });
+
+    it('it should filter only tips', async () => {
+      const tips = new Array(20).fill({}).map((v, i) => (
+        {
+          id: `${i}_v1`,
+          title: `Title ${i}`,
+          type: i % 2 === 0 ? 'POST_WITHOUT_TIP' : 'AE_TIP',
+          contractId: i % 2 === 0 ? process.env.CONTRACT_V3_ADDRESS : process.env.CONTRACT_V1_ADDRESS,
+        }));
+      await seedDB({ tips }, true);
+      const res = await chai.request(server).get('/blacklist?type=tips')
+        .auth(process.env.AUTHENTICATION_USER, process.env.AUTHENTICATION_PASSWORD);
+      res.text.should.contain('<span>Type: AE_TIP</span>');
+      res.text.should.not.contain('<span>Type: POST_WITHOUT_TIP</span>');
+      res.should.have.status(200);
+    });
+
+    it('it should navigate to second page', async () => {
+      const tips = new Array(31).fill({}).map((v, i) => (
+        {
+          id: `${i}_v1`,
+          title: `Title ${i}`,
+        }));
+      await seedDB({ tips }, true);
+      const res = await chai.request(server).get('/blacklist?page=2')
+        .auth(process.env.AUTHENTICATION_USER, process.env.AUTHENTICATION_PASSWORD);
+      res.text.should.contain('<div class="card">');
+      res.should.have.status(200);
     });
   });
 });

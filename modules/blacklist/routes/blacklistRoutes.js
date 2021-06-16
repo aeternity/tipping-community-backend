@@ -70,6 +70,50 @@ router.get('/api/:tipId', async (req, res) => {
  *     summary: Returns Userinterface to flag / unflag / remove tips
  *     security:
  *       - basicAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: address
+ *         required: false
+ *         schema:
+ *           type: string
+ *         description: users address to only query tips from this specific user
+ *       - in: query
+ *         name: id
+ *         required: false
+ *         schema:
+ *           type: string
+ *         description: show specific tip by id
+ *       - in: query
+ *         name: type
+ *         required: false
+ *         schema:
+ *            type: string
+ *            enum:
+ *              - posts
+ *              - tips
+ *         description: filter only posts or tips
+ *       - in: query
+ *         name: ordering
+ *         required: false
+ *         schema:
+ *           type: string
+ *           enum:
+ *             - highest
+ *             - hot
+ *             - latest
+ *         description: parameter to order the tips by
+ *       - in: query
+ *         name: page
+ *         required: false
+ *         schema:
+ *           type: integer
+ *         description: page number
+ *       - in: query
+ *         name: search
+ *         required: false
+ *         schema:
+ *           type: string
+ *         description: string to look for in the tip body
  *     responses:
  *       200:
  *         description: OK
@@ -78,9 +122,49 @@ router.get('/api/:tipId', async (req, res) => {
  *             schema:
  *               type: string
  */
-router.get('/', basicAuth, async (req, res) => res.render('admin', {
-  allItems: await Logic.augmentAllItems(await TipLogic.fetchAllLocalTips()),
-}));
+router.get('/', basicAuth, async (req, res) => {
+  const ordering = req.query.ordering || 'latest';
+  const {
+    page, type, address, id, search,
+  } = req.query;
+  let contractVersion;
+
+  if (type) {
+    switch (type) {
+      case 'posts':
+        contractVersion = 'v3';
+        break;
+      case 'tips':
+        contractVersion = ['v1', 'v2'];
+        break;
+      default:
+    }
+  }
+
+  const tips = id
+    ? [await TipLogic.fetchTip(id)]
+    : await Logic.augmentAllItems(await TipLogic.fetchTips({
+      page,
+      blacklist: false,
+      address,
+      contractVersion,
+      ordering,
+      search,
+    }));
+
+  const items = tips.map(({ hidden, flagged, dataValues }) => ({ hidden, flagged, ...dataValues }));
+
+  return res.render('admin', {
+    items,
+    query: {
+      page,
+      type,
+      ordering,
+      address,
+      search,
+    },
+  });
+});
 
 // Restricted api routes
 /**

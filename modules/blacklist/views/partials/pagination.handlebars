@@ -1,0 +1,18 @@
+<div class="pagination">
+  <label for="page">Page: </label>
+  <input
+    id="page"
+    type="number"
+    name="page"
+    value="{{page}}"
+    min="1"
+    max="999"
+  />
+  <button onclick="goToPage()">Go to Page</button>
+  <label for="address">Author: </label>
+  <input type="text" name="address" id="address" value="{{address}}" />
+  <button onclick="sortAndFilter('address')">Go to Author</button>
+  <label for="id">ID: </label>
+  <input type="text" name="id" id="id" value="{{id}}" />
+  <button onclick="sortAndFilter('id')">Go to Tip</button>
+</div>

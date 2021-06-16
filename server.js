@@ -39,7 +39,21 @@ if (process.env.SENTRY_URL) {
   app.use(Sentry.Handlers.tracingHandler());
 }
 // VIEWS
-app.engine('handlebars', exphbs());
+const hbs = exphbs.create({
+  // Specify helpers which are only registered on this instance.
+  helpers: {
+    formatDate(timestamp) { return new Date(timestamp).toLocaleString(); },
+    pages(length, block) {
+      let acc = '';
+      for (let i = 1; i <= length; ++i) acc += block.fn(i);
+      return acc;
+    },
+    isSelected(value, selected) {
+      return value === selected ? 'selected' : '';
+    },
+  },
+});
+app.engine('handlebars', hbs.engine);
 app.set('view engine', 'handlebars');
 app.set('views', path.join(__dirname, './modules/blacklist/views'));
 // MIDDLEWARES

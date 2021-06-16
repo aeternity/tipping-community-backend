@@ -49,14 +49,14 @@ describe('LinkPreview', () => {
     });
 
     it('it get link preview for superhero.com', async function () {
-      this.timeout(10000);
+      this.timeout(25000);
       const dbResult = await linkPreviewLogic.generatePreview(superHeroUrl);
       const preview = dbResult.toJSON();
       preview.should.have.property('id');
       preview.should.have.property('image');
       preview.image.should.contain('/images/compressed-preview');
       preview.should.have.property('lang', 'en');
-      preview.should.have.property('title', 'Comments for a Tip - Superhero.com');
+      preview.should.have.property('title', 'Superhero Tip v1');
       preview.should.have.property('url', superHeroUrl);
       preview.should.have.property('requestUrl', superHeroUrl);
       preview.should.have.property('responseUrl', superHeroUrl);

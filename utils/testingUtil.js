@@ -80,7 +80,7 @@ const performSignedGETRequest = (server, url, privateKey = null) => new Promise(
     });
 });
 
-const getDBSeedFunction = dbsToClear => async (fakeData, clearData = true) => {
+const getDBSeedFunction = (dbsToClear = []) => async (fakeData, clearData = true) => {
   if (clearData) {
     await dbsToClear.asyncMap(async model => model.truncate({
       cascade: true,

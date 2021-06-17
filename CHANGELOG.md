@@ -2,6 +2,148 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.0.0](https://www.github.com/aeternity/tipping-community-backend/compare/v1.10.5...v2.0.0) (2021-06-17)
+
+
+### ⚠ BREAKING CHANGES
+
+* releasing tips to db
+
+### Features
+
+* **backlist:** adds new backlist ui ([#332](https://www.github.com/aeternity/tipping-community-backend/issues/332)) ([f43d0f1](https://www.github.com/aeternity/tipping-community-backend/commit/f43d0f10ee0ec3f181da9e1420405359ffa6d5b9))
+* **comments:** addresses pr feedback ([301f4fa](https://www.github.com/aeternity/tipping-community-backend/commit/301f4faac040341063afda0a1bfae4a576465ad0))
+* **comments:** verifies commenter holds at least one required token ([f629a03](https://www.github.com/aeternity/tipping-community-backend/commit/f629a03e581e729e3c54f694e2cfc5de5fe4d3e1))
+* **contractutil:** fixes after rebase ([f282c8f](https://www.github.com/aeternity/tipping-community-backend/commit/f282c8f80624e58fd9cf5bdfa1a58912f20a5a4a))
+* **db:** updates materialized views ([0dab590](https://www.github.com/aeternity/tipping-community-backend/commit/0dab590f674885a5f5865fb1ad8d56b47f5562f6))
+* **db:** updates materialized views jsonb generation ([5db6d43](https://www.github.com/aeternity/tipping-community-backend/commit/5db6d4326104839c95b9c83a47b641a3413aff72))
+* **linkpreview:** schedule update trigger ([62386f4](https://www.github.com/aeternity/tipping-community-backend/commit/62386f4ccccb6bef5c32ee81275fb6d0deed534f))
+* **tests:** avoids deadlocks by chaining db truncates ([8eb3222](https://www.github.com/aeternity/tipping-community-backend/commit/8eb3222194f874ed94f253b44e33d5c32fde0a4d))
+* **tipdb:** add basic tips from db route ([10e2e4c](https://www.github.com/aeternity/tipping-community-backend/commit/10e2e4cf1d8417da58f5afe33d7095b52afa9dd0))
+* **tipdb:** add claims table trigger views update ([468a0fc](https://www.github.com/aeternity/tipping-community-backend/commit/468a0fced2f37e85fd233e71340bfd195ed2697b))
+* **tipdb:** add indexes, ordering ([cd0a069](https://www.github.com/aeternity/tipping-community-backend/commit/cd0a069174b4441dde6bdeca233a8bb88f65ccda))
+* **tipdb:** add scheduler logic for queue ([d77810c](https://www.github.com/aeternity/tipping-community-backend/commit/d77810c092a84db46b9db58eb9113c92617da935))
+* **tipdb:** add stats materialized view ([d432a59](https://www.github.com/aeternity/tipping-community-backend/commit/d432a59b69331fc7ddfefc016d8e9225a611f64e))
+* **tipdb:** add timestamp and sample score aggregation ([96df899](https://www.github.com/aeternity/tipping-community-backend/commit/96df899608036561433c28ad264a9da394a10f13))
+* **tipdb:** added getter contract addresses ([69db06b](https://www.github.com/aeternity/tipping-community-backend/commit/69db06bd2a64bcadda21fa244756a53ea0261b98))
+* **tipdb:** added url stats to stats endpoint ([7a221e2](https://www.github.com/aeternity/tipping-community-backend/commit/7a221e2fa776ec8469e517969e6abb06f60ced9c))
+* **tipdb:** address and blacklist filter ([435005b](https://www.github.com/aeternity/tipping-community-backend/commit/435005bb6c435cfd7dac946accff8bd7941e0677))
+* **tipdb:** adjust tip transformation ([a288047](https://www.github.com/aeternity/tipping-community-backend/commit/a2880471e8e8a681780916c7123613b2b8779549))
+* **tipdb:** adjust token aggregation ([f780835](https://www.github.com/aeternity/tipping-community-backend/commit/f78083528dc05240ec9605d992572b3228bba179))
+* **tipdb:** adjust total url amount aggregation ([2bd438a](https://www.github.com/aeternity/tipping-community-backend/commit/2bd438a1d4000257f6de37df09babda0b7a6a849))
+* **tipdb:** adjusted migrations ([94a72ca](https://www.github.com/aeternity/tipping-community-backend/commit/94a72cadd3c7d0486f9f5f0da6570a41f5c98d78))
+* **tipdb:** adjusted startup scheduler and keephot logic ([3556220](https://www.github.com/aeternity/tipping-community-backend/commit/3556220b9bb35750b03250fd02a82d7ab80628b8))
+* **tipdb:** aggregate token total amount ([fa232f3](https://www.github.com/aeternity/tipping-community-backend/commit/fa232f349669bb9047d7c02c7e16c56326b03653))
+* **tipdb:** aggregation with materialized view ([baf47ec](https://www.github.com/aeternity/tipping-community-backend/commit/baf47ec9ae3683f20044b67ca581c856a0fcfd22))
+* **tipdb:** await based on id ([a697b88](https://www.github.com/aeternity/tipping-community-backend/commit/a697b88e2e3b77fc733408c376522911d309f03d))
+* **tipdb:** await check if already exists ([296b2d0](https://www.github.com/aeternity/tipping-community-backend/commit/296b2d06f9fe948552e0224412a7d9104b3c06cc))
+* **tipdb:** await tips ([2983f8f](https://www.github.com/aeternity/tipping-community-backend/commit/2983f8ff5c1ccb4480c1ded203adc6d204d0b326))
+* **tipdb:** await tips for v3 ([5a0c740](https://www.github.com/aeternity/tipping-community-backend/commit/5a0c740354c9a912bb5599f310ac8408386c7f39))
+* **tipdb:** comments relation and commentCount ([1dce41f](https://www.github.com/aeternity/tipping-community-backend/commit/1dce41f41012c194dd570cde458392352f21252b))
+* **tipdb:** dependency update ([b30f3fb](https://www.github.com/aeternity/tipping-community-backend/commit/b30f3fb3276c4197acdbd3c73d3ce5bbaf4976f0))
+* **tipdb:** deterministic odering ([8d6c83f](https://www.github.com/aeternity/tipping-community-backend/commit/8d6c83f81901594f7ead1da8d4003459aa415bc8))
+* **tipdb:** expose view sender stats ([651cd15](https://www.github.com/aeternity/tipping-community-backend/commit/651cd1595e1284ce3f9bc8387ee7437dc07d6ee1))
+* **tipdb:** fetch all tips/retips if no payload in event ([fd73ffa](https://www.github.com/aeternity/tipping-community-backend/commit/fd73ffa5ca86a6bd409e800c4c7fdd05459e1919))
+* **tipdb:** filter contract version and language ([d9d3e49](https://www.github.com/aeternity/tipping-community-backend/commit/d9d3e4917be55136e6172a2bcc2252c6b0852842))
+* **tipdb:** fix await v1 ([6b06fc0](https://www.github.com/aeternity/tipping-community-backend/commit/6b06fc09c0cd829e48790150d15017ea574a879f))
+* **tipdb:** fix caseing ([428d410](https://www.github.com/aeternity/tipping-community-backend/commit/428d41043dfb913016cd0ccda69645faa2b071ca))
+* **tipdb:** fix link preview generation ([0312056](https://www.github.com/aeternity/tipping-community-backend/commit/03120560d3c3812593f234644e8e49306e8e6a5b))
+* **tipdb:** fix linkpreview relation ([979f598](https://www.github.com/aeternity/tipping-community-backend/commit/979f598df213ebab288d76af03632c5deccf0110))
+* **tipdb:** fix materialized views ([5ff9513](https://www.github.com/aeternity/tipping-community-backend/commit/5ff9513ca758d48c39ce265835d0a73e940e8f09))
+* **tipdb:** fix materialized views usage ([dcfe4ce](https://www.github.com/aeternity/tipping-community-backend/commit/dcfe4ce7f599538e5cd64511b1bf487a89c65ac7))
+* **tipdb:** fix migration ([03aded3](https://www.github.com/aeternity/tipping-community-backend/commit/03aded364c14cb77533d3dbf78b97a52ab584079))
+* **tipdb:** fix migrations for existing db upgrades ([4b151c4](https://www.github.com/aeternity/tipping-community-backend/commit/4b151c4182ffb5734891e13ce412f7e3a1c74c61))
+* **tipdb:** fix model relations and join ([6f9079a](https://www.github.com/aeternity/tipping-community-backend/commit/6f9079a11c8e2327b0f96614222d64255c241679))
+* **tipdb:** fix oracle use for claimed urls ([8d0b4ee](https://www.github.com/aeternity/tipping-community-backend/commit/8d0b4ee47e91c83a15d683e3d9c4cbd799b34809))
+* **tipdb:** fix relations ([8da8b27](https://www.github.com/aeternity/tipping-community-backend/commit/8da8b27f0f8328afc9291d2ff167a7c3400a18db))
+* **tipdb:** fix text fields ([f07e4f9](https://www.github.com/aeternity/tipping-community-backend/commit/f07e4f94309b6bbf468b92a6943486ba6a55c3cd))
+* **tipdb:** fix tip contract util ([b3f7da9](https://www.github.com/aeternity/tipping-community-backend/commit/b3f7da934169e00f6d4f837c22822c07c442bfe5))
+* **tipdb:** fix title in tips db ([0effac7](https://www.github.com/aeternity/tipping-community-backend/commit/0effac79a10ebabfbd22f1b912f370b7e424d710))
+* **tipdb:** fix token amount util transformation ([6f2386c](https://www.github.com/aeternity/tipping-community-backend/commit/6f2386c59662c2b367aacbca226b2408d757647d))
+* **tipdb:** fix user stats ([dd9102b](https://www.github.com/aeternity/tipping-community-backend/commit/dd9102bd1981dcb7e42a7a821aac49720d22145c))
+* **tipdb:** fixed tracing ([9b37950](https://www.github.com/aeternity/tipping-community-backend/commit/9b3795080c863b8a64124723a2bbd2f9cd91ae51))
+* **tipdb:** fixes after rebase ([4079856](https://www.github.com/aeternity/tipping-community-backend/commit/4079856847ac0e6ded53d5c39e8f174425e4cd55))
+* **tipdb:** fixes after rebase ([9f834c5](https://www.github.com/aeternity/tipping-community-backend/commit/9f834c58bb3f40fca1d3195fc0b60ac49f6ed28f))
+* **tipdb:** fixes after rebase ([9f122c6](https://www.github.com/aeternity/tipping-community-backend/commit/9f122c69497d238fece3ea73e6ad0d41b93502b4))
+* **tipdb:** fixes after rebase ([4658297](https://www.github.com/aeternity/tipping-community-backend/commit/465829700893801c09945509bfb82d8480870a06))
+* **tipdb:** include chain names in tips route ([73982f1](https://www.github.com/aeternity/tipping-community-backend/commit/73982f1d804b8f0d3b001ad15389d3a054e6ec5c))
+* **tipdb:** insert chain names to db ([5ece7fa](https://www.github.com/aeternity/tipping-community-backend/commit/5ece7fa323ac227b0e9ef75c9ad232c4d3c5486e))
+* **tipdb:** insert claims, contract util casing ([2033f11](https://www.github.com/aeternity/tipping-community-backend/commit/2033f110ce60e8e1f525ce95818a3a9a5eb692a0))
+* **tipdb:** insert retips from events ([33b3b63](https://www.github.com/aeternity/tipping-community-backend/commit/33b3b63924cf9526d5a6d87bcec5bfa7498e3099))
+* **tipdb:** insert single claims from event ([9d4e7c0](https://www.github.com/aeternity/tipping-community-backend/commit/9d4e7c06042760c90d8360c319b3b7242c3ef28c))
+* **tipdb:** insert tips from chain listener ([2f31a73](https://www.github.com/aeternity/tipping-community-backend/commit/2f31a7389d5ec1664951e5d501f4e97d6937fad7))
+* **tipdb:** link preview and description search ([40e07ed](https://www.github.com/aeternity/tipping-community-backend/commit/40e07ed2f33b6cc3706a4488a7de8ad15df36e97))
+* **tipdb:** linkpreview relation ([4a3970f](https://www.github.com/aeternity/tipping-community-backend/commit/4a3970f83f53795d13b67c6da400880f8c8b7ce9))
+* **tipdb:** optimize claimed url fetch ([7ab3f5d](https://www.github.com/aeternity/tipping-community-backend/commit/7ab3f5d7de73ff1b509c770875e9e87565c82863))
+* **tipdb:** optimize index for search ([ffe86bc](https://www.github.com/aeternity/tipping-community-backend/commit/ffe86bcbbed74f77680be7750bb89ece6272dc54))
+* **tipdb:** optimize tip topics fetch ([1a23d53](https://www.github.com/aeternity/tipping-community-backend/commit/1a23d53d75e34433e89b2d032a000e1d990704dd))
+* **tipdb:** order by total amount ([2b5c55d](https://www.github.com/aeternity/tipping-community-backend/commit/2b5c55d9b2c68e99c50fd8f93b1f2c8ab33b3eee))
+* **tipdb:** persist additional tip fields in db ([ad1720f](https://www.github.com/aeternity/tipping-community-backend/commit/ad1720fae437532830af0fcfc2b7e7f614b79ac8))
+* **tipdb:** remove chainname from tips, added missing receiver ([f0ed881](https://www.github.com/aeternity/tipping-community-backend/commit/f0ed8812a358ecd02f538a935ee2be5f24b98212))
+* **tipdb:** removed unused route ([8623d4e](https://www.github.com/aeternity/tipping-community-backend/commit/8623d4e75f84c721a8b8dd2378ae65fc40bdb07c))
+* **tipdb:** replace get all tips from cache ([e3459ad](https://www.github.com/aeternity/tipping-community-backend/commit/e3459ad0f47f97e49f533270308821b7412ea286))
+* **tipdb:** rework scheduler for update tips, retips, claims ([ceab6a7](https://www.github.com/aeternity/tipping-community-backend/commit/ceab6a77f1002918f1aaeb2ff237fdde1f3f59c5))
+* **tipdb:** sample full text search ([a5ab0c4](https://www.github.com/aeternity/tipping-community-backend/commit/a5ab0c40d8af0663dc8bc5a9b27ab0c4c004879a))
+* **tipdb:** satisfy linter ([f7a6dec](https://www.github.com/aeternity/tipping-community-backend/commit/f7a6dec0a31c536e5b90cae9fea1fb079dcf2e07))
+* **tipdb:** satisfy linter ([e77a143](https://www.github.com/aeternity/tipping-community-backend/commit/e77a14377272236e4fb4894b91769564eab183b7))
+* **tipdb:** scheduler to update tips, retips and claims ([de14435](https://www.github.com/aeternity/tipping-community-backend/commit/de1443524d7981080d7eb3f2d3ffe08b8131440a))
+* **tipdb:** search for topics ([c8a67e3](https://www.github.com/aeternity/tipping-community-backend/commit/c8a67e327e55b51d37bd7ac64d4b2068c17356f7))
+* **tipdb:** single tip route ([5a51915](https://www.github.com/aeternity/tipping-community-backend/commit/5a51915f16ff5e671321b831d08d1f8b3eec42a3))
+* **tipdb:** stats aggregation adjustment ([fc49674](https://www.github.com/aeternity/tipping-community-backend/commit/fc49674080b78a3435310b9b2279c50f20b193b5))
+* **tipdb:** stats route ([d50f19f](https://www.github.com/aeternity/tipping-community-backend/commit/d50f19f728d1a7e841a4d3b6bbd60e1a1c67fb5a))
+* **tipdb:** test db aggregation ([982020f](https://www.github.com/aeternity/tipping-community-backend/commit/982020f5e59e878e5abe24464279e3c6f7557b93))
+* **tipdb:** tip topics and title to db ([b705605](https://www.github.com/aeternity/tipping-community-backend/commit/b705605d0378c70983dfa0c0fe9ffab9d91343e1))
+* **tipdb:** tip url text, linkpreview url unique ([1864695](https://www.github.com/aeternity/tipping-community-backend/commit/186469561c3de02b3c341714544dddf71c3eb632))
+* **tipdb:** tips endpoint openapi validation fix ([94c23a1](https://www.github.com/aeternity/tipping-community-backend/commit/94c23a1e16544fabd99e6cc29ae4b41155612013))
+* **tipdb:** total amount aggregation ([33623dd](https://www.github.com/aeternity/tipping-community-backend/commit/33623dd4f9caade7590d681b00d45fa5fb09b359))
+* **tipdb:** total amount for score ([d7eafcc](https://www.github.com/aeternity/tipping-community-backend/commit/d7eafcc922563da3732421b9b527d21a0fb824a2))
+* **tipdb:** total amount functions ([24135e7](https://www.github.com/aeternity/tipping-community-backend/commit/24135e76b535f84a18e69e252f0198381a63074f))
+* **tipdb:** unclaimed amount aggregation ([231f960](https://www.github.com/aeternity/tipping-community-backend/commit/231f960003819e91b557f1209c020304f2279d97))
+* **tipdb:** update retips db model ([22d9212](https://www.github.com/aeternity/tipping-community-backend/commit/22d9212b25189e8ff41a10b32e6f5fd42e7c10d9))
+* **tipdb:** update userstats ([7b6ff69](https://www.github.com/aeternity/tipping-community-backend/commit/7b6ff69f24500925597cb1d673540c06c94730d4))
+* **tipdb:** use basic tip topic util for static aggregation ([4a27baa](https://www.github.com/aeternity/tipping-community-backend/commit/4a27baa1d0b050041d7f004314650238d878a8a9))
+* **tipdb:** use sequelize import directly ([d4adfc7](https://www.github.com/aeternity/tipping-community-backend/commit/d4adfc724d51c85232320356e5fe30c02cb29138))
+* **tipdb:** views for url and sender stats ([16db21e](https://www.github.com/aeternity/tipping-community-backend/commit/16db21eae622eb01d873c0bc91ed28f490dd4224))
+* **tipdb:** wip casing ([7b3d5ee](https://www.github.com/aeternity/tipping-community-backend/commit/7b3d5ee9bee84dfe14313cd1736dc9561993dc12))
+* **tips:** reworks await with generations for v1 ([2bab3b0](https://www.github.com/aeternity/tipping-community-backend/commit/2bab3b04b81c86bda471210a99cceac1ee5af8cc))
+* **tips:** start of community filter ([23b1e4d](https://www.github.com/aeternity/tipping-community-backend/commit/23b1e4dd9e65d8cc3fc4340032e36903354be9ec))
+* **token:** fixes materialized view for easier filtering ([0c6fbc3](https://www.github.com/aeternity/tipping-community-backend/commit/0c6fbc338e6466a1fed42c40070f7250bba6b76c))
+
+
+### Bug Fixes
+
+* **aeternity:** adds tempCallOptions to more calls ([cb7a381](https://www.github.com/aeternity/tipping-community-backend/commit/cb7a38162aed4aecbe8f245168514dc671a872b2))
+* **tip:** await routes for v1 now ignore previous state ([542a945](https://www.github.com/aeternity/tipping-community-backend/commit/542a945d087a9f156aefe482889ea8d098fcb762))
+* **tip:** claims are now properly handled ([2d7958f](https://www.github.com/aeternity/tipping-community-backend/commit/2d7958f4544de7c4778d9501c4f15ce8375ccbf5))
+* **tips:** adjusts model to fit db ([9c85e91](https://www.github.com/aeternity/tipping-community-backend/commit/9c85e91594127d5d92aeca37cb81c1d183fbebe1))
+* **tip:** waits for inserts before sending notifications ([821f18d](https://www.github.com/aeternity/tipping-community-backend/commit/821f18d713594119cf11176a9b9509af64ec5233))
+
+
+### CI / CD
+
+* **lint:** adds lint ignore lint rule ([62e96f3](https://www.github.com/aeternity/tipping-community-backend/commit/62e96f33d796652dbb6a6a96826397357bfb6135))
+
+
+### Refactorings
+
+* **comments:** adjusts comment verification to be more functional ([9b70382](https://www.github.com/aeternity/tipping-community-backend/commit/9b70382d8f8f921e9bfb391a8d7c8d21bbb2d72b))
+* rename seed factory ([61a6927](https://www.github.com/aeternity/tipping-community-backend/commit/61a69277633ec6978f935b9e6dd30a59ea0c65b1))
+* **stats:** moves from class to module ([647ff3e](https://www.github.com/aeternity/tipping-community-backend/commit/647ff3eccac9ea3f9d2a9154627c6876312dc620))
+* **tips:** moves notification handling to insert function ([ef9fcae](https://www.github.com/aeternity/tipping-community-backend/commit/ef9fcae7516b42b4aa07f12c18749d02d3910c18))
+* **tips:** moves notification handling to insert function ([f425df6](https://www.github.com/aeternity/tipping-community-backend/commit/f425df675e0361bea6c7d8f4f00165492dec5053))
+* **util:** move asyncMap to server.js ([e75fac9](https://www.github.com/aeternity/tipping-community-backend/commit/e75fac957451334f7a13b0aa82827d35adede83e))
+
+
+### Miscellaneous
+
+* adjust db migration revisions ([921bb5e](https://www.github.com/aeternity/tipping-community-backend/commit/921bb5e33946731325222c55111f192c6db47637))
+* **aeternity:** adds comment to re-enable v1 getter when dep is fixed ([01e76bd](https://www.github.com/aeternity/tipping-community-backend/commit/01e76bdee7d81d7ef070b3ba4a1d147c63b3b7f9))
+* **cache:** remove unused stats from cache ([0847962](https://www.github.com/aeternity/tipping-community-backend/commit/0847962867680b37b2c7361e20246588f59f5a2e))
+* **deps:** fixes package lock ([6e10492](https://www.github.com/aeternity/tipping-community-backend/commit/6e104929fed7c19a66cb386692d375ff92da0727))
+* releasing tips to db ([f20c4a3](https://www.github.com/aeternity/tipping-community-backend/commit/f20c4a35c482dece6e6f046dca6fef1bc924cdc5))
+* **tip:** satisfies linter ([70e7d2d](https://www.github.com/aeternity/tipping-community-backend/commit/70e7d2d040418c360d5be53438b330cffa80f914))
+* **token:** removes console error ([1fc5210](https://www.github.com/aeternity/tipping-community-backend/commit/1fc521021f1c063ef41f249beb287a283b078353))
+
 ### [1.10.5](https://www.github.com/aeternity/tipping-community-backend/compare/v1.10.4...v1.10.5) (2021-06-10)
 
 

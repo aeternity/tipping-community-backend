@@ -3,7 +3,6 @@ node_modules
 .DS_Store
 *.iml
 .idea
-database.sqlite
 .env
 /logs/*.log
 ./images/

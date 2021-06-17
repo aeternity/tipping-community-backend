@@ -21,6 +21,15 @@ class MessageBroker {
       { queueName: MESSAGE_QUEUES.LINKPREVIEW, message: MESSAGES.LINKPREVIEW.COMMANDS.UPDATE_DB },
     ]);
 
+    // S: UPDATE TIPS DB
+    // T: UPDATE LINKPREVIEWS
+    this.setupForwarding({
+      queueName: MESSAGE_QUEUES.SCHEDULED_EVENTS,
+      message: MESSAGES.SCHEDULED_EVENTS.COMMANDS.UPDATE_LINKPREVIEWS,
+    }, [
+      { queueName: MESSAGE_QUEUES.LINKPREVIEW, message: MESSAGES.LINKPREVIEW.COMMANDS.UPDATE_DB },
+    ]);
+
     // S: UPDATED CHAIN NAMES
     // T: UPDATE PREFERRED CHAIN NAMES
     this.setupForwarding({

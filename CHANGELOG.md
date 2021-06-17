@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.1.0](https://www.github.com/aeternity/tipping-community-backend/compare/v2.0.0...v2.1.0) (2021-06-17)
+
+
+### Features
+
+* **linkpreview:** async-lock linkpreview generation ([268f484](https://www.github.com/aeternity/tipping-community-backend/commit/268f4843e6188900927eca08c652654626196c7b))
+
+
+### Bug Fixes
+
+* **docker:** adds getter contracts ([e6a2a7f](https://www.github.com/aeternity/tipping-community-backend/commit/e6a2a7f6b1dd2cd2e221f8e6e8b00b4a7a3c07b6))
+
 ## [2.0.0](https://www.github.com/aeternity/tipping-community-backend/compare/v1.10.5...v2.0.0) (2021-06-17)
 
 

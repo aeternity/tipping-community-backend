@@ -12,7 +12,9 @@ const metascraper = require('metascraper')([
   require('metascraper-title')(),
   require('metascraper-url')(),
 ]);
+const AsyncLock = require('async-lock');
 
+const lock = new AsyncLock();
 const { LinkPreview } = require('../../../models');
 const DomLoader = require('../utils/domLoader');
 const cache = require('../../cache/utils/cache');
@@ -41,20 +43,22 @@ const LinkPreviewLogic = {
   },
 
   async updateLinkpreviewDatabase() {
-    const tips = await TipLogic.fetchAllLocalTips();
-    const previews = await LinkPreviewLogic.fetchAllUrls();
-    const tipUrls = [...new Set(tips.filter(tip => tip.url).map(tip => tip.url))];
+    await lock.acquire('LinkPreviewLogic.updateLinkpreviewDatabase', async () => {
+      const tips = await TipLogic.fetchAllLocalTips();
+      const previews = await LinkPreviewLogic.fetchAllUrls();
+      const tipUrls = [...new Set(tips.filter(tip => tip.url).map(tip => tip.url))];
 
-    const difference = tipUrls.filter(url => !previews.includes(url));
+      const difference = tipUrls.filter(url => !previews.includes(url));
 
-    await difference.asyncMap(async url => {
-      await LinkPreviewLogic.generatePreview(url).catch(logger.error);
+      await difference.asyncMap(async url => {
+        await LinkPreviewLogic.generatePreview(url).catch(logger.error);
+      });
+
+      if (difference.length > 0) {
+        // queueLogic.sendMessage(MESSAGE_QUEUES.LINKPREVIEW, MESSAGES.LINKPREVIEW.EVENTS.CREATED_NEW_PREVIEWS);
+        await cache.del(['StaticLogic.getStats']);
+      }
     });
-
-    if (difference.length > 0) {
-      // queueLogic.sendMessage(MESSAGE_QUEUES.LINKPREVIEW, MESSAGES.LINKPREVIEW.EVENTS.CREATED_NEW_PREVIEWS);
-      await cache.del(['StaticLogic.getStats']);
-    }
   },
 
   // General Functions

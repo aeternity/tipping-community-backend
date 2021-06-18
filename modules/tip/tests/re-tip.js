@@ -275,7 +275,7 @@ describe('(Re)Tips', () => {
       topic.should.eql('#test');
       topicProperties.should.have.property('amount', '330000000000000000');
       topicProperties.should.have.property('count', 2);
-      topicProperties.should.have.property('token_amount');
+      topicProperties.should.have.property('tokenAmount');
       topicProperties.tokenAmount.should.eql([
         {
           token: 'ct_2bCbmU7vtsysL4JiUdUZjJJ98LLbJWG1fRtVApBvqSFEM59D6W',
@@ -295,7 +295,7 @@ describe('(Re)Tips', () => {
       topic.should.eql('#test');
       topicProperties.should.have.property('amount', '330000000000000000');
       topicProperties.should.have.property('count', 2);
-      topicProperties.should.have.property('token_amount');
+      topicProperties.should.have.property('tokenAmount');
       topicProperties.tokenAmount.should.eql([
         {
           token: 'ct_2bCbmU7vtsysL4JiUdUZjJJ98LLbJWG1fRtVApBvqSFEM59D6W',

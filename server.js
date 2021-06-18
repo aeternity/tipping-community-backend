@@ -85,26 +85,26 @@ if (fs.existsSync('./swagger.json')) {
 }
 
 // ROUTES
-app.use('/blacklist', require('./modules/blacklist/routes/blacklistRoutes.js'));
-app.use('/comment', require('./modules/comment/routes/commentRoutes.js'));
-app.use('/linkpreview', require('./modules/linkPreview/routes/linkPreviewRoutes.js'));
-app.use('/verified', require('./modules/domains/routes/verifiedRoutes.js'));
-app.use('/cache', require('./modules/cache/routes/cacheRoutes.js'));
-app.use('/tokenCache', require('./modules/token/routes/tokenCacheRoutes.js'));
-app.use('/claim', require('./modules/payfortx/routes/payForTxRoutes.js'));
-app.use('/payfortx', require('./modules/payfortx/routes/payForTxRoutes.js'));
-app.use('/static', require('./modules/domains/routes/staticRoutes.js'));
-app.use('/profile', require('./modules/profile/routes/profileRoutes.js'));
-app.use('/errorreport', require('./modules/errorReport/routes/errorReportRoutes.js'));
-app.use('/tracing', require('./modules/payfortx/routes/tipTracingRoutes.js'));
-app.use('/health', require('./modules/health/routes/healthRoutes.js'));
-app.use('/pin', require('./modules/pin/routes/pinRoutes.js'));
-app.use('/notification', require('./modules/notification/routes/notificationRoutes.js'));
-app.use('/consent', require('./modules/consent/routes/consentRoutes.js'));
+app.use('/blacklist', require('./modules/blacklist/routes/blacklistRoutes'));
+app.use('/comment', require('./modules/comment/routes/commentRoutes'));
+app.use('/linkpreview', require('./modules/linkPreview/routes/linkPreviewRoutes'));
+app.use('/verified', require('./modules/domains/routes/verifiedRoutes'));
+app.use('/cache', require('./modules/cache/routes/cacheRoutes'));
+app.use('/tokenCache', require('./modules/token/routes/tokenCacheRoutes'));
+app.use('/claim', require('./modules/payfortx/routes/payForTxRoutes'));
+app.use('/payfortx', require('./modules/payfortx/routes/payForTxRoutes'));
+app.use('/static', require('./modules/domains/routes/staticRoutes'));
+app.use('/profile', require('./modules/profile/routes/profileRoutes'));
+app.use('/errorreport', require('./modules/errorReport/routes/errorReportRoutes'));
+app.use('/tracing', require('./modules/payfortx/routes/tipTracingRoutes'));
+app.use('/health', require('./modules/health/routes/healthRoutes'));
+app.use('/pin', require('./modules/pin/routes/pinRoutes'));
+app.use('/notification', require('./modules/notification/routes/notificationRoutes'));
+app.use('/consent', require('./modules/consent/routes/consentRoutes'));
 
-app.use('/images', require('./modules/media/routes/imageRoutes.js'));
-app.use('/tips', require('./modules/tip/routes/tipRoutes.js'));
-app.use('/stats', require('./modules/stats/routes/statsRoutes.js'));
+app.use('/images', require('./modules/media/routes/imageRoutes'));
+app.use('/tips', require('./modules/tip/routes/tipRoutes'));
+app.use('/stats', require('./modules/stats/routes/statsRoutes'));
 
 if (process.env.SENTRY_URL) {
   // log errors that come from controllers

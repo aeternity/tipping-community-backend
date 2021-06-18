@@ -2,7 +2,7 @@ const path = require('path');
 const Sequelize = require('sequelize');
 require('sequelize-hierarchy')(Sequelize);
 const glob = require('glob');
-const config = require('../config/config.js');
+const config = require('../config/config');
 const applyRelations = require('./relations');
 
 const basename = path.basename(__filename);

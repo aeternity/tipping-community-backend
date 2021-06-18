@@ -28,7 +28,7 @@ module.exports = {
       await queryInterface.sequelize.query('ALTER FUNCTION claimed_amount(numeric, text, varchar, numeric) SET search_path=public;', { transaction });
       return transaction.commit();
     },
-  down: () => {},
+    down: () => {},
 
     info: info
 };

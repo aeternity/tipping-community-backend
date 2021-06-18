@@ -23,7 +23,7 @@ describe('Chain Listener', () => {
     });
 
     it('it should connect to the websocket', done => {
-      const ChainListenerLogic = rewire('../logic/chainListenerLogic.js');
+      const ChainListenerLogic = rewire('../logic/chainListenerLogic');
 
       const handleConnectionInitObject = {
         handleConnectionInit: ChainListenerLogic.__get__('handleConnectionInit'),
@@ -42,7 +42,7 @@ describe('Chain Listener', () => {
     });
 
     it('it should init the contracts', done => {
-      const ChainListenerLogic = rewire('../logic/chainListenerLogic.js');
+      const ChainListenerLogic = rewire('../logic/chainListenerLogic');
 
       const stubObj = {
         subscribeToContract: ChainListenerLogic.__get__('subscribeToContract'),
@@ -71,7 +71,7 @@ describe('Chain Listener', () => {
 
     it('it should handle the messages', function (done) {
       this.timeout(10000);
-      const ChainListenerLogic = rewire('../logic/chainListenerLogic.js');
+      const ChainListenerLogic = rewire('../logic/chainListenerLogic');
 
       const stubObj = {
         handleContractEvent: ChainListenerLogic.__get__('handleContractEvent'),
@@ -101,7 +101,7 @@ describe('Chain Listener', () => {
     });
 
     it('it should handle contract events', done => {
-      const ChainListenerLogic = rewire('../logic/chainListenerLogic.js');
+      const ChainListenerLogic = rewire('../logic/chainListenerLogic');
       const handleContractEvent = ChainListenerLogic.__get__('handleContractEvent');
 
       const stub = sinon.stub(queueLogic, 'sendMessage').callsFake((queue, message) => {

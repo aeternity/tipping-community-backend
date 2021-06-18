@@ -6,7 +6,6 @@ node_modules
 .env
 /logs/*.log
 /logs/*.json
-./images/
 /traces/*.json
 docker-compose.override.yml
 swagger.json

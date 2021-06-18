@@ -5,7 +5,10 @@ node_modules
 .idea
 .env
 /logs/*.log
+/logs/*.json
 ./images/
 /traces/*.json
 docker-compose.override.yml
 swagger.json
+images/
+migrations/_current_bak.json

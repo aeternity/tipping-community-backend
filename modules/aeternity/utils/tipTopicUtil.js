@@ -4,7 +4,8 @@ const topicsRegex = /(#[a-zA-Z]+\b)(?!;)/g;
 
 const getTipTopics = tips => { // TODO move to db
   const avgTipScoreWeight = 1.5;
-  const countScoreWeight = 0.8;
+  const countScoreWeight = 1;
+  const amountScoreWeight = 1;
 
   const topics = tips.reduce((acc, tip) => {
     if (tip.topics) {
@@ -17,17 +18,17 @@ const getTipTopics = tips => { // TODO move to db
             amount: new BigNumber(acc[topic].amount).plus(tip.aggregation.totalAmount).toFixed(),
             totalScore: acc[topic].totalScore + score,
             count: acc[topic].count + 1,
-            token_amount: tip.aggregation.totalTokenAmount.reduce((tokenAcc, tokenTip) => ({
+            tokenAmount: tip.aggregation.totalTokenAmount.reduce((tokenAcc, tokenTip) => ({
               ...tokenAcc,
               [tokenTip.token]: tokenAcc[tokenTip.token]
                 ? new BigNumber(tokenAcc[tokenTip.token]).plus(tokenTip.amount).toFixed()
                 : new BigNumber(tokenTip.amount).toFixed(),
-            }), acc[topic].token_amount ? acc[topic].token_amount : {}),
+            }), acc[topic].tokenAmount ? acc[topic].tokenAmount : {}),
           } : {
             amount: tip.aggregation.totalAmount,
             totalScore: score,
             count: 1,
-            token_amount: tip.aggregation.totalTokenAmount.reduce((allTokenTipAmounts, tokenTip) => ({
+            tokenAmount: tip.aggregation.totalTokenAmount.reduce((allTokenTipAmounts, tokenTip) => ({
               ...allTokenTipAmounts,
               [tokenTip.token]: tokenTip.amount,
             }), {}),
@@ -40,20 +41,25 @@ const getTipTopics = tips => { // TODO move to db
   }, {});
 
   const maxCount = Math.max(...Object.values(topics).map(x => x.count));
+  const maxAmount = Math.max(...Object.values(topics).map(x => new BigNumber(x.amount).toNumber()));
 
   const sortedTopic = Object.entries(topics).map(([topic, data]) => {
     const topicData = data;
     topicData.avgScore = data.totalScore / data.count;
     topicData.countScore = data.count / maxCount;
+    topicData.amountScore = data.amount / maxAmount;
 
     topicData.score = topicData.avgScore * avgTipScoreWeight
-      + topicData.countScore * countScoreWeight;
+      + topicData.countScore * countScoreWeight
+      + topicData.amountScore * amountScoreWeight;
+
+    if (topicData.amountScore === 0) topicData.score = 0;
     return [topic, topicData];
   }).sort((a, b) => new BigNumber(b[1].score).minus(a[1].score).toNumber());
 
   return sortedTopic.slice(0, 10).map(([topic, topicData]) => [topic, {
     ...topicData,
-    tokenAmount: Object.entries(topicData.token_amount).map(([token, amount]) => ({ token, amount })),
+    tokenAmount: Object.entries(topicData.tokenAmount).map(([token, amount]) => ({ token, amount })),
   }]);
 };
 

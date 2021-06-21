@@ -1,5 +1,5 @@
 const chai = require('chai');
-const { describe, it, beforeEach } = require('mocha');
+const { describe, it } = require('mocha');
 const sinon = require('sinon');
 const { MESSAGE_QUEUES, MESSAGES } = require('../constants/queue');
 
@@ -9,14 +9,9 @@ const messageBroker = require('../logic/messageBrokerLogic');
 chai.should();
 
 describe('Message Broker', () => {
-  let sandbox;
-  beforeEach(() => {
-    sandbox = sinon.createSandbox();
-  });
-
   afterEach(async () => {
     await queueLogic.resetAll();
-    sandbox.restore();
+    sinon.restore();
   });
 
   describe('Forwarding', () => {

@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.1.1](https://www.github.com/aeternity/tipping-community-backend/compare/v2.1.0...v2.1.1) (2021-06-21)
+
+
+### Bug Fixes
+
+* **db:** fix functions search path for backups ([8fbf4e0](https://www.github.com/aeternity/tipping-community-backend/commit/8fbf4e0b04918c11433d821660d5e07aafc5ba15))
+* **db:** fix functions search path for backups ([acbb843](https://www.github.com/aeternity/tipping-community-backend/commit/acbb843252db145312ca933b231ef294107140f0))
+* **mdw:** runs init function to listen for messages ([868fd66](https://www.github.com/aeternity/tipping-community-backend/commit/868fd6631bfc7df6b3cecd0d248554c8b1d650f5))
+* **topics:** adjust topic scoring to remove 0 amount topics ([1679445](https://www.github.com/aeternity/tipping-community-backend/commit/1679445aa8c2321498aced3ba4001abaacb87827))
+
 ## [2.1.0](https://www.github.com/aeternity/tipping-community-backend/compare/v2.0.0...v2.1.0) (2021-06-17)
 
 

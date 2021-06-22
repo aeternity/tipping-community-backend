@@ -1,4 +1,4 @@
-const { verifyPersonalMessage, decodeBase58Check, hash } = require('@aeternity/aepp-sdk').Crypto;
+const { verifyMessage, decodeBase58Check, hash } = require('@aeternity/aepp-sdk').Crypto;
 const { v4: uuidv4 } = require('uuid');
 const urlParser = require('url');
 const imageLogic = require('../../media/logic/imageLogic');
@@ -69,7 +69,7 @@ const authenticationLogic = {
         const authString = Buffer.from(originalChallenge);
         const signatureArray = Uint8Array.from(Buffer.from(signature, 'hex'));
 
-        const validRequest = verifyPersonalMessage(authString, signatureArray, author);
+        const validRequest = verifyMessage(authString, signatureArray, author);
         if (validRequest) {
           // Remove challenge from active queue
           const queueIndex = MemoryQueue.findIndex(item => (item || {}).challenge === req.body.challenge);

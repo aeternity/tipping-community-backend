@@ -10,7 +10,7 @@ The basic steps by the backend to verify a request with a signature are as follo
 Here is a code sample of how to sign a request using the aepp-sdk-js:
 ```javascript
 // Import dependencies
-const { signPersonalMessage, generateKeyPair } = require('@aeternity/aepp-sdk').Crypto;
+const { signMessage, generateKeyPair } = require('@aeternity/aepp-sdk').Crypto;
 
 // Obtain random keypair
 const { publicKey, secretKey } = generateKeyPair();
@@ -34,7 +34,7 @@ fetch(
   .then(result => {
     const data = result.json();
     // sign challenge
-    const signatureBuffer = signPersonalMessage(
+    const signatureBuffer = signMessage(
       data.challenge,
       Buffer.from(secretKey, 'hex'),
     );

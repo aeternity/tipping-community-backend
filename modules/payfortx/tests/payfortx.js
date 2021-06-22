@@ -91,7 +91,7 @@ describe('Pay for TX', () => {
       sinon.restore();
     });
 
-    it('it should post a contract without', async function () {
+    it('it should post a tip', async function () {
       this.timeout(20000);
 
       const testData = {
@@ -102,13 +102,13 @@ describe('Pay for TX', () => {
 
       const message = tippingContractUtil.postWithoutTippingString(testData.title, testData.media);
       const hash = Crypto.hash(message);
-      const signature = Crypto.signPersonalMessage(hash, Buffer.from(secretKey, 'hex'));
+      const signature = Crypto.signMessage(hash, Buffer.from(secretKey, 'hex'));
 
       sinon.stub(ae, 'postTipToV3').callsFake((title, media, author, passedSignature) => {
         title.should.equal(testData.title);
         media.should.deep.equal(testData.media);
         author.should.equal(publicKey);
-        const verified = Crypto.verifyPersonalMessage(hash, passedSignature, Crypto.decodeBase58Check(publicKey.substr(3)));
+        const verified = Crypto.verifyMessage(hash, passedSignature, Crypto.decodeBase58Check(publicKey.substr(3)));
         verified.should.equal(true);
         return { hash: 'hash', decodedResult: '1' };
       });

@@ -1,4 +1,4 @@
-const { signPersonalMessage, generateKeyPair, hash } = require('@aeternity/aepp-sdk').Crypto;
+const { signMessage, generateKeyPair, hash } = require('@aeternity/aepp-sdk').Crypto;
 const chai = require('chai');
 const chaiHttp = require('chai-http');
 const fs = require('fs');
@@ -13,7 +13,7 @@ chai.use(chaiHttp);
 const { publicKey, secretKey } = generateKeyPair();
 
 const signChallenge = (challenge, privateKey = null) => {
-  const signatureBuffer = signPersonalMessage(
+  const signatureBuffer = signMessage(
     challenge,
     Buffer.from(privateKey || secretKey, 'hex'),
   );

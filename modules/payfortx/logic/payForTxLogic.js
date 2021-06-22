@@ -99,7 +99,7 @@ module.exports = class PayForTxLogic {
     const signature = Uint8Array.from(Buffer.from(signatureInHex, 'hex'));
 
     const hash = Crypto.hash(tippingContractUtil.postWithoutTippingString(title, media));
-    const verified = Crypto.verifyPersonalMessage(hash, signature, Crypto.decodeBase58Check(author.substr(3)));
+    const verified = Crypto.verifyMessage(hash, signature, Crypto.decodeBase58Check(author.substr(3)));
     if (!verified) {
       return sendError(401, 'The signature does not match the public key or the content');
     }

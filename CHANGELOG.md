@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.1.3](https://www.github.com/aeternity/tipping-community-backend/compare/v2.1.2...v2.1.3) (2021-06-23)
+
+
+### Bug Fixes
+
+* **ci:** adjusts imports to fit ci ([df747c3](https://www.github.com/aeternity/tipping-community-backend/commit/df747c379922c202d8cd65caf707797207cb449a))
+
+
+### Miscellaneous
+
+* adjusts imports to new lint rules ([132951d](https://www.github.com/aeternity/tipping-community-backend/commit/132951d41312f5f2b878bb558a90d928863dcae7))
+* **ci:** uses proper package command for migrations ([7940c16](https://www.github.com/aeternity/tipping-community-backend/commit/7940c162d46cc07b430ad8c29b4b05ef1439fdc9))
+* **deps:** update deps ([c6f3e5f](https://www.github.com/aeternity/tipping-community-backend/commit/c6f3e5f1e8f83dfd61f3be859393cbb784e02537))
+* **deps:** upgrade sdk to 8.2.1 ([9c4c7e7](https://www.github.com/aeternity/tipping-community-backend/commit/9c4c7e7288c24220a0f490bcab57f416e6b3526d))
+
 ### [2.1.2](https://www.github.com/aeternity/tipping-community-backend/compare/v2.1.1...v2.1.2) (2021-06-21)
 
 

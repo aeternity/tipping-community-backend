@@ -6,6 +6,7 @@ const MdwLogic = require('../../aeternity/logic/mdwLogic');
 const aeternity = require('../../aeternity/logic/aeternity');
 const { MESSAGE_QUEUES, MESSAGES } = require('../../queue/constants/queue');
 const queueLogic = require('../../queue/logic/queueLogic');
+const { EVENT_TYPES } = require('../constants/eventTypes');
 const logger = require('../../../utils/logger')(module);
 
 const lockNoTimeout = new AsyncLock();
@@ -43,51 +44,51 @@ const EventLogic = {
 
   async sendMessages({ event, tx }) {
     switch (event.name) {
-      case 'TipReceived':
+      case EVENT_TYPES.TIP_RECEIVED:
         // NEW TOKEN TIP
         await queueLogic.sendMessage(MESSAGE_QUEUES.EVENTS, MESSAGES.EVENTS.EVENTS.TIP_RECEIVED,
           event.contract === process.env.CONTRACT_V2_ADDRESS ? await aeternity.getTipV2(tx.returnValue) : null);
         break;
-      case 'TipTokenReceived':
+      case EVENT_TYPES.TIP_TOKEN_RECEIVED:
         // NEW TOKEN TIP
         await queueLogic.sendMessage(MESSAGE_QUEUES.EVENTS, MESSAGES.EVENTS.EVENTS.TIP_RECEIVED,
           await aeternity.getTipV2(tx.returnValue));
         break;
-      case 'PostWithoutTipReceived':
+      case EVENT_TYPES.POST_WITHOUT_TIP_RECEIVED:
         // NEW TOKEN TIP
         await queueLogic.sendMessage(MESSAGE_QUEUES.EVENTS, MESSAGES.EVENTS.EVENTS.TIP_RECEIVED,
           await aeternity.getTipV3(tx.returnValue));
         break;
-      case 'ReTipReceived':
+      case EVENT_TYPES.RETIP_RECEIVED:
         // NEW RETIP
         await queueLogic.sendMessage(MESSAGE_QUEUES.EVENTS, MESSAGES.EVENTS.EVENTS.RETIP_RECEIVED,
           event.contract === process.env.CONTRACT_V2_ADDRESS ? await aeternity.getRetipV2(tx.returnValue) : null);
         break;
-      case 'ReTipTokenReceived':
+      case EVENT_TYPES.RETIP_TOKEN_RECEIVED:
         // NEW TOKEN RETIP
         await queueLogic.sendMessage(MESSAGE_QUEUES.EVENTS, MESSAGES.EVENTS.EVENTS.RETIP_RECEIVED,
           await aeternity.getRetipV2(tx.returnValue));
         break;
-      case 'TipWithdrawn':
+      case EVENT_TYPES.TIP_WITHDRAWN:
         // CLAIM
         await queueLogic.sendMessage(MESSAGE_QUEUES.EVENTS, MESSAGES.EVENTS.EVENTS.TIP_WITHDRAWN,
           await aeternity.getClaimV1V2(event.contract, event.url));
         break;
-      case 'QueryOracle':
+      case EVENT_TYPES.QUERY_ORACLE:
         // ORACLE HAS RECEIVED A QUERY
         break;
-      case 'CheckPersistClaim':
+      case EVENT_TYPES.CHECK_PERSIST_CLAIM:
         // ORACLE CHECKED CLAIM
         break;
-      case 'Transfer':
+      case EVENT_TYPES.TRANSFER:
         // TRANSFER AEX9
         break;
-      case 'Allowance':
+      case EVENT_TYPES.ALLOWANCE:
         // ALLOWANCE AEX9
         break;
       default:
-        logger.info('Unknown event:');
-        logger.info(event);
+        logger.warn('Unknown event:');
+        logger.warn(event);
     }
   },
 

@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.1.4](https://www.github.com/aeternity/tipping-community-backend/compare/v2.1.3...v2.1.4) (2021-06-25)
+
+
+### Bug Fixes
+
+* **event:** uses constants to distinguish events ([df29412](https://www.github.com/aeternity/tipping-community-backend/commit/df294123fd1ca6936a4a7cfb7deb3b0b8869d6ce))
+
 ### [2.1.3](https://www.github.com/aeternity/tipping-community-backend/compare/v2.1.2...v2.1.3) (2021-06-23)
 
 

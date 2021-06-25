@@ -342,6 +342,17 @@ describe('(Re)Tips', () => {
       res.should.have.status(200);
     });
 
+    it('it should resolve new tips when they are added for v4', async function () {
+      this.timeout(5000);
+      const fakeData = JSON.parse(JSON.stringify(sampleTips));
+      fakeData.tips[fakeData.tips.length - 1].id = '10_v4';
+      const [res] = await Promise.all([
+        chai.request(server).get('/tips/await/tip/10_v4'),
+        seedDB(fakeData),
+      ]);
+      res.should.have.status(200);
+    });
+
     it('it should resolve new re-tips when they are added for v1', async function () {
       this.timeout(5000);
       const fakeData = JSON.parse(JSON.stringify(sampleTips));

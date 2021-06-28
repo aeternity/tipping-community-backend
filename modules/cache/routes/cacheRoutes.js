@@ -1,8 +1,7 @@
 const { Router } = require('express');
-const { Op } = require('sequelize');
 const CacheLogic = require('../logic/cacheLogic');
 const ProfileLogic = require('../../profile/logic/profileLogic');
-const { Event } = require('../../../models');
+const EventLogic = require('../../event/logic/eventLogic');
 
 const router = new Router();
 
@@ -30,7 +29,7 @@ const wordbazaarMiddleware = (req, res, next) => {
  */
 router.get('/chainNames', async (req, res) => {
   const profiles = await ProfileLogic.getAllProfiles();
-  res.send(await CacheLogic.fetchChainNames(profiles));
+  return res.send(await CacheLogic.fetchChainNames(profiles));
 });
 
 /**
@@ -61,14 +60,13 @@ router.get('/chainNames', async (req, res) => {
  *                       type: number
  *                       format: float
  */
-router.get('/price', async (req, res) => {
-  res.send(await CacheLogic.fetchPrice());
-});
+router.get('/price', async (req, res) => res.send(await CacheLogic.fetchPrice()));
 
 /**
  * @swagger
  * /cache/events:
  *   get:
+ *     deprecated: true
  *     tags:
  *       - cache
  *     summary: Returns all chain events related to the tipping contracts
@@ -101,26 +99,7 @@ router.get('/price', async (req, res) => {
  *               items:
  *                 $ref: '#/components/schemas/Event'
  */
-router.get('/events', async (req, res) => {
-  res.send(await Event.findAll({
-    where: {
-      ...(typeof req.query.address !== 'undefined') && {
-        addresses: {
-          [Op.contains]: [req.query.address],
-        },
-      },
-      ...(typeof req.query.event !== 'undefined') && {
-        name: req.query.event,
-      },
-    },
-    order: [
-      ['height', 'DESC'],
-      ['time', 'DESC'],
-      ['nonce', 'DESC'],
-    ],
-    limit: req.query.limit ? req.query.limit : null,
-  }));
-});
+router.get('/', async (req, res) => res.send(await EventLogic.getAllEvents(req.params.address, req.params.event, req.params.limit)));
 
 /**
  * @swagger
@@ -134,9 +113,7 @@ router.get('/events', async (req, res) => {
  *       200:
  *         description: OK
  */
-router.get('/invalidate/tips', async (req, res) => {
-  if (res) res.send({ status: 'OK' });
-});
+router.get('/invalidate/tips', async (req, res) => res.send({ status: 'OK' }));
 /**
  * @swagger
  * /cache/invalidate/oracle:
@@ -150,7 +127,7 @@ router.get('/invalidate/tips', async (req, res) => {
  */
 router.get('/invalidate/oracle', async (req, res) => {
   await CacheLogic.invalidateOracle();
-  if (res) res.send({ status: 'OK' });
+  return res.send({ status: 'OK' });
 });
 /**
  * @swagger
@@ -164,9 +141,7 @@ router.get('/invalidate/oracle', async (req, res) => {
  *       200:
  *         description: OK
  */
-router.get('/invalidate/events', async (req, res) => {
-  if (res) res.send({ status: 'OK' });
-});
+router.get('/invalidate/events', async (req, res) => res.send({ status: 'OK' }));
 /**
  * @swagger
  * /cache/invalidate/token/{token}:

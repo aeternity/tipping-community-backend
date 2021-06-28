@@ -4,8 +4,8 @@ const {
 } = require('../../../models');
 const cache = require('../../cache/utils/cache');
 
-module.exports = class StaticLogic {
-  static async getStatsPerModel(Model) {
+const StaticLogic = {
+  async getStatsPerModel(Model) {
     return {
       today: await Model.count({
         where: {
@@ -30,9 +30,9 @@ module.exports = class StaticLogic {
       }),
       total: await Model.count(),
     };
-  }
+  },
 
-  static async getStats() {
+  async getStats() {
     return cache.getOrSet(
       ['StaticLogic.getStats'],
       async () => ({
@@ -42,9 +42,9 @@ module.exports = class StaticLogic {
         blacklist: await StaticLogic.getStatsPerModel(BlacklistEntry),
       }),
     );
-  }
+  },
 
-  static async getGrayList() {
+  async getGrayList() {
     return [
       'facebook.com',
       'weibo.com',
@@ -54,5 +54,7 @@ module.exports = class StaticLogic {
       'spotify.com',
       'linkedin.com',
     ];
-  }
+  },
 };
+
+module.exports = StaticLogic;

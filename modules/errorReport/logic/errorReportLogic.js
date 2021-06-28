@@ -1,26 +1,22 @@
 const { ErrorReport } = require('../../../models');
 
-module.exports = class ErrorReportLogic {
-  static async addItem(req, res) {
-    try {
-      const {
-        appVersion, browser, error, time, platform, description,
-      } = req.body;
-      const entry = await ErrorReport.create({
-        appVersion,
-        browser,
-        error,
-        time,
-        platform,
-        description,
-      });
-      res.send(entry);
-    } catch (e) {
-      res.status(500).send(e.message);
-    }
-  }
+const ErrorReportLogic = {
+  async addItem({
+    appVersion, browser, error, time, platform, description,
+  }) {
+    return ErrorReport.create({
+      appVersion,
+      browser,
+      error,
+      time,
+      platform,
+      description,
+    });
+  },
 
-  static async getAllItems(req, res) {
-    res.send(await ErrorReport.findAll({ raw: true }));
-  }
+  async getAllReports() {
+    return ErrorReport.findAll({ raw: true });
+  },
 };
+
+module.exports = ErrorReportLogic;

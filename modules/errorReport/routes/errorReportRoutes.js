@@ -1,5 +1,5 @@
 const { Router } = require('express');
-const Logic = require('../logic/errorReportLogic');
+const ErrorReportLogic = require('../logic/errorReportLogic');
 const { basicAuth } = require('../../authentication/logic/authenticationLogic');
 
 const router = new Router();
@@ -29,7 +29,9 @@ const router = new Router();
  *               items:
  *                 $ref: '#/components/schemas/ErrorReport'
  */
-router.get('/', basicAuth, Logic.getAllItems);
+router.get('/', basicAuth, async (req, res) => {
+  res.send(await ErrorReportLogic.getAllReports());
+});
 
 /**
  * @swagger
@@ -51,6 +53,14 @@ router.get('/', basicAuth, Logic.getAllItems);
  *             schema:
  *               $ref: '#/components/schemas/ErrorReport'
  */
-router.post('/', Logic.addItem);
+router.post('/', async (req, res) => {
+  const {
+    appVersion, browser, error, time, platform, description,
+  } = req.body;
+  const result = await ErrorReportLogic.addItem({
+    appVersion, browser, error, time, platform, description,
+  });
+  return res.send(result);
+});
 
 module.exports = router;

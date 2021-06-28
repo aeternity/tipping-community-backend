@@ -120,12 +120,8 @@ router.post('/api', signatureAuth, async (req, res) => {
   const {
     tipId, text, author, signature, challenge, parentId,
   } = req.body;
-  try {
-    const result = await CommentLogic.addItem(tipId, text, author, signature, challenge, parentId);
-    res.send(result);
-  } catch (e) {
-    res.status(500).send({ error: e.message });
-  }
+  const result = await CommentLogic.addItem(tipId, text, author, signature, challenge, parentId);
+  res.send(result);
 });
 /**
  * @swagger

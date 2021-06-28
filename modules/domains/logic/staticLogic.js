@@ -1,5 +1,5 @@
-module.exports = class StaticLogic {
-  static async getGrayList() {
+const StaticLogic = {
+  async getGrayList() {
     return [
       'facebook.com',
       'weibo.com',
@@ -9,5 +9,7 @@ module.exports = class StaticLogic {
       'spotify.com',
       'linkedin.com',
     ];
-  }
+  },
 };
+
+module.exports = StaticLogic;

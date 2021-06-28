@@ -81,7 +81,7 @@ describe('Consent Storage', () => {
 
     it('it should DELETE a specific item', async () => {
       const { res } = await performSignedJSONRequest(server, 'delete', `/consent/${publicKey}/${testData.scope}`);
-      res.should.have.status(200);
+      res.should.have.status(204);
     });
 
     it('it should 404 on a deleted scope', async () => {

@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.2.0](https://www.github.com/aeternity/tipping-community-backend/compare/v2.1.3...v2.2.0) (2021-06-28)
+
+
+### Features
+
+* **v4-contract:** fixes for v4 contract integration ([920f58f](https://www.github.com/aeternity/tipping-community-backend/commit/920f58f40d77394cb12537318b5422938a358893))
+* **v4-contract:** integrate v4 contract support ([40c5eb7](https://www.github.com/aeternity/tipping-community-backend/commit/40c5eb7e2b9a32b1b5b34bc0696bd6269dcbe57b))
+
+
+### Bug Fixes
+
+* **event:** uses constant for event switch ([6f9571f](https://www.github.com/aeternity/tipping-community-backend/commit/6f9571f6c1c959714385d34c9a223412bb540cbc))
+* **event:** uses constants to distinguish events ([df29412](https://www.github.com/aeternity/tipping-community-backend/commit/df294123fd1ca6936a4a7cfb7deb3b0b8869d6ce))
+
 ### [2.1.3](https://www.github.com/aeternity/tipping-community-backend/compare/v2.1.2...v2.1.3) (2021-06-23)
 
 

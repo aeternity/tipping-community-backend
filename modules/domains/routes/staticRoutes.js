@@ -78,7 +78,7 @@ const router = new Router();
  *                     total:
  *                       type: integer
  */
-router.get('/stats', StaticLogic.deliverStats);
+router.get('/stats', async (req, res) => res.send(await StaticLogic.getStats()));
 /**
  * @swagger
  * /static/wallet/graylist:
@@ -97,6 +97,6 @@ router.get('/stats', StaticLogic.deliverStats);
  *                 type: string
  *                 format: url
  */
-router.get('/wallet/graylist', StaticLogic.getGrayList);
+router.get('/wallet/graylist', (req, res) => res.send(StaticLogic.getGrayList()));
 
 module.exports = router;

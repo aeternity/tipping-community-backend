@@ -1,5 +1,5 @@
 const { Router } = require('express');
-const Logic = require('../logic/verifiedLogic');
+const CacheLogic = require('../../cache/logic/cacheLogic');
 
 const router = new Router();
 
@@ -28,6 +28,9 @@ const router = new Router();
  *                 type: string
  *                 format: url
  */
-router.get('/', Logic.getAllClaimedEvents);
+router.get('/', async (req, res) => {
+  const allClaimedDomains = await CacheLogic.getOracleAllClaimedUrls();
+  return res.send(allClaimedDomains);
+});
 
 module.exports = router;

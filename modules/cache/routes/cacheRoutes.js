@@ -2,8 +2,6 @@ const { Router } = require('express');
 const { Op } = require('sequelize');
 const CacheLogic = require('../logic/cacheLogic');
 const ProfileLogic = require('../../profile/logic/profileLogic');
-const queueLogic = require('../../queue/logic/queueLogic');
-const { MESSAGES, MESSAGE_QUEUES } = require('../../queue/constants/queue');
 const { Event } = require('../../../models');
 
 const router = new Router();
@@ -128,6 +126,7 @@ router.get('/events', async (req, res) => {
  * @swagger
  * /cache/invalidate/tips:
  *   get:
+ *     deprecated: true
  *     tags:
  *       - cache
  *     summary: Invalidates the tip cache
@@ -136,7 +135,6 @@ router.get('/events', async (req, res) => {
  *         description: OK
  */
 router.get('/invalidate/tips', async (req, res) => {
-  await queueLogic.sendMessage(MESSAGE_QUEUES.CACHE, MESSAGES.CACHE.EVENTS.TIP_INVALIDATION_REQUEST);
   if (res) res.send({ status: 'OK' });
 });
 /**

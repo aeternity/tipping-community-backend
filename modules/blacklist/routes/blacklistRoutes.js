@@ -232,8 +232,6 @@ router.put('/api/:tipId', basicAuth, async (req, res) => {
   try {
     const { status } = req.body;
     const { tipId } = req.params;
-    if (!tipId) return res.status(400).send('Missing required field tipId');
-    if (!status) return res.status(400).send('Missing required field status');
     await Logic.updateItem(tipId, status);
     return res.sendStatus(200);
   } catch (e) {
@@ -296,8 +294,6 @@ router.post('/api/wallet', signatureAuth, async (req, res) => {
     const {
       author, tipId, signature, challenge,
     } = req.body;
-    if (!tipId) return res.status(400).send('Missing required field tipId');
-    if (!author) return res.status(400).send('Missing required field author');
     const entry = await Logic.flagTip(tipId, author, signature, challenge);
     return res.send(entry);
   } catch (e) {

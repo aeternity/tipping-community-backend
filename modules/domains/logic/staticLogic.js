@@ -1,6 +1,6 @@
 module.exports = class StaticLogic {
-  static async getGrayList(req, res) {
-    res.send([
+  static async getGrayList() {
+    return [
       'facebook.com',
       'weibo.com',
       'pinterest.com',
@@ -8,6 +8,6 @@ module.exports = class StaticLogic {
       'quora.com',
       'spotify.com',
       'linkedin.com',
-    ]);
+    ];
   }
 };

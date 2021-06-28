@@ -1,5 +1,6 @@
 const { Router } = require('express');
 const ConsentLogic = require('../logic/consentLogic');
+const { CONSENT_STATES } = require('../constants/consentStates');
 const { signatureAuth } = require('../../authentication/logic/authenticationLogic');
 
 const router = new Router();
@@ -48,7 +49,10 @@ const router = new Router();
  *                  items:
  *                    $ref: '#/components/schemas/Consent'
  */
-router.get('/:author', signatureAuth, ConsentLogic.getAllItemsForUser);
+router.get('/:author', signatureAuth, async (req, res) => {
+  const { author } = req.params;
+  res.send(await ConsentLogic.getAllItemsForUser(author));
+});
 /**
  * @swagger
  * /consent/{author}/{scope}:
@@ -89,12 +93,15 @@ router.get('/:author', signatureAuth, ConsentLogic.getAllItemsForUser);
  *                - $ref: '#/components/schemas/SignatureResponse'
  *                - $ref: '#/components/schemas/Consent'
  */
-router.get('/:author/:scope', signatureAuth, ConsentLogic.getSingleItem);
+router.get('/:author/:scope', signatureAuth, async (req, res) => {
+  const { author, scope } = req.params;
+  const result = await ConsentLogic.getSingleItem(author, scope);
+  return result ? res.send(result.toJSON()) : res.sendStatus(404);
+});
 
 /**
  * @swagger
  * /consent/{author}/{scope}:
- *   post:
  *     tags:
  *       - consent
  *     summary: Update consent settings for a given user & scope
@@ -128,7 +135,24 @@ router.get('/:author/:scope', signatureAuth, ConsentLogic.getSingleItem);
  *                - $ref: '#/components/schemas/SignatureResponse'
  *                - $ref: '#/components/schemas/Consent'
  */
-router.post('/:author/:scope', signatureAuth, ConsentLogic.upsertItem);
+router.post('/:author/:scope', signatureAuth, async (req, res) => {
+  const {
+    status, signature, challenge,
+  } = req.body;
+
+  const { author, scope } = req.params;
+  if (Object.values(CONSENT_STATES).indexOf(status) === -1) {
+    return res.status(400).send(`Unknown status ${status}`);
+  }
+  const result = await ConsentLogic.upsertItem({
+    author,
+    scope,
+    status,
+    signature,
+    challenge,
+  });
+  return res.send(result);
+});
 /**
  * @swagger
  * /consent/{author}/{scope}:
@@ -159,6 +183,10 @@ router.post('/:author/:scope', signatureAuth, ConsentLogic.upsertItem);
  *                - $ref: '#/components/schemas/SignatureResponse'
  *                - $ref: '#/components/schemas/Consent'
  */
-router.delete('/:author/:scope', signatureAuth, ConsentLogic.removeItem);
+router.delete('/:author/:scope', signatureAuth, async (req, res) => {
+  const { author, scope } = req.params;
+  const result = await ConsentLogic.removeItem(author, scope);
+  return result === 1 ? res.sendStatus(204) : res.sendStatus(404);
+});
 
 module.exports = router;

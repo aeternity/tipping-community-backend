@@ -28,6 +28,6 @@ const router = new Router();
  *                 type: string
  *                 format: url
  */
-router.get('/wallet/graylist', StaticLogic.getGrayList);
+router.get('/wallet/graylist', (req, res) => res.send(StaticLogic.getGrayList()));
 
 module.exports = router;

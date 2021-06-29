@@ -8,8 +8,8 @@ const {
 
 const logger = require('../../../utils/logger')(module);
 
-module.exports = class NotificationLogic {
-  static add = {
+const NotificationLogic = {
+  add: {
     [NOTIFICATION_TYPES.COMMENT_ON_TIP]: async (receiver, sender, commentId, tipId) => Notification.create({
       receiver,
       sender,
@@ -60,9 +60,9 @@ module.exports = class NotificationLogic {
       sourceId: retipId,
       sourceType: SOURCE_TYPES.RETIP,
     }),
-  };
+  },
 
-  static async handleDuplicateNotification(asyncInsertCall) {
+  async handleDuplicateNotification(asyncInsertCall) {
     try {
       return await asyncInsertCall;
     } catch (e) {
@@ -73,9 +73,9 @@ module.exports = class NotificationLogic {
       logger.debug('Duplicate notification');
       return Promise.resolve({});
     }
-  }
+  },
 
-  static async getForUser(req, res) {
+  async getForUser(req, res) {
     try {
       const { author } = req.params;
       if (!author) return res.status(400).send('Missing required field author');
@@ -84,9 +84,9 @@ module.exports = class NotificationLogic {
     } catch (e) {
       return res.status(500).send(e.message);
     }
-  }
+  },
 
-  static async updateNotificationState(req, res) {
+  async updateNotificationState(req, res) {
     try {
       const { notificationId } = req.params;
       const { status } = req.body;
@@ -96,14 +96,14 @@ module.exports = class NotificationLogic {
     } catch (e) {
       return res.status(500).send(e.message);
     }
-  }
+  },
 
-  static async bulkUpdateNotificationStatus(ids, status) {
+  async bulkUpdateNotificationStatus(ids, status) {
     const results = await Notification.findAll({ where: { id: ids } });
     return Notification.bulkCreate(results.map(notification => ({ ...notification.toJSON(), status })), { updateOnDuplicate: ['status'] });
-  }
+  },
 
-  static async handleNewTip(tip) {
+  async handleNewTip(tip) {
     // TIP ON COMMENT
     const commentMatch = tip.url && tip.url.match(/https:\/\/superhero\.com\/tip\/(\d+(?:_v\d+)?)\/comment\/(\d+)/);
     if (commentMatch) {
@@ -119,9 +119,9 @@ module.exports = class NotificationLogic {
         NotificationLogic.add[NOTIFICATION_TYPES.TIP_ON_COMMENT](comment.author, tip.sender, tip.id, commentId),
       );
     }
-  }
+  },
 
-  static async handleNewRetip(retip) {
+  async handleNewRetip(retip) {
     // RETIP ON TIP
     const parentTip = await Tip.findOne({
       where: { id: retip.tipId },
@@ -133,9 +133,9 @@ module.exports = class NotificationLogic {
     } else {
       logger.info(`Skipping notification for RETIP_ON_TIP the retip ${retip.id} to tip ${parentTip.id} due to self retip`);
     }
-  }
+  },
 
-  static async handleClaim(claim) {
+  async handleClaim(claim) {
     if (claim.claimGen === 0) {
       return;
     }
@@ -169,5 +169,7 @@ module.exports = class NotificationLogic {
         NotificationLogic.add[NOTIFICATION_TYPES.CLAIM_OF_RETIP](retip.sender, retip.tipId, retip.id),
       );
     }));
-  }
+  },
 };
+
+module.exports = NotificationLogic;

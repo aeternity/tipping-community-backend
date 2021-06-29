@@ -75,27 +75,13 @@ const NotificationLogic = {
     }
   },
 
-  async getForUser(req, res) {
-    try {
-      const { author } = req.params;
-      if (!author) return res.status(400).send('Missing required field author');
-      const allEntries = await Notification.findAll({ where: { receiver: author }, raw: true });
-      return res.send(allEntries);
-    } catch (e) {
-      return res.status(500).send(e.message);
-    }
+  async getForUser(receiver) {
+    return Notification.findAll({ where: { receiver }, raw: true });
   },
 
-  async updateNotificationState(req, res) {
-    try {
-      const { notificationId } = req.params;
-      const { status } = req.body;
-      if (!notificationId) return res.status(400).send('Missing required field tipId');
-      await Notification.update({ status }, { where: { id: notificationId } });
-      return res.send((await Notification.findOne({ where: { id: notificationId } })).toJSON());
-    } catch (e) {
-      return res.status(500).send(e.message);
-    }
+  async updateNotificationState(notificationId, status) {
+    await Notification.update({ status }, { where: { id: notificationId } });
+    return (await Notification.findOne({ where: { id: notificationId } })).toJSON();
   },
 
   async bulkUpdateNotificationStatus(ids, status) {

@@ -35,6 +35,15 @@ const router = new Router();
  *                allHealthy:
  *                  type: boolean
  */
-router.get('/backend', HealthLogic.answerHealthRequest);
+router.get('/backend', async (req, res) => {
+  const dbHealth = await HealthLogic.checkDBHealth();
+  const ipfsHealth = await HealthLogic.checkIPFSHealth();
+  const redisHealth = await HealthLogic.checkRedisHealth();
+  const aeHealth = await HealthLogic.checkAEClient();
+  const allHealthy = dbHealth && ipfsHealth && redisHealth && aeHealth;
+  res.status(allHealthy ? 200 : 500).send({
+    dbHealth, ipfsHealth, redisHealth, aeHealth, allHealthy,
+  });
+});
 
 module.exports = router;

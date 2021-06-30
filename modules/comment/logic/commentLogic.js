@@ -11,7 +11,9 @@ const CommentLogic = {
     const parentComment = (typeof parentId !== 'undefined' && parentId !== '')
       ? await Comment.findOne({ where: { id: parentId } }) : null;
     if (parentComment === null && typeof parentId !== 'undefined' && parentId !== '') {
-      throw new Error(`Could not find parent comment with id ${parentId}`);
+      return {
+        error: `Could not find parent comment with id ${parentId}`,
+      };
     }
 
     const relevantTip = await TipLogic.fetchTip(tipId);
@@ -24,7 +26,9 @@ const CommentLogic = {
       const userToken = await MdwLogic.fetchTokenBalancesForAddress(author).catch(() => []);
       const requiredToken = parsedTip.aggregation.totalTokenAmount.map(({ token }) => token);
       if (!userToken.some(({ amount, contract_id: contractId }) => new BigNumber(amount).gt('0') && requiredToken.includes(contractId))) {
-        throw new Error('The commenting user needs to own at least one token the tip has been tipped or retipped with.');
+        return {
+          error: 'The commenting user needs to own at least one token the tip has been tipped or retipped with.',
+        };
       }
     }
 

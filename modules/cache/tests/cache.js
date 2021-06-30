@@ -104,7 +104,7 @@ describe('Cache', () => {
         time: 1000,
         data: {},
       };
-      await Event.bulkCreate([sampleEvent, sampleEvent, sampleEvent]);
+      await Event.bulkCreate([sampleEvent, sampleEvent, { ...sampleEvent, addresses: ['ak_out'] }]);
 
       const res = await chai.request(server).get('/cache/events');
       res.should.have.status(200);
@@ -114,7 +114,7 @@ describe('Cache', () => {
       const resAddress = await chai.request(server).get('/cache/events?address=ak_in');
       resAddress.should.have.status(200);
       resAddress.body.should.be.an('array');
-      resAddress.body.should.have.length(3);
+      resAddress.body.should.have.length(2);
 
       const resFakeAddress = await chai.request(server).get('/cache/events?address=ak_not_in_there');
       resFakeAddress.should.have.status(200);

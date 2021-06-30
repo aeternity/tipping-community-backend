@@ -102,6 +102,7 @@ router.get('/:author/:scope', signatureAuth, async (req, res) => {
 /**
  * @swagger
  * /consent/{author}/{scope}:
+ *   post:
  *     tags:
  *       - consent
  *     summary: Update consent settings for a given user & scope

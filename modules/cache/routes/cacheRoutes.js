@@ -99,7 +99,9 @@ router.get('/price', async (req, res) => res.send(await CacheLogic.fetchPrice())
  *               items:
  *                 $ref: '#/components/schemas/Event'
  */
-router.get('/', async (req, res) => res.send(await EventLogic.getAllEvents(req.params.address, req.params.event, req.params.limit)));
+router.get('/events', async (req, res) => {
+  res.send(await EventLogic.getAllEvents(req.query.address, req.query.event, req.query.limit));
+});
 
 /**
  * @swagger

@@ -26,12 +26,12 @@ const EventLogic = {
     });
   },
 
-  async getAllEvents(addresses, eventName, limit) {
+  async getAllEvents(address, eventName, limit) {
     return Event.findAll({
       where: {
-        ...(typeof addresses !== 'undefined') && {
+        ...(typeof address !== 'undefined') && {
           addresses: {
-            [Op.contains]: [addresses],
+            [Op.contains]: [address],
           },
         },
         ...(typeof eventName !== 'undefined') && {

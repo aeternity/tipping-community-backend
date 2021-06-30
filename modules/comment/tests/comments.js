@@ -116,7 +116,7 @@ describe('Comments', () => {
 
     it('it should REJECT a new comment entry for a tip with tokens when user has no tokens', done => {
       performSignedJSONRequest(server, 'post', '/comment/api', testDataWithTokens).then(({ res }) => {
-        res.should.have.status(500);
+        res.should.have.status(400);
         res.body.should.be.a('object');
         res.body.should.have.property('error', 'The commenting user needs to own at least one token the tip has been tipped or retipped with.');
         done();
@@ -304,7 +304,7 @@ describe('Comments', () => {
     it('it should REJECT a nested comment entry with a wrong parent id', done => {
       const nestedTestData = { ...testData, parentId: 0 };
       performSignedJSONRequest(server, 'post', '/comment/api', nestedTestData).then(({ res }) => {
-        res.should.have.status(500);
+        res.should.have.status(400);
         res.body.should.have.property('error', `Could not find parent comment with id ${nestedTestData.parentId}`);
         done();
       });

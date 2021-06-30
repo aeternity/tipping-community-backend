@@ -39,7 +39,10 @@ const router = new Router();
  *                  type: string
  *                  format: uuid
  */
-router.post('/submit', PayForTxLogic.payForTx);
+router.post('/submit', async (req, res) => {
+  const claimResult = await PayForTxLogic.claimTip(req.body.url, req.body.address);
+  return res.status(claimResult.error ? 500 : 200).send(claimResult);
+});
 
 /**
  * @swagger
@@ -75,6 +78,14 @@ router.post('/submit', PayForTxLogic.payForTx);
  *                tx:
  *                  type: object
  */
-router.post('/post', PayForTxLogic.postForUser);
+router.post('/post', async (req, res) => {
+  const signature = Uint8Array.from(Buffer.from(req.body.signature, 'hex'));
+
+  const result = await PayForTxLogic.postForUser({
+    ...req.body,
+    signature,
+  });
+  res.status(result.error ? result.status : 200).send(result);
+});
 
 module.exports = router;

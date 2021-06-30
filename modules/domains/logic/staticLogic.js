@@ -44,7 +44,7 @@ const StaticLogic = {
     );
   },
 
-  async getGrayList() {
+  getGrayList() {
     return [
       'facebook.com',
       'weibo.com',

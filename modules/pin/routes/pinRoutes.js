@@ -1,5 +1,6 @@
 const { Router } = require('express');
-const Logic = require('../logic/pinLogic');
+const PinLogic = require('../logic/pinLogic');
+const { PINNED_CONTENT_TYPES } = require('../constants/contentTypes');
 const { signatureAuth } = require('../../authentication/logic/authenticationLogic');
 
 const router = new Router();
@@ -34,7 +35,9 @@ const router = new Router();
  *               items:
  *                 $ref: '#/components/schemas/Tip'
  */
-router.get('/:author', Logic.getAllItemsPerUser);
+router.get('/:author', async (req, res) => {
+  res.send(await PinLogic.getAllItemsPerUser(req.params.author));
+});
 
 // Restricted api routes
 /**
@@ -75,7 +78,17 @@ router.get('/:author', Logic.getAllItemsPerUser);
  *                - $ref: '#/components/schemas/SignatureResponse'
  *                - $ref: '#/components/schemas/Pin'
  */
-router.post('/:author', signatureAuth, Logic.addItem);
+router.post('/:author', signatureAuth, async (req, res) => {
+  const {
+    entryId, type, signature, challenge,
+  } = req.body;
+  const { author } = req.params;
+  if (!PINNED_CONTENT_TYPES[type]) return res.status(400).send(`Send type is invalid ${type}`);
+  const entry = await PinLogic.addItem({
+    entryId, type, author, signature, challenge,
+  });
+  return res.send(entry);
+});
 /**
  * @swagger
  * /pin/{author}:
@@ -100,6 +113,9 @@ router.post('/:author', signatureAuth, Logic.addItem);
  *               oneOf:
  *                - $ref: '#/components/schemas/SignatureResponse'
  */
-router.delete('/:author', signatureAuth, Logic.removeItem);
+router.delete('/:author', signatureAuth, async (req, res) => {
+  const result = await PinLogic.removeItem(req.body.entryId, req.params.author, req.body.type);
+  return result === 1 ? res.sendStatus(200) : res.sendStatus(404);
+});
 
 module.exports = router;

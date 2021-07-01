@@ -44,7 +44,7 @@ const router = new Router();
  */
 router.post('/submit', async (req, res) => {
   const claimResult = await PayForTxLogic.claimTip(req.body.url, req.body.address);
-  return res.status(claimResult.error ? 500 : 200).send(claimResult);
+  return res.status(claimResult.error ? claimResult.status : 200).send(claimResult);
 });
 
 /**
@@ -92,7 +92,7 @@ router.post('/post', async (req, res) => {
     ...req.body,
     signature,
   });
-  res.status(result.error ? result.status : 200).send(result);
+  res.status(result.error ? result.status : 200).send({ tx: result });
 });
 
 module.exports = router;

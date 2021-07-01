@@ -34,7 +34,7 @@ const PayForTxLogic = {
         state: TRACE_STATES.REQUEST_ANSWERED,
         answer: 'rejected',
       });
-      return { error: message };
+      return { error: message, status };
     };
 
     // Basic sanity check

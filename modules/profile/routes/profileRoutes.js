@@ -191,40 +191,5 @@ router.delete(
   profileLogic.verifyRequest,
   (req, res) => profileLogic.deleteImage(req, res),
 );
-/**
- * @swagger
- * /profile:
- *   post:
- *     tags:
- *       - profile
- *     deprecated: true
- *     summary: Creates / Updates a profile
- *     requestBody:
- *       content:
- *         multipart/form-data:
- *           schema:
- *             $ref: '#/components/schemas/Profile-signature-challenge'
- *         application/json:
- *          schema:
- *            oneOf:
- *              - $ref: '#/components/schemas/Profile-signature-challenge'
- *              - $ref: '#/components/schemas/SignatureRequest'
- *     responses:
- *       200:
- *         description: Creates / Updates a profile
- *         content:
- *           application/json:
- *             schema:
- *               oneOf:
- *                 - $ref: '#/components/schemas/Profile'
- *                 - $ref: '#/components/schemas/SignatureResponse'
- */
-router.post(
-  '/',
-  upload.fields([{ name: 'image', maxCount: 1 }, { name: 'coverImage', maxCount: 1 }]),
-  signatureAuth,
-  profileLogic.verifyRequest,
-  (req, res) => profileLogic.upsertProfile(req, res),
-);
 
 module.exports = router;

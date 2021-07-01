@@ -27,6 +27,9 @@ const router = new Router();
  *                 type: string
  *               address:
  *                 type: string
+ *             required:
+ *               - url
+ *               - address
  *     responses:
  *       200:
  *         description: outcome of the claim submission
@@ -67,6 +70,10 @@ router.post('/submit', async (req, res) => {
  *                   type: string
  *               signature:
  *                 type: string
+ *             required:
+ *               - author
+ *               - title
+ *               - signature
  *     responses:
  *       200:
  *         description: result of the post

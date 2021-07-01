@@ -8,7 +8,6 @@ const { decodeEvents, SOPHIA_TYPES } = requireESM('@aeternity/aepp-sdk/es/contra
 const TIPPING_V1_INTERFACE = require('tipping-contract/Tipping_v1_Interface.aes');
 const TIPPING_V1_GETTER = require('tipping-contract/Tipping_v1_Getter.aes');
 const TIPPING_V2_INTERFACE = require('tipping-contract/Tipping_v2_Interface.aes');
-const TIPPING_V2_GETTER = require('tipping-contract/Tipping_v2_Getter.aes');
 const TIPPING_V3_GETTER = require('tipping-contract/Tipping_v3_Getter.aes');
 const TIPPING_V3_INTERFACE = require('tipping-contract/Tipping_v3_Interface.aes');
 const TIPPING_V4_INTERFACE = require('tipping-contract/Tipping_v4_Interface.aes');
@@ -29,7 +28,6 @@ let client;
 let contractV1;
 let contractV1Getter;
 let contractV2;
-let contractV2Getter;
 let contractV3;
 let contractV3Getter;
 let contractV4;
@@ -76,13 +74,6 @@ const aeternity = {
         logger.info('Starting WITH V2 contract');
       } else {
         logger.info('Starting WITHOUT V2 contract');
-      }
-
-      if (process.env.CONTRACT_V2_GETTER_ADDRESS) {
-        contractV2Getter = await client.getContractInstance(TIPPING_V2_GETTER, { contractAddress: process.env.CONTRACT_V2_GETTER_ADDRESS });
-        logger.info('Starting WITH V2 GETTER contract');
-      } else {
-        logger.info('Starting WITHOUT V2 GETTER contract');
       }
 
       if (process.env.CONTRACT_V3_GETTER_ADDRESS) {
@@ -235,15 +226,15 @@ const aeternity = {
 
   async getTipV2(value) {
     const tipId = await client.contractDecodeData('contract Decode =\n  entrypoint int(): int = 0', 'int', value, 'ok');
-    const rawTip = await contractV2Getter.methods.get_tip_by_id(process.env.CONTRACT_V2_ADDRESS, tipId, tempCallOptions)
+    const rawTip = await contractV2.methods.get_tip_by_id(tipId, tempCallOptions)
       .then(res => res.decodedResult);
-    const url = await contractV2Getter.methods.get_url_by_id(process.env.CONTRACT_V2_ADDRESS,
-      basicTippingContractUtil.rawTipUrlId(rawTip), tempCallOptions).then(res => res.decodedResult);
+    const url = await contractV2.methods.get_url_by_id(basicTippingContractUtil.rawTipUrlId(rawTip), tempCallOptions)
+      .then(res => res.decodedResult);
     return basicTippingContractUtil.formatSingleTip(process.env.CONTRACT_V2_ADDRESS, '_v2', tipId, rawTip, url);
   },
 
   async getClaimV1V2(contract, url) {
-    const contractGetter = contract === process.env.CONTRACT_V2_ADDRESS ? contractV2Getter : contractV1Getter;
+    const contractGetter = contract === process.env.CONTRACT_V2_ADDRESS ? contractV2 : contractV1Getter;
     return contractGetter.methods.get_claim_by_url(contract, url, tempCallOptions)
       .then(res => basicTippingContractUtil.formatSingleClaim(contract, url, res.decodedResult));
   },
@@ -263,7 +254,7 @@ const aeternity = {
 
   async getRetipV2(value) {
     const retipId = await client.contractDecodeData('contract Decode =\n  entrypoint int(): int = 0', 'int', value, 'ok');
-    return contractV2Getter.methods.get_retip_by_id(process.env.CONTRACT_V2_ADDRESS, retipId, tempCallOptions)
+    return contractV2.methods.get_retip_by_id(retipId, tempCallOptions)
       .then(res => basicTippingContractUtil.formatSingleRetip(process.env.CONTRACT_V2_ADDRESS, '_v2', retipId, res.decodedResult));
   },
 

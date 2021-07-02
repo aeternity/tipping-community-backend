@@ -3,10 +3,9 @@ const {
   BlacklistEntry, Comment, LinkPreview, Profile,
 } = require('../../../models');
 const cache = require('../../cache/utils/cache');
-const logger = require('../../../utils/logger')(module);
 
-module.exports = class StaticLogic {
-  static async getStatsPerModel(Model) {
+const StaticLogic = {
+  async getStatsPerModel(Model) {
     return {
       today: await Model.count({
         where: {
@@ -31,9 +30,9 @@ module.exports = class StaticLogic {
       }),
       total: await Model.count(),
     };
-  }
+  },
 
-  static async getStats() {
+  async getStats() {
     return cache.getOrSet(
       ['StaticLogic.getStats'],
       async () => ({
@@ -43,19 +42,10 @@ module.exports = class StaticLogic {
         blacklist: await StaticLogic.getStatsPerModel(BlacklistEntry),
       }),
     );
-  }
+  },
 
-  static async deliverStats(req, res) {
-    try {
-      return res.send(await StaticLogic.getStats());
-    } catch (err) {
-      logger.error(err);
-      return res.status(500).send(err.message);
-    }
-  }
-
-  static async getGrayList(req, res) {
-    res.send([
+  getGrayList() {
+    return [
       'facebook.com',
       'weibo.com',
       'pinterest.com',
@@ -63,6 +53,8 @@ module.exports = class StaticLogic {
       'quora.com',
       'spotify.com',
       'linkedin.com',
-    ]);
-  }
+    ];
+  },
 };
+
+module.exports = StaticLogic;

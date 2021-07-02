@@ -26,6 +26,27 @@ const EventLogic = {
     });
   },
 
+  async getAllEvents(address, eventName, limit) {
+    return Event.findAll({
+      where: {
+        ...(typeof address !== 'undefined') && {
+          addresses: {
+            [Op.contains]: [address],
+          },
+        },
+        ...(typeof eventName !== 'undefined') && {
+          name: eventName,
+        },
+      },
+      order: [
+        ['height', 'DESC'],
+        ['time', 'DESC'],
+        ['nonce', 'DESC'],
+      ],
+      limit: limit || null,
+    });
+  },
+
   async getEventsForURL(url) {
     return Event.findAll({
       where: { url },

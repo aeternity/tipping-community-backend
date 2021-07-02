@@ -17,6 +17,7 @@ const tipLogic = require('../modules/tip/logic/tipLogic');
 const profileLogic = require('../modules/profile/logic/profileLogic');
 const EventLogic = require('../modules/event/logic/eventLogic');
 const MdWLogic = require('../modules/aeternity/logic/mdwLogic');
+const ImageLogic = require('../modules/media/logic/imageLogic');
 
 process
   .on('unhandledRejection', reason => {
@@ -76,6 +77,7 @@ const startup = async () => {
   EventLogic.init();
   SchedulerLogic.init();
   MdWLogic.init();
+  ImageLogic.init();
 
   server.listen(port);
   server.on('error', onError);

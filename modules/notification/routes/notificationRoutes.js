@@ -48,7 +48,11 @@ const router = new Router();
  *                     $ref: '#/components/schemas/Notification'
  */
 
-router.get('/user/:author', signatureAuth, NotificationLogic.getForUser);
+router.get('/user/:author', signatureAuth, async (req, res) => {
+  const { author } = req.params;
+  const allEntries = await NotificationLogic.getForUser(author);
+  return res.send(allEntries);
+});
 
 /**
  * @swagger
@@ -139,6 +143,10 @@ router.post('/', signatureAuth, async (req, res) => {
  *                 - $ref: '#/components/schemas/SignatureResponse'
  *                 - $ref: '#/components/schemas/Notification'
  */
-router.post('/:notificationId', signatureAuth, NotificationLogic.updateNotificationState);
+router.post('/:notificationId', signatureAuth, async (req, res) => {
+  const { notificationId } = req.params;
+  const { status } = req.body;
+  return res.send(await NotificationLogic.updateNotificationState(notificationId, status));
+});
 
 module.exports = router;

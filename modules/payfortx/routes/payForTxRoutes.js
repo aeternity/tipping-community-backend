@@ -27,6 +27,9 @@ const router = new Router();
  *                 type: string
  *               address:
  *                 type: string
+ *             required:
+ *               - url
+ *               - address
  *     responses:
  *       200:
  *         description: outcome of the claim submission
@@ -39,7 +42,10 @@ const router = new Router();
  *                  type: string
  *                  format: uuid
  */
-router.post('/submit', PayForTxLogic.payForTx);
+router.post('/submit', async (req, res) => {
+  const claimResult = await PayForTxLogic.claimTip(req.body.url, req.body.address);
+  return res.status(claimResult.error ? claimResult.status : 200).send(claimResult);
+});
 
 /**
  * @swagger
@@ -64,6 +70,10 @@ router.post('/submit', PayForTxLogic.payForTx);
  *                   type: string
  *               signature:
  *                 type: string
+ *             required:
+ *               - author
+ *               - title
+ *               - signature
  *     responses:
  *       200:
  *         description: result of the post
@@ -75,6 +85,14 @@ router.post('/submit', PayForTxLogic.payForTx);
  *                tx:
  *                  type: object
  */
-router.post('/post', PayForTxLogic.postForUser);
+router.post('/post', async (req, res) => {
+  const signature = Uint8Array.from(Buffer.from(req.body.signature, 'hex'));
+
+  const result = await PayForTxLogic.postForUser({
+    ...req.body,
+    signature,
+  });
+  res.status(result.error ? result.status : 200).send({ tx: result });
+});
 
 module.exports = router;

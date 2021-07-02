@@ -1,4 +1,3 @@
-const logger = require('../../../utils/logger')(module);
 const BackupLogic = require('../../backup/logic/backupLogic');
 const aeternity = require('../../aeternity/logic/aeternity');
 const cache = require('../../cache/utils/cache');
@@ -17,59 +16,46 @@ const ProfileLogic = {
     });
   },
 
-  async upsertProfile(req, res) {
-    try {
-      const {
-        biography, preferredChainName, referrer, location, signature, challenge,
-      } = req.body;
-      let { image, coverImage } = (req.files ? req.files : {});
-      // allow image deletion
-      if (!image && req.body.image === null) image = [{ filename: null }];
-      if (!coverImage && req.body.coverImage === null) coverImage = [{ filename: null }];
-      // get author
-      const author = req.body.author ? req.body.author : req.params.author;
-      if (!author) return res.status(400).send('Missing required field author');
-      const existing = await Profile.findOne({ where: { author }, raw: true });
-      // Backup to IPFS
-      if (existing) {
-        await Profile.update({
-          ...(typeof biography !== 'undefined') && { biography },
-          ...(typeof preferredChainName !== 'undefined') && { preferredChainName },
-          ...(typeof referrer !== 'undefined') && { referrer },
-          ...(typeof location !== 'undefined') && { location },
-          ...(typeof image !== 'undefined') && { image: image[0].filename },
-          ...(typeof coverImage !== 'undefined') && { coverImage: coverImage[0].filename },
-          signature,
-          challenge,
-        }, { where: { author } });
-        if (image && existing.image && existing.image !== image[0].filename) imageLogic.deleteImage(existing.image);
-        if (coverImage && existing.coverImage && existing.coverImage !== coverImage[0].filename) imageLogic.deleteImage(existing.coverImage);
-      } else {
-        await Profile.create({
-          author,
-          biography,
-          preferredChainName,
-          referrer,
-          signature,
-          challenge,
-          image: image ? image[0].filename : null,
-          coverImage: coverImage ? coverImage[0].filename : null,
-          location,
-        });
-        // Kill stats cache
-        await cache.del(['StaticLogic.getStats']);
-      }
-      if (image && image[0].filename !== null) {
-        await BackupLogic.backupImageToIPFS(image[0].filename, author, IPFS_TYPES.PROFILE_IMAGE);
-      }
-      if (coverImage && coverImage[0].filename !== null) {
-        await BackupLogic.backupImageToIPFS(coverImage[0].filename, author, IPFS_TYPES.COVER_IMAGE);
-      }
-      return res.send(ProfileLogic.updateProfileForExternalAnswer(await ProfileLogic.getSingleItem(author)));
-    } catch (e) {
-      logger.error(e);
-      return res.status(500).send(e.message);
+  async upsertProfile({
+    author, biography, preferredChainName, referrer, location, signature, challenge, image, coverImage,
+  }) {
+    const existing = await Profile.findOne({ where: { author }, raw: true });
+    // Backup to IPFS
+    if (existing) {
+      await Profile.update({
+        ...(typeof biography !== 'undefined') && { biography },
+        ...(typeof preferredChainName !== 'undefined') && { preferredChainName },
+        ...(typeof referrer !== 'undefined') && { referrer },
+        ...(typeof location !== 'undefined') && { location },
+        ...(typeof image !== 'undefined') && { image: image[0].filename },
+        ...(typeof coverImage !== 'undefined') && { coverImage: coverImage[0].filename },
+        signature,
+        challenge,
+      }, { where: { author } });
+      if (image && existing.image && existing.image !== image[0].filename) imageLogic.deleteImage(existing.image);
+      if (coverImage && existing.coverImage && existing.coverImage !== coverImage[0].filename) imageLogic.deleteImage(existing.coverImage);
+    } else {
+      await Profile.create({
+        author,
+        biography,
+        preferredChainName,
+        referrer,
+        signature,
+        challenge,
+        image: image ? image[0].filename : null,
+        coverImage: coverImage ? coverImage[0].filename : null,
+        location,
+      });
+      // Kill stats cache
+      await cache.del(['StaticLogic.getStats']);
     }
+    if (image && image[0].filename !== null) {
+      await BackupLogic.backupImageToIPFS(image[0].filename, author, IPFS_TYPES.PROFILE_IMAGE);
+    }
+    if (coverImage && coverImage[0].filename !== null) {
+      await BackupLogic.backupImageToIPFS(coverImage[0].filename, author, IPFS_TYPES.COVER_IMAGE);
+    }
+    return ProfileLogic.updateProfileForExternalAnswer(await ProfileLogic.getSingleItem(author));
   },
 
   // TODO run this via message queue when chain names are updated
@@ -122,15 +108,10 @@ const ProfileLogic = {
     return res.sendStatus(200);
   },
 
-  async getImage(req, res) {
-    const result = await Profile.findOne({ where: { author: req.params.author }, raw: true });
-    if (!result || !result.image) return res.sendStatus(404);
-    try {
-      return res.sendFile(imageLogic.getImagePath(result.image));
-    } catch (e) {
-      logger.error(e.message);
-      return res.sendStatus(500);
-    }
+  async getImagePath(author) {
+    const result = await Profile.findOne({ where: { author }, raw: true });
+    if (!result || !result.image) return null;
+    return imageLogic.getImagePath(result.image);
   },
 
   async verifyRequest(req, res, next) {

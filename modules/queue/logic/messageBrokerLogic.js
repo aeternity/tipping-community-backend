@@ -1,7 +1,7 @@
 const { MESSAGE_QUEUES, MESSAGES } = require('../constants/queue');
 const queueLogic = require('./queueLogic');
 
-class MessageBroker {
+const MessageBroker = {
   init() {
     // S: UPDATE TIPS CACHE
     // T: UPDATE TIPS DB
@@ -65,7 +65,7 @@ class MessageBroker {
     }, [
       { queueName: MESSAGE_QUEUES.TIPS, message: MESSAGES.TIPS.COMMANDS.INSERT_CLAIM },
     ]);
-  }
+  },
 
   setupForwarding(source, targets) {
     // SETUP LOGIC
@@ -73,9 +73,7 @@ class MessageBroker {
       await Promise.all(targets.map(({ queueName, message: newMessage }) => queueLogic.sendMessage(queueName, newMessage, message.payload)));
       await queueLogic.deleteMessage(source.queueName, message.id);
     });
-  }
-}
+  },
+};
 
-const broker = new MessageBroker();
-
-module.exports = broker;
+module.exports = MessageBroker;

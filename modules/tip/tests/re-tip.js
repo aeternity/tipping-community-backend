@@ -2,7 +2,6 @@ const chai = require('chai');
 const chaiHttp = require('chai-http');
 const { describe, it, beforeEach } = require('mocha');
 const sinon = require('sinon');
-const fs = require('fs');
 
 const TipLogic = require('../logic/tipLogic');
 const queueLogic = require('../../queue/logic/queueLogic');
@@ -14,7 +13,8 @@ const {
 const server = require('../../../server');
 const { getDBSeedFunction } = require('../../../utils/testingUtil');
 
-const sampleTips = JSON.parse(fs.readFileSync(`${__dirname}/tips.json`));
+const sampleTips = require('./sampleTips');
+const aeternity = require('../../aeternity/logic/aeternity');
 
 chai.should();
 chai.use(chaiHttp);
@@ -394,7 +394,7 @@ describe('(Re)Tips', () => {
     it('it should UPDATE a tips claimed status db', async () => {
       const fakeData = JSON.parse(JSON.stringify(sampleTips));
       fakeData.claims.push({
-        contractId: 'ct_2ZEoCKcqXkbz2uahRrsWeaPooZs9SdCv6pmC4kc55rD4MhqYSu',
+        contractId: aeternity.contractAddressForVersion('v2'),
         url: 'https://another.random.domain',
         claimGen: 1,
         amount: '0',

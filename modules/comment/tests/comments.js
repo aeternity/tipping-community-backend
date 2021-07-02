@@ -63,7 +63,7 @@ describe('Comments', () => {
         claimGen: 1,
         amount: 0,
         id: testDataWithTokens.tipId,
-        contractId: 'ct_2ZEoCKcqXkbz2uahRrsWeaPooZs9SdCv6pmC4kc55rD4MhqYSu',
+        contractId: aeternity.contractAddressForVersion('v2'),
         url: 'https://github.com/stanislav-slavov',
         tokenAmount: '1000000000000000000',
         topics: [

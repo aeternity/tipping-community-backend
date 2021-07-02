@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.2.1](https://www.github.com/aeternity/tipping-community-backend/compare/v2.2.0...v2.2.1) (2021-07-02)
+
+
+### Miscellaneous
+
+* **v2:** update v2 to single contract ([4b7347b](https://www.github.com/aeternity/tipping-community-backend/commit/4b7347b807bda8e37a28522d9d9e6ca2084e1acc))
+
 ## [2.2.0](https://www.github.com/aeternity/tipping-community-backend/compare/v2.1.3...v2.2.0) (2021-06-28)
 
 

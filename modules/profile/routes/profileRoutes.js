@@ -1,7 +1,7 @@
 const multer = require('multer');
 const { Router } = require('express');
 const path = require('path');
-const profileLogic = require('../logic/profileLogic');
+const ProfileLogic = require('../logic/profileLogic');
 const { signatureAuth } = require('../../authentication/logic/authenticationLogic');
 
 const router = new Router();
@@ -45,9 +45,9 @@ const upload = multer({ storage });
  */
 router.get('/:author', async (req, res) => {
   const author = req.body.author ? req.body.author : req.params.author;
-  const result = await profileLogic.getSingleItem(author);
+  const result = await ProfileLogic.getSingleItem(author);
   if (!result) return res.sendStatus(404);
-  return res.send(profileLogic.updateProfileForExternalAnswer(result));
+  return res.send(ProfileLogic.updateProfileForExternalAnswer(result));
 });
 /**
  * @swagger
@@ -86,8 +86,32 @@ router.post(
   '/:author',
   upload.fields([{ name: 'image', maxCount: 1 }, { name: 'coverImage', maxCount: 1 }]),
   signatureAuth,
-  profileLogic.verifyRequest,
-  (req, res) => profileLogic.upsertProfile(req, res),
+  ProfileLogic.verifyRequest,
+  async (req, res) => {
+    const {
+      biography, preferredChainName, referrer, location, signature, challenge,
+    } = req.body;
+    let { image, coverImage } = (req.files ? req.files : {});
+    // allow image deletion
+    if (!image && req.body.image === null) image = [{ filename: null }];
+    if (!coverImage && req.body.coverImage === null) coverImage = [{ filename: null }];
+    // get author
+    const author = req.body.author ? req.body.author : req.params.author;
+
+    const profile = await ProfileLogic.upsertProfile({
+      author,
+      biography,
+      preferredChainName,
+      referrer,
+      location,
+      signature,
+      challenge,
+      image,
+      coverImage,
+    });
+
+    return res.send(profile);
+  },
 );
 
 // Image routes
@@ -119,6 +143,9 @@ router.post(
  *               type: string
  *               format: binary
  */
-router.get('/image/:author', ProfileLogic.getImage);
+router.get('/image/:author', async (req, res) => {
+  const imagePath = await ProfileLogic.getImagePath(req.params.author);
+  return imagePath ? res.sendFile(imagePath) : res.sendStatus(404);
+});
 
 module.exports = router;

@@ -77,9 +77,18 @@ describe('Blacklist', () => {
         topics: [],
       });
       const { res } = await performSignedJSONRequest(server, 'post', '/blacklist/api/wallet/', {
-        tipId: walletTipId, author: publicKey,
+        tipId: walletTipId,
+        author: publicKey,
       });
       res.should.have.status(200);
+      res.body.should.be.a('object');
+      res.body.should.have.property('tipId', walletTipId);
+      res.body.should.have.property('author', publicKey);
+      res.body.should.have.property('status', BLACKLIST_STATUS.FLAGGED);
+      res.body.should.have.property('signature');
+      res.body.should.have.property('challenge');
+      res.body.should.have.property('createdAt');
+      res.body.should.have.property('updatedAt');
     });
 
     it('it should ALLOW overwriting a blacklist entry via wallet auth', done => {
@@ -91,6 +100,8 @@ describe('Blacklist', () => {
         res.body.should.have.property('tipId', walletTipId);
         res.body.should.have.property('author', publicKey);
         res.body.should.have.property('status', BLACKLIST_STATUS.FLAGGED);
+        res.body.should.have.property('signature');
+        res.body.should.have.property('challenge');
         res.body.should.have.property('createdAt');
         res.body.should.have.property('updatedAt');
         done();
@@ -114,6 +125,8 @@ describe('Blacklist', () => {
         res.body.should.have.property('tipId', walletTipId);
         res.body.should.have.property('author', publicKey);
         res.body.should.have.property('status', BLACKLIST_STATUS.FLAGGED);
+        res.body.should.have.property('signature');
+        res.body.should.have.property('challenge');
         res.body.should.have.property('createdAt');
         res.body.should.have.property('updatedAt');
         done();

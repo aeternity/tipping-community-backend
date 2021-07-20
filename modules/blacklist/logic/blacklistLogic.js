@@ -24,10 +24,12 @@ const BlacklistLogic = {
     return entry;
   },
 
-  async flagTip(tipId, author) {
+  async flagTip(tipId, author, signature, challenge) {
     let entry = await BlacklistEntry.findOne({ where: { tipId }, raw: true });
     if (!entry) {
-      entry = await BlacklistEntry.create({ tipId, author, status: BLACKLIST_STATUS.FLAGGED });
+      entry = await BlacklistEntry.create({
+        tipId, author, signature, challenge, status: BLACKLIST_STATUS.FLAGGED,
+      });
       // Kill stats cache
       await BlacklistLogic.resetCache();
     }

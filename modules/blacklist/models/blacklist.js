@@ -18,6 +18,14 @@ module.exports = (sequelize, DataTypes) => sequelize.define('BlacklistEntry', {
     type: DataTypes.STRING,
     allowNull: true,
   },
+  signature: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  challenge: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
 }, {
   timestamps: true,
 });

@@ -93,6 +93,16 @@
                     "field": "author",
                     "seqType": "Sequelize.STRING"
                 },
+                "signature": {
+                    "allowNull": true,
+                    "field": "signature",
+                    "seqType": "Sequelize.STRING"
+                },
+                "challenge": {
+                    "allowNull": true,
+                    "field": "challenge",
+                    "seqType": "Sequelize.STRING"
+                },
                 "createdAt": {
                     "allowNull": false,
                     "field": "createdAt",
@@ -953,5 +963,5 @@
             "indexes": []
         }
     },
-    "revision": 26
+    "revision": 27
 }

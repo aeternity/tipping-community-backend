@@ -50,4 +50,24 @@ router.get('/sender', async (req, res) => {
   return stats ? res.send(stats) : res.sendStatus(404);
 });
 
+/**
+ * @swagger
+ * /stats/marketing:
+ *   get:
+ *     tags:
+ *       - stats
+ *     summary: Returns marketing stats
+ *     responses:
+ *       200:
+ *         description: Returns marketing stats
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ */
+router.get('/marketing', async (req, res) => {
+  const stats = await StatsLogic.fetchMarketingStats();
+  return stats ? res.send(stats) : res.sendStatus(404);
+});
+
 module.exports = router;

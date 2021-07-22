@@ -39,7 +39,7 @@ const StatsLogic = {
   async fetchMarketingStats() {
     const getForDays = async days => {
       const [daysStats] = await sequelize.query(MARKETING_STATS, {
-        replacements: [...Array(10).keys()].map(() => String(days)),
+        replacements: Array(12).fill(String(days)),
         type: sequelize.QueryTypes.SELECT,
       });
       return daysStats;

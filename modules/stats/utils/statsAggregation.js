@@ -13,8 +13,10 @@ module.exports = {
        (SELECT COUNT(DISTINCT("Retips"."sender")) FROM "Retips" WHERE "Retips"."createdAt" BETWEEN NOW() - INTERVAL ? DAY AND NOW()) AS "uniqueRetippers",
        (SELECT COUNT("Comments"."id") FROM "Comments" WHERE "Comments"."createdAt" BETWEEN NOW() - INTERVAL ? DAY AND NOW()) AS "commentCount",
        (SELECT COUNT(DISTINCT("Comments"."author")) FROM "Comments" WHERE "Comments"."createdAt" BETWEEN NOW() - INTERVAL ? DAY AND NOW()) AS "uniqueCommentors",
-       (SELECT SUM(COALESCE("Tips"."amount", 0)) AS amount FROM "Tips" WHERE "Tips"."timestamp" BETWEEN NOW() - INTERVAL ? DAY AND NOW()) AS "tipAmount",
-       (SELECT SUM(COALESCE("Retips"."amount", 0)) AS amount FROM "Retips" WHERE "Retips"."createdAt" BETWEEN NOW() - INTERVAL ? DAY AND NOW()) AS "retipAmount",
+       (SELECT COUNT("Profiles"."author") FROM "Profiles" WHERE "Profiles"."createdAt" BETWEEN NOW() - INTERVAL ? DAY AND NOW()) AS "profileCount",
+       (SELECT COUNT("BlacklistEntries"."tipId") FROM "BlacklistEntries" WHERE "BlacklistEntries"."createdAt" BETWEEN NOW() - INTERVAL ? DAY AND NOW()) AS "blacklistCount",
+       (SELECT COALESCE(SUM(COALESCE("Tips"."amount", 0)), 0) AS amount FROM "Tips" WHERE "Tips"."timestamp" BETWEEN NOW() - INTERVAL ? DAY AND NOW()) AS "tipAmount",
+       (SELECT COALESCE(SUM(COALESCE("Retips"."amount", 0)), 0) AS amount FROM "Retips" WHERE "Retips"."createdAt" BETWEEN NOW() - INTERVAL ? DAY AND NOW()) AS "retipAmount",
        (TO_JSONB(ARRAY(SELECT JSONB_BUILD_OBJECT('token', tokenAmounts.token,
                                                  'amount', SUM(tokenAmounts.amount)::VARCHAR)
                        FROM (SELECT "Tips"."token", SUM(COALESCE("Tips"."tokenAmount", 0)) AS amount

@@ -65,9 +65,6 @@ router.get('/sender', async (req, res) => {
  *             schema:
  *               type: object
  */
-router.get('/marketing', async (req, res) => {
-  const stats = await StatsLogic.fetchMarketingStats();
-  return stats ? res.send(stats) : res.sendStatus(404);
-});
+router.get('/marketing', async (req, res) => res.send(await StatsLogic.fetchMarketingStats()));
 
 module.exports = router;

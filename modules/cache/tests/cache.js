@@ -45,14 +45,12 @@ describe('Cache', () => {
 
   describe('Keep Hot', () => {
     it('should update the cache (keep hot simulation)', done => {
-      const keepHotStub = sinon.stub(CacheLogic, 'keepHotFunction').callsFake(async () => {});
-      CacheLogic.init();
-      queueLogic.sendMessage(MESSAGE_QUEUES.SCHEDULED_EVENTS, MESSAGES.SCHEDULED_EVENTS.COMMANDS.CACHE_KEEPHOT);
-
-      setTimeout(() => {
+      const keepHotStub = sinon.stub(CacheLogic, 'keepHotFunction').callsFake(async () => {
         sinon.assert.calledOnce(keepHotStub);
         done();
-      }, 100);
+      });
+      CacheLogic.init();
+      queueLogic.sendMessage(MESSAGE_QUEUES.SCHEDULED_EVENTS, MESSAGES.SCHEDULED_EVENTS.COMMANDS.CACHE_KEEPHOT);
     });
   });
 

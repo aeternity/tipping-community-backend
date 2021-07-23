@@ -29,7 +29,7 @@ const CacheLogic = {
     }
   },
 
-  async keepHot() {
+  keepHot() {
     const keepHotLogic = async () => lock.acquire('keepHotLogic', async () => {
       const start = new Date().getTime();
       await CacheLogic.keepHotFunction();

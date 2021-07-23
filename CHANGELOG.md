@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [3.0.0](https://www.github.com/aeternity/tipping-community-backend/compare/v2.2.0...v3.0.0) (2021-07-23)
+
+
+### ⚠ BREAKING CHANGES
+
+* **stats:** drop unused stats endpoint
+
+### Features
+
+* **blacklist:** save signature to user generated blacklist items ([479e85f](https://www.github.com/aeternity/tipping-community-backend/commit/479e85f0886886de6488d83f94ad2d606a66b9e6))
+* **stats:** add stats endpoint for marketing ([bf66ab1](https://www.github.com/aeternity/tipping-community-backend/commit/bf66ab12f104aac0f7701937f5b6f66a75899003))
+* **stats:** drop unused stats endpoint ([e679e4f](https://www.github.com/aeternity/tipping-community-backend/commit/e679e4f3d74d6efc21f8dfe50b5c92662daf64d8))
+
+
+### Miscellaneous
+
+* **stats:** add tests for marketing stats ([b216f26](https://www.github.com/aeternity/tipping-community-backend/commit/b216f26c1b4364c500be7add8b37b15ee8eb07dd))
+* **v2:** update v2 to single contract ([4b7347b](https://www.github.com/aeternity/tipping-community-backend/commit/4b7347b807bda8e37a28522d9d9e6ca2084e1acc))
+
 ## [2.2.0](https://www.github.com/aeternity/tipping-community-backend/compare/v2.1.3...v2.2.0) (2021-06-28)
 
 

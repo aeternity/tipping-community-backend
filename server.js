@@ -4,6 +4,7 @@ const fs = require('fs');
 const Sentry = require('@sentry/node');
 const Tracing = require('@sentry/tracing');
 const path = require('path');
+require('express-async-errors');
 
 const app = express();
 const exphbs = require('express-handlebars');
@@ -12,6 +13,7 @@ const OpenApiValidator = require('express-openapi-validator');
 
 // Require util to add asyncMap
 require('./modules/aeternity/utils/util');
+const logger = require('./utils/logger')(module);
 
 // SENTRY
 if (process.env.SENTRY_URL) {
@@ -42,7 +44,9 @@ if (process.env.SENTRY_URL) {
 const hbs = exphbs.create({
   // Specify helpers which are only registered on this instance.
   helpers: {
-    formatDate(timestamp) { return new Date(timestamp).toLocaleString(); },
+    formatDate(timestamp) {
+      return new Date(timestamp).toLocaleString();
+    },
     pages(length, block) {
       let acc = '';
       for (let i = 1; i <= length; ++i) acc += block.fn(i);
@@ -112,14 +116,18 @@ if (process.env.SENTRY_URL) {
 }
 
 // catch errors
-app.use((err, req, res, next) => {
-  if (res.headersSent) {
-    return next(err);
+app.use((err, req, res) => {
+  if (!err.status || err.status >= 500) {
+    Sentry.captureException(err);
+    logger.error(err);
   }
-  return res.status(err.status || 500).json({
-    message: err.message,
-    errors: err.errors,
-  });
+
+  if (!res.headersSent) {
+    res.status(err.status || 500).json({
+      message: err.message,
+      errors: err.errors,
+    });
+  }
 });
 
 // catch 404

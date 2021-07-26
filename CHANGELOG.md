@@ -2,6 +2,63 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [3.0.0](https://www.github.com/aeternity/tipping-community-backend/compare/v2.2.0...v3.0.0) (2021-07-26)
+
+
+### ⚠ BREAKING CHANGES
+
+* **profile:** removes deprecated POST,DELETE /profile/image route
+* **profile:** removes deprecated /profile route
+* **stats:** drop unused stats endpoint
+
+### Features
+
+* **blacklist:** save signature to user generated blacklist items ([479e85f](https://www.github.com/aeternity/tipping-community-backend/commit/479e85f0886886de6488d83f94ad2d606a66b9e6))
+* **server:** adds global async error handling ([ee5e001](https://www.github.com/aeternity/tipping-community-backend/commit/ee5e0015a5ca88d2e56f9b05cfbe851d8e6823fe))
+* **stats:** add stats endpoint for marketing ([bf66ab1](https://www.github.com/aeternity/tipping-community-backend/commit/bf66ab12f104aac0f7701937f5b6f66a75899003))
+* **stats:** drop unused stats endpoint ([e679e4f](https://www.github.com/aeternity/tipping-community-backend/commit/e679e4f3d74d6efc21f8dfe50b5c92662daf64d8))
+
+
+### Bug Fixes
+
+* **cache:** properly passes on query params ([73834ff](https://www.github.com/aeternity/tipping-community-backend/commit/73834ff8765dc7378b585972e7a220219cbf575e))
+* **consent:** fixes route openapi issue ([72fd991](https://www.github.com/aeternity/tipping-community-backend/commit/72fd991e6e1c9522f680f33337ccdc1bd4bc2552))
+* **payfortx:** requires body ([04ddd35](https://www.github.com/aeternity/tipping-community-backend/commit/04ddd35327df724058b335e0be6ff56bd96bb106))
+* **payfortx:** returns proper status on error ([0d1d557](https://www.github.com/aeternity/tipping-community-backend/commit/0d1d55787b881ce6a5aa21cf5d78a8f8d7c06d09))
+* **static:** function should not return a promise ([b2d41f9](https://www.github.com/aeternity/tipping-community-backend/commit/b2d41f98ec292257a20a8e64f16e656969e4d7b4))
+
+
+### Miscellaneous
+
+* **event:** renames addresses param to singular ([b42ef9d](https://www.github.com/aeternity/tipping-community-backend/commit/b42ef9d41b65270490ed4b6210ba2643ed824d5c))
+* **stats:** add tests for marketing stats ([b216f26](https://www.github.com/aeternity/tipping-community-backend/commit/b216f26c1b4364c500be7add8b37b15ee8eb07dd))
+* **v2:** update v2 to single contract ([4b7347b](https://www.github.com/aeternity/tipping-community-backend/commit/4b7347b807bda8e37a28522d9d9e6ca2084e1acc))
+
+
+### Refactorings
+
+* **blacklist:** remove unnecessary field checks ([79f7b46](https://www.github.com/aeternity/tipping-community-backend/commit/79f7b46b257c292fa2abcffd371391d70bbd4b8e))
+* **broker:** class to module ([b5dba5f](https://www.github.com/aeternity/tipping-community-backend/commit/b5dba5f47226b464cf2738e438050db232e90907))
+* **cache:** deprecates tip invalidation endpoint ([f4d4faf](https://www.github.com/aeternity/tipping-community-backend/commit/f4d4fafa750148c2df75cc62d254a1e213b41a35))
+* **comments:** removes error handling from single route ([3537b7b](https://www.github.com/aeternity/tipping-community-backend/commit/3537b7b67bdb59a4b8bbeff489f6ceb9c884758e))
+* **comments:** send errors that are not 500 ([564af95](https://www.github.com/aeternity/tipping-community-backend/commit/564af95d9acdf18dd862c69dac9ec3757a022ab4))
+* **consent:** moves request handling to routes ([6870c02](https://www.github.com/aeternity/tipping-community-backend/commit/6870c02a62336f59794e86e56d4e5e9e00a4e163))
+* **domains:** moves from class to module ([fe17626](https://www.github.com/aeternity/tipping-community-backend/commit/fe17626b7cf390d40226432a62a31308c1c5ca02))
+* **domains:** moves request handling to routes ([aa580a5](https://www.github.com/aeternity/tipping-community-backend/commit/aa580a58d2ec78fd19484bfcf5bbab930ed795d2))
+* **errorreport:** moves request handling to routes ([1bbbd24](https://www.github.com/aeternity/tipping-community-backend/commit/1bbbd24a9afe43e7864a511f505fb0f6d320011d))
+* **events:** moves event endpoint from cache ([951fab7](https://www.github.com/aeternity/tipping-community-backend/commit/951fab70695d8cbae966ffb76a8871ec35e4b574))
+* **health:** class to module ([14675b1](https://www.github.com/aeternity/tipping-community-backend/commit/14675b1624e63b667b3f061e8deecedb08813f27))
+* **health:** moves request handling to route ([5903621](https://www.github.com/aeternity/tipping-community-backend/commit/590362195ccce5f3805fa508b447d5fb0927682c))
+* **media:** class to module ([37727be](https://www.github.com/aeternity/tipping-community-backend/commit/37727be2a7616e17198b20ec055768fc4c9e2500))
+* **notifications:** class to module ([c60f25d](https://www.github.com/aeternity/tipping-community-backend/commit/c60f25d14759f67026ba7b63d3636fdfb28f8e85))
+* **notifications:** moves request handling to routes ([e60379f](https://www.github.com/aeternity/tipping-community-backend/commit/e60379fc4c57a6201307218ac4544a8d5952eb79))
+* **payfortx:** class to module & request handling to routes ([bac4759](https://www.github.com/aeternity/tipping-community-backend/commit/bac47591fed2b0c77745506e644f777186d1f6c5))
+* **pin:** class to module ([67bf003](https://www.github.com/aeternity/tipping-community-backend/commit/67bf00388dc773dc6e684c953f26bbcbd6b72a65))
+* **pin:** moves request handling to routes ([8b37a99](https://www.github.com/aeternity/tipping-community-backend/commit/8b37a9926b234cfc69208e8d5e47eebdf54b2e8d))
+* **profile:** moves request handling to routes ([df4e688](https://www.github.com/aeternity/tipping-community-backend/commit/df4e688a3bba5b78d3ec7e0d9df6ae54027a37cf))
+* **profile:** removes deprecated /profile route ([92131f6](https://www.github.com/aeternity/tipping-community-backend/commit/92131f673accd671967f5d267e72765565e7a559))
+* **profile:** removes deprecated POST,DELETE /profile/image route ([3f7789e](https://www.github.com/aeternity/tipping-community-backend/commit/3f7789efc1c7ffb3f25f7602ace221485e80b4b2))
+
 ## [2.2.0](https://www.github.com/aeternity/tipping-community-backend/compare/v2.1.3...v2.2.0) (2021-06-28)
 
 

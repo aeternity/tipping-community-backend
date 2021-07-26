@@ -105,6 +105,7 @@ router.get('/balances', TokenCacheLogic.tokenAccountBalance);
  *         schema:
  *           type: string
  *         name: search
+ *         allowReserved: true
  *     responses:
  *       200:
  *         description: OK

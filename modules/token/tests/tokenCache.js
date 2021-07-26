@@ -186,6 +186,7 @@ describe('Token Cache', () => {
         tokens: [
           ['a', 'ct_7LcKkiLz2JSEXbmgZbNuG9MmCEJvV3YE44hbeVtX3YHSV92yg'],
           ['bigear', 'ct_ut1QB7jsUvDr5jcB7X3NeLTW8iMaVprVTD5ts1tAtQcKTUQqb'],
+          ['super spec', 'ct_ut1QB7jsUvDr5jcB7X3NeLTW8iMaVprVTD5ts1tAtQcKTUQqb'],
         ],
       }));
       // only occurs in second token
@@ -195,6 +196,14 @@ describe('Token Cache', () => {
       resB.body.should.have.length(1);
       resB.body[0].should.have.property('searchScore');
       resB.body[0].searchScore.should.be.a('number');
+
+      // check for spaces in search
+      const resSpace = await chai.request(server).get('/tokenCache/wordRegistry?search=super+spec');
+      resSpace.should.have.status(200);
+      resSpace.body.should.be.an('array');
+      resSpace.body.should.have.length(1);
+      resSpace.body[0].should.have.property('searchScore');
+      resSpace.body[0].searchScore.should.be.a('number');
 
       // occurs in both tokens
       const resA = await chai.request(server).get('/tokenCache/wordRegistry?search=a');

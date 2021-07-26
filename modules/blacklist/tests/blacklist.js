@@ -203,6 +203,19 @@ describe('Blacklist', () => {
       res.should.have.status(200);
     });
 
+    it('it should be possible to search the blacklist ui with special chars (+)', async () => {
+      await seedDB({
+        tips: [{
+          id: '1_v1',
+          title: 'test title2',
+        }],
+      }, true);
+      const res = await chai.request(server).get('/blacklist?search=test+title2')
+        .auth(process.env.AUTHENTICATION_USER, process.env.AUTHENTICATION_PASSWORD);
+      res.text.should.contain('<p>test title2</p>');
+      res.should.have.status(200);
+    });
+
     it('it should show tips only by a certain address', async () => {
       const sender1 = 'ak_TestTestTest';
       const sender2 = 'ak_NotNotNot';

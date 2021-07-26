@@ -21,6 +21,7 @@ const router = new Router();
  *       - in: query
  *         name: search
  *         required: false
+ *         allowReserved: true
  *         schema:
  *           type: string
  *         description: string to look for in the tip body

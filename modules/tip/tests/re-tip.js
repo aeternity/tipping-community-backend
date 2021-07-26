@@ -149,6 +149,12 @@ describe('(Re)Tips', () => {
       res.body.should.have.length(2);
     });
 
+    it('it should allow searching with spaces', async () => {
+      const res = await chai.request(server).get('/tips?search=ein+deutscher+tip');
+      res.body.should.be.an('array');
+      res.body.should.have.length(1);
+    });
+
     it('it should allow searching by url', async () => {
       const res = await chai.request(server).get('/tips?search=example.com');
       res.body.should.be.an('array');

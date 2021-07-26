@@ -58,7 +58,7 @@ describe('LinkPreview', () => {
       preview.should.have.property('image');
       preview.image.should.contain('/images/compressed-preview');
       preview.should.have.property('lang', 'en');
-      preview.should.have.property('title', 'Superhero Tip v1');
+      preview.should.have.property('title', 'Superhero Tip 0');
       preview.should.have.property('url', superHeroUrl);
       preview.should.have.property('requestUrl', superHeroUrl);
       preview.should.have.property('responseUrl', superHeroUrl);

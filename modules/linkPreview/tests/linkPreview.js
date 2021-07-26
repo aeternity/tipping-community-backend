@@ -9,6 +9,7 @@ const { LinkPreview } = require('../../../models');
 const linkPreviewLogic = require('../logic/linkPreviewLogic');
 const { MESSAGES, MESSAGE_QUEUES } = require('../../queue/constants/queue');
 const queueLogic = require('../../queue/logic/queueLogic');
+const ImageLogic = require('../../media/logic/imageLogic');
 
 chai.should();
 chai.use(chaiHttp);
@@ -23,6 +24,7 @@ describe('LinkPreview', () => {
       where: {},
       truncate: true,
     });
+    ImageLogic.init();
   });
 
   describe('LinkPreview API', () => {

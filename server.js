@@ -116,12 +116,12 @@ if (process.env.SENTRY_URL) {
 }
 
 // catch errors
-app.use((err, req, res) => {
+// eslint-disable-next-line no-unused-vars
+app.use((err, req, res, next) => {
   if (!err.status || err.status >= 500) {
     Sentry.captureException(err);
     logger.error(err);
   }
-
   if (!res.headersSent) {
     res.status(err.status || 500).json({
       message: err.message,
@@ -132,7 +132,7 @@ app.use((err, req, res) => {
 
 // catch 404
 app.use((req, res) => {
-  res.sendStatus(404);
+  if (!res.headersSent) res.sendStatus(404);
 });
 
 module.exports = app;

@@ -121,6 +121,7 @@ const LinkPreviewLogic = {
     if (!newUrl) {
       try {
         const { screenshot } = await DomLoader.getScreenshot(requestUrl);
+        if (!screenshot) throw Error('Screenshot is undefined.');
         filename = screenshot;
         newUrl = `/images/${filename}`;
         logger.info(`Got image snapshot preview for ${filename}`);

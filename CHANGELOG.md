@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [3.0.1](https://www.github.com/aeternity/tipping-community-backend/compare/v3.0.0...v3.0.1) (2021-07-29)
+
+
+### Bug Fixes
+
+* **server:** modifies error handler to have correct function signature ([5ff45b9](https://www.github.com/aeternity/tipping-community-backend/commit/5ff45b92df8f155f942daa9c8f0a5bc9f37a2abe))
+
 ## [3.0.0](https://www.github.com/aeternity/tipping-community-backend/compare/v2.2.0...v3.0.0) (2021-07-26)
 
 

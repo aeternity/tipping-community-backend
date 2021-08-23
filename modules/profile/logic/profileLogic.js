@@ -11,7 +11,8 @@ const { MESSAGE_QUEUES, MESSAGES } = require('../../queue/constants/queue');
 const ProfileLogic = {
   init() {
     queueLogic.subscribeToMessage(MESSAGE_QUEUES.PROFILE, MESSAGES.PROFILE.COMMANDS.UPDATE_PREFERRED_CHAIN_NAMES, async message => {
-      await ProfileLogic.verifyPreferredChainNames();
+      // since its periodically triggered, dont worry about single failures and delete the message anyways.
+      await ProfileLogic.verifyPreferredChainNames().catch();
       await queueLogic.deleteMessage(MESSAGE_QUEUES.PROFILE, message.id);
     });
   },

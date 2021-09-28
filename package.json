@@ -1,6 +1,6 @@
 {
   "name": "tipping-community-backend",
-  "version": "3.0.1",
+  "version": "3.0.2",
   "description": "",
   "main": "bin/www.js",
   "prepare": "husky install",

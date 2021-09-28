@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [3.0.2](https://www.github.com/aeternity/tipping-community-backend/compare/v3.0.1...v3.0.2) (2021-09-28)
+
+
+### Bug Fixes
+
+* allows + in search query params, fixes [#368](https://www.github.com/aeternity/tipping-community-backend/issues/368) ([015ac9e](https://www.github.com/aeternity/tipping-community-backend/commit/015ac9e781d09b18d12b6acff5de62fc5688c317))
+* **linkpreviews:** removes /images/undefined and fixes [#370](https://www.github.com/aeternity/tipping-community-backend/issues/370) ([11e1610](https://www.github.com/aeternity/tipping-community-backend/commit/11e1610297c34e92a4ccbdc1098cfaf9a8a36279))
+
+
+### Miscellaneous
+
+* **deps:** upgrade & audit fix ([8eab881](https://www.github.com/aeternity/tipping-community-backend/commit/8eab8818ab2d8ff16846bba5677f94585bb12eea))
+
 ### [3.0.1](https://www.github.com/aeternity/tipping-community-backend/compare/v3.0.0...v3.0.1) (2021-07-29)
 
 

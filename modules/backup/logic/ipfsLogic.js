@@ -5,7 +5,7 @@ let node;
 const ipfs = {
   init() {
     if (!process.env.IPFS_URL) throw new Error('IPFS_URL is not set');
-    node = ipfsClient(process.env.IPFS_URL);
+    node = ipfsClient.create(process.env.IPFS_URL);
   },
 
   async getCoreVitals() {

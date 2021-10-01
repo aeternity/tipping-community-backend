@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [3.0.3](https://www.github.com/aeternity/tipping-community-backend/compare/v3.0.2...v3.0.3) (2021-10-01)
+
+
+### Miscellaneous
+
+* **deps:** upgrade major versions & tiny ipfs fix ([b5e5ad5](https://www.github.com/aeternity/tipping-community-backend/commit/b5e5ad59b5cb525a7c05c3f6609f5f7372cbaeff))
+
 ### [3.0.2](https://www.github.com/aeternity/tipping-community-backend/compare/v3.0.1...v3.0.2) (2021-09-28)
 
 

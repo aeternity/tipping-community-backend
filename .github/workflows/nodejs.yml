@@ -16,14 +16,17 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@master
+
       - name: Use Node.js 16.x
         uses: actions/setup-node@v1
         with:
           node-version: 16.x
+
       - name: Install Dependencies
         run: npm ci
       - name: Create Docs
         run: npm run swagger:create
+
       - name: Run Tests
         run: |
           docker run --name server-redis -p 6379:6379 -d redis
@@ -32,13 +35,26 @@ jobs:
           npm run db:create
           npm test
 
-  build-docker:
-    runs-on: ubuntu-latest
+      - name: Log in to Docker Hub
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USER }}
+          password: ${{ secrets.DOCKERHUB_PASS }}
 
-    steps:
-      - name: Checkout
-        uses: actions/checkout@master
-      - run: docker build .
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@v3
+        with:
+          images: aeternity/tipping-community-backend
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
 
   lint:
     runs-on: ubuntu-latest

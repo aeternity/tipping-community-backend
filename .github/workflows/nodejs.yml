@@ -34,11 +34,14 @@ jobs:
           docker run --name postgres -p 5432:5432 -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=superhero -d postgres:latest
           npm run db:create
           npm test
-          
+
   docker_build_push:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Checkout
+        uses: actions/checkout@master
+        
       - name: Log in to Docker Hub
         if: github.event_name != 'pull_request'
         uses: docker/login-action@v1

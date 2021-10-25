@@ -56,6 +56,8 @@ router.get('/:author', async (req, res) => {
  *     tags:
  *       - profile
  *     summary: Creates / Updates a profile
+ *     security:
+ *       - signatureAuth: []
  *     parameters:
  *       - in: path
  *         name: author

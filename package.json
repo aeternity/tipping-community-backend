@@ -61,7 +61,7 @@
     "rxjs": "^7.3.1",
     "sequelize": "^5.22.3",
     "sequelize-hierarchy": "^2.0.4",
-    "sharp": "^0.29.1",
+    "sharp": "^0.30.5",
     "swagger-ui-express": "^4.1.6",
     "tipping-contract": "github:aeternity/tipping-contract#v5.0.0-alpha1",
     "tipping-oracle-service": "github:aeternity/tipping-oracle-service#v0.3.6",

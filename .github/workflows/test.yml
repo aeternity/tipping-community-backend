@@ -1,4 +1,4 @@
-name: Tests Pipeline
+name: Tests Pipeline 
 
 on:
   push:
@@ -11,6 +11,21 @@ on:
     types: [ opened ]
 
 jobs:
+  docs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@master
+      - name: Use Node.js 14.x
+        uses: actions/setup-node@v1
+        with:
+          node-version: 14.x
+      - name: Install Dependencies
+        run: npm ci
+      - name: Create Swagger File
+        run: npm run swagger:create
+      - name: Lint Swagger File
+        run: npm run swagger:lint
   lint:
     runs-on: ubuntu-latest
     steps:

@@ -151,7 +151,7 @@ const EventLogic = {
 
       // get events until we hit db
       const maxHeightInDB = await Event.max('height') || 0;
-      // go from current to lowest height
+      // go from current to the lowest height
       const newEvents = await MdwLogic.middlewareContractTransactions(currentHeight, maxHeightInDB + 1);
       return Event.bulkCreate(newEvents.map(event => EventLogic.prepareEventForDB(event)));
     });

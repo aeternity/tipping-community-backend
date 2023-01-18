@@ -26,7 +26,8 @@ const MdwLogic = {
 
   // fetches pages forwards, if no next its the last page, don't cache that
   async iterateMdw(contract, next, abortIfHashKnown = false) {
-    const url = `${process.env.MIDDLEWARE_URL}/${next}`;
+    const url = `${process.env.MIDDLEWARE_URL}${next}`;
+    logger.info(`iterateMdw: ${url}`)
     const result = await axios.get(url, { timeout: 10000 }).then(res => res.data);
 
     if (result.next) {
@@ -36,7 +37,7 @@ const MdwLogic = {
   },
 
   async getContractTransactions(upperHeight, lowerHeight, contract) {
-    return MdwLogic.iterateMdw(contract, `txs/gen/${upperHeight}-${lowerHeight}?contract=${contract}&type=contract_call&limit=${LIMIT}`, true);
+    return MdwLogic.iterateMdw(contract, `/v2/txs?scope=gen:${upperHeight}-${lowerHeight}&contract=${contract}&type=contract_call&limit=${LIMIT}`, true);
   },
 
   async middlewareContractTransactions(upperHeight, lowerHeight) {
@@ -60,7 +61,7 @@ const MdwLogic = {
   },
 
   async getChainNames() {
-    const result = await MdwLogic.iterateMdw(null, `names/active?limit=${LIMIT}`).catch(e => {
+    const result = await MdwLogic.iterateMdw(null, `/v2/names?state=active&limit=${LIMIT}`).catch(e => {
       logger.error(`Could not fetch names from middleware: ${e.message}`);
       Sentry.captureException(e);
       return [];
@@ -96,7 +97,7 @@ const MdwLogic = {
   },
 
   async fetchTokenBalancesForAddress(accountAddress) {
-    return axios.get(`${process.env.MIDDLEWARE_URL}/mdw/aex9/balances/account/${accountAddress}`).then(({ data }) => data);
+    return MdwLogic.iterateMdw(null, `${process.env.MIDDLEWARE_URL}/v2/aex9/account-balances/${accountAddress}?limit=${LIMIT}`);
   },
 };
 

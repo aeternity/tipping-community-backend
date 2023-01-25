@@ -33,11 +33,11 @@ describe('Middleware', () => {
       }), 200)));
       const transactions = await mdwLogic.middlewareContractTransactions(20, 0);
       sinon.assert.calledWith(getStub,
-        `${process.env.MIDDLEWARE_URL}/txs/gen/20-0?contract=${process.env.CONTRACT_V1_ADDRESS}&type=contract_call&limit=100`);
+        `${process.env.MIDDLEWARE_URL}/v2/txs?scope=gen:20-0&contract=${process.env.CONTRACT_V1_ADDRESS}&type=contract_call&limit=100`);
       sinon.assert.calledWith(getStub,
-        `${process.env.MIDDLEWARE_URL}/txs/gen/20-0?contract=${process.env.CONTRACT_V2_ADDRESS}&type=contract_call&limit=100`);
+        `${process.env.MIDDLEWARE_URL}/v2/txs?scope=gen:20-0&contract=${process.env.CONTRACT_V2_ADDRESS}&type=contract_call&limit=100`);
       sinon.assert.calledWith(getStub,
-        `${process.env.MIDDLEWARE_URL}/txs/gen/20-0?contract=${process.env.CONTRACT_V3_ADDRESS}&type=contract_call&limit=100`);
+        `${process.env.MIDDLEWARE_URL}/v2/txs?scope=gen:20-0&contract=${process.env.CONTRACT_V3_ADDRESS}&type=contract_call&limit=100`);
       transactions.should.be.an('array');
       getStub.restore();
     });

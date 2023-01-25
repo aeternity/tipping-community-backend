@@ -21,7 +21,10 @@ RUN addgroup -S pptruser && adduser --uid 1001 -S -g pptruser pptruser \
     && chown -R pptruser:pptruser /home/pptruser \
     && chown -R pptruser:pptruser /app
 
+
 WORKDIR /app
+RUN chown -R root:root /app
+
 COPY package.json /app
 COPY package-lock.json /app
 RUN npm ci

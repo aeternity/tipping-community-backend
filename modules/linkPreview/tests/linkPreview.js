@@ -35,7 +35,7 @@ describe('LinkPreview', () => {
       const dbResult = await linkPreviewLogic.generatePreview(requestUrl);
       const preview = dbResult.toJSON();
       preview.should.have.property('id');
-      preview.should.have.property('description', 'æternity is a public open source smart contract platform.');
+      preview.should.have.property('description', 'Engineered to scale and last, æternity is an easily accessible blockchain platform for the global public.');
       preview.should.have.property('image');
       preview.image.should.contain('/images/preview');
       preview.should.have.property('lang', 'en');

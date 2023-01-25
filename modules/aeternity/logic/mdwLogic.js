@@ -27,7 +27,7 @@ const MdwLogic = {
   // fetches pages forwards, if no next its the last page, don't cache that
   async iterateMdw(contract, next, abortIfHashKnown = false) {
     const url = `${process.env.MIDDLEWARE_URL}${next}`;
-    logger.info(`iterateMdw: ${url}`)
+    logger.info(`iterateMdw: ${url}`);
     const result = await axios.get(url, { timeout: 10000 }).then(res => res.data);
 
     if (result.next) {
@@ -37,7 +37,11 @@ const MdwLogic = {
   },
 
   async getContractTransactions(upperHeight, lowerHeight, contract) {
-    return MdwLogic.iterateMdw(contract, `/v2/txs?scope=gen:${upperHeight}-${lowerHeight}&contract=${contract}&type=contract_call&limit=${LIMIT}`, true);
+    return MdwLogic.iterateMdw(
+      contract,
+      `/v2/txs?scope=gen:${upperHeight}-${lowerHeight}&contract=${contract}&type=contract_call&limit=${LIMIT}`,
+      true,
+    );
   },
 
   async middlewareContractTransactions(upperHeight, lowerHeight) {

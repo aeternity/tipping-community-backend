@@ -44,7 +44,7 @@
     "express-openapi-validator": "^4.13.1",
     "fuse.js": "^6.4.6",
     "glob": "^7.2.0",
-    "ipfs-http-client": "^53.0.1",
+    "ipfs-http-client": "^56.0.0",
     "languagedetect": "^2.0.0",
     "metascraper": "^5.24.8",
     "metascraper-description": "^5.24.8",

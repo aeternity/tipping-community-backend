@@ -10,7 +10,6 @@ const ipfs = {
 
   async getCoreVitals() {
     return {
-      id: await node.id(),
       version: await node.version(),
     };
   },

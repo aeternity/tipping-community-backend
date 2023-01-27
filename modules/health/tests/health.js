@@ -5,12 +5,16 @@ const { describe, it } = require('mocha');
 const sinon = require('sinon');
 const server = require('../../../server');
 const aeternity = require('../../aeternity/logic/aeternity');
+const ipfs = require('../../backup/logic/ipfsLogic');
 
 chai.should();
 chai.use(chaiHttp);
 
 describe('Health Endpoint', () => {
   describe('Backend Health', () => {
+    before(() => {
+      ipfs.init();
+    });
     afterEach(() => {
       sinon.restore();
     });

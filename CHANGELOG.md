@@ -2,6 +2,26 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [3.1.0](https://www.github.com/aeternity/tipping-community-backend/compare/v3.0.4...v3.1.0) (2023-01-27)
+
+
+### Features
+
+* **db:** adds option to enable postgres ssl ([6201b5c](https://www.github.com/aeternity/tipping-community-backend/commit/6201b5ce86fc826e816df41290ec253bcf010ff8))
+* **docker:** fix node version at 12 ([e29ba7e](https://www.github.com/aeternity/tipping-community-backend/commit/e29ba7ed032f827ce4f17e0462aae2fc2030c815))
+
+
+### Bug Fixes
+
+* **health:** adjusted ipfs to newest version without major refactorings ([2715e46](https://www.github.com/aeternity/tipping-community-backend/commit/2715e4686e3d9464dd86b9404af2d3a2f1546fe2))
+
+
+### Miscellaneous
+
+* **deps:** update nodejs, mdw v2 ([65e371a](https://www.github.com/aeternity/tipping-community-backend/commit/65e371a2f00fb8726f3ed01322202d5fbd2d7f5d))
+* fix docker install, upgrade sharp, lint fix ([25dce97](https://www.github.com/aeternity/tipping-community-backend/commit/25dce97c9bc64333a9fddbd482fbd4c4590ad6bc))
+* fix tests ([10a2658](https://www.github.com/aeternity/tipping-community-backend/commit/10a2658a4de4392c8a9dc89ca025ad657bca2f41))
+
 ### [3.0.4](https://www.github.com/aeternity/tipping-community-backend/compare/v3.0.3...v3.0.4) (2021-10-05)
 
 

@@ -35,14 +35,17 @@ describe('LinkPreview', () => {
       const dbResult = await linkPreviewLogic.generatePreview(requestUrl);
       const preview = dbResult.toJSON();
       preview.should.have.property('id');
-      preview.should.have.property('description', 'Engineered to scale and last, æternity is an easily accessible blockchain platform for the global public.');
+      preview.should.have.property(
+        'description',
+        'Engineered to scale and last, æternity is an easily accessible blockchain platform for the global public.',
+      );
       preview.should.have.property('image');
-      preview.image.should.contain('/images/preview');
+      preview.image.should.contain('/images/compressed-preview');
       preview.should.have.property('lang', 'en');
-      preview.should.have.property('title', 'æternity - a blockchain for scalable, secure and decentralized æpps');
-      preview.should.have.property('url', 'https://aeternity.com');
+      preview.should.have.property('title', 'æternity - Blockchain for scalable, secure, and decentralized æpps');
+      preview.should.have.property('url', 'https://aeternity.com/');
       preview.should.have.property('requestUrl', requestUrl);
-      preview.should.have.property('responseUrl', 'https://aeternity.com');
+      preview.should.have.property('responseUrl', 'https://aeternity.com/');
       preview.should.have.property('querySucceeded', true);
       preview.should.have.property('updatedAt');
       preview.should.have.property('createdAt');

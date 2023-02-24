@@ -59,7 +59,7 @@
     "redis": "^3.1.2",
     "rsmq": "^0.12.4",
     "rxjs": "^7.3.1",
-    "sequelize": "^5.22.3",
+    "sequelize": "^6.29.0",
     "sequelize-hierarchy": "^2.0.4",
     "sharp": "^0.31.3",
     "swagger-ui-express": "^4.1.6",

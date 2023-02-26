@@ -38,6 +38,7 @@ jobs:
           install: true
 
       - name: Cache Docker layers
+        if: ${{ steps.release.outputs.release_created }}
         uses: actions/cache@v2
         with:
           path: /tmp/.buildx-cache
@@ -53,9 +54,7 @@ jobs:
           password: ${{ secrets.DOCKERHUB_PASS }}
 
       - name: Extract metadata for docker
-        if: |
-          github.event_name == 'push' ||
-          startsWith(github.ref, 'refs/tags/v')
+        if: ${{ steps.release.outputs.release_created }}
         id: meta
         uses: docker/metadata-action@v3
         with:
@@ -84,7 +83,6 @@ jobs:
           cache-to: type=local,mode=max,dest=/tmp/.buildx-cache-new
 
       - name: Move cache
-        if: github.event_name == 'pull_request' && github.event.action == 'opened' || github.event.action == 'synchronize'
         run: |
           rm -rf /tmp/.buildx-cache
           mv /tmp/.buildx-cache-new /tmp/.buildx-cache

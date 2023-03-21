@@ -82,9 +82,6 @@ jobs:
       - name: List running containers
         run: docker ps
 
-      - name: Sleep for a minute
-        run: sleep 60
-
       - name: Run npm install
         run: npm ci
 

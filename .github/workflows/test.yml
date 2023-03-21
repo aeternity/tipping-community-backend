@@ -1,0 +1,92 @@
+name: Tests Pipeline 
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - 'v*'
+  pull_request:
+    branches: [ main ]
+    types: [ opened ]
+
+jobs:
+  docs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@master
+      - name: Use Node.js 14.x
+        uses: actions/setup-node@v1
+        with:
+          node-version: 14.x
+      - name: Install Dependencies
+        run: npm ci
+      - name: Create Swagger File
+        run: npm run swagger:create
+      - name: Lint Swagger File
+        run: npm run swagger:lint
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@master
+      - name: Use Node.js 14.x
+        uses: actions/setup-node@v1
+        with:
+          node-version: 14.x
+      - name: Install Dependencies
+        run: npm ci
+      - name: Lint Codebase
+        run: npm run lint-ci
+  test:
+    runs-on: ubuntu-latest
+    name: Superhero Backend Tests
+    services:
+      postgres:
+        image: postgres
+        ports:
+          - 5432:5432
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: superhero
+          POSTGRES_HOST_PORT: 5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis
+        ports:
+        - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      ipfs:
+        image: ipfs/go-ipfs
+        ports:
+          - 5001:5001
+        options: >-
+          --health-cmd "ipfs swarm peers"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 100
+
+      - name: List running containers
+        run: docker ps
+
+      - name: Run npm install
+        run: npm ci
+
+      - name: Run db migration
+        run: npm run db:create
+
+      - name: Run tests
+        run: npm run test

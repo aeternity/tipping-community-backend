@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [3.1.1](https://github.com/aeternity/tipping-community-backend/compare/v3.1.0...v3.1.1) (2023-03-22)
+
+
+### Bug Fixes
+
+* only return valid address names ([fa88567](https://github.com/aeternity/tipping-community-backend/commit/fa8856761df7a292da107e17a85ff2c751b85e28))
+
+
+### CI / CD
+
+* **docker:** initial version of docker build and push with tags ([#394](https://github.com/aeternity/tipping-community-backend/issues/394)) ([0ca372b](https://github.com/aeternity/tipping-community-backend/commit/0ca372ba9e9fd03b409ee1e5c785c860943e6f2b))
+* fix pipeline ([#427](https://github.com/aeternity/tipping-community-backend/issues/427)) ([908a36a](https://github.com/aeternity/tipping-community-backend/commit/908a36a83ecc77158a0f8ba6b23ac492d9649c27))
+* update node vesion in tests ([91ee728](https://github.com/aeternity/tipping-community-backend/commit/91ee728246508530e86e9baec1c05fd71fcdeab1))
+
 ## [3.1.0](https://www.github.com/aeternity/tipping-community-backend/compare/v3.0.4...v3.1.0) (2023-01-27)
 
 

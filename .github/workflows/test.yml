@@ -1,4 +1,4 @@
-name: Tests Pipeline 
+name: Tests Pipeline
 
 on:
   push:
@@ -26,6 +26,7 @@ jobs:
         run: npm run swagger:create
       - name: Lint Swagger File
         run: npm run swagger:lint
+
   lint:
     runs-on: ubuntu-latest
     steps:
@@ -43,9 +44,17 @@ jobs:
         run: npm run swagger:lint
       - name: Lint Codebase
         run: npm run lint-ci
+
+  build-docker:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@master
+      - name: Build Docker
+        run: docker build .
+
   test:
     runs-on: ubuntu-latest
-    name: Superhero Backend Tests
     services:
       postgres:
         image: postgres
@@ -88,7 +97,7 @@ jobs:
 
       - name: Run npm install
         run: npm ci
-      
+
       - name: Create Docs
         run: npm run swagger:create
 

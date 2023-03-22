@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [3.1.2](https://github.com/aeternity/tipping-community-backend/compare/v3.1.1...v3.1.2) (2023-03-22)
+
+
+### CI / CD
+
+* change the bot token ([dfde12a](https://github.com/aeternity/tipping-community-backend/commit/dfde12aa1f17709a3b53e21dd49004ca6b9172e3))
+* change the bot token for apps repo ([9a41a75](https://github.com/aeternity/tipping-community-backend/commit/9a41a757b4a817003e715c24818b9db1fd1a5c34))
+
 ## [3.1.1](https://github.com/aeternity/tipping-community-backend/compare/v3.1.0...v3.1.1) (2023-03-22)
 
 

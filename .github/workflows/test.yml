@@ -88,6 +88,9 @@ jobs:
 
       - name: Run npm install
         run: npm ci
+      
+      - name: Create Docs
+        run: npm run swagger:create
 
       - name: Run db migration
         run: npm run db:create

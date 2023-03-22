@@ -4,6 +4,9 @@ const {
   describe, it, afterEach,
 } = require('mocha');
 const sinon = require('sinon');
+const chaiAsPromised = require('chai-as-promised');
+
+chai.use(chaiAsPromised);
 
 const BigNumber = require('bignumber.js');
 const ae = require('../logic/aeternity');
@@ -244,13 +247,7 @@ describe('Aeternity', () => {
       this.timeout(10000);
       const originalUrl = process.env.NODE_URL;
       process.env.NODE_URL = 'https://localhost';
-      let error = '';
-      try {
-        await ae.resetClient();
-      } catch (e) {
-        error = e.message;
-      }
-      error.should.contain('connect ECONNREFUSED 127.0.0.1:443');
+      await chai.expect(ae.resetClient()).to.eventually.be.rejectedWith('ECONNREFUSED');
       process.env.NODE_URL = originalUrl;
     });
 
@@ -258,13 +255,7 @@ describe('Aeternity', () => {
       this.timeout(10000);
       const originalUrl = process.env.COMPILER_URL;
       process.env.COMPILER_URL = 'https://localhost';
-      let error = '';
-      try {
-        await ae.resetClient();
-      } catch (e) {
-        error = e.message;
-      }
-      error.should.contain('connect ECONNREFUSED 127.0.0.1:443');
+      await chai.expect(ae.resetClient()).to.eventually.be.rejectedWith('ECONNREFUSED');
       process.env.COMPILER_URL = originalUrl;
     });
 

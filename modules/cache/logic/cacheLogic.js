@@ -4,6 +4,7 @@ const axios = require('axios');
 const requireESM = require('esm')(module);
 // use to handle es6 import/export
 const { decodeEvents, SOPHIA_TYPES } = requireESM('@aeternity/aepp-sdk/es/contract/aci/transformation');
+const { Crypto } = require('@aeternity/aepp-sdk');
 const aeternity = require('../../aeternity/logic/aeternity');
 const cache = require('../utils/cache');
 const queueLogic = require('../../queue/logic/queueLogic');
@@ -245,10 +246,12 @@ const CacheLogic = {
       const chainNames = await CacheLogic.fetchMdwChainNames();
 
       return Object.entries(chainNames).reduce(((acc, [pubkey, names]) => {
-        const profile = profiles.find(p => p.author === pubkey);
-        const preferredChainName = profile ? profile.preferredChainName : null;
+        if (Crypto.isAddressValid(pubkey)) {
+          const profile = profiles.find(p => p.author === pubkey);
+          const preferredChainName = profile ? profile.preferredChainName : null;
 
-        acc[pubkey] = preferredChainName || names[0];
+          acc[pubkey] = preferredChainName || names[0];
+        }
         return acc;
       }), {});
     }, cache.shortCacheTime);

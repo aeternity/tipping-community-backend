@@ -37,6 +37,9 @@ jobs:
       APP: "superhero-backend"
     if: ${{ needs.release.outputs.release_created }}
     steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 100
       - name: Set up Docker Buildx
         id: buildx
         # Use the action from the master, as we've seen some inconsistencies with @v1

@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [3.1.4](https://github.com/aeternity/tipping-community-backend/compare/v3.1.3...v3.1.4) (2023-03-23)
+
+
+### CI / CD
+
+* adds checkout for production release setp ([255fbca](https://github.com/aeternity/tipping-community-backend/commit/255fbcac0d9be2379b6270c03a51ba7791c9cfd1))
+
 ## [3.1.3](https://github.com/aeternity/tipping-community-backend/compare/v3.1.2...v3.1.3) (2023-03-23)
 
 

@@ -13,9 +13,8 @@ jobs:
     name: Release Pleases
     runs-on: ubuntu-latest
     outputs:
-      outputs:
-        tag_name: ${{ steps.release.outputs.tag_name }}
-        release_created: ${{ steps.release.outputs.release_created }}
+      tag_name: ${{ steps.release.outputs.tag_name }}
+      release_created: ${{ steps.release.outputs.release_created }}
     steps:
       - uses: actions/checkout@v2
         with:

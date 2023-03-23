@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [3.1.3](https://github.com/aeternity/tipping-community-backend/compare/v3.1.2...v3.1.3) (2023-03-23)
+
+
+### CI / CD
+
+* change events for prod pipeline ([785decf](https://github.com/aeternity/tipping-community-backend/commit/785decfe81634828c018c39e497ba4f9cad2fdf9))
+* fixed outputs nesting ([f91a0e6](https://github.com/aeternity/tipping-community-backend/commit/f91a0e6ae9b23eca752367889eb75d6cf98c15f8))
+* splits actions in two ([0e52d18](https://github.com/aeternity/tipping-community-backend/commit/0e52d18b122c435e61a0a2966d4f912498c4dee2))
+
 ## [3.1.2](https://github.com/aeternity/tipping-community-backend/compare/v3.1.1...v3.1.2) (2023-03-22)
 
 

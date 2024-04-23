@@ -5,6 +5,7 @@
   "main": "bin/www.js",
   "prepare": "husky install",
   "scripts": {
+    "start": "node bin/www.js",
     "test": "mocha modules/**/tests/*.js --exit",
     "benchmark": "node benchmark.js",
     "db:create": "npx sequelize-cli --config config/config.js --env development db:migrate",
@@ -37,6 +38,7 @@
     "bignumber.js": "^9.0.1",
     "cld": "^2.7.0",
     "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
     "esm": "^3.2.25",
     "express": "^4.17.1",
     "express-async-errors": "^3.1.1",

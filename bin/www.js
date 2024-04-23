@@ -1,4 +1,7 @@
 #!/usr/bin/env node
+// Load environment variables
+require('dotenv').config();
+
 const http = require('http');
 const Sentry = require('@sentry/node');
 

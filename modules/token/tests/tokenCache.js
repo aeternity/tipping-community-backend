@@ -1,19 +1,17 @@
-const chai = require('chai');
-const chaiHttp = require('chai-http');
-const {
-  describe, it, before,
-} = require('mocha');
-const sinon = require('sinon');
-const server = require('../../../server');
-const aeternity = require('../../aeternity/logic/aeternity');
-const CacheLogic = require('../../cache/logic/cacheLogic');
-const cache = require('../../cache/utils/cache');
-const { publicKey } = require('../../../utils/testingUtil');
+import chai from 'chai';
+import chaiHttp from 'chai-http';
+import mocha from 'mocha';
+import sinon from 'sinon';
+import server from '../../../server.js';
+import aeternity from '../../aeternity/logic/aeternity.js';
+import CacheLogic from '../../cache/logic/cacheLogic.js';
+import cache from '../../cache/utils/cache.js';
+import { publicKey } from '../../../utils/testingUtil.js';
 
+const { describe, it, before } = mocha;
 chai.should();
 chai.use(chaiHttp);
 chai.use(chaiHttp);
-
 describe('Token Cache', () => {
   before(async function () {
     this.timeout(10000);
@@ -21,17 +19,13 @@ describe('Token Cache', () => {
   });
   describe('aex9Token', () => {
     let sandbox;
-
     beforeEach(() => {
       sandbox = sinon.createSandbox();
     });
-
     afterEach(() => {
       sandbox.restore();
     });
-
     // TODO create a way better test coverage
-
     it('it should GET token info', async () => {
       const contractAddress = 'ct_contract';
       const tokenMetaInfoStub = sandbox.stub(aeternity, 'fetchTokenMetaInfo').callsFake(async () => ({
@@ -42,11 +36,9 @@ describe('Token Cache', () => {
       sandbox.stub(CacheLogic, 'getTokenRegistryState').callsFake(async () => [
         [contractAddress],
       ]);
-
       // stub this to avoid errors because ct_contract is not a valid address
-      const getTokenAccountsStub = sandbox.stub(CacheLogic, 'getTokenAccounts').callsFake(async () => {});
-      sandbox.stub(aeternity, 'addTokenToRegistry').callsFake(async () => {});
-
+      const getTokenAccountsStub = sandbox.stub(CacheLogic, 'getTokenAccounts').callsFake(async () => { });
+      sandbox.stub(aeternity, 'addTokenToRegistry').callsFake(async () => { });
       // Flush cache to force re-generation
       await cache.del(['getTokenInfos']);
       await cache.del(['getTokenMetaInfo', contractAddress]);
@@ -59,15 +51,12 @@ describe('Token Cache', () => {
         name: 'SOFIA',
         symbol: 'SOF',
       });
-
       // Check sideffects
       sinon.assert.calledWith(getTokenAccountsStub, contractAddress);
       sinon.assert.calledWith(tokenMetaInfoStub, contractAddress);
-
       // Flush dirty cache
       await cache.del(['getTokenInfos']);
     });
-
     it('it should ADD a token to be indexed', async () => {
       const contractAddress = 'ct_2bCbmU7vtsysL4JiUdUZjJJ98LLbJWG1fRtVApBvqSFEM59D6W';
       const registryStub = sandbox.stub(CacheLogic, 'getTokenRegistryState').callsFake(async () => []);
@@ -90,14 +79,12 @@ describe('Token Cache', () => {
       // clear dirty cache
       await cache.del(['getTokenMetaInfo', contractAddress]);
     });
-
     it('it shouldnt GET token info without address', done => {
       chai.request(server).get('/tokenCache/balances').end((err, res) => {
         res.should.have.status(400);
         done();
       });
     });
-
     it('it should GET token balances for address', async () => {
       const contractAddress = 'ct_contract';
       const oldContractAddress = 'ct_contract_with_balance';
@@ -106,7 +93,6 @@ describe('Token Cache', () => {
         name: 'Other Test Token',
         symbol: 'OT',
       };
-
       sandbox.stub(CacheLogic, 'getTokenRegistryState').callsFake(async () => [[contractAddress], [oldContractAddress]]);
       sandbox.stub(aeternity, 'fetchTokenMetaInfo').callsFake(async () => metaInfo);
       const getTokenAccountsStub = sandbox.stub(CacheLogic, 'getTokenAccounts').callsFake(async () => []);
@@ -115,12 +101,10 @@ describe('Token Cache', () => {
       await CacheLogic.triggerGetTokenContractIndex([{
         token: contractAddress,
       }]);
-
       // Check for balance generation
       sinon.assert.calledWith(getTokenAccountsStub, contractAddress);
       getTokenAccountsStub.restore();
       fetchTokenAccountBalancesStub.restore();
-
       // Enfore balance regeneration
       await cache.del(['getTokenAccounts', contractAddress]);
       // Seed cache with existing token
@@ -131,7 +115,6 @@ describe('Token Cache', () => {
       ]));
       // Trigger cache update
       await CacheLogic.getTokenAccounts(contractAddress);
-
       const res = await chai.request(server).get(`/tokenCache/balances?address=${publicKey}`);
       res.should.have.status(200);
       res.body.should.be.a('object');
@@ -141,18 +124,14 @@ describe('Token Cache', () => {
       res.body[oldContractAddress].should.be.deep.equal(metaInfo);
     });
   });
-
   describe('wordbazaar', () => {
     let sandbox;
-
     beforeEach(() => {
       sandbox = sinon.createSandbox();
     });
-
     afterEach(() => {
       sandbox.restore();
     });
-
     it('it should get the word registry overview', async function () {
       this.timeout(25000);
       await cache.del(['wordRegistryData']);
@@ -178,7 +157,6 @@ describe('Token Cache', () => {
       firstWord.should.have.property('spread');
       firstWord.should.have.property('description');
     });
-
     it('it should search the word registry', async () => {
       await cache.del(['wordRegistryData']);
       sandbox.stub(aeternity, 'fetchWordRegistryData').callsFake(async () => ({
@@ -196,7 +174,6 @@ describe('Token Cache', () => {
       resB.body.should.have.length(1);
       resB.body[0].should.have.property('searchScore');
       resB.body[0].searchScore.should.be.a('number');
-
       // check for spaces in search
       const resSpace = await chai.request(server).get('/tokenCache/wordRegistry?search=super+spec');
       resSpace.should.have.status(200);
@@ -204,44 +181,37 @@ describe('Token Cache', () => {
       resSpace.body.should.have.length(1);
       resSpace.body[0].should.have.property('searchScore');
       resSpace.body[0].searchScore.should.be.a('number');
-
       // occurs in both tokens
       const resA = await chai.request(server).get('/tokenCache/wordRegistry?search=a');
       resA.should.have.status(200);
       resA.body.should.be.an('array');
       resA.body.should.have.length(2);
-
       // occurs in no token
       const res0 = await chai.request(server).get('/tokenCache/wordRegistry?search=x');
       res0.should.have.status(200);
       res0.body.should.be.an('array');
       res0.body.should.have.length(0);
-
       // sort by asset
       const resOrderAsset = await chai.request(server).get('/tokenCache/wordRegistry?search=a&ordering=asset&direction=asc');
       resOrderAsset.should.have.status(200);
       resOrderAsset.body.should.be.an('array');
       resOrderAsset.body.should.have.length(2);
       resOrderAsset.body[0].should.have.property('word', 'a');
-
       const resOrderAssetReverse = await chai.request(server).get('/tokenCache/wordRegistry?search=a&ordering=asset&direction=desc');
       resOrderAssetReverse.should.have.status(200);
       resOrderAssetReverse.body.should.be.an('array');
       resOrderAssetReverse.body.should.have.length(2);
       resOrderAssetReverse.body[0].should.have.property('word', 'bigear');
     });
-
     it('it should get a word registry contract overview', async function () {
       this.timeout(15000);
       const ctAddress = 'ct_RJt3nE2xwpA1Y95pkwyH7M5VthQUBd2TcdxuDZguGatQzKrWM';
       await cache.del(['wordSaleState', ctAddress]);
       await cache.del(['fungibleTokenTotalSupply', ctAddress]);
       await cache.del(['wordSalePrice', ctAddress]);
-
       const res = await chai.request(server).get(`/tokenCache/wordSale/${ctAddress}`);
       res.should.have.status(200);
       res.body.should.be.a('object');
-
       res.body.should.have.property('wordSaleAddress', ctAddress);
       res.body.should.have.property('tokenAddress', 'ct_2CFSj7edTECkin7Lcf7AkVjn73gb3vC5oPQw34QyRkDuvnvuSW');
       res.body.should.have.property('totalSupply');
@@ -250,7 +220,6 @@ describe('Token Cache', () => {
       res.body.should.have.property('spread');
       res.body.should.have.property('description', 'Join the grunge community');
     });
-
     it('it should get a word contract by token', async function () {
       this.timeout(10000);
       const wordCtAddress = 'ct_RJt3nE2xwpA1Y95pkwyH7M5VthQUBd2TcdxuDZguGatQzKrWM';
@@ -260,7 +229,6 @@ describe('Token Cache', () => {
         tokens: [['TEST', wordCtAddress]],
       }));
       await cache.del(['wordRegistryData']);
-
       const res = await chai.request(server).get(`/tokenCache/wordSaleByToken/${tokenCtAddress}`);
       res.should.have.status(200);
       res.body.should.be.a('object');
@@ -272,11 +240,9 @@ describe('Token Cache', () => {
       res.body.should.have.property('spread');
       res.body.should.have.property('description', 'Join the grunge community');
     });
-
     it('it should get a vote details from a word contract', async function () {
       this.timeout(10000);
       const wordCtAddress = 'ct_2tAB3fS34GphhDvUfrBETiK4A61PVMYuFoLJBsD2Br6F5jvEm9';
-
       const res = await chai.request(server).get(`/tokenCache/wordSaleVotesDetails/${wordCtAddress}`);
       res.should.have.status(200);
       res.body.should.be.a('array');
@@ -299,7 +265,6 @@ describe('Token Cache', () => {
         stakePercent: '0',
       });
     });
-
     it('it should get the token price history', async function () {
       this.timeout(10000);
       const wordCtAddress = 'ct_2n3AwDgQhGWWhh2CGe15cYhpoziHFraVTLbdQJjErbjYstdQHT';
@@ -318,7 +283,6 @@ describe('Token Cache', () => {
     it('it should get the token price history for a token without history', async function () {
       this.timeout(10000);
       const wordCtAddress = 'ct_2tAB3fS34GphhDvUfrBETiK4A61PVMYuFoLJBsD2Br6F5jvEm9';
-
       const res = await chai.request(server).get(`/tokenCache/priceHistory/${wordCtAddress}`);
       res.should.have.status(200);
       res.body.should.be.an('array');

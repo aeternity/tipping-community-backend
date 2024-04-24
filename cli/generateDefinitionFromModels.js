@@ -1,7 +1,7 @@
-const fs = require('fs');
+import fs from 'fs';
+import models$0 from '../models/index.js';
 
-const { sequelize } = require('../models');
-
+const { sequelize } = models$0;
 const { models } = sequelize;
 const result = Object.keys(models).map(model => {
   const attributes = models[model].attributes || models[model].rawAttributes;
@@ -17,7 +17,6 @@ const result = Object.keys(models).map(model => {
     })),
   };
 });
-
 const typeMapping = type => {
   switch (type) {
     case 'enum':
@@ -34,7 +33,6 @@ const typeMapping = type => {
       return type;
   }
 };
-
 const formatMapping = type => {
   switch (type) {
     case 'date':
@@ -45,7 +43,6 @@ const formatMapping = type => {
       return undefined;
   }
 };
-
 const rawSwagger = fs.readFileSync('./swagger.json', 'utf-8');
 const swagger = JSON.parse(rawSwagger);
 // const fieldsNotInRequest = ['signature', 'challenge', 'imageSignature', 'imageChallenge', 'createdAt', 'updatedAt', 'hierarchyLevel'];
@@ -72,7 +69,6 @@ const openAPIJSON = {
           },
         }), {}),
       };
-
       // extract all variations
       const modelVariations = allModels.filter(modelString => modelString.includes(newModel.model) && modelString !== newModel.model);
       // prep variations
@@ -102,7 +98,6 @@ const openAPIJSON = {
       }), {}),
   },
 };
-
 const merged = {
   ...swagger,
   components: {

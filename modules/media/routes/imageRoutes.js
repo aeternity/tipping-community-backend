@@ -1,15 +1,13 @@
-const express = require('express');
-const path = require('path');
+import express from 'express';
+import path from 'path';
 
 const router = new express.Router();
-
 /**
  * @swagger
  * tags:
  * - name: "images"
  *   description: "Static image endpoint"
  */
-
 /**
  * @swagger
  * /images/{filename}:
@@ -39,5 +37,4 @@ const router = new express.Router();
  *               format: binary
  */
 router.use('/', express.static(path.resolve('./images/')));
-
-module.exports = router;
+export default router;

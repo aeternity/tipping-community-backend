@@ -1,23 +1,22 @@
-// Require the dev-dependencies
-const chai = require('chai');
-const chaiHttp = require('chai-http');
-const { describe, it } = require('mocha');
-const sinon = require('sinon');
-const { Op } = require('sequelize');
-const server = require('../../../server');
-const {
+import chai from 'chai';
+import chaiHttp from 'chai-http';
+import mocha from 'mocha';
+import sinon from 'sinon';
+import sequelize from 'sequelize';
+import server from '../../../server.js';
+import {
   publicKey, performSignedGETRequest, performSignedJSONRequest, getDBSeedFunction,
-} = require('../../../utils/testingUtil');
-const {
-  Notification, Comment, Retip,
-} = require('../../../models');
-const {
+} from '../../../utils/testingUtil.js';
+import models from '../../../models/index.js';
+import {
   ENTITY_TYPES, NOTIFICATION_TYPES, NOTIFICATION_STATES, SOURCE_TYPES,
-} = require('../constants/notification');
+} from '../constants/notification.js';
 
+const { describe, it } = mocha;
+const { Op } = sequelize;
+const { Notification, Comment, Retip } = models;
 chai.should();
 chai.use(chaiHttp);
-
 describe('Notifications', () => {
   const testData = {
     receiver: publicKey,
@@ -26,16 +25,12 @@ describe('Notifications', () => {
     entityType: ENTITY_TYPES.COMMENT,
     type: NOTIFICATION_TYPES.COMMENT_ON_COMMENT,
   };
-
   const seedDB = getDBSeedFunction([Retip, Notification, Comment]);
-
   after(() => {
     sinon.restore();
   });
-
   describe('Create Notifications', () => {
     let createdComment = null;
-
     it('it should create notifications for TIP_ON_COMMENT', async () => {
       const initialFakeData = {
         tips: [
@@ -47,9 +42,7 @@ describe('Notifications', () => {
           },
         ],
       };
-
       await seedDB(initialFakeData);
-
       createdComment = await Comment.create({
         tipId: '1_v1',
         text: 'Comment',
@@ -57,7 +50,6 @@ describe('Notifications', () => {
         signature: 'sig',
         challenge: 'chall',
       }, { raw: true });
-
       const fakeData = {
         tips: [
           {
@@ -69,9 +61,7 @@ describe('Notifications', () => {
           },
         ],
       };
-
       await seedDB(fakeData, false);
-
       const createdNotification = await Notification.findOne({
         where: {
           type: NOTIFICATION_TYPES.TIP_ON_COMMENT,
@@ -84,7 +74,6 @@ describe('Notifications', () => {
         },
         raw: true,
       });
-
       createdNotification.should.be.a('object');
       createdNotification.should.have.property('receiver', 'ak_comment');
       createdNotification.should.have.property('entityType', ENTITY_TYPES.TIP);
@@ -94,7 +83,6 @@ describe('Notifications', () => {
       createdNotification.should.have.property('sourceType', SOURCE_TYPES.COMMENT);
       createdNotification.should.have.property('sourceId', String(createdComment.id));
     });
-
     it('it should create notifications for RETIP_ON_TIP', async () => {
       const fakeData = {
         tips: [{
@@ -108,9 +96,7 @@ describe('Notifications', () => {
           timestamp: (new Date(2020, 8, 1)).getTime(),
         }],
       };
-
       await seedDB(fakeData);
-
       const createdNotification = await Notification.findOne({
         where: {
           type: NOTIFICATION_TYPES.RETIP_ON_TIP,
@@ -128,7 +114,6 @@ describe('Notifications', () => {
       createdNotification.should.have.property('entityId', fakeData.tips[0].id);
       createdNotification.should.have.property('type', NOTIFICATION_TYPES.RETIP_ON_TIP);
     });
-
     it('it should create notifications for CLAIM_OF_TIP', async () => {
       const initialFakeData = {
         tips: [{
@@ -143,9 +128,7 @@ describe('Notifications', () => {
           amount: 1,
         }],
       };
-
       await seedDB(initialFakeData);
-
       const fakeData = {
         claims: [{
           claimGen: 1,
@@ -153,9 +136,7 @@ describe('Notifications', () => {
           amount: 0,
         }],
       };
-
       await seedDB(fakeData, false);
-
       const createdNotification = await Notification.findOne({
         where: {
           type: NOTIFICATION_TYPES.CLAIM_OF_TIP,
@@ -165,14 +146,12 @@ describe('Notifications', () => {
         },
         raw: true,
       });
-
       createdNotification.should.be.a('object');
       createdNotification.should.have.property('receiver', initialFakeData.tips[0].sender);
       createdNotification.should.have.property('entityType', ENTITY_TYPES.TIP);
       createdNotification.should.have.property('entityId', initialFakeData.tips[0].id);
       createdNotification.should.have.property('type', NOTIFICATION_TYPES.CLAIM_OF_TIP);
     });
-
     it('it should create notifications for CLAIM_OF_RETIP', async () => {
       const initialFakeData = {
         tips: [{
@@ -193,9 +172,7 @@ describe('Notifications', () => {
           amount: 1,
         }],
       };
-
       await seedDB(initialFakeData);
-
       const fakeData = {
         claims: [{
           claimGen: 1,
@@ -203,9 +180,7 @@ describe('Notifications', () => {
           amount: 0,
         }],
       };
-
       await seedDB(fakeData, false);
-
       const createdNotification = await Notification.findOne({
         where: {
           type: NOTIFICATION_TYPES.CLAIM_OF_RETIP,
@@ -221,7 +196,6 @@ describe('Notifications', () => {
       createdNotification.should.have.property('entityId', initialFakeData.retips[0].id);
       createdNotification.should.have.property('type', NOTIFICATION_TYPES.CLAIM_OF_RETIP);
     });
-
     it('it should not crash on further claims', async () => {
       const initialFakeData = {
         tips: [{
@@ -242,9 +216,7 @@ describe('Notifications', () => {
           amount: 1,
         }],
       };
-
       await seedDB(initialFakeData);
-
       const fakeData = {
         claims: [{
           claimGen: 1,
@@ -252,9 +224,7 @@ describe('Notifications', () => {
           amount: 0,
         }],
       };
-
       await seedDB(fakeData, false);
-
       const fakeData2 = {
         claims: [{
           claimGen: 2,
@@ -262,11 +232,9 @@ describe('Notifications', () => {
           amount: 0,
         }],
       };
-
       await seedDB(fakeData2, false);
     });
   });
-
   describe('Retrieve Notifications', () => {
     it('it should GET zero notifications for a user', done => {
       performSignedGETRequest(server, `/notification/user/${publicKey}`)
@@ -277,7 +245,6 @@ describe('Notifications', () => {
           done();
         });
     });
-
     it('it should GET a single notifications for a user', done => {
       Notification.create(testData).then(() => {
         performSignedGETRequest(server, `/notification/user/${publicKey}`)
@@ -307,7 +274,6 @@ describe('Notifications', () => {
       createdNotification = await Notification.create(testData);
       createdNotification2 = await Notification.create(testData);
     });
-
     it('it should MODIFY a single notification for a user', async () => {
       // eslint-disable-next-line no-restricted-syntax,guard-for-in
       for (const notificationState of Object.values(NOTIFICATION_STATES)) {
@@ -325,7 +291,6 @@ describe('Notifications', () => {
         res.body.should.have.property('status', notificationState);
       }
     });
-
     it('it should MODIFY a batch of notifications for a user', async () => {
       // eslint-disable-next-line no-restricted-syntax,guard-for-in
       for (const notificationState of Object.values(NOTIFICATION_STATES)) {

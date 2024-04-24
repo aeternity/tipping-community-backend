@@ -1,7 +1,5 @@
+import Sequelize from "sequelize";
 'use strict';
-
-var Sequelize = require('sequelize');
-
 /**
  * Actions summary:
  *
@@ -9,35 +7,35 @@ var Sequelize = require('sequelize');
  * enum_Events_name add PostViaBurnReceived
  *
  **/
-
 var info = {
     "revision": 26,
     "name": "post-via-burn-added",
     "created": "2021-06-08T13:26:44.602Z",
     "comment": ""
 };
-
-var migrationCommands = function(transaction) {
+var migrationCommands = function (transaction) {
     return [];
 };
-var rollbackCommands = function(transaction) {
+var rollbackCommands = function (transaction) {
     return [];
 };
-
-module.exports = {
-    pos: 0,
-    useTransaction: true,
-    execute: function(queryInterface, Sequelize, _commands)
-    {
+export const pos = 0;
+export const useTransaction = true;
+export const execute = moduleExports.execute;
+export const up = moduleExports.up;
+export const down = moduleExports.down;
+const moduleExports = {
+    pos,
+    useTransaction,
+    execute: function (queryInterface, Sequelize, _commands) {
         var index = this.pos;
         function run(transaction) {
             const commands = _commands(transaction);
-            return new Promise(function(resolve, reject) {
+            return new Promise(function (resolve, reject) {
                 function next() {
-                    if (index < commands.length)
-                    {
+                    if (index < commands.length) {
                         let command = commands[index];
-                        console.log("[#"+index+"] execute: " + command.fn);
+                        console.log("[#" + index + "] execute: " + command.fn);
                         index++;
                         queryInterface[command.fn].apply(queryInterface, command.params).then(next, reject);
                     }
@@ -49,22 +47,22 @@ module.exports = {
         }
         if (this.useTransaction) {
             return queryInterface.sequelize.transaction(run);
-        } else {
+        }
+        else {
             return run(null);
         }
     },
-    up: async function(queryInterface, Sequelize)
-    {
-      const transaction = await queryInterface.sequelize.transaction();
-      await queryInterface.sequelize.query('ALTER TYPE "enum_Tips_type" ADD VALUE \'POST_VIA_BURN\';', { transaction });
-      await queryInterface.sequelize.query('ALTER TYPE "enum_Events_name" ADD VALUE \'PostViaBurnReceived\';', { transaction });
-      await transaction.commit();
-
-      return this.execute(queryInterface, Sequelize, migrationCommands);
+    up: async function (queryInterface, Sequelize) {
+        const transaction = await queryInterface.sequelize.transaction();
+        await queryInterface.sequelize.query('ALTER TYPE "enum_Tips_type" ADD VALUE \'POST_VIA_BURN\';', { transaction });
+        await queryInterface.sequelize.query('ALTER TYPE "enum_Events_name" ADD VALUE \'PostViaBurnReceived\';', { transaction });
+        await transaction.commit();
+        return this.execute(queryInterface, Sequelize, migrationCommands);
     },
-    down: async function(queryInterface, Sequelize)
-    {
-      return this.execute(queryInterface, Sequelize, rollbackCommands);
+    down: async function (queryInterface, Sequelize) {
+        return this.execute(queryInterface, Sequelize, rollbackCommands);
     },
     info: info
 };
+export { info };
+export default moduleExports;

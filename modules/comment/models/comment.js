@@ -1,6 +1,7 @@
-const Profile = require('../../profile/models/profile');
+import Profile from '../../profile/models/profile.js';
+import models from '../../../models/index.js';
 
-module.exports = (sequelize, DataTypes) => {
+export default (sequelize, DataTypes) => {
   const Comment = sequelize.define('Comment', {
     // attributes
     tipId: {
@@ -37,7 +38,7 @@ module.exports = (sequelize, DataTypes) => {
   Comment.belongsTo(Profile(sequelize, DataTypes), { foreignKey: 'author' });
   Comment.addHook('beforeCreate', async comment => {
     // eslint-disable-next-line global-require
-    const { Profile: ProfileModel } = require('../../../models');
+    const { Profile: ProfileModel } = models;
     const profile = await ProfileModel.findOne({ where: { author: comment.author }, raw: true });
     if (!profile) {
       await ProfileModel.create({

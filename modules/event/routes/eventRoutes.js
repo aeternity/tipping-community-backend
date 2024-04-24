@@ -1,6 +1,7 @@
-const { Router } = require('express');
-const EventLogic = require('../logic/eventLogic');
+import express from 'express';
+import EventLogic from '../logic/eventLogic.js';
 
+const { Router } = express;
 const router = new Router();
 /**
  * @swagger
@@ -41,5 +42,4 @@ const router = new Router();
 router.get('/', async (req, res) => {
   res.send(await EventLogic.getAllEvents(req.params.address, req.params.event, req.params.limit));
 });
-
-module.exports = router;
+export default router;

@@ -1,32 +1,26 @@
-const { signMessage, generateKeyPair, hash } = require('@aeternity/aepp-sdk').Crypto;
-const chai = require('chai');
-const chaiHttp = require('chai-http');
-const fs = require('fs');
-const sinon = require('sinon');
-const aeternity = require('../modules/aeternity/logic/aeternity');
-const TipLogic = require('../modules/tip/logic/tipLogic');
+import aeppSdk from '@aeternity/aepp-sdk';
+import chai from 'chai';
+import chaiHttp from 'chai-http';
+import fs from 'fs';
+import sinon from 'sinon';
+import aeternity from '../modules/aeternity/logic/aeternity.js';
+import TipLogic from '../modules/tip/logic/tipLogic.js';
+import models from '../models/index.js';
 
-const { Tip } = require('../models');
-
+const { signMessage, generateKeyPair, hash } = aeppSdk.Crypto;
+const { Tip } = models;
 chai.use(chaiHttp);
-
 const { publicKey, secretKey } = generateKeyPair();
-
 const signChallenge = (challenge, privateKey = null) => {
-  const signatureBuffer = signMessage(
-    challenge,
-    Buffer.from(privateKey || secretKey, 'hex'),
-  );
+  const signatureBuffer = signMessage(challenge, Buffer.from(privateKey || secretKey, 'hex'));
   return Buffer.from(signatureBuffer).toString('hex');
 };
-
 const shouldBeValidChallengeResponse = (serverBody, testData) => {
   serverBody.should.be.a('object');
   serverBody.should.have.property('challenge');
   serverBody.should.have.property('payload');
   Object.keys(testData).map(key => serverBody.payload.should.contain(`${key}=${testData[key]}`));
 };
-
 const performSignedMultipartFormRequest = (server, method, url, field, path, privateKey = null) => new Promise((resolve, reject) => {
   chai.request(server)[method](url)
     .field('Content-Type', 'multipart/form-data')
@@ -47,7 +41,6 @@ const performSignedMultipartFormRequest = (server, method, url, field, path, pri
       });
     });
 });
-
 const performSignedJSONRequest = (server, method, url, data = {}, privateKey = null) => new Promise((resolve, reject) => {
   chai.request(server)[method](url)
     .send(data)
@@ -64,7 +57,6 @@ const performSignedJSONRequest = (server, method, url, data = {}, privateKey = n
         });
     });
 });
-
 const performSignedGETRequest = (server, url, privateKey = null) => new Promise((resolve, reject) => {
   chai.request(server).get(url)
     .end((err, res) => {
@@ -79,7 +71,6 @@ const performSignedGETRequest = (server, url, privateKey = null) => new Promise(
         });
     });
 });
-
 const getDBSeedFunction = (dbsToClear = []) => async (fakeData, clearData = true) => {
   if (clearData) {
     await dbsToClear.asyncMap(async model => model.truncate({
@@ -107,7 +98,6 @@ const getDBSeedFunction = (dbsToClear = []) => async (fakeData, clearData = true
     topics: [],
     ...tip,
   }));
-
   seedData.claims = seedData.claims.map(claim => ({
     claimGen: 0,
     url: 'example.com',
@@ -118,8 +108,15 @@ const getDBSeedFunction = (dbsToClear = []) => async (fakeData, clearData = true
   sinon.stub(aeternity, 'fetchStateBasic').callsFake(async () => seedData);
   await TipLogic.updateTipsRetipsClaimsDB();
 };
-
-module.exports = {
+export { publicKey };
+export { secretKey };
+export { signChallenge };
+export { shouldBeValidChallengeResponse };
+export { performSignedJSONRequest };
+export { performSignedMultipartFormRequest };
+export { performSignedGETRequest };
+export { getDBSeedFunction };
+export default {
   publicKey,
   secretKey,
   signChallenge,

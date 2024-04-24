@@ -1,6 +1,7 @@
-const { Router } = require('express');
-const HealthLogic = require('../logic/healthLogic');
+import express from 'express';
+import HealthLogic from '../logic/healthLogic.js';
 
+const { Router } = express;
 const router = new Router();
 /**
  * @swagger
@@ -8,7 +9,6 @@ const router = new Router();
  * - name: "health"
  *   description: "Asses the health of the backend"
  */
-
 /**
  * @swagger
  * /health/backend:
@@ -45,5 +45,4 @@ router.get('/backend', async (req, res) => {
     dbHealth, ipfsHealth, redisHealth, aeHealth, allHealthy,
   });
 });
-
-module.exports = router;
+export default router;

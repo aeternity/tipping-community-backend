@@ -1,8 +1,9 @@
-const ipfs = require('./ipfsLogic');
-const imageLogic = require('../../media/logic/imageLogic');
-const { IPFSEntry } = require('../../../models');
-const { IPFS_TYPES } = require('../constants/ipfsTypes');
+import ipfs from './ipfsLogic.js';
+import imageLogic from '../../media/logic/imageLogic.js';
+import models from '../../../models/index.js';
+import { IPFS_TYPES } from '../constants/ipfsTypes.js';
 
+const { IPFSEntry } = models;
 const backupLogic = {
   async backupImageToIPFS(filename, publicKey, type) {
     const buffer = imageLogic.readImage(filename);
@@ -15,5 +16,4 @@ const backupLogic = {
     });
   },
 };
-
-module.exports = backupLogic;
+export default backupLogic;

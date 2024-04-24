@@ -1,7 +1,5 @@
+import Sequelize from "sequelize";
 'use strict';
-
-var Sequelize = require('sequelize');
-
 /**
  * Actions summary:
  *
@@ -20,15 +18,13 @@ var Sequelize = require('sequelize');
  * addIndex "pins_entry_id_type_author" to table "Pins"
  *
  **/
-
 var info = {
     "revision": 1,
     "name": "postgres-initial",
     "created": "2020-08-31T12:06:35.069Z",
     "comment": ""
 };
-
-var migrationCommands = function(transaction) {
+var migrationCommands = function (transaction) {
     return [{
             fn: "createTable",
             params: [
@@ -682,96 +678,98 @@ var migrationCommands = function(transaction) {
         }
     ];
 };
-var rollbackCommands = function(transaction) {
+var rollbackCommands = function (transaction) {
     return [{
             fn: "dropTable",
             params: ["BlacklistEntries", {
-                transaction: transaction
-            }]
+                    transaction: transaction
+                }]
         },
         {
             fn: "dropTable",
             params: ["Comments", {
-                transaction: transaction
-            }]
+                    transaction: transaction
+                }]
         },
         {
             fn: "dropTable",
             params: ["Commentsancestors", {
-                transaction: transaction
-            }]
+                    transaction: transaction
+                }]
         },
         {
             fn: "dropTable",
             params: ["ErrorReports", {
-                transaction: transaction
-            }]
+                    transaction: transaction
+                }]
         },
         {
             fn: "dropTable",
             params: ["IPFSEntries", {
-                transaction: transaction
-            }]
+                    transaction: transaction
+                }]
         },
         {
             fn: "dropTable",
             params: ["LinkPreviews", {
-                transaction: transaction
-            }]
+                    transaction: transaction
+                }]
         },
         {
             fn: "dropTable",
             params: ["Notifications", {
-                transaction: transaction
-            }]
+                    transaction: transaction
+                }]
         },
         {
             fn: "dropTable",
             params: ["Pins", {
-                transaction: transaction
-            }]
+                    transaction: transaction
+                }]
         },
         {
             fn: "dropTable",
             params: ["Profiles", {
-                transaction: transaction
-            }]
+                    transaction: transaction
+                }]
         },
         {
             fn: "dropTable",
             params: ["Retips", {
-                transaction: transaction
-            }]
+                    transaction: transaction
+                }]
         },
         {
             fn: "dropTable",
             params: ["Tips", {
-                transaction: transaction
-            }]
+                    transaction: transaction
+                }]
         },
         {
             fn: "dropTable",
             params: ["Traces", {
-                transaction: transaction
-            }]
+                    transaction: transaction
+                }]
         }
     ];
 };
-
-module.exports = {
-    pos: 0,
-    useTransaction: true,
-    execute: function(queryInterface, Sequelize, _commands)
-    {
+export const pos = 0;
+export const useTransaction = true;
+export const execute = moduleExports.execute;
+export const up = moduleExports.up;
+export const down = moduleExports.down;
+const moduleExports = {
+    pos,
+    useTransaction,
+    execute: function (queryInterface, Sequelize, _commands) {
         var index = this.pos;
         function run(transaction) {
             const commands = _commands(transaction);
-            return new Promise(function(resolve, reject) {
+            return new Promise(function (resolve, reject) {
                 function next() {
-                    if (index < commands.length)
-                    {
+                    if (index < commands.length) {
                         let command = commands[index];
-                        console.log("[#"+index+"] execute: " + command.fn);
+                        console.log("[#" + index + "] execute: " + command.fn);
                         index++;
                         queryInterface[command.fn].apply(queryInterface, command.params).then(next, reject);
                     }
@@ -783,17 +781,18 @@ module.exports = {
         }
         if (this.useTransaction) {
             return queryInterface.sequelize.transaction(run);
-        } else {
+        }
+        else {
             return run(null);
         }
     },
-    up: function(queryInterface, Sequelize)
-    {
+    up: function (queryInterface, Sequelize) {
         return this.execute(queryInterface, Sequelize, migrationCommands);
     },
-    down: function(queryInterface, Sequelize)
-    {
+    down: function (queryInterface, Sequelize) {
         return this.execute(queryInterface, Sequelize, rollbackCommands);
     },
     info: info
 };
+export { info };
+export default moduleExports;

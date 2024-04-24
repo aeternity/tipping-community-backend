@@ -1,24 +1,22 @@
-const { Router } = require('express');
-const BigNumber = require('bignumber.js');
-const Fuse = require('fuse.js');
-const TokenCacheLogic = require('../logic/tokenCacheLogic');
-const CacheLogic = require('../../cache/logic/cacheLogic');
-const searchOptions = require('../../cache/constants/searchOptions');
+import express from 'express';
+import BigNumber from 'bignumber.js';
+import Fuse from 'fuse.js';
+import TokenCacheLogic from '../logic/tokenCacheLogic.js';
+import CacheLogic from '../../cache/logic/cacheLogic.js';
+import searchOptions from '../../cache/constants/searchOptions.js';
 
+const { Router } = express;
 const router = new Router();
-
 const wordbazaarMiddleware = (req, res, next) => {
   if (process.env.WORD_REGISTRY_CONTRACT) return next();
   return res.status(403).send('NotImplemented');
 };
-
 /**
  * @swagger
  * tags:
  * - name: "tokencache"
  *   description: "Caching AEX-9 token meta information and balances"
  */
-
 /**
  * @swagger
  * /tokenCache/tokenInfo:
@@ -37,7 +35,6 @@ const wordbazaarMiddleware = (req, res, next) => {
  *                 type: object
  */
 router.get('/tokenInfo', TokenCacheLogic.deliverTokenInfo);
-
 /**
  * @swagger
  * /tokenCache/addToken:
@@ -58,7 +55,6 @@ router.get('/tokenInfo', TokenCacheLogic.deliverTokenInfo);
  *         description: OK
  */
 router.post('/addToken', TokenCacheLogic.indexTokenInfo);
-
 /**
  * @swagger
  * /tokenCache/balances:
@@ -81,7 +77,6 @@ router.post('/addToken', TokenCacheLogic.indexTokenInfo);
  *               type: object
  */
 router.get('/balances', TokenCacheLogic.tokenAccountBalance);
-
 /**
  * @swagger
  * /tokenCache/wordRegistry:
@@ -114,54 +109,47 @@ router.get('/balances', TokenCacheLogic.tokenAccountBalance);
  *             schema:
  *               type: object
  */
-router.get('/wordRegistry', wordbazaarMiddleware,
-  async (req, res) => {
-    const limit = 30;
-    const direction = req.query.direction || 'desc';
-
-    let words = await CacheLogic.getWordRegistryAndSaleData();
-
-    if (req.query.ordering) {
-      switch (req.query.ordering) {
-        case 'asset':
-          words = direction === 'desc'
-            ? words.sort((a, b) => -a.word.localeCompare(b.word))
-            : words.sort((a, b) => a.word.localeCompare(b.word));
-          break;
-        case 'buyprice':
-          words = direction === 'desc'
-            ? words.sort((a, b) => new BigNumber(b.buyPrice).comparedTo(a.buyPrice))
-            : words.sort((a, b) => new BigNumber(a.buyPrice).comparedTo(b.buyPrice));
-          break;
-        case 'sellprice':
-          words = direction === 'desc'
-            ? words.sort((a, b) => new BigNumber(b.sellPrice).comparedTo(a.sellPrice))
-            : words.sort((a, b) => new BigNumber(a.sellPrice).comparedTo(b.sellPrice));
-          break;
-        case 'supply':
-          words = direction === 'desc'
-            ? words.sort((a, b) => new BigNumber(b.totalSupply).comparedTo(a.totalSupply))
-            : words.sort((a, b) => new BigNumber(a.totalSupply).comparedTo(b.totalSupply));
-          break;
-        default:
-      }
+router.get('/wordRegistry', wordbazaarMiddleware, async (req, res) => {
+  const limit = 30;
+  const direction = req.query.direction || 'desc';
+  let words = await CacheLogic.getWordRegistryAndSaleData();
+  if (req.query.ordering) {
+    switch (req.query.ordering) {
+      case 'asset':
+        words = direction === 'desc'
+          ? words.sort((a, b) => -a.word.localeCompare(b.word))
+          : words.sort((a, b) => a.word.localeCompare(b.word));
+        break;
+      case 'buyprice':
+        words = direction === 'desc'
+          ? words.sort((a, b) => new BigNumber(b.buyPrice).comparedTo(a.buyPrice))
+          : words.sort((a, b) => new BigNumber(a.buyPrice).comparedTo(b.buyPrice));
+        break;
+      case 'sellprice':
+        words = direction === 'desc'
+          ? words.sort((a, b) => new BigNumber(b.sellPrice).comparedTo(a.sellPrice))
+          : words.sort((a, b) => new BigNumber(a.sellPrice).comparedTo(b.sellPrice));
+        break;
+      case 'supply':
+        words = direction === 'desc'
+          ? words.sort((a, b) => new BigNumber(b.totalSupply).comparedTo(a.totalSupply))
+          : words.sort((a, b) => new BigNumber(a.totalSupply).comparedTo(b.totalSupply));
+        break;
+      default:
     }
-
-    if (req.query.search) {
-      words = new Fuse(words, searchOptions).search(req.query.search).map(result => {
-        const { item } = result;
-        item.searchScore = result.score;
-        return item;
-      });
-    }
-
-    if (req.query.page) {
-      words = words.slice((req.query.page - 1) * limit, req.query.page * limit);
-    }
-
-    return res.send(words);
-  });
-
+  }
+  if (req.query.search) {
+    words = new Fuse(words, searchOptions).search(req.query.search).map(result => {
+      const { item } = result;
+      item.searchScore = result.score;
+      return item;
+    });
+  }
+  if (req.query.page) {
+    words = words.slice((req.query.page - 1) * limit, req.query.page * limit);
+  }
+  return res.send(words);
+});
 /**
  * @swagger
  * /tokenCache/wordSale/{contractAddress}:
@@ -183,9 +171,7 @@ router.get('/wordRegistry', wordbazaarMiddleware,
  *             schema:
  *               type: object
  */
-router.get('/wordSale/:contractAddress', wordbazaarMiddleware,
-  async (req, res) => res.send(await CacheLogic.getWordSaleDetails(req.params.contractAddress)));
-
+router.get('/wordSale/:contractAddress', wordbazaarMiddleware, async (req, res) => res.send(await CacheLogic.getWordSaleDetails(req.params.contractAddress)));
 /**
  * @swagger
  * /tokenCache/priceHistory/{contractAddress}:
@@ -207,9 +193,7 @@ router.get('/wordSale/:contractAddress', wordbazaarMiddleware,
  *             schema:
  *               type: object
  */
-router.get('/priceHistory/:contractAddress', wordbazaarMiddleware,
-  async (req, res) => res.send(await CacheLogic.wordPriceHistory(req.params.contractAddress)));
-
+router.get('/priceHistory/:contractAddress', wordbazaarMiddleware, async (req, res) => res.send(await CacheLogic.wordPriceHistory(req.params.contractAddress)));
 /**
  * @swagger
  * /tokenCache/wordSaleByToken/{contractAddress}:
@@ -236,7 +220,6 @@ router.get('/wordSaleByToken/:contractAddress', wordbazaarMiddleware, async (req
   if (!data) return res.status(404).send('no word sale information for address');
   return res.send(data);
 });
-
 /**
  * @swagger
  * /tokenCache/wordSaleVotesDetails/{contractAddress}:
@@ -258,7 +241,5 @@ router.get('/wordSaleByToken/:contractAddress', wordbazaarMiddleware, async (req
  *             schema:
  *               type: object
  */
-router.get('/wordSaleVotesDetails/:contractAddress', wordbazaarMiddleware,
-  async (req, res) => res.send(await CacheLogic.wordSaleVotesDetails(req.params.contractAddress)));
-
-module.exports = router;
+router.get('/wordSaleVotesDetails/:contractAddress', wordbazaarMiddleware, async (req, res) => res.send(await CacheLogic.wordSaleVotesDetails(req.params.contractAddress)));
+export default router;

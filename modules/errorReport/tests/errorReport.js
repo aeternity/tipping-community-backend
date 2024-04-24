@@ -1,21 +1,21 @@
-// Require the dev-dependencies
-const chai = require('chai');
-const chaiHttp = require('chai-http');
-const { describe, it, before } = require('mocha');
-const server = require('../../../server');
-const { ErrorReport } = require('../../../models');
+import chai from 'chai';
+import chaiHttp from 'chai-http';
+import mocha from 'mocha';
+import server from '../../../server.js';
+import models from '../../../models/index.js';
 
+const { describe, it, before } = mocha;
+const { ErrorReport } = models;
 chai.should();
 chai.use(chaiHttp);
 // Our parent block
 describe('Error Reports', () => {
-  before(done => { // Before each test we empty the database
+  before(done => {
     ErrorReport.destroy({
       where: {},
       truncate: true,
     }).then(() => done());
   });
-
   const testData = {
     appVersion: '0.0.21',
     browser: {
@@ -35,7 +35,6 @@ describe('Error Reports', () => {
     platform: 'extension',
     description: 'description',
   };
-
   describe('Error Report API', () => {
     it('it should GET all reports (empty)', done => {
       chai.request(server).get('/errorreport').auth(process.env.AUTHENTICATION_USER, process.env.AUTHENTICATION_PASSWORD).end((err, res) => {
@@ -65,7 +64,6 @@ describe('Error Reports', () => {
         done();
       });
     });
-
     it('it should GET all reports (1 result)', done => {
       chai.request(server).get('/errorreport').auth(process.env.AUTHENTICATION_USER, process.env.AUTHENTICATION_PASSWORD).end((err, res) => {
         res.should.have.status(200);

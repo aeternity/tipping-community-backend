@@ -1,8 +1,8 @@
-const { Router } = require('express');
-const StatsLogic = require('../logic/statsLogic');
+import express from 'express';
+import StatsLogic from '../logic/statsLogic.js';
 
+const { Router } = express;
 const router = new Router();
-
 /**
  * @swagger
  * /stats:
@@ -22,7 +22,6 @@ router.get('/', async (req, res) => {
   const stats = await StatsLogic.fetchStats();
   return stats ? res.send(stats) : res.sendStatus(404);
 });
-
 /**
  * @swagger
  * /stats/sender:
@@ -49,7 +48,6 @@ router.get('/sender', async (req, res) => {
   const stats = await StatsLogic.fetchUserStats(req.query.address);
   return stats ? res.send(stats) : res.sendStatus(404);
 });
-
 /**
  * @swagger
  * /stats/marketing:
@@ -66,5 +64,4 @@ router.get('/sender', async (req, res) => {
  *               type: object
  */
 router.get('/marketing', async (req, res) => res.send(await StatsLogic.fetchMarketingStats()));
-
-module.exports = router;
+export default router;

@@ -1,6 +1,6 @@
-const { PINNED_CONTENT_TYPES } = require('../constants/contentTypes');
+import { PINNED_CONTENT_TYPES } from '../constants/contentTypes.js';
 
-module.exports = (sequelize, DataTypes) => sequelize.define('Pin', {
+export default (sequelize, DataTypes) => sequelize.define('Pin', {
   // attributes
   entryId: {
     type: DataTypes.STRING,

@@ -1,12 +1,9 @@
-/* eslint-disable max-len */
-
-module.exports = {
-  GLOBAL_STATS: 'SELECT stats.* as "stats" FROM stats',
-  URL_STATS: 'SELECT urlstats.* as "urlStats" FROM urlstats',
-  URL_STATS_BY_URL: 'SELECT urlstats.* as "urlStats" FROM urlstats WHERE url = ?;',
-  SUM_URL_STATS_FOR_URLS: 'SELECT SUM(urlstats."totalTipsLength") AS "totalTipsLength", SUM(urlstats."totalAmount"::NUMERIC)::VARCHAR AS "totalAmount" FROM urlstats WHERE url IN (?);',
-  SENDER_STATS: 'SELECT ROW_TO_JSON(senderstats.*) as senderstats FROM senderstats WHERE sender = ?;',
-  MARKETING_STATS: `SELECT
+export const GLOBAL_STATS = 'SELECT stats.* as "stats" FROM stats';
+export const URL_STATS = 'SELECT urlstats.* as "urlStats" FROM urlstats';
+export const URL_STATS_BY_URL = 'SELECT urlstats.* as "urlStats" FROM urlstats WHERE url = ?;';
+export const SUM_URL_STATS_FOR_URLS = 'SELECT SUM(urlstats."totalTipsLength") AS "totalTipsLength", SUM(urlstats."totalAmount"::NUMERIC)::VARCHAR AS "totalAmount" FROM urlstats WHERE url IN (?);';
+export const SENDER_STATS = 'SELECT ROW_TO_JSON(senderstats.*) as senderstats FROM senderstats WHERE sender = ?;';
+export const MARKETING_STATS = `SELECT
        (SELECT COUNT("Tips"."id") FROM "Tips" WHERE "Tips"."timestamp" BETWEEN NOW() - INTERVAL ? DAY AND NOW()) AS "tipsCount",
        (SELECT COUNT("Retips"."id") FROM "Retips" WHERE "Retips"."createdAt" BETWEEN NOW() - INTERVAL ? DAY AND NOW()) AS "retipsCount",
        (SELECT COUNT(DISTINCT("Tips"."sender")) FROM "Tips" WHERE "Tips"."timestamp" BETWEEN NOW() - INTERVAL ? DAY AND NOW()) AS "uniqueTippers",
@@ -34,5 +31,12 @@ module.exports = {
                                AND "Retips"."token" IS NOT NULL
                              GROUP BY "Retips"."token") AS tokenAmounts
                        WHERE tokenAmounts.amount > 0
-                       GROUP BY tokenAmounts.token))) AS "retipTokenAmount";`,
+                       GROUP BY tokenAmounts.token))) AS "retipTokenAmount";`;
+export default {
+  GLOBAL_STATS,
+  URL_STATS,
+  URL_STATS_BY_URL,
+  SUM_URL_STATS_FOR_URLS,
+  SENDER_STATS,
+  MARKETING_STATS,
 };

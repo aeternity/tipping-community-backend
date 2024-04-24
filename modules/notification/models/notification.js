@@ -1,8 +1,8 @@
-const {
+import {
   NOTIFICATION_TYPES, NOTIFICATION_STATES, ENTITY_TYPES, SOURCE_TYPES,
-} = require('../constants/notification');
+} from '../constants/notification.js';
 
-module.exports = (sequelize, DataTypes) => sequelize.define('Notification', {
+export default (sequelize, DataTypes) => sequelize.define('Notification', {
   // attributes
   type: {
     type: DataTypes.ENUM({

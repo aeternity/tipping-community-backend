@@ -1,6 +1,6 @@
-const { CONSENT_STATES } = require('../constants/consentStates');
+import { CONSENT_STATES } from '../constants/consentStates.js';
 
-module.exports = (sequelize, DataTypes) => sequelize.define('Consent', {
+export default (sequelize, DataTypes) => sequelize.define('Consent', {
   // attributes
   author: {
     type: DataTypes.STRING,
@@ -24,7 +24,6 @@ module.exports = (sequelize, DataTypes) => sequelize.define('Consent', {
     type: DataTypes.TEXT,
     allowNull: false,
   },
-
 }, {
   indexes: [
     {

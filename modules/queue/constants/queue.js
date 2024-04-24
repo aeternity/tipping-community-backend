@@ -8,12 +8,10 @@ const MESSAGE_QUEUES = {
   EVENTS: 'EVENTS',
   SCHEDULED_EVENTS: 'SCHEDULED_EVENTS',
 };
-
 if (process.env.NODE_ENV === 'test') {
   MESSAGE_QUEUES.TEST = 'TEST';
   MESSAGE_QUEUES.TEST_2 = 'TEST_2';
 }
-
 // TODO verify that events are correctly phrased or build automatic correction tool
 const MESSAGES = {
   CACHE: {
@@ -75,7 +73,6 @@ const MESSAGES = {
     },
   },
 };
-
 if (process.env.NODE_ENV === 'test') {
   MESSAGES.TEST = {
     COMMANDS: {
@@ -95,8 +92,9 @@ if (process.env.NODE_ENV === 'test') {
     },
   };
 }
-
-module.exports = {
+export { MESSAGE_QUEUES };
+export { MESSAGES };
+export default {
   MESSAGE_QUEUES,
   MESSAGES,
 };

@@ -1,27 +1,23 @@
-// Require the dev-dependencies
-const chai = require('chai');
-const chaiHttp = require('chai-http');
-const sinon = require('sinon');
-const { describe, it, before } = require('mocha');
-const { generateKeyPair, hash } = require('@aeternity/aepp-sdk').Crypto;
-const fs = require('fs');
+import chai from 'chai';
+import chaiHttp from 'chai-http';
+import sinon from 'sinon';
+import mocha from 'mocha';
+import aeppSdk from '@aeternity/aepp-sdk';
+import fs from 'fs';
+import models from '../../../models/index.js';
+import server from '../../../server.js';
+import { IPFS_TYPES } from '../../backup/constants/ipfsTypes.js';
+import ae from '../../aeternity/logic/aeternity.js';
+import ipfs from '../../backup/logic/ipfsLogic.js';
+import profileLogic from '../logic/profileLogic.js';
+import queueLogic from '../../queue/logic/queueLogic.js';
+import { MESSAGES, MESSAGE_QUEUES } from '../../queue/constants/queue.js';
+import { publicKey, performSignedJSONRequest, performSignedMultipartFormRequest } from '../../../utils/testingUtil.js';
 
-const { Profile, IPFSEntry, Comment } = require('../../../models');
-const server = require('../../../server');
-const { IPFS_TYPES } = require('../../backup/constants/ipfsTypes');
-const ae = require('../../aeternity/logic/aeternity');
-const ipfs = require('../../backup/logic/ipfsLogic');
-const profileLogic = require('../logic/profileLogic');
-const queueLogic = require('../../queue/logic/queueLogic');
-const { MESSAGES, MESSAGE_QUEUES } = require('../../queue/constants/queue');
-const {
-  publicKey,
-  performSignedJSONRequest,
-  performSignedMultipartFormRequest,
-} = require('../../../utils/testingUtil');
-
+const { describe, it, before } = mocha;
+const { generateKeyPair, hash } = aeppSdk.Crypto;
+const { Profile, IPFSEntry, Comment } = models;
 const { expect } = chai;
-
 chai.should();
 chai.use(chaiHttp);
 // Our parent block
@@ -33,8 +29,7 @@ describe('Profile', () => {
     location: 'awesome, location, country',
   };
   const testImagePath = './modules/profile/tests/test.png';
-
-  before(async () => { // Before all tests we empty the database once
+  before(async () => {
     await Comment.destroy({
       where: {},
       truncate: true,
@@ -50,7 +45,6 @@ describe('Profile', () => {
       truncate: true,
     });
   });
-
   describe('Profile API', () => {
     it('it should fallback to empty profile on non existing profile', done => {
       chai.request(server).get(`/profile/${publicKey}`).end((err, res) => {
@@ -61,7 +55,6 @@ describe('Profile', () => {
         done();
       });
     });
-
     it('it should CREATE a new profile', done => {
       const stub = sinon.stub(ae, 'getAddressForChainName').callsFake(() => ({
         pointers: [{ id: publicKey, key: 'account_pubkey' }],
@@ -86,7 +79,6 @@ describe('Profile', () => {
           done();
         });
     });
-
     it('it should GET a profile', done => {
       chai.request(server).get(`/profile/${publicKey}`).end((err, res) => {
         res.should.have.status(200);
@@ -102,7 +94,6 @@ describe('Profile', () => {
         done();
       });
     });
-
     const newBio = 'another updated bio';
     it('it should allow to update an profile', done => {
       performSignedJSONRequest(server, 'post', `/profile/${publicKey}`, {
@@ -114,7 +105,6 @@ describe('Profile', () => {
         done();
       });
     });
-
     it('it should GET a profile with updated bio', done => {
       chai.request(server).get(`/profile/${publicKey}`).end((err, res) => {
         res.should.have.status(200);
@@ -125,13 +115,11 @@ describe('Profile', () => {
       });
     });
   });
-
   describe('Profile Image API', () => {
     before(async () => {
       fs.readdirSync('images')
         .filter(fileName => fileName.includes('ak_'))
         .map(file => fs.unlinkSync(`images/${file}`));
-
       await Profile.destroy({
         where: {},
         truncate: true,
@@ -145,7 +133,6 @@ describe('Profile', () => {
       });
       await ipfs.init();
     });
-
     const binaryParser = function (res, cb) {
       res.setEncoding('binary');
       res.data = '';
@@ -156,7 +143,6 @@ describe('Profile', () => {
         cb(null, Buffer.from(res.data, 'binary'));
       });
     };
-
     it('it should return 404 when no profile pic', done => {
       chai.request(server).get(`/profile/image/${publicKey}`)
         .end((err, res) => {
@@ -167,7 +153,6 @@ describe('Profile', () => {
           done();
         });
     });
-
     it('it should allow an image upload on existing profile', done => {
       performSignedMultipartFormRequest(server, 'post', `/profile/${publicKey}`, 'image', testImagePath)
         .then(({ res, signature, challenge }) => {
@@ -186,7 +171,6 @@ describe('Profile', () => {
           done();
         });
     });
-
     it('it should not overwrite an profile image if a cover image is uploaded', done => {
       performSignedMultipartFormRequest(server, 'post', `/profile/${publicKey}`, 'coverImage', testImagePath)
         .then(({ res, signature, challenge }) => {
@@ -207,7 +191,6 @@ describe('Profile', () => {
           done();
         });
     });
-
     it('it should allow an image upload on new profile', done => {
       const { publicKey: localPublicKey, secretKey } = generateKeyPair();
       performSignedMultipartFormRequest(server, 'post', `/profile/${localPublicKey}`, 'image', testImagePath, secretKey)
@@ -227,7 +210,6 @@ describe('Profile', () => {
           done();
         });
     });
-
     it('it should create an ipfs entry when uploading a new profile picture', async () => {
       const entry = await IPFSEntry.findOne({
         where: {
@@ -244,7 +226,6 @@ describe('Profile', () => {
       entry.should.have.property('createdAt');
       entry.should.have.property('updatedAt');
     });
-
     let imageURL = '';
     it('it should GET an profile with image', done => {
       chai.request(server).get(`/profile/${publicKey}`)
@@ -265,7 +246,6 @@ describe('Profile', () => {
           done();
         });
     });
-
     it('it should GET an profile image', done => {
       chai.request(server).get(imageURL)
         .buffer()
@@ -275,20 +255,17 @@ describe('Profile', () => {
             done(err);
           }
           res.should.have.status(200);
-
           // Check the headers for type and size
           res.should.have.header('content-type');
           res.header['content-type'].should.be.equal('image/png');
           res.should.have.header('content-length');
           const size = fs.statSync(testImagePath).size.toString();
           res.header['content-length'].should.be.equal(size);
-
           // verify checksum
           expect(hash(res.body).toString('hex')).to.equal('03fd3b41a8312dfe558f9e48927ba7f2bca55fbfca7f5dae4145bc7a26fed2d5');
           done();
         });
     });
-
     it('it should allow overwriting of the profile image', done => {
       performSignedMultipartFormRequest(server, 'post', `/profile/${publicKey}`, 'image', testImagePath)
         .then(({ res }) => {
@@ -296,7 +273,6 @@ describe('Profile', () => {
           done();
         });
     });
-
     it('it should create a new ipfs entry when uploading a new profile picture', async () => {
       const entries = await IPFSEntry.findAll({
         where: {
@@ -312,7 +288,6 @@ describe('Profile', () => {
       entries.should.have.length(2);
       entries[0].hash.should.equal(entries[1].hash);
     });
-
     it('it should delete the image', done => {
       performSignedJSONRequest(server, 'post', `/profile/${publicKey}`, { image: null })
         .then(({ res }) => {
@@ -320,7 +295,6 @@ describe('Profile', () => {
           done();
         });
     });
-
     it('it should return no image after deletion ', done => {
       chai.request(server).get(`/profile/${publicKey}`)
         .end((err, res) => {
@@ -330,7 +304,6 @@ describe('Profile', () => {
           done();
         });
     });
-
     it('it should return 404 after deleting a profile image', done => {
       chai.request(server).get(`/profile/image/${publicKey}`)
         .end((err, res) => {
@@ -342,13 +315,11 @@ describe('Profile', () => {
         });
     });
   });
-
   describe('Cover Image API', () => {
     before(async () => {
       fs.readdirSync('images')
         .filter(fileName => fileName.includes('ak_'))
         .map(file => fs.unlinkSync(`images/${file}`));
-
       await Profile.destroy({
         where: {},
         truncate: true,
@@ -361,7 +332,6 @@ describe('Profile', () => {
         challenge: 'challenge',
       });
     });
-
     const binaryParser = function (res, cb) {
       res.setEncoding('binary');
       res.data = '';
@@ -372,7 +342,6 @@ describe('Profile', () => {
         cb(null, Buffer.from(res.data, 'binary'));
       });
     };
-
     it('it should return 404 when no cover pic', done => {
       chai.request(server).get(`/profile/${publicKey}`)
         .end((err, res) => {
@@ -384,7 +353,6 @@ describe('Profile', () => {
           done();
         });
     });
-
     it('it should allow an cover image upload on existing profile', done => {
       performSignedMultipartFormRequest(server, 'post', `/profile/${publicKey}`, 'coverImage', testImagePath)
         .then(({ res, signature, challenge }) => {
@@ -403,7 +371,6 @@ describe('Profile', () => {
           done();
         });
     });
-
     it('it should not overwrite an coverImage if a profile image is uploaded', done => {
       performSignedMultipartFormRequest(server, 'post', `/profile/${publicKey}`, 'image', testImagePath)
         .then(({ res, signature, challenge }) => {
@@ -424,7 +391,6 @@ describe('Profile', () => {
           done();
         });
     });
-
     it('it should allow an cover image upload on new profile', done => {
       const { publicKey: localPublicKey, secretKey } = generateKeyPair();
       performSignedMultipartFormRequest(server, 'post', `/profile/${localPublicKey}`, 'coverImage', testImagePath, secretKey)
@@ -444,7 +410,6 @@ describe('Profile', () => {
           done();
         });
     });
-
     it('it should create an ipfs entry when uploading a new cover picture', async () => {
       const entry = await IPFSEntry.findOne({
         where: {
@@ -461,7 +426,6 @@ describe('Profile', () => {
       entry.should.have.property('createdAt');
       entry.should.have.property('updatedAt');
     });
-
     let imageURL = '';
     it('it should GET an profile with a cover image', done => {
       chai.request(server).get(`/profile/${publicKey}`)
@@ -482,7 +446,6 @@ describe('Profile', () => {
           done();
         });
     });
-
     it('it should GET an cover image', done => {
       chai.request(server).get(imageURL)
         .buffer()
@@ -492,20 +455,17 @@ describe('Profile', () => {
             done(err);
           }
           res.should.have.status(200);
-
           // Check the headers for type and size
           res.should.have.header('content-type');
           res.header['content-type'].should.be.equal('image/png');
           res.should.have.header('content-length');
           const size = fs.statSync(testImagePath).size.toString();
           res.header['content-length'].should.be.equal(size);
-
           // verify checksum
           expect(hash(res.body).toString('hex')).to.equal('03fd3b41a8312dfe558f9e48927ba7f2bca55fbfca7f5dae4145bc7a26fed2d5');
           done();
         });
     });
-
     it('it should allow overwriting of the cover image', done => {
       performSignedMultipartFormRequest(server, 'post', `/profile/${publicKey}`, 'coverImage', testImagePath)
         .then(({ res }) => {
@@ -513,7 +473,6 @@ describe('Profile', () => {
           done();
         });
     });
-
     it('it should create a new ipfs entry when uploading a new cover picture', async () => {
       const entries = await IPFSEntry.findAll({
         where: {
@@ -530,7 +489,6 @@ describe('Profile', () => {
       entries.should.have.length(3);
       entries[0].hash.should.equal(entries[1].hash);
     });
-
     it('it should delete the cover image', done => {
       performSignedJSONRequest(server, 'post', `/profile/${publicKey}`, { coverImage: null })
         .then(({ res }) => {
@@ -538,7 +496,6 @@ describe('Profile', () => {
           done();
         });
     });
-
     it('it should return no image after deletion ', done => {
       chai.request(server).get(`/profile/${publicKey}`)
         .end((err, res) => {
@@ -549,11 +506,10 @@ describe('Profile', () => {
         });
     });
   });
-
   describe('Internals', () => {
     it('it should verify the chain names on message', done => {
       profileLogic.init();
-      const updateMock = sinon.stub(profileLogic, 'verifyPreferredChainNames').callsFake(async () => {});
+      const updateMock = sinon.stub(profileLogic, 'verifyPreferredChainNames').callsFake(async () => { });
       queueLogic.sendMessage(MESSAGE_QUEUES.PROFILE, MESSAGES.PROFILE.COMMANDS.UPDATE_PREFERRED_CHAIN_NAMES);
       setTimeout(() => {
         updateMock.callCount.should.eql(1);

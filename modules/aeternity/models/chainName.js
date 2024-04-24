@@ -1,4 +1,4 @@
-module.exports = (sequelize, DataTypes) => sequelize.define('ChainName', {
+export default (sequelize, DataTypes) => sequelize.define('ChainName', {
   // attributes
   publicKey: {
     type: DataTypes.STRING,

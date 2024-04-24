@@ -1,18 +1,16 @@
-const chai = require('chai');
-const { describe, it } = require('mocha');
-const sinon = require('sinon');
-const { MESSAGE_QUEUES, MESSAGES } = require('../constants/queue');
+import chai from 'chai';
+import mocha from 'mocha';
+import sinon from 'sinon';
+import { MESSAGE_QUEUES, MESSAGES } from '../constants/queue.js';
+import queueLogic from '../logic/queueLogic.js';
 
-const queueLogic = require('../logic/queueLogic');
-
+const { describe, it } = mocha;
 chai.should();
-
 describe('Queue', () => {
   afterEach(async () => {
     await queueLogic.resetAll();
     sinon.restore();
   });
-
   describe('Queue Methods', () => {
     it('should init all queues', async () => {
       const initializedQueues = queueLogic.getQueues().map(q => q.name);

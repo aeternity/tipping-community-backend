@@ -1,15 +1,14 @@
-const { Router } = require('express');
-const CacheLogic = require('../logic/cacheLogic');
-const ProfileLogic = require('../../profile/logic/profileLogic');
-const EventLogic = require('../../event/logic/eventLogic');
+import express from 'express';
+import CacheLogic from '../logic/cacheLogic.js';
+import ProfileLogic from '../../profile/logic/profileLogic.js';
+import EventLogic from '../../event/logic/eventLogic.js';
 
+const { Router } = express;
 const router = new Router();
-
 const wordbazaarMiddleware = (req, res, next) => {
   if (process.env.WORD_REGISTRY_CONTRACT) return next();
   return res.status(403).send('NotImplemented');
 };
-
 /**
  * @swagger
  * /cache/chainNames:
@@ -31,7 +30,6 @@ router.get('/chainNames', async (req, res) => {
   const profiles = await ProfileLogic.getAllProfiles();
   return res.send(await CacheLogic.fetchChainNames(profiles));
 });
-
 /**
  * @swagger
  * /cache/price:
@@ -61,7 +59,6 @@ router.get('/chainNames', async (req, res) => {
  *                       format: float
  */
 router.get('/price', async (req, res) => res.send(await CacheLogic.fetchPrice()));
-
 /**
  * @swagger
  * /cache/events:
@@ -102,7 +99,6 @@ router.get('/price', async (req, res) => res.send(await CacheLogic.fetchPrice())
 router.get('/events', async (req, res) => {
   res.send(await EventLogic.getAllEvents(req.query.address, req.query.event, req.query.limit));
 });
-
 /**
  * @swagger
  * /cache/invalidate/tips:
@@ -189,7 +185,6 @@ router.get('/invalidate/wordSale/:wordSale', wordbazaarMiddleware, async (req, r
   await CacheLogic.invalidateWordSaleCache(req.params.wordSale);
   res.send({ status: 'OK' });
 });
-
 /**
  * @swagger
  * /cache/invalidate/wordRegistry:
@@ -205,7 +200,6 @@ router.get('/invalidate/wordRegistry', wordbazaarMiddleware, async (req, res) =>
   await CacheLogic.invalidateWordRegistryCache();
   res.send({ status: 'OK' });
 });
-
 /**
  * @swagger
  * /cache/invalidate/wordSaleVotes/{wordSale}:
@@ -228,7 +222,6 @@ router.get('/invalidate/wordSaleVotes/:wordSale', wordbazaarMiddleware, async (r
   await CacheLogic.invalidateWordSaleVotesCache(req.params.wordSale);
   res.send({ status: 'OK' });
 });
-
 /**
  * @swagger
  * /cache/invalidate/wordSaleVoteState/{vote}:
@@ -251,5 +244,4 @@ router.get('/invalidate/wordSaleVoteState/:vote', wordbazaarMiddleware, async (r
   await CacheLogic.invalidateWordSaleVoteStateCache(req.params.vote);
   res.send({ status: 'OK' });
 });
-
-module.exports = router;
+export default router;

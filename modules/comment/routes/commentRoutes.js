@@ -1,7 +1,9 @@
-const { Router } = require('express');
-const CommentLogic = require('../logic/commentLogic');
-const { signatureAuth } = require('../../authentication/logic/authenticationLogic');
+import express from 'express';
+import CommentLogic from '../logic/commentLogic.js';
+import authenticationLogic from '../../authentication/logic/authenticationLogic.js';
 
+const { Router } = express;
+const { signatureAuth } = authenticationLogic;
 const router = new Router();
 /**
  * @swagger
@@ -9,7 +11,6 @@ const router = new Router();
  * - name: "comment"
  *   description: "Comments on tips"
  */
-
 /**
  * @swagger
  * /comment/api/{commentId}:
@@ -88,7 +89,6 @@ router.get('/api/tip/:tipId', async (req, res) => {
 router.get('/api/author/:author', async (req, res) => {
   res.send(await CommentLogic.fetchCommentsForAuthor(req.params.author));
 });
-
 // Restricted api routes
 /**
  * @swagger
@@ -150,5 +150,4 @@ router.delete('/api/:id', signatureAuth, CommentLogic.verifyAuthor, async (req, 
   const result = await CommentLogic.removeItem(req.params.id);
   res.send(result === 1 ? res.sendStatus(200) : res.sendStatus(404));
 });
-
-module.exports = router;
+export default router;

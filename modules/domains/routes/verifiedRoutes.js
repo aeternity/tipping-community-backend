@@ -1,15 +1,14 @@
-const { Router } = require('express');
-const CacheLogic = require('../../cache/logic/cacheLogic');
+import express from 'express';
+import CacheLogic from '../../cache/logic/cacheLogic.js';
 
+const { Router } = express;
 const router = new Router();
-
 /**
  * @swagger
  * tags:
  * - name: "verified"
  *   description: "A dynamic list of successfully claimed urls"
  */
-
 /**
  * @swagger
  * /verified:
@@ -32,5 +31,4 @@ router.get('/', async (req, res) => {
   const allClaimedDomains = await CacheLogic.getOracleAllClaimedUrls();
   return res.send(allClaimedDomains);
 });
-
-module.exports = router;
+export default router;

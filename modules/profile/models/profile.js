@@ -1,4 +1,4 @@
-module.exports = (sequelize, DataTypes) => sequelize.define('Profile', {
+export default (sequelize, DataTypes) => sequelize.define('Profile', {
   // attributes
   biography: {
     type: DataTypes.TEXT,

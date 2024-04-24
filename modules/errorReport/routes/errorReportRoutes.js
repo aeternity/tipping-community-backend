@@ -1,7 +1,9 @@
-const { Router } = require('express');
-const ErrorReportLogic = require('../logic/errorReportLogic');
-const { basicAuth } = require('../../authentication/logic/authenticationLogic');
+import express from 'express';
+import ErrorReportLogic from '../logic/errorReportLogic.js';
+import authenticationLogic from '../../authentication/logic/authenticationLogic.js';
 
+const { Router } = express;
+const { basicAuth } = authenticationLogic;
 const router = new Router();
 /**
  * @swagger
@@ -32,7 +34,6 @@ const router = new Router();
 router.get('/', basicAuth, async (req, res) => {
   res.send(await ErrorReportLogic.getAllReports());
 });
-
 /**
  * @swagger
  * /errorreport:
@@ -62,5 +63,4 @@ router.post('/', async (req, res) => {
   });
   return res.send(result);
 });
-
-module.exports = router;
+export default router;

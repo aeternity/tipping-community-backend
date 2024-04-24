@@ -1,13 +1,14 @@
-const BackupLogic = require('../../backup/logic/backupLogic');
-const aeternity = require('../../aeternity/logic/aeternity');
-const cache = require('../../cache/utils/cache');
-const imageLogic = require('../../media/logic/imageLogic');
-const CacheLogic = require('../../cache/logic/cacheLogic');
-const { Profile } = require('../../../models');
-const { IPFS_TYPES } = require('../../backup/constants/ipfsTypes');
-const queueLogic = require('../../queue/logic/queueLogic');
-const { MESSAGE_QUEUES, MESSAGES } = require('../../queue/constants/queue');
+import BackupLogic from '../../backup/logic/backupLogic.js';
+import aeternity from '../../aeternity/logic/aeternity.js';
+import cache from '../../cache/utils/cache.js';
+import imageLogic from '../../media/logic/imageLogic.js';
+import CacheLogic from '../../cache/logic/cacheLogic.js';
+import models from '../../../models/index.js';
+import { IPFS_TYPES } from '../../backup/constants/ipfsTypes.js';
+import queueLogic from '../../queue/logic/queueLogic.js';
+import { MESSAGE_QUEUES, MESSAGES } from '../../queue/constants/queue.js';
 
+const { Profile } = models;
 const ProfileLogic = {
   init() {
     queueLogic.subscribeToMessage(MESSAGE_QUEUES.PROFILE, MESSAGES.PROFILE.COMMANDS.UPDATE_PREFERRED_CHAIN_NAMES, async message => {
@@ -15,7 +16,6 @@ const ProfileLogic = {
       await queueLogic.deleteMessage(MESSAGE_QUEUES.PROFILE, message.id);
     });
   },
-
   async upsertProfile({
     author, biography, preferredChainName, referrer, location, signature, challenge, image, coverImage,
   }) {
@@ -57,31 +57,24 @@ const ProfileLogic = {
     }
     return ProfileLogic.updateProfileForExternalAnswer(await ProfileLogic.getSingleItem(author));
   },
-
   // TODO run this via message queue when chain names are updated
   async verifyPreferredChainNames() {
     const allProfiles = await Profile.findAll({ raw: true });
     const chainNames = await CacheLogic.fetchMdwChainNames();
     return allProfiles.asyncMap(async profile => {
-      if (profile.preferredChainName && (
-        !chainNames[profile.author] || !chainNames[profile.author].includes(profile.preferredChainName)
-      )) {
+      if (profile.preferredChainName && (!chainNames[profile.author] || !chainNames[profile.author].includes(profile.preferredChainName))) {
         await Profile.update({ preferredChainName: null }, { where: { author: profile.author } });
       }
     });
   },
-
   async getSingleItem(author) {
     let profile = await Profile.findOne({ where: { author }, raw: true });
-
     if (!profile) profile = { author, createdAt: '' };
     if (!profile.preferredChainName) {
       profile.preferredChainName = await CacheLogic.fetchMdwChainNames().then(chainNames => (chainNames[author] ? chainNames[author][0] : null));
     }
-
     return profile;
   },
-
   updateProfileForExternalAnswer(profile) {
     return {
       ...profile,
@@ -90,11 +83,9 @@ const ProfileLogic = {
       referrer: !!profile.referrer,
     };
   },
-
   async getAllProfiles() {
     return Profile.findAll({ raw: true });
   },
-
   // LEGACY
   async deleteImage(req, res) {
     const result = await Profile.findOne({ where: { author: req.params.author }, raw: true });
@@ -107,21 +98,17 @@ const ProfileLogic = {
     }, { where: { author: req.params.author }, raw: true });
     return res.sendStatus(200);
   },
-
   async getImagePath(author) {
     const result = await Profile.findOne({ where: { author }, raw: true });
     if (!result || !result.image) return null;
     return imageLogic.getImagePath(result.image);
   },
-
   async verifyRequest(req, res, next) {
     // Get author
     const author = req.params.author ? req.params.author : req.body.author;
     if (!author) return res.status(400).send({ err: 'Missing author' });
-
     // No chain name
     if (typeof req.body.preferredChainName === 'undefined') return next();
-
     const queryResult = await aeternity.getAddressForChainName(req.body.preferredChainName);
     let addresses = [];
     if (queryResult) addresses = queryResult.pointers.filter(({ key }) => key === 'account_pubkey').map(({ id }) => id);
@@ -129,5 +116,4 @@ const ProfileLogic = {
     return addresses.includes(author) ? next() : res.status(400).send({ err: 'Chainname does not point to author' });
   },
 };
-
-module.exports = ProfileLogic;
+export default ProfileLogic;

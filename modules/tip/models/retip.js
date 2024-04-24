@@ -1,4 +1,4 @@
-module.exports = (sequelize, DataTypes) => sequelize.define('Retip', {
+export default (sequelize, DataTypes) => sequelize.define('Retip', {
   // attributes
   id: {
     type: DataTypes.STRING,

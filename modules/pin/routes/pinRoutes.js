@@ -1,17 +1,17 @@
-const { Router } = require('express');
-const PinLogic = require('../logic/pinLogic');
-const { PINNED_CONTENT_TYPES } = require('../constants/contentTypes');
-const { signatureAuth } = require('../../authentication/logic/authenticationLogic');
+import express from 'express';
+import PinLogic from '../logic/pinLogic.js';
+import { PINNED_CONTENT_TYPES } from '../constants/contentTypes.js';
+import authenticationLogic from '../../authentication/logic/authenticationLogic.js';
 
+const { Router } = express;
+const { signatureAuth } = authenticationLogic;
 const router = new Router();
-
 /**
  * @swagger
  * tags:
  * - name: "pin"
  *   description: "Pinning Tips to a users profile"
  */
-
 /**
  * @swagger
  * /pin/{author}:
@@ -38,7 +38,6 @@ const router = new Router();
 router.get('/:author', async (req, res) => {
   res.send(await PinLogic.getAllItemsPerUser(req.params.author));
 });
-
 // Restricted api routes
 /**
  * @swagger
@@ -117,5 +116,4 @@ router.delete('/:author', signatureAuth, async (req, res) => {
   const result = await PinLogic.removeItem(req.body.entryId, req.params.author, req.body.type);
   return result === 1 ? res.sendStatus(200) : res.sendStatus(404);
 });
-
-module.exports = router;
+export default router;

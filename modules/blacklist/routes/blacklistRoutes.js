@@ -1,18 +1,19 @@
-const { Router } = require('express');
-const { BlacklistEntry } = require('../../../models');
-const Logic = require('../logic/blacklistLogic');
-const TipLogic = require('../../tip/logic/tipLogic');
-const { basicAuth, signatureAuth } = require('../../authentication/logic/authenticationLogic');
+import express from 'express';
+import models from '../../../models/index.js';
+import Logic from '../logic/blacklistLogic.js';
+import TipLogic from '../../tip/logic/tipLogic.js';
+import authenticationLogic from '../../authentication/logic/authenticationLogic.js';
 
+const { Router } = express;
+const { BlacklistEntry } = models;
+const { basicAuth, signatureAuth } = authenticationLogic;
 const router = new Router();
-
 /**
  * @swagger
  * tags:
  * - name: "blacklist"
  *   description: "Flagging / Removing tips from the feed"
  */
-
 // Open api routes
 /**
  * @swagger
@@ -59,7 +60,6 @@ router.get('/api/:tipId', async (req, res) => {
   const result = await BlacklistEntry.findOne({ where: { tipId: req.params.tipId } });
   return result ? res.send(result.toJSON()) : res.sendStatus(404);
 });
-
 // View routes
 /**
  * @swagger
@@ -129,7 +129,6 @@ router.get('/', basicAuth, async (req, res) => {
     page, type, address, id, search,
   } = req.query;
   let contractVersion;
-
   if (type) {
     switch (type) {
       case 'posts':
@@ -141,7 +140,6 @@ router.get('/', basicAuth, async (req, res) => {
       default:
     }
   }
-
   const tips = id
     ? [await TipLogic.fetchTip(id)]
     : await Logic.augmentAllItems(await TipLogic.fetchTips({
@@ -152,9 +150,7 @@ router.get('/', basicAuth, async (req, res) => {
       ordering,
       search,
     }));
-
   const items = tips.map(({ hidden, flagged, dataValues }) => ({ hidden, flagged, ...dataValues }));
-
   return res.render('admin', {
     items,
     query: {
@@ -166,7 +162,6 @@ router.get('/', basicAuth, async (req, res) => {
     },
   });
 });
-
 // Restricted api routes
 /**
  * @swagger
@@ -262,7 +257,6 @@ router.delete('/api/:tipId', basicAuth, async (req, res) => {
   const result = await Logic.removeItem(req.params.tipId);
   return result === 1 ? res.sendStatus(200) : res.sendStatus(404);
 });
-
 // Public routes
 /**
  * @swagger
@@ -301,5 +295,4 @@ router.post('/api/wallet', signatureAuth, async (req, res) => {
     return res.status(500).send(e.message);
   }
 });
-
-module.exports = router;
+export default router;

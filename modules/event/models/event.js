@@ -1,6 +1,6 @@
-const { EVENT_TYPES } = require('../constants/eventTypes');
+import { EVENT_TYPES } from '../constants/eventTypes.js';
 
-module.exports = (sequelize, DataTypes) => sequelize.define('Event', {
+export default (sequelize, DataTypes) => sequelize.define('Event', {
   // attributes
   name: {
     type: DataTypes.ENUM({

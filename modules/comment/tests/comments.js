@@ -1,20 +1,20 @@
-// Require the dev-dependencies
-const chai = require('chai');
-const chaiHttp = require('chai-http');
-const { describe, it, before } = require('mocha');
+import chai from 'chai';
+import chaiHttp from 'chai-http';
+import mocha from 'mocha';
+import sinon from 'sinon';
+import server from '../../../server.js';
+import models from '../../../models/index.js';
+import { ENTITY_TYPES, NOTIFICATION_TYPES } from '../../notification/constants/notification.js';
+import {
+  publicKey, performSignedJSONRequest, shouldBeValidChallengeResponse, getDBSeedFunction,
+} from '../../../utils/testingUtil.js';
+import aeternity from '../../aeternity/logic/aeternity.js';
+import MdwLogic from '../../aeternity/logic/mdwLogic.js';
 
-const sinon = require('sinon');
-const server = require('../../../server');
+const { describe, it, before } = mocha;
 const {
   Comment, sequelize, Notification, Retip,
-} = require('../../../models');
-const { ENTITY_TYPES, NOTIFICATION_TYPES } = require('../../notification/constants/notification');
-const {
-  publicKey, performSignedJSONRequest, shouldBeValidChallengeResponse, getDBSeedFunction,
-} = require('../../../utils/testingUtil');
-const aeternity = require('../../aeternity/logic/aeternity');
-const MdwLogic = require('../../aeternity/logic/mdwLogic');
-
+} = models;
 chai.should();
 chai.use(chaiHttp);
 // Our parent block
@@ -29,22 +29,15 @@ describe('Comments', () => {
     text: 'What an awesome website',
     author: publicKey,
   };
-
   let commentId = null;
-
-  before(async function () { // Before all tests we empty the database once
+  before(async function () {
     this.timeout(10000);
     await sequelize.models.Commentancestor.destroy({
       where: {},
       truncate: true,
     });
-
-    await Promise.all((await Comment.findAll()).map(
-      object => Comment.update({ parentId: null }, { where: { id: object.id } }),
-    ));
-
+    await Promise.all((await Comment.findAll()).map(object => Comment.update({ parentId: null }, { where: { id: object.id } })));
     const seedDB = getDBSeedFunction([Comment, Notification, Retip]);
-
     await seedDB({
       tips: [{
         id: testData.tipId,
@@ -71,10 +64,8 @@ describe('Comments', () => {
         ],
       }],
     });
-
     await aeternity.init();
   });
-
   describe('Comment API', () => {
     it('it should return a signature challenge', done => {
       chai.request(server).post('/comment/api').send(testData).end((err, res) => {
@@ -82,7 +73,6 @@ describe('Comments', () => {
         done();
       });
     });
-
     it('it should CREATE a new comment entry', done => {
       performSignedJSONRequest(server, 'post', '/comment/api', testData).then(({ res, challenge, signature }) => {
         res.should.have.status(200);
@@ -97,7 +87,6 @@ describe('Comments', () => {
         res.body.should.have.property('createdAt');
         res.body.should.have.property('updatedAt');
         commentId = res.body.id;
-
         // SHOULD ALSO CREATE NOTIFICATIONS
         Notification.findOne({
           where: {
@@ -113,7 +102,6 @@ describe('Comments', () => {
         });
       });
     });
-
     it('it should REJECT a new comment entry for a tip with tokens when user has no tokens', done => {
       performSignedJSONRequest(server, 'post', '/comment/api', testDataWithTokens).then(({ res }) => {
         res.should.have.status(400);
@@ -122,7 +110,6 @@ describe('Comments', () => {
         done();
       });
     });
-
     it('it should CREATE a new comment entry for a tip with tokens when user has tokens', done => {
       sinon.stub(MdwLogic, 'fetchTokenBalancesForAddress').callsFake(async () => [
         { amount: '100000000000000', contract_id: 'ct_2bCbmU7vtsysL4JiUdUZjJJ98LLbJWG1fRtVApBvqSFEM59D6W' },
@@ -142,7 +129,6 @@ describe('Comments', () => {
         done();
       });
     });
-
     it('it should CREATE a profile with a new comment', done => {
       chai.request(server).get(`/profile/${testData.author}`).end((err, res) => {
         res.should.have.status(200);
@@ -155,7 +141,6 @@ describe('Comments', () => {
         done();
       });
     });
-
     it('it should GET a single item', done => {
       chai.request(server).get(`/comment/api/${commentId}`).end((err, res) => {
         res.should.have.status(200);
@@ -175,7 +160,6 @@ describe('Comments', () => {
         done();
       });
     });
-
     it('it should GET all items from a thread', done => {
       chai.request(server).get(`/comment/api/tip/${encodeURIComponent(testData.tipId)}`).end((err, res) => {
         res.should.have.status(200);
@@ -188,7 +172,6 @@ describe('Comments', () => {
         done();
       });
     });
-
     it('it should GET all items for an address', done => {
       chai.request(server).get(`/comment/api/author/${testData.author}`).end((err, res) => {
         res.should.have.status(200);
@@ -201,7 +184,6 @@ describe('Comments', () => {
         done();
       });
     });
-
     it('it should DELETE a single comment entry', done => {
       performSignedJSONRequest(server, 'delete', `/comment/api/${commentId}`, { author: testData.author })
         .then(({ res }) => {
@@ -210,7 +192,6 @@ describe('Comments', () => {
           done();
         });
     });
-
     it('it should 404 on getting a deleted item', done => {
       chai.request(server).get(`/comment/api/${commentId}`).end((err, res) => {
         res.should.have.status(404);
@@ -218,17 +199,14 @@ describe('Comments', () => {
       });
     });
   });
-
   describe('Recursive Comments', () => {
     let parentComment;
-
-    before(async () => { // Before all tests we empty the database once
+    before(async () => {
       await Comment.destroy({
         where: {},
         truncate: true,
         cascade: true,
       });
-
       parentComment = await Comment.create({
         tipId: testData.tipId,
         text: 'Parent Comment',
@@ -236,7 +214,6 @@ describe('Comments', () => {
         signature: 'sig',
         challenge: 'chall',
       }, { raw: true });
-
       const childComment = await Comment.create({
         tipId: testData.tipId,
         text: 'Child Comment',
@@ -245,7 +222,6 @@ describe('Comments', () => {
         challenge: 'chall',
         parentId: parentComment.id,
       }, { raw: true });
-
       await Comment.create({
         tipId: testData.tipId,
         text: 'Child Comment',
@@ -255,7 +231,6 @@ describe('Comments', () => {
         parentId: childComment.id,
       }, { raw: true });
     });
-
     it('it should CREATE a nested comment entry', done => {
       const nestedTestData = { ...testData, parentId: parentComment.id };
       performSignedJSONRequest(server, 'post', '/comment/api', nestedTestData)
@@ -300,7 +275,6 @@ describe('Comments', () => {
           });
         });
     });
-
     it('it should REJECT a nested comment entry with a wrong parent id', done => {
       const nestedTestData = { ...testData, parentId: 0 };
       performSignedJSONRequest(server, 'post', '/comment/api', nestedTestData).then(({ res }) => {
@@ -309,7 +283,6 @@ describe('Comments', () => {
         done();
       });
     });
-
     it('it should GET children with parent', done => {
       chai.request(server).get(`/comment/api/${parentComment.id}`).end((err, res) => {
         res.should.have.status(200);
@@ -328,7 +301,6 @@ describe('Comments', () => {
         done();
       });
     });
-
     it('it should GET ALL comments with children for a tipId', done => {
       chai.request(server).get(`/comment/api/tip/${testData.tipId}`).end((err, res) => {
         res.should.have.status(200);

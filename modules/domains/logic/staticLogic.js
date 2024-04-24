@@ -11,5 +11,4 @@ const StaticLogic = {
     ];
   },
 };
-
-module.exports = StaticLogic;
+export default StaticLogic;

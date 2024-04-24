@@ -2,7 +2,7 @@ const CONSENT_STATES = {
   ALLOWED: 'ALLOWED',
   REJECTED: 'REJECTED',
 };
-
-module.exports = {
+export { CONSENT_STATES };
+export default {
   CONSENT_STATES,
 };

@@ -1,15 +1,14 @@
-const { Router } = require('express');
-const StaticLogic = require('../logic/staticLogic');
+import express from 'express';
+import StaticLogic from '../logic/staticLogic.js';
 
+const { Router } = express;
 const router = new Router();
-
 /**
  * @swagger
  * tags:
  * - name: "static"
  *   description: "Various endpoints"
  */
-
 /**
  * @swagger
  * /static/wallet/graylist:
@@ -29,5 +28,4 @@ const router = new Router();
  *                 format: url
  */
 router.get('/wallet/graylist', (req, res) => res.send(StaticLogic.getGrayList()));
-
-module.exports = router;
+export default router;

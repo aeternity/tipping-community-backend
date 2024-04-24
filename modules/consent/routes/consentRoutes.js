@@ -1,17 +1,17 @@
-const { Router } = require('express');
-const ConsentLogic = require('../logic/consentLogic');
-const { CONSENT_STATES } = require('../constants/consentStates');
-const { signatureAuth } = require('../../authentication/logic/authenticationLogic');
+import express from 'express';
+import ConsentLogic from '../logic/consentLogic.js';
+import { CONSENT_STATES } from '../constants/consentStates.js';
+import authenticationLogic from '../../authentication/logic/authenticationLogic.js';
 
+const { Router } = express;
+const { signatureAuth } = authenticationLogic;
 const router = new Router();
-
 /**
  * @swagger
  * tags:
  * - name: "consent"
  *   description: "Consent storage for third party rich media integrations"
  */
-
 /**
  * @swagger
  * /consent/{author}:
@@ -98,7 +98,6 @@ router.get('/:author/:scope', signatureAuth, async (req, res) => {
   const result = await ConsentLogic.getSingleItem(author, scope);
   return result ? res.send(result.toJSON()) : res.sendStatus(404);
 });
-
 /**
  * @swagger
  * /consent/{author}/{scope}:
@@ -137,10 +136,7 @@ router.get('/:author/:scope', signatureAuth, async (req, res) => {
  *                - $ref: '#/components/schemas/Consent'
  */
 router.post('/:author/:scope', signatureAuth, async (req, res) => {
-  const {
-    status, signature, challenge,
-  } = req.body;
-
+  const { status, signature, challenge } = req.body;
   const { author, scope } = req.params;
   if (Object.values(CONSENT_STATES).indexOf(status) === -1) {
     return res.status(400).send(`Unknown status ${status}`);
@@ -189,5 +185,4 @@ router.delete('/:author/:scope', signatureAuth, async (req, res) => {
   const result = await ConsentLogic.removeItem(author, scope);
   return result === 1 ? res.sendStatus(204) : res.sendStatus(404);
 });
-
-module.exports = router;
+export default router;

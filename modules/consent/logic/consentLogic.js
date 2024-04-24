@@ -1,6 +1,7 @@
-const { Consent } = require('../../../models');
+import models from '../../../models/index.js';
 
-module.exports = class ConsentLogic {
+const { Consent } = models;
+export default (class ConsentLogic {
   static async upsertItem({
     status, author, scope, signature, challenge,
   }) {
@@ -39,4 +40,4 @@ module.exports = class ConsentLogic {
   static async getSingleItem(author, scope) {
     return Consent.findOne({ where: { author, scope } });
   }
-};
+});

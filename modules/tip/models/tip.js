@@ -1,6 +1,6 @@
-const { TIP_TYPES } = require('../constants/tipTypes');
+import { TIP_TYPES } from '../constants/tipTypes.js';
 
-module.exports = (sequelize, DataTypes) => sequelize.define('Tip', {
+export default (sequelize, DataTypes) => sequelize.define('Tip', {
   // attributes
   id: {
     type: DataTypes.STRING,

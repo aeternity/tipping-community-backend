@@ -1,25 +1,25 @@
-const chai = require('chai');
-const chaiHttp = require('chai-http');
-const { describe, it } = require('mocha');
-const { generateKeyPair } = require('@aeternity/aepp-sdk').Crypto;
-const server = require('../../../server');
-
-const { Pin } = require('../../../models');
-const {
+import chai from 'chai';
+import chaiHttp from 'chai-http';
+import mocha from 'mocha';
+import aeppSdk from '@aeternity/aepp-sdk';
+import server from '../../../server.js';
+import models from '../../../models/index.js';
+import {
   publicKey, signChallenge, performSignedJSONRequest, getDBSeedFunction,
-} = require('../../../utils/testingUtil');
+} from '../../../utils/testingUtil.js';
 
+const { describe, it } = mocha;
+const { generateKeyPair } = aeppSdk.Crypto;
+const { Pin } = models;
 chai.should();
 chai.use(chaiHttp);
 // Our parent block
 describe('Pinning', () => {
   const seedDB = getDBSeedFunction([Pin]);
-
   const testData = {
     entryId: '1_v1',
     type: 'TIP',
   };
-
   describe('Pinning API', () => {
     it('it should GET 0 pinned entries for a user', done => {
       chai.request(server).get(`/pin/${publicKey}`).end((err, res) => {
@@ -29,7 +29,6 @@ describe('Pinning', () => {
         done();
       });
     });
-
     it('it should reject CREATING a new pin with invalid type', done => {
       performSignedJSONRequest(server, 'post', `/pin/${publicKey}`, { ...testData, type: 'PIN' })
         .then(({ res }) => {
@@ -37,7 +36,6 @@ describe('Pinning', () => {
           done();
         });
     });
-
     it('it should CREATE a new pin via signature auth', done => {
       performSignedJSONRequest(server, 'post', `/pin/${publicKey}`, testData)
         .then(({ res, signature, challenge }) => {
@@ -53,7 +51,6 @@ describe('Pinning', () => {
           done();
         });
     });
-
     it('it should GET one pinned tip for a user', async () => {
       await seedDB({
         tips: [{
@@ -66,7 +63,6 @@ describe('Pinning', () => {
       res.body.length.should.be.eql(1);
       res.body[0].should.have.property('id', testData.entryId);
     });
-
     it('it should reject CREATING a new pin as another user', done => {
       const { secretKey } = generateKeyPair();
       chai.request(server).post(`/pin/${publicKey}`)
@@ -83,7 +79,6 @@ describe('Pinning', () => {
             });
         });
     });
-
     it('it should reject REMOVING a pinned entry from another user', done => {
       const { secretKey, publicKey: localPublicKey } = generateKeyPair();
       performSignedJSONRequest(server, 'delete', `/pin/${publicKey}`, {
@@ -95,7 +90,6 @@ describe('Pinning', () => {
           done();
         });
     });
-
     it('it should REMOVE a pinned entry', done => {
       performSignedJSONRequest(server, 'delete', `/pin/${publicKey}`, testData)
         .then(({ res }) => {
@@ -103,7 +97,6 @@ describe('Pinning', () => {
           done();
         });
     });
-
     it('it should 404 on getting a deleted item', done => {
       chai.request(server).get(`/pin/${publicKey}`).end((err, res) => {
         res.should.have.status(200);

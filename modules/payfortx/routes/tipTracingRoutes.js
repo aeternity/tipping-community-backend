@@ -1,15 +1,14 @@
-const { Router } = require('express');
-const TipTracing = require('../logic/tipTracingLogic');
+import express from 'express';
+import TipTracing from '../logic/tipTracingLogic.js';
 
+const { Router } = express;
 const router = new Router();
-
 /**
  * @swagger
  * tags:
  * - name: "tiptracing"
  *   description: "Debugging information for claiming tips"
  */
-
 /**
  * @swagger
  * /tracing/backend:
@@ -56,5 +55,4 @@ router.get('/backend', TipTracing.getAllTraces);
  *              $ref: '#/components/schemas/Trace'
  */
 router.get('/blockchain', TipTracing.fetchBlockchainTrace);
-
-module.exports = router;
+export default router;

@@ -1,5 +1,6 @@
-const { Router } = require('express');
+import express from 'express';
 
+const { Router } = express;
 const router = new Router();
 /**
  * @swagger
@@ -7,7 +8,6 @@ const router = new Router();
  * - name: "linkpreview"
  *   description: "Server generated link previews for tips"
  */
-
 /**
  * @swagger
  * /linkpreview/image/{filename}:
@@ -33,5 +33,4 @@ const router = new Router();
  *               format: binary
  */
 router.get('/image/:filename', (req, res) => res.redirect(301, `/images/${req.params.filename}`));
-
-module.exports = router;
+export default router;

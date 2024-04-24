@@ -1,40 +1,38 @@
+import Sequelize from "sequelize";
 'use strict';
-
-var Sequelize = require('sequelize');
-
 /**
  * Actions summary:
  *
  **/
-
 var info = {
     "revision": 20,
     "name": "url-stats-aggregation-materialized-view",
     "created": "2021-03-24T17:48:44.945Z",
     "comment": ""
 };
-
-var migrationCommands = function(transaction) {
+var migrationCommands = function (transaction) {
     return [];
 };
-var rollbackCommands = function(transaction) {
+var rollbackCommands = function (transaction) {
     return [];
 };
-
-module.exports = {
-    pos: 0,
-    useTransaction: true,
-    execute: function(queryInterface, Sequelize, _commands)
-    {
+export const pos = 0;
+export const useTransaction = true;
+export const execute = moduleExports.execute;
+export const up = moduleExports.up;
+export const down = moduleExports.down;
+const moduleExports = {
+    pos,
+    useTransaction,
+    execute: function (queryInterface, Sequelize, _commands) {
         var index = this.pos;
         function run(transaction) {
             const commands = _commands(transaction);
-            return new Promise(function(resolve, reject) {
+            return new Promise(function (resolve, reject) {
                 function next() {
-                    if (index < commands.length)
-                    {
+                    if (index < commands.length) {
                         let command = commands[index];
-                        console.log("[#"+index+"] execute: " + command.fn);
+                        console.log("[#" + index + "] execute: " + command.fn);
                         index++;
                         queryInterface[command.fn].apply(queryInterface, command.params).then(next, reject);
                     }
@@ -46,16 +44,15 @@ module.exports = {
         }
         if (this.useTransaction) {
             return queryInterface.sequelize.transaction(run);
-        } else {
+        }
+        else {
             return run(null);
         }
     },
-    up: async function(queryInterface, Sequelize)
-    {
-      const transaction = await queryInterface.sequelize.transaction();
-      await queryInterface.sequelize.query('CREATE INDEX tip_url_idx ON "Tips" ("url");', { transaction });
-
-      await queryInterface.sequelize.query(`
+    up: async function (queryInterface, Sequelize) {
+        const transaction = await queryInterface.sequelize.transaction();
+        await queryInterface.sequelize.query('CREATE INDEX tip_url_idx ON "Tips" ("url");', { transaction });
+        await queryInterface.sequelize.query(`
 CREATE MATERIALIZED VIEW UrlStats AS
 SELECT "Tip"."url",
 
@@ -188,12 +185,10 @@ SELECT "Tip"."url",
 FROM "Tips" as "Tip"
 GROUP BY "Tip"."url";
               `, { transaction });
-
-      await queryInterface.sequelize.query(`
+        await queryInterface.sequelize.query(`
 CREATE UNIQUE INDEX UrlStats_url_idx
     ON UrlStats (url);`, { transaction });
-
-      await queryInterface.sequelize.query(`
+        await queryInterface.sequelize.query(`
 CREATE FUNCTION refresh_urlstats_aggregation()
     RETURNS TRIGGER
     LANGUAGE plpgsql
@@ -204,42 +199,38 @@ BEGIN
     RETURN NULL;
 END
 $$;`, { transaction });
-
-      await queryInterface.sequelize.query(`
+        await queryInterface.sequelize.query(`
 CREATE TRIGGER refresh_urlstats_aggregation
     AFTER INSERT OR UPDATE OR DELETE OR TRUNCATE
     ON "Tips"
     FOR EACH STATEMENT
 EXECUTE PROCEDURE refresh_urlstats_aggregation();`, { transaction });
-
-      await queryInterface.sequelize.query(`
+        await queryInterface.sequelize.query(`
 CREATE TRIGGER refresh_urlstats_aggregation
     AFTER INSERT OR UPDATE OR DELETE OR TRUNCATE
     ON "Retips"
     FOR EACH STATEMENT
 EXECUTE PROCEDURE refresh_urlstats_aggregation();`, { transaction });
-
-      await queryInterface.sequelize.query(`
+        await queryInterface.sequelize.query(`
 CREATE TRIGGER refresh_urlstats_aggregation
     AFTER INSERT OR UPDATE OR DELETE OR TRUNCATE
     ON "Claims"
     FOR EACH STATEMENT
 EXECUTE PROCEDURE refresh_urlstats_aggregation();`, { transaction });
-
-      await transaction.commit();
-      return this.execute(queryInterface, Sequelize, migrationCommands);
+        await transaction.commit();
+        return this.execute(queryInterface, Sequelize, migrationCommands);
     },
-    down: async function(queryInterface, Sequelize)
-    {
-      const transaction = await queryInterface.sequelize.transaction();
-      await queryInterface.sequelize.query('DROP MATERIALIZED VIEW UrlStats CASCADE;', { transaction });
-      await queryInterface.sequelize.query('DROP INDEX tip_url_idx;', { transaction });
-      await queryInterface.sequelize.query('DROP TRIGGER refresh_urlstats_aggregation ON "Tips" CASCADE;', { transaction });
-      await queryInterface.sequelize.query('DROP TRIGGER refresh_urlstats_aggregation ON "Retips" CASCADE;', { transaction });
-      await queryInterface.sequelize.query('DROP FUNCTION refresh_urlstats_aggregation CASCADE;', { transaction });
-      await transaction.commit();
-
-      return this.execute(queryInterface, Sequelize, rollbackCommands);
+    down: async function (queryInterface, Sequelize) {
+        const transaction = await queryInterface.sequelize.transaction();
+        await queryInterface.sequelize.query('DROP MATERIALIZED VIEW UrlStats CASCADE;', { transaction });
+        await queryInterface.sequelize.query('DROP INDEX tip_url_idx;', { transaction });
+        await queryInterface.sequelize.query('DROP TRIGGER refresh_urlstats_aggregation ON "Tips" CASCADE;', { transaction });
+        await queryInterface.sequelize.query('DROP TRIGGER refresh_urlstats_aggregation ON "Retips" CASCADE;', { transaction });
+        await queryInterface.sequelize.query('DROP FUNCTION refresh_urlstats_aggregation CASCADE;', { transaction });
+        await transaction.commit();
+        return this.execute(queryInterface, Sequelize, rollbackCommands);
     },
     info: info
 };
+export { info };
+export default moduleExports;

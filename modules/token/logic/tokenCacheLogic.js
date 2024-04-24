@@ -1,14 +1,13 @@
-const CacheLogic = require('../../cache/logic/cacheLogic');
-const cache = require('../../cache/utils/cache');
+import CacheLogic from '../../cache/logic/cacheLogic.js';
+import cache from '../../cache/utils/cache.js';
 
-module.exports = class TokenCacheLogic {
+export default (class TokenCacheLogic {
   static async deliverTokenInfo(req, res) {
     res.send(await CacheLogic.getTokenInfos());
   }
 
   static async indexTokenInfo(req, res) {
     if (!req.body.address) return res.status(400).send('address body attribute missing');
-
     try {
       await CacheLogic.getTokenMetaInfo(req.body.address);
       await cache.del(['getTokenInfos']);
@@ -21,7 +20,6 @@ module.exports = class TokenCacheLogic {
 
   static async tokenAccountBalance(req, res) {
     if (!req.query.address) return res.status(400).send('address query missing');
-
     const tokenBalances = await CacheLogic.getTokenBalances(req.query.address);
     return res.send(await tokenBalances.reduce(async (promiseAcc, address) => {
       const acc = await promiseAcc;
@@ -29,4 +27,4 @@ module.exports = class TokenCacheLogic {
       return acc;
     }, Promise.resolve({})));
   }
-};
+});

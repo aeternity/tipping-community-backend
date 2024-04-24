@@ -1,10 +1,11 @@
-// Require the dev-dependencies
-const chai = require('chai');
-const chaiHttp = require('chai-http');
-const { describe, it, before } = require('mocha');
-const server = require('../../../server');
-const { BlacklistEntry, Tip, Profile } = require('../../../models');
+import chai from 'chai';
+import chaiHttp from 'chai-http';
+import mocha from 'mocha';
+import server from '../../../server.js';
+import models from '../../../models/index.js';
 
+const { describe, it, before } = mocha;
+const { BlacklistEntry, Tip, Profile } = models;
 chai.should();
 chai.use(chaiHttp);
 // Our parent block
@@ -28,7 +29,6 @@ describe('Stats Routes', () => {
         timestamp: new Date().getTime(),
         topics: [],
       })));
-
       await BlacklistEntry.truncate();
       await BlacklistEntry.create({
         tipId: '1_v1',
@@ -51,7 +51,6 @@ describe('Stats Routes', () => {
         createdAt: new Date(new Date().setDate(new Date().getDate() - 29)).setHours(0, 0, 0, 1),
       });
     });
-
     it('it should GET the correct stats', done => {
       chai.request(server).get('/stats/marketing').end((err, res) => {
         res.should.have.status(200);

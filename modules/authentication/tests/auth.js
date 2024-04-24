@@ -1,17 +1,12 @@
-// Require the dev-dependencies
-const chai = require('chai');
-const chaiHttp = require('chai-http');
-const { describe, it } = require('mocha');
-const server = require('../../../server');
+import chai from 'chai';
+import chaiHttp from 'chai-http';
+import mocha from 'mocha';
+import server from '../../../server.js';
+import {
+  shouldBeValidChallengeResponse, signChallenge, publicKey, performSignedJSONRequest, performSignedGETRequest,
+} from '../../../utils/testingUtil.js';
 
-const {
-  shouldBeValidChallengeResponse,
-  signChallenge,
-  publicKey,
-  performSignedJSONRequest,
-  performSignedGETRequest,
-} = require('../../../utils/testingUtil');
-
+const { describe, it } = mocha;
 chai.should();
 chai.use(chaiHttp);
 // Our parent block
@@ -22,7 +17,6 @@ describe('Authenticator', () => {
     referrer: 'ak_aNTSYaqHmuSfKgBPjBm95eJz82JXKznCZVdchKKKh7jtDAJcW',
     location: 'awesome, location, country',
   };
-
   describe('Basic Authentication', () => {
     it('it should return a request for authentication', done => {
       chai.request(server).get('/blacklist').end((err, res) => {
@@ -31,7 +25,6 @@ describe('Authenticator', () => {
         done();
       });
     });
-
     it('it should reject a wrong authentication', done => {
       chai.request(server).get('/blacklist')
         .auth(process.env.AUTHENTICATION_USER, `${process.env.AUTHENTICATION_PASSWORD}_invalid`)
@@ -41,7 +34,6 @@ describe('Authenticator', () => {
           done();
         });
     });
-
     it('it should allow access with correct auth', function (done) {
       this.timeout(10000);
       chai.request(server).get('/blacklist/api')
@@ -52,7 +44,6 @@ describe('Authenticator', () => {
         });
     });
   });
-
   describe('Notification Authentication', () => {
     it('it should return a signature challenge', done => {
       chai.request(server).get(`/notification/user/${publicKey}`).end((err, res) => {
@@ -61,12 +52,10 @@ describe('Authenticator', () => {
         done();
       });
     });
-
     it('it should fail with invalid signature', done => {
       chai.request(server).get(`/notification/user/${publicKey}`).end((err, res) => {
         res.should.have.status(200);
         shouldBeValidChallengeResponse(res.body, { author: publicKey });
-
         const { challenge } = res.body;
         chai.request(server).get(`/notification/user/${publicKey}`).query({ challenge, signature: 'wrong' })
           .end((innerError, innerRes) => {
@@ -77,7 +66,6 @@ describe('Authenticator', () => {
           });
       });
     });
-
     it('it should fail on invalid challenge', done => {
       chai.request(server).get(`/notification/user/${publicKey}`).end((err, res) => {
         res.should.have.status(200);
@@ -95,7 +83,6 @@ describe('Authenticator', () => {
         });
       });
     });
-
     it('it should fail at a change of paths', done => {
       chai.request(server).get(`/notification/user/${publicKey}`).end((err, res) => {
         res.should.have.status(200);
@@ -113,7 +100,6 @@ describe('Authenticator', () => {
         });
       });
     });
-
     it('it should reject getting information for someone elses public key', done => {
       performSignedGETRequest(server, '/notification/user/ak_fUq2NesPXcYZ1CcqBcGC3StpdnQw3iVxMA3YSeCNAwfN4myQk').then(({ res }) => {
         res.should.have.status(401);
@@ -123,7 +109,6 @@ describe('Authenticator', () => {
       });
     });
   });
-
   describe('Profile Authentication', () => {
     it('it should return a signature challenge', done => {
       chai.request(server).post(`/profile/${publicKey}`).send(testData).end((err, res) => {
@@ -132,12 +117,10 @@ describe('Authenticator', () => {
         done();
       });
     });
-
     it('it should fail with invalid signature', done => {
       chai.request(server).post(`/profile/${publicKey}`).send(testData).end((err, res) => {
         res.should.have.status(200);
         shouldBeValidChallengeResponse(res.body, testData);
-
         const { challenge } = res.body;
         chai.request(server).post(`/profile/${publicKey}`).send({ challenge, signature: 'wrong' })
           .end((innerError, innerRes) => {
@@ -148,7 +131,6 @@ describe('Authenticator', () => {
           });
       });
     });
-
     it('it should fail on invalid challenge', done => {
       chai.request(server).post(`/profile/${publicKey}`).send(testData).end((err, res) => {
         res.should.have.status(200);
@@ -166,7 +148,6 @@ describe('Authenticator', () => {
         });
       });
     });
-
     it('it should fail at a change of paths', done => {
       chai.request(server).post(`/profile/${publicKey}`).send(testData).end((err, res) => {
         res.should.have.status(200);
@@ -184,7 +165,6 @@ describe('Authenticator', () => {
         });
       });
     });
-
     it('it should reject creation for someone elses public key', done => {
       performSignedJSONRequest(server, 'post', '/profile/ak_fUq2NesPXcYZ1CcqBcGC3StpdnQw3iVxMA3YSeCNAwfN4myQk', {
         biography: 'new bio',

@@ -1,6 +1,6 @@
-const winston = require('winston');
-const path = require('path');
-require('winston-daily-rotate-file');
+import winston from 'winston';
+import path from 'path';
+import 'winston-daily-rotate-file';
 
 const enumerateErrorFormat = winston.format(info => {
   if (info.message instanceof Error) {
@@ -11,7 +11,6 @@ const enumerateErrorFormat = winston.format(info => {
       ...info.message,
     };
   }
-
   if (info instanceof Error) {
     return {
       message: info.message,
@@ -19,10 +18,8 @@ const enumerateErrorFormat = winston.format(info => {
       ...info,
     };
   }
-
   return info;
 });
-
 const customFormatter = fileName => msg => {
   const splatMsg = msg[Symbol.for('splat')] ? msg[Symbol.for('splat')].join(' ') : '';
   // ALL LOGS
@@ -31,7 +28,6 @@ const customFormatter = fileName => msg => {
   const prefix = `[${msg.timestamp}] (${fileName}) ${msg.level}:`;
   const logs = [];
   // SEQUELIZE ERRORS
-
   if (msg.sql) {
     logs.push(`${msg.name} (${msg.original.message}) ${splatMsg} `);
     logs.push(`${msg.original.detail} ${splatMsg} `);
@@ -46,23 +42,15 @@ const customFormatter = fileName => msg => {
     // CUSTOM ERROR MESSAGE
     logs.push(msg.message);
   }
-
   return logs.map(line => `${prefix} ${line}`).join('\n');
 };
-
-const logger = module => {
-  const fileName = path.basename(module.id, '.js');
+const loggerFactory = modulePath => {
+  const fileName = path.basename(modulePath, '.js');
   return winston.createLogger({
-    format: winston.format.combine(
-      enumerateErrorFormat(),
-      winston.format.timestamp(),
-    ),
+    format: winston.format.combine(enumerateErrorFormat(), winston.format.timestamp()),
     transports: [
       new winston.transports.Console({
-        format: winston.format.combine(
-          winston.format.colorize(),
-          winston.format.printf(customFormatter(fileName)),
-        ),
+        format: winston.format.combine(winston.format.colorize(), winston.format.printf(customFormatter(fileName))),
         level: process.env.NODE_ENV === 'production' ? 'info' : 'debug',
       }),
       new (winston.transports.DailyRotateFile)({
@@ -82,5 +70,4 @@ const logger = module => {
     ],
   });
 };
-
-module.exports = logger;
+export default loggerFactory;

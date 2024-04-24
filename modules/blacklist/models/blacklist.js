@@ -1,6 +1,6 @@
-const { BLACKLIST_STATUS } = require('../constants/blacklistStates');
+import { BLACKLIST_STATUS } from '../constants/blacklistStates.js';
 
-module.exports = (sequelize, DataTypes) => sequelize.define('BlacklistEntry', {
+export default (sequelize, DataTypes) => sequelize.define('BlacklistEntry', {
   // attributes
   tipId: {
     type: DataTypes.STRING,

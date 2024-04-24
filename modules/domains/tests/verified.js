@@ -1,12 +1,11 @@
-// Require the dev-dependencies
-const chai = require('chai');
-const chaiHttp = require('chai-http');
-const sinon = require('sinon');
-const { describe, it } = require('mocha');
+import chai from 'chai';
+import chaiHttp from 'chai-http';
+import sinon from 'sinon';
+import mocha from 'mocha';
+import server from '../../../server.js';
+import CacheLogic from '../../cache/logic/cacheLogic.js';
 
-const server = require('../../../server');
-const CacheLogic = require('../../cache/logic/cacheLogic');
-
+const { describe, it } = mocha;
 chai.should();
 chai.use(chaiHttp);
 // Our parent block

@@ -1,5 +1,6 @@
-const { ErrorReport } = require('../../../models');
+import models from '../../../models/index.js';
 
+const { ErrorReport } = models;
 const ErrorReportLogic = {
   async addItem({
     appVersion, browser, error, time, platform, description,
@@ -13,10 +14,8 @@ const ErrorReportLogic = {
       description,
     });
   },
-
   async getAllReports() {
     return ErrorReport.findAll({ raw: true });
   },
 };
-
-module.exports = ErrorReportLogic;
+export default ErrorReportLogic;

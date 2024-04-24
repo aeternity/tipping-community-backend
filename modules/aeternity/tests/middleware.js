@@ -1,14 +1,11 @@
-// Require the dev-dependencies
-const chai = require('chai');
-const chaiHttp = require('chai-http');
-const {
-  describe, it,
-} = require('mocha');
-const sinon = require('sinon');
-const axios = require('axios');
+import chai from 'chai';
+import chaiHttp from 'chai-http';
+import mocha from 'mocha';
+import sinon from 'sinon';
+import axios from 'axios';
+import mdwLogic from '../logic/mdwLogic.js';
 
-const mdwLogic = require('../logic/mdwLogic');
-
+const { describe, it } = mocha;
 chai.should();
 chai.use(chaiHttp);
 // Our parent block
@@ -32,16 +29,12 @@ describe('Middleware', () => {
         },
       }), 200)));
       const transactions = await mdwLogic.middlewareContractTransactions(20, 0);
-      sinon.assert.calledWith(getStub,
-        `${process.env.MIDDLEWARE_URL}/v2/txs?scope=gen:20-0&contract=${process.env.CONTRACT_V1_ADDRESS}&type=contract_call&limit=100`);
-      sinon.assert.calledWith(getStub,
-        `${process.env.MIDDLEWARE_URL}/v2/txs?scope=gen:20-0&contract=${process.env.CONTRACT_V2_ADDRESS}&type=contract_call&limit=100`);
-      sinon.assert.calledWith(getStub,
-        `${process.env.MIDDLEWARE_URL}/v2/txs?scope=gen:20-0&contract=${process.env.CONTRACT_V3_ADDRESS}&type=contract_call&limit=100`);
+      sinon.assert.calledWith(getStub, `${process.env.MIDDLEWARE_URL}/v2/txs?scope=gen:20-0&contract=${process.env.CONTRACT_V1_ADDRESS}&type=contract_call&limit=100`);
+      sinon.assert.calledWith(getStub, `${process.env.MIDDLEWARE_URL}/v2/txs?scope=gen:20-0&contract=${process.env.CONTRACT_V2_ADDRESS}&type=contract_call&limit=100`);
+      sinon.assert.calledWith(getStub, `${process.env.MIDDLEWARE_URL}/v2/txs?scope=gen:20-0&contract=${process.env.CONTRACT_V3_ADDRESS}&type=contract_call&limit=100`);
       transactions.should.be.an('array');
       getStub.restore();
     });
-
     it('it should return an empty array if the middleware is down', async () => {
       const originalUrl = process.env.MIDDLEWARE_URL;
       process.env.MIDDLEWARE_URL = 'https://localhost/';
@@ -51,7 +44,6 @@ describe('Middleware', () => {
       process.env.MIDDLEWARE_URL = originalUrl;
     });
   });
-
   describe('Names', () => {
     it('it should get the active chain names', async () => {
       const names = await mdwLogic.getChainNames();
@@ -62,7 +54,6 @@ describe('Middleware', () => {
       names[firstAccount].should.be.an('array');
       names[firstAccount].should.have.length.greaterThan(0);
     });
-
     it('it should return an empty array if the middleware is down', async () => {
       const originalUrl = process.env.MIDDLEWARE_URL;
       process.env.MIDDLEWARE_URL = 'https://localhost/';

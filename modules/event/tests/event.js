@@ -1,17 +1,17 @@
-const chai = require('chai');
-const sinon = require('sinon');
-const EventLogic = require('../logic/eventLogic');
-const queueLogic = require('../../queue/logic/queueLogic');
-const MdwLogic = require('../../aeternity/logic/mdwLogic');
-const aeternity = require('../../aeternity/logic/aeternity');
-const { MESSAGES, MESSAGE_QUEUES } = require('../../queue/constants/queue');
-const { Event } = require('../../../models');
+import chai from 'chai';
+import sinon from 'sinon';
+import EventLogic from '../logic/eventLogic.js';
+import queueLogic from '../../queue/logic/queueLogic.js';
+import MdwLogic from '../../aeternity/logic/mdwLogic.js';
+import aeternity from '../../aeternity/logic/aeternity.js';
+import { MESSAGES, MESSAGE_QUEUES } from '../../queue/constants/queue.js';
+import models from '../../../models/index.js';
 
+const { Event } = models;
 chai.should();
-
 describe('Events', () => {
   // run init
-  before(async () => { // Before all test we empty the database
+  before(async () => {
     await Event.destroy({
       where: {},
       truncate: true,
@@ -27,7 +27,6 @@ describe('Events', () => {
     });
     EventLogic.init();
   });
-
   const sampleChainEvent = {
     event: {
       event: 'ReTipReceived',
@@ -71,14 +70,12 @@ describe('Events', () => {
     result.should.be.an('array');
     result.should.have.length(1);
   });
-
   it('should return event if url is in data', async () => {
     await Event.create(EventLogic.prepareEventForDB(sampleChainEvent.event));
     const result = await EventLogic.getEventsForURL(sampleChainEvent.event.url);
     result.should.be.an('array');
     result.should.have.length(1);
   });
-
   it('should handle incoming events correctly', done => {
     queueLogic.sendMessage(MESSAGE_QUEUES.BLOCKCHAIN, MESSAGES.BLOCKCHAIN.EVENTS.EVENT_RECEIVED, sampleChainEvent);
     queueLogic.subscribeToMessage(MESSAGE_QUEUES.EVENTS, MESSAGES.EVENTS.EVENTS.RETIP_RECEIVED, async () => {
@@ -97,12 +94,10 @@ describe('Events', () => {
       done();
     });
   });
-
   it('should handle keephot', done => {
     const currentHeight = 21;
     sinon.stub(aeternity, 'getHeight').callsFake(async () => currentHeight);
     const mdwSpy = sinon.stub(MdwLogic, 'middlewareContractTransactions').callsFake(async () => [sampleChainEvent.event]);
-
     Event.bulkCreate([{
       name: 'TipTokenReceived',
       hash: '1',
@@ -120,12 +115,10 @@ describe('Events', () => {
       time: 0,
       data: {},
     }]).then(() => queueLogic.sendMessage(MESSAGE_QUEUES.SCHEDULED_EVENTS, MESSAGES.SCHEDULED_EVENTS.COMMANDS.UPDATE_EVENTS));
-
     queueLogic.subscribeToMessage(MESSAGE_QUEUES.SCHEDULED_EVENTS, MESSAGES.SCHEDULED_EVENTS.COMMANDS.UPDATE_EVENTS, () => {
       setTimeout(async () => {
         mdwSpy.calledOnce.should.equal(true);
         sinon.assert.calledWith(mdwSpy, currentHeight, currentHeight - 20);
-
         // event 1 gone
         const event1 = await Event.findAll({
           where: {
@@ -134,7 +127,6 @@ describe('Events', () => {
           raw: true,
         });
         event1.should.have.length(0);
-
         // event 2 still there
         const event2 = await Event.findAll({
           where: {
@@ -143,7 +135,6 @@ describe('Events', () => {
           raw: true,
         });
         event2.should.have.length(1);
-
         // sample event also there
         const event3 = await Event.findAll({
           where: {
@@ -152,12 +143,10 @@ describe('Events', () => {
           raw: true,
         });
         event3.should.have.length(1);
-
         done();
       }, 100);
     });
   });
-
   afterEach(() => {
     sinon.restore();
   });

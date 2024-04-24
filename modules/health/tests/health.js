@@ -1,15 +1,14 @@
-// Require the dev-dependencies
-const chai = require('chai');
-const chaiHttp = require('chai-http');
-const { describe, it } = require('mocha');
-const sinon = require('sinon');
-const server = require('../../../server');
-const aeternity = require('../../aeternity/logic/aeternity');
-const ipfs = require('../../backup/logic/ipfsLogic');
+import chai from 'chai';
+import chaiHttp from 'chai-http';
+import mocha from 'mocha';
+import sinon from 'sinon';
+import server from '../../../server.js';
+import aeternity from '../../aeternity/logic/aeternity.js';
+import ipfs from '../../backup/logic/ipfsLogic.js';
 
+const { describe, it } = mocha;
 chai.should();
 chai.use(chaiHttp);
-
 describe('Health Endpoint', () => {
   describe('Backend Health', () => {
     before(() => {

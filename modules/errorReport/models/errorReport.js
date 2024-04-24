@@ -1,4 +1,4 @@
-module.exports = (sequelize, DataTypes) => sequelize.define('ErrorReport', {
+export default (sequelize, DataTypes) => sequelize.define('ErrorReport', {
   // attributes
   appVersion: {
     type: DataTypes.STRING,

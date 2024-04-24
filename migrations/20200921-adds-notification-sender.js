@@ -1,65 +1,63 @@
+import Sequelize from "sequelize";
 'use strict';
-
-var Sequelize = require('sequelize');
-
 /**
  * Actions summary:
  *
  * addColumn "sender" to table "Notifications"
  *
  **/
-
 var info = {
     "revision": 3,
     "name": "adds-notification-sender",
     "created": "2020-09-21T15:50:10.521Z",
     "comment": ""
 };
-
-var migrationCommands = function(transaction) {
+var migrationCommands = function (transaction) {
     return [{
-        fn: "addColumn",
-        params: [
-            "Notifications",
-            "sender",
-            {
-                "type": Sequelize.STRING,
-                "field": "sender",
-                "allowNull": true
-            },
-            {
-                transaction: transaction
-            }
-        ]
-    }];
+            fn: "addColumn",
+            params: [
+                "Notifications",
+                "sender",
+                {
+                    "type": Sequelize.STRING,
+                    "field": "sender",
+                    "allowNull": true
+                },
+                {
+                    transaction: transaction
+                }
+            ]
+        }];
 };
-var rollbackCommands = function(transaction) {
+var rollbackCommands = function (transaction) {
     return [{
-        fn: "removeColumn",
-        params: [
-            "Notifications",
-            "sender",
-            {
-                transaction: transaction
-            }
-        ]
-    }];
+            fn: "removeColumn",
+            params: [
+                "Notifications",
+                "sender",
+                {
+                    transaction: transaction
+                }
+            ]
+        }];
 };
-
-module.exports = {
-    pos: 0,
-    useTransaction: true,
-    execute: function(queryInterface, Sequelize, _commands)
-    {
+export const pos = 0;
+export const useTransaction = true;
+export const execute = moduleExports.execute;
+export const up = moduleExports.up;
+export const down = moduleExports.down;
+const moduleExports = {
+    pos,
+    useTransaction,
+    execute: function (queryInterface, Sequelize, _commands) {
         var index = this.pos;
         function run(transaction) {
             const commands = _commands(transaction);
-            return new Promise(function(resolve, reject) {
+            return new Promise(function (resolve, reject) {
                 function next() {
-                    if (index < commands.length)
-                    {
+                    if (index < commands.length) {
                         let command = commands[index];
-                        console.log("[#"+index+"] execute: " + command.fn);
+                        console.log("[#" + index + "] execute: " + command.fn);
                         index++;
                         queryInterface[command.fn].apply(queryInterface, command.params).then(next, reject);
                     }
@@ -71,22 +69,22 @@ module.exports = {
         }
         if (this.useTransaction) {
             return queryInterface.sequelize.transaction(run);
-        } else {
+        }
+        else {
             return run(null);
         }
     },
-    up: async function(queryInterface, Sequelize)
-    {
+    up: async function (queryInterface, Sequelize) {
         // DROP NOTIFICATIONS SO ALL ENTRIES CONTAIN A SENDER
         const transaction = await queryInterface.sequelize.transaction();
         await queryInterface.sequelize.query('TRUNCATE TABLE "Notifications";', { transaction });
         await transaction.commit();
-
         return this.execute(queryInterface, Sequelize, migrationCommands);
     },
-    down: function(queryInterface, Sequelize)
-    {
+    down: function (queryInterface, Sequelize) {
         return this.execute(queryInterface, Sequelize, rollbackCommands);
     },
     info: info
 };
+export { info };
+export default moduleExports;

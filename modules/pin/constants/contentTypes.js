@@ -1,6 +1,7 @@
 const PINNED_CONTENT_TYPES = {
   TIP: 'TIP',
 };
-module.exports = {
+export { PINNED_CONTENT_TYPES };
+export default {
   PINNED_CONTENT_TYPES,
 };

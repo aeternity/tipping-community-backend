@@ -1,7 +1,9 @@
-const { Router } = require('express');
-const NotificationLogic = require('../logic/notificationLogic');
-const { signatureAuth } = require('../../authentication/logic/authenticationLogic');
+import express from 'express';
+import NotificationLogic from '../logic/notificationLogic.js';
+import authenticationLogic from '../../authentication/logic/authenticationLogic.js';
 
+const { Router } = express;
+const { signatureAuth } = authenticationLogic;
 const router = new Router();
 /**
  * @swagger
@@ -9,7 +11,6 @@ const router = new Router();
  * - name: "notifications"
  *   description: "Notifications for user / system actions on superhero"
  */
-
 /**
  * @swagger
  * /notification/user/{author}:
@@ -47,13 +48,11 @@ const router = new Router();
  *                   items:
  *                     $ref: '#/components/schemas/Notification'
  */
-
 router.get('/user/:author', signatureAuth, async (req, res) => {
   const { author } = req.params;
   const allEntries = await NotificationLogic.getForUser(author);
   return res.send(allEntries);
 });
-
 /**
  * @swagger
  * /notification:
@@ -100,7 +99,6 @@ router.post('/', signatureAuth, async (req, res) => {
   const result = await NotificationLogic.bulkUpdateNotificationStatus(ids, status);
   return res.send(result.map(notification => notification.toJSON().id));
 });
-
 /**
  * @swagger
  * /notification/{notificationId}:
@@ -148,5 +146,4 @@ router.post('/:notificationId', signatureAuth, async (req, res) => {
   const { status } = req.body;
   return res.send(await NotificationLogic.updateNotificationState(notificationId, status));
 });
-
-module.exports = router;
+export default router;

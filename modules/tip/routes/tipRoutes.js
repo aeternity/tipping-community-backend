@@ -1,9 +1,9 @@
-const { Router } = require('express');
-const TipLogic = require('../logic/tipLogic');
-const { getTipTopics } = require('../../aeternity/utils/tipTopicUtil');
+import express from 'express';
+import TipLogic from '../logic/tipLogic.js';
+import { getTipTopics } from '../../aeternity/utils/tipTopicUtil.js';
 
+const { Router } = express;
 const router = new Router();
-
 /**
  * @swagger
  * /tips:
@@ -88,7 +88,6 @@ router.get('/', async (req, res) => {
   const tips = await TipLogic.fetchTips(req.query);
   res.send(tips);
 });
-
 /**
  * @swagger
  * /tips/single/{tipId}:
@@ -114,7 +113,6 @@ router.get('/single/:tipId', async (req, res) => {
   const tip = await TipLogic.fetchTip(req.params.tipId);
   return tip ? res.send(tip) : res.sendStatus(404);
 });
-
 /**
  * @swagger
  * /tips/topics:
@@ -143,7 +141,6 @@ router.get('/topics', async (req, res) => {
   const tips = await TipLogic.fetchAllLocalTipsWithAggregation();
   res.send(getTipTopics(tips));
 });
-
 /**
  * @swagger
  * /tips/await/tip/{tipId}:
@@ -165,7 +162,6 @@ router.get('/await/tip/:tipId', async (req, res) => {
   await TipLogic.awaitTipsUpdated(req.params.tipId);
   res.send({ updated: true });
 });
-
 /**
  * @swagger
  * /tips/await/retip/{retipId}:
@@ -187,5 +183,4 @@ router.get('/await/retip/:retipId', async (req, res) => {
   await TipLogic.awaitTipsUpdated(req.params.retipId, true);
   res.send({ updated: true });
 });
-
-module.exports = router;
+export default router;

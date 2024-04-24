@@ -1,17 +1,13 @@
-// Require the dev-dependencies
-const chai = require('chai');
-const {
-  describe, it, afterEach,
-} = require('mocha');
-const sinon = require('sinon');
-const chaiAsPromised = require('chai-as-promised');
+import chai from 'chai';
+import mocha from 'mocha';
+import sinon from 'sinon';
+import chaiAsPromised from 'chai-as-promised';
+import BigNumber from 'bignumber.js';
+import ae from '../logic/aeternity.js';
+import Trace from '../../payfortx/logic/traceLogic.js';
 
+const { describe, it, afterEach } = mocha;
 chai.use(chaiAsPromised);
-
-const BigNumber = require('bignumber.js');
-const ae = require('../logic/aeternity');
-const Trace = require('../../payfortx/logic/traceLogic');
-
 const should = chai.should();
 // Our parent block
 describe('Aeternity', () => {
@@ -20,7 +16,6 @@ describe('Aeternity', () => {
       this.timeout(20000);
       await ae.init();
     });
-
     it('it should get the network id', async () => {
       const result = await ae.networkId();
       result.should.equal('ae_uat');
@@ -34,14 +29,12 @@ describe('Aeternity', () => {
     afterEach(() => {
       sinon.restore();
     });
-
     it('it should get all oracle claimed urls', async function () {
       this.timeout(30000);
       const result = await ae.getOracleAllClaimedUrls();
       result.should.be.an('array');
       result.should.include('https://github.com/mradkov');
     });
-
     it('it should get the oracle claim by url', async function () {
       this.timeout(30000);
       const result = await ae.fetchOracleClaimByUrl('https://github.com/mradkov');
@@ -50,7 +43,6 @@ describe('Aeternity', () => {
       result.should.have.property('percentage');
       result.should.have.property('account');
     });
-
     it('it should get the oracle claim by address', async function () {
       this.timeout(30000);
       const result = await ae.fetchOracleClaimedUrls('ak_YCwfWaW5ER6cRsG9Jg4KMyVU59bQkt45WvcnJJctQojCqBeG2');
@@ -58,7 +50,6 @@ describe('Aeternity', () => {
       result.should.include('https://github.com/mradkov');
     });
   });
-
   describe('Claiming', () => {
     before(async function () {
       this.timeout(20000);
@@ -67,7 +58,6 @@ describe('Aeternity', () => {
     afterEach(() => {
       sinon.restore();
     });
-
     it('it should get the tips, retips & claims', async function () {
       this.timeout(20000);
       const result = await ae.fetchStateBasic();
@@ -75,7 +65,6 @@ describe('Aeternity', () => {
       result.should.have.property('tips');
       result.should.have.property('retips');
       result.should.have.property('claims');
-
       const [firstTip] = result.tips;
       firstTip.should.have.property('amount');
       firstTip.should.have.property('sender');
@@ -91,7 +80,6 @@ describe('Aeternity', () => {
       firstTip.should.have.property('topics');
       firstTip.should.have.property('token');
       firstTip.should.have.property('tokenAmount');
-
       const [firstRetip] = result.retips;
       firstRetip.should.have.property('amount');
       firstRetip.should.have.property('sender');
@@ -101,14 +89,12 @@ describe('Aeternity', () => {
       firstRetip.should.have.property('claimGen');
       firstRetip.should.have.property('token');
       firstRetip.should.have.property('tokenAmount');
-
       const [firstClaim] = result.claims;
       firstClaim.should.have.property('contractId');
       firstClaim.should.have.property('url');
       firstClaim.should.have.property('claimGen');
       firstClaim.should.have.property('amount');
     });
-
     it('it should fail pre-claiming an non existing tip', async function () {
       this.timeout(10000);
       // CHECK V2
@@ -116,10 +102,8 @@ describe('Aeternity', () => {
       resultV2.should.be.an.instanceOf(BigNumber);
       resultV2.toFixed(0).should.eql('0');
     });
-
     const url = 'https://probably.not.an.existing.tip';
     const address = 'ak_YCwfWaW5ER6cRsG9Jg4KMyVU59bQkt45WvcnJJctQojCqBeG2';
-
     it('it should succeed claiming with V1 stubs', async function () {
       this.timeout(10000);
       const stubClaimAmount = sinon.stub(ae, 'getClaimableAmount').resolves(new BigNumber('1'));
@@ -134,7 +118,6 @@ describe('Aeternity', () => {
       stubClaim.called.should.equal(true);
       sinon.assert.calledWith(stubClaim, address, url, trace);
     });
-
     it('it should succeed claiming with V1 + V2 stubs', async function () {
       this.timeout(10000);
       const stubClaimAmount = sinon.stub(ae, 'getClaimableAmount')
@@ -155,7 +138,6 @@ describe('Aeternity', () => {
   });
   describe('Tokens', () => {
     let tokenContractAddress;
-
     afterEach(() => {
       sinon.restore();
     });
@@ -165,11 +147,9 @@ describe('Aeternity', () => {
       result.should.be.an('array');
       const [firstEntry] = result;
       firstEntry.should.be.an('array');
-
       // token contract address
       firstEntry[0].should.be.an('string');
       firstEntry[0].should.contain('ct_');
-
       // token contract meta infos
       firstEntry[1].should.be.an('object');
       firstEntry[1].should.have.property('decimals');
@@ -185,7 +165,6 @@ describe('Aeternity', () => {
       result.should.have.property('name');
       result.should.have.property('symbol');
     });
-
     it('it should get the account balances from a contract', async function () {
       this.timeout(10000);
       const result = await ae.fetchTokenAccountBalances(tokenContractAddress);
@@ -209,12 +188,10 @@ describe('Aeternity', () => {
       this.timeout(10000);
       await ae.init();
     });
-
     after(async function () {
       this.timeout(15000);
       await ae.resetClient();
     });
-
     it('should handle a non responding compiler during runtime', async function () {
       this.timeout(10000);
       const client = ae.getClient();
@@ -234,15 +211,12 @@ describe('Aeternity', () => {
       const trace = new Trace();
       const preClaim = await ae.getTotalClaimableAmount('http://test', trace);
       should.equal(preClaim.toFixed(0), '0');
-
       const registryState = await ae.fetchTokenRegistryState();
       registryState.should.be.an('array');
       registryState.should.have.length(0);
-
       staticStub.restore();
       callStub.restore();
     });
-
     it('should crash for a non responding node on startup', async function () {
       this.timeout(10000);
       const originalUrl = process.env.NODE_URL;
@@ -250,7 +224,6 @@ describe('Aeternity', () => {
       await chai.expect(ae.resetClient()).to.eventually.be.rejectedWith('ECONNREFUSED');
       process.env.NODE_URL = originalUrl;
     });
-
     it('should crash for a non responding compiler on startup', async function () {
       this.timeout(10000);
       const originalUrl = process.env.COMPILER_URL;
@@ -258,7 +231,6 @@ describe('Aeternity', () => {
       await chai.expect(ae.resetClient()).to.eventually.be.rejectedWith('ECONNREFUSED');
       process.env.COMPILER_URL = originalUrl;
     });
-
     after(async function () {
       this.timeout(10000);
       ae.client = null;

@@ -2,6 +2,7 @@ const BLACKLIST_STATUS = {
   FLAGGED: 'flagged',
   HIDDEN: 'hidden',
 };
-module.exports = {
+export { BLACKLIST_STATUS };
+export default {
   BLACKLIST_STATUS,
 };

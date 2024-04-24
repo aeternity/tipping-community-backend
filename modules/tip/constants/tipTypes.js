@@ -6,7 +6,7 @@ const TIP_TYPES = {
   POST_WITHOUT_TIP: 'POST_WITHOUT_TIP',
   POST_VIA_BURN: 'POST_VIA_BURN',
 };
-
-module.exports = {
+export { TIP_TYPES };
+export default {
   TIP_TYPES,
 };

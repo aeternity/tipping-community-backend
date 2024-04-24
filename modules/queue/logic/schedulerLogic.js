@@ -1,8 +1,7 @@
-const queueLogic = require('./queueLogic');
-const { MESSAGES, MESSAGE_QUEUES } = require('../constants/queue');
+import queueLogic from './queueLogic.js';
+import { MESSAGES, MESSAGE_QUEUES } from '../constants/queue.js';
 
 const msInMin = 60 * 1000;
-
 const scheduledEvents = [
   { message: MESSAGES.SCHEDULED_EVENTS.COMMANDS.CACHE_KEEPHOT, interval: process.env.KEEP_HOT_INTERVAL || 5 * msInMin, onceAtStartup: true },
   { message: MESSAGES.SCHEDULED_EVENTS.COMMANDS.UPDATE_CHAIN_NAMES, interval: 10 * msInMin, onceAtStartup: true },
@@ -10,7 +9,6 @@ const scheduledEvents = [
   { message: MESSAGES.SCHEDULED_EVENTS.COMMANDS.UPDATE_EVENTS, interval: 10 * msInMin, onceAtStartup: true },
   { message: MESSAGES.SCHEDULED_EVENTS.COMMANDS.UPDATE_LINKPREVIEWS, interval: 60 * msInMin, onceAtStartup: true },
 ];
-
 const SchedulerLogic = {
   init() {
     scheduledEvents.forEach(async ({ message, interval, onceAtStartup }) => {
@@ -19,5 +17,4 @@ const SchedulerLogic = {
     });
   },
 };
-
-module.exports = SchedulerLogic;
+export default SchedulerLogic;

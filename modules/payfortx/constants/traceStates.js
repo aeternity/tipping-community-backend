@@ -14,6 +14,7 @@ const TRACE_STATES = {
   ERROR: 'ERROR',
   FINISHED: 'FINISHED',
 };
-module.exports = {
+export { TRACE_STATES };
+export default {
   TRACE_STATES,
 };

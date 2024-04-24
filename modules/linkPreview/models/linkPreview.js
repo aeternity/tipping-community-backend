@@ -1,4 +1,4 @@
-module.exports = (sequelize, DataTypes) => sequelize.define('LinkPreview', {
+export default (sequelize, DataTypes) => sequelize.define('LinkPreview', {
   // attributes
   requestUrl: {
     type: DataTypes.TEXT,

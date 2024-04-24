@@ -1,15 +1,15 @@
-const ipfs = require('../../backup/logic/ipfsLogic');
-const cache = require('../../cache/utils/cache');
-const models = require('../../../models');
-const aeternity = require('../../aeternity/logic/aeternity');
+import ipfs from '../../backup/logic/ipfsLogic.js';
+import cache from '../../cache/utils/cache.js';
+import models from '../../../models/index.js';
+import aeternity from '../../aeternity/logic/aeternity.js';
 
 const HealthLogic = {
   /**
-   * Checks for database consistency
-   * Its using the ORM to query all tables which errors
-   * if fields are not according to the model
-   * @returns {Promise<boolean>}
-   */
+     * Checks for database consistency
+     * Its using the ORM to query all tables which errors
+     * if fields are not according to the model
+     * @returns {Promise<boolean>}
+     */
   async checkDBHealth() {
     try {
       await Promise.all(Object.keys(models)
@@ -20,7 +20,6 @@ const HealthLogic = {
       return false;
     }
   },
-
   async checkIPFSHealth() {
     try {
       await ipfs.getCoreVitals();
@@ -29,7 +28,6 @@ const HealthLogic = {
       return false;
     }
   },
-
   async checkRedisHealth() {
     try {
       await cache.getOrSet(['redisTest'], async () => 'done');
@@ -38,7 +36,6 @@ const HealthLogic = {
       return false;
     }
   },
-
   async checkAEClient() {
     try {
       const balance = await aeternity.getBalance();
@@ -48,5 +45,4 @@ const HealthLogic = {
     }
   },
 };
-
-module.exports = HealthLogic;
+export default HealthLogic;

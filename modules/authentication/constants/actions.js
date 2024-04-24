@@ -1,5 +1,6 @@
-const { Profile } = require('../../../models');
+import models from '../../../models/index.js';
 
+const { Profile } = models;
 const ACTIONS = [
   {
     method: 'GET',
@@ -99,6 +100,6 @@ const ACTIONS = [
     path: '/profile/image/ak_.*',
     actionName: 'DELETE_PROFILE_IMAGE',
     relevantFields: [],
-  }];
-
-module.exports = ACTIONS;
+  },
+];
+export default ACTIONS;

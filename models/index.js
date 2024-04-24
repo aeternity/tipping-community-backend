@@ -1,31 +1,57 @@
-const path = require('path');
-const Sequelize = require('sequelize');
-require('sequelize-hierarchy')(Sequelize);
-const glob = require('glob');
-// eslint-disable-next-line import/extensions
-const config = require('../config/config.js');
-const applyRelations = require('./relations');
+import Sequelize$0 from 'sequelize';
+import sequelizeHierarchy from 'sequelize-hierarchy';
+import config from '../config/config.js';
+import applyRelations from './relations.js';
 
-const basename = path.basename(__filename);
+// get all models
+import ChainName from '../modules/aeternity/models/chainName.js';
+import IPFSEntry from '../modules/backup/models/ipfs.js';
+import BlacklistEntry from '../modules/blacklist/models/blacklist.js';
+import Comment from '../modules/comment/models/comment.js';
+import Consent from '../modules/consent/models/consent.js';
+import ErrorReport from '../modules/errorReport/models/errorReport.js';
+import Event from '../modules/event/models/event.js';
+import LinkPreview from '../modules/linkPreview/models/linkPreview.js';
+import Notification from '../modules/notification/models/notification.js';
+import Trace from '../modules/payfortx/models/trace.js';
+import Pin from '../modules/pin/models/pin.js';
+import Profile from '../modules/profile/models/profile.js';
+import Claim from '../modules/tip/models/claim.js';
+import Retip from '../modules/tip/models/retip.js';
+import Tip from '../modules/tip/models/tip.js';
+
+const { Sequelize, DataTypes } = Sequelize$0;
+sequelizeHierarchy(Sequelize);
+
 const db = {};
-
 const sequelize = new Sequelize(config.development);
-glob.sync('modules/**/models/*.js')
-  .filter(file => (file.indexOf('.') !== 0) && (file !== basename) && (file.slice(-3) === '.js'))
-  .forEach(file => {
-    const model = sequelize.import(path.join(__dirname, '..', file));
-    db[model.name] = model;
-  });
 
-Object.keys(db).forEach(modelName => {
+const models = {
+  ChainName,
+  IPFSEntry,
+  BlacklistEntry,
+  Comment,
+  Consent,
+  ErrorReport,
+  Event,
+  LinkPreview,
+  Notification,
+  Trace,
+  Pin,
+  Profile,
+  Claim,
+  Retip,
+  Tip,
+};
+
+Object.entries(models).forEach(([modelName, model]) => {
+  db[modelName] = model(sequelize, DataTypes);
   if (db[modelName].associate) {
     db[modelName].associate(db);
   }
 });
 
 applyRelations(db, sequelize, Sequelize.Op);
-
 db.sequelize = sequelize;
 db.Sequelize = Sequelize;
-
-module.exports = db;
+export default db;

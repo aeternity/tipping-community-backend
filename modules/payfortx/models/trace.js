@@ -1,4 +1,4 @@
-module.exports = (sequelize, DataTypes) => sequelize.define('Trace', {
+export default (sequelize, DataTypes) => sequelize.define('Trace', {
   // attributes
   url: {
     type: DataTypes.TEXT,

@@ -1,7 +1,8 @@
-const { Pin } = require('../../../models');
-const { PINNED_CONTENT_TYPES } = require('../constants/contentTypes');
-const TipLogic = require('../../tip/logic/tipLogic');
+import models from '../../../models/index.js';
+import { PINNED_CONTENT_TYPES } from '../constants/contentTypes.js';
+import TipLogic from '../../tip/logic/tipLogic.js';
 
+const { Pin } = models;
 const PinLogic = {
   async addItem({
     entryId, type, signature, challenge, author,
@@ -10,7 +11,6 @@ const PinLogic = {
       entryId, type, author, signature, challenge,
     });
   },
-
   async removeItem(entryId, author, type) {
     return Pin.destroy({
       where: {
@@ -20,7 +20,6 @@ const PinLogic = {
       },
     });
   },
-
   async getAllItemsPerUser(author) {
     const tips = await TipLogic.fetchAllLocalTips();
     const pins = (await Pin.findAll({ where: { author }, raw: true }))
@@ -28,5 +27,4 @@ const PinLogic = {
     return tips.filter(({ id }) => pins.includes(String(id)));
   },
 };
-
-module.exports = PinLogic;
+export default PinLogic;

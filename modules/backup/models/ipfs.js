@@ -1,6 +1,6 @@
-const { IPFS_TYPES } = require('../constants/ipfsTypes');
+import { IPFS_TYPES } from '../constants/ipfsTypes.js';
 
-module.exports = (sequelize, DataTypes) => sequelize.define('IPFSEntry', {
+export default (sequelize, DataTypes) => sequelize.define('IPFSEntry', {
   // attributes
   hash: {
     type: DataTypes.STRING,

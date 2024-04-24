@@ -13,7 +13,7 @@ const EVENT_TYPES = {
   TRANSFER: 'Transfer',
   ALLOWANCE: 'Allowance',
 };
-
-module.exports = {
+export { EVENT_TYPES };
+export default {
   EVENT_TYPES,
 };

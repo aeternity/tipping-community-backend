@@ -1,15 +1,13 @@
-// Require the dev-dependencies
-const chai = require('chai');
-const chaiHttp = require('chai-http');
-const {
-  describe, it, before,
-} = require('mocha');
+import chai from 'chai';
+import chaiHttp from 'chai-http';
+import mocha from 'mocha';
+import server from '../../../server.js';
+import models from '../../../models/index.js';
+import { BLACKLIST_STATUS } from '../constants/blacklistStates.js';
+import { publicKey, performSignedJSONRequest, getDBSeedFunction } from '../../../utils/testingUtil.js';
 
-const server = require('../../../server');
-const { BlacklistEntry, Tip } = require('../../../models');
-const { BLACKLIST_STATUS } = require('../constants/blacklistStates');
-const { publicKey, performSignedJSONRequest, getDBSeedFunction } = require('../../../utils/testingUtil');
-
+const { describe, it, before } = mocha;
+const { BlacklistEntry, Tip } = models;
 chai.should();
 chai.use(chaiHttp);
 // Our parent block
@@ -20,10 +18,8 @@ describe('Blacklist', () => {
       cascade: true,
     });
   });
-
   const tipId = '1_v1';
   const walletTipId = '2_v1';
-
   describe('Blacklist API', () => {
     it('it should GET all the blacklist entries (empty)', done => {
       chai.request(server).get('/blacklist/api').end((err, res) => {
@@ -33,7 +29,6 @@ describe('Blacklist', () => {
         done();
       });
     });
-
     it('it should REJECT a new blacklist entry via admin auth for unkown id', async () => {
       const res = await chai.request(server).post('/blacklist/api')
         .auth(process.env.AUTHENTICATION_USER, process.env.AUTHENTICATION_PASSWORD)
@@ -44,7 +39,6 @@ describe('Blacklist', () => {
       res.body.should.be.a('object');
       res.body.should.have.property('error', `Tip with id ${tipId} is unknown`);
     });
-
     it('it should CREATE a new blacklist entry via admin auth', async () => {
       await Tip.create({
         id: tipId,
@@ -66,7 +60,6 @@ describe('Blacklist', () => {
       res.body.should.have.property('createdAt');
       res.body.should.have.property('updatedAt');
     });
-
     it('it should CREATE a new blacklist entry via wallet auth', async () => {
       await Tip.create({
         id: walletTipId,
@@ -90,7 +83,6 @@ describe('Blacklist', () => {
       res.body.should.have.property('createdAt');
       res.body.should.have.property('updatedAt');
     });
-
     it('it should ALLOW overwriting a blacklist entry via wallet auth', done => {
       performSignedJSONRequest(server, 'post', '/blacklist/api/wallet/', {
         tipId: walletTipId, author: publicKey,
@@ -107,7 +99,6 @@ describe('Blacklist', () => {
         done();
       });
     });
-
     it('it should GET a single item created via admin auth', done => {
       chai.request(server).get(`/blacklist/api/${tipId}`).end((err, res) => {
         res.should.have.status(200);
@@ -117,7 +108,6 @@ describe('Blacklist', () => {
         done();
       });
     });
-
     it('it should GET a single item created via wallet auth', done => {
       chai.request(server).get(`/blacklist/api/${walletTipId}`).end((err, res) => {
         res.should.have.status(200);
@@ -132,7 +122,6 @@ describe('Blacklist', () => {
         done();
       });
     });
-
     it('it should UPDATE the status to flagged via admin auth', done => {
       chai.request(server).put(`/blacklist/api/${tipId}`)
         .send({
@@ -144,7 +133,6 @@ describe('Blacklist', () => {
           done();
         });
     });
-
     it('it should UPDATE the status to hidden via admin auth', done => {
       chai.request(server).put(`/blacklist/api/${tipId}`)
         .send({
@@ -156,7 +144,6 @@ describe('Blacklist', () => {
           done();
         });
     });
-
     it('it should DELETE a single blacklist entry via admin auth', done => {
       chai.request(server).delete(`/blacklist/api/${tipId}`)
         .auth(process.env.AUTHENTICATION_USER, process.env.AUTHENTICATION_PASSWORD)
@@ -166,7 +153,6 @@ describe('Blacklist', () => {
           done();
         });
     });
-
     it('it should 404 on getting a deleted item', done => {
       chai.request(server).get(`/blacklist/api/${tipId}`).end((err, res) => {
         res.should.have.status(404);
@@ -175,10 +161,8 @@ describe('Blacklist', () => {
       });
     });
   });
-
   describe('Blacklist Frontend', () => {
     const seedDB = getDBSeedFunction();
-
     it('it should 200 on getting the frontend', async () => {
       await seedDB({
         tips: [{
@@ -189,7 +173,6 @@ describe('Blacklist', () => {
       const res = await chai.request(server).get('/blacklist/').auth(process.env.AUTHENTICATION_USER, process.env.AUTHENTICATION_PASSWORD);
       res.should.have.status(200);
     });
-
     it('it should be possible to search the blacklist ui', async () => {
       await seedDB({
         tips: [{
@@ -202,7 +185,6 @@ describe('Blacklist', () => {
       res.text.should.contain('<p>test title2</p>');
       res.should.have.status(200);
     });
-
     it('it should be possible to search the blacklist ui with special chars (+)', async () => {
       await seedDB({
         tips: [{
@@ -215,7 +197,6 @@ describe('Blacklist', () => {
       res.text.should.contain('<p>test title2</p>');
       res.should.have.status(200);
     });
-
     it('it should show tips only by a certain address', async () => {
       const sender1 = 'ak_TestTestTest';
       const sender2 = 'ak_NotNotNot';
@@ -236,7 +217,6 @@ describe('Blacklist', () => {
       res.text.should.contain(`<a href="/blacklist?address=${sender1}">${sender1}</a>`);
       res.text.should.not.contain(`<a href="/blacklist?address=${sender2}">${sender2}</a>`);
     });
-
     it('it should show tip by id', async () => {
       await seedDB({
         tips: [{
@@ -249,15 +229,13 @@ describe('Blacklist', () => {
       res.should.have.status(200);
       res.text.should.contain('<a href="/blacklist?id=9999_v1">9999_v1</a>');
     });
-
     it('it should filter only tips', async () => {
-      const tips = new Array(20).fill({}).map((v, i) => (
-        {
-          id: `${i}_v1`,
-          title: `Title ${i}`,
-          type: i % 2 === 0 ? 'POST_WITHOUT_TIP' : 'AE_TIP',
-          contractId: i % 2 === 0 ? process.env.CONTRACT_V3_ADDRESS : process.env.CONTRACT_V1_ADDRESS,
-        }));
+      const tips = new Array(20).fill({}).map((v, i) => ({
+        id: `${i}_v1`,
+        title: `Title ${i}`,
+        type: i % 2 === 0 ? 'POST_WITHOUT_TIP' : 'AE_TIP',
+        contractId: i % 2 === 0 ? process.env.CONTRACT_V3_ADDRESS : process.env.CONTRACT_V1_ADDRESS,
+      }));
       await seedDB({ tips }, true);
       const res = await chai.request(server).get('/blacklist?type=tips')
         .auth(process.env.AUTHENTICATION_USER, process.env.AUTHENTICATION_PASSWORD);
@@ -265,13 +243,11 @@ describe('Blacklist', () => {
       res.text.should.not.contain('<span>Type: POST_WITHOUT_TIP</span>');
       res.should.have.status(200);
     });
-
     it('it should navigate to second page', async () => {
-      const tips = new Array(31).fill({}).map((v, i) => (
-        {
-          id: `${i}_v1`,
-          title: `Title ${i}`,
-        }));
+      const tips = new Array(31).fill({}).map((v, i) => ({
+        id: `${i}_v1`,
+        title: `Title ${i}`,
+      }));
       await seedDB({ tips }, true);
       const res = await chai.request(server).get('/blacklist?page=2')
         .auth(process.env.AUTHENTICATION_USER, process.env.AUTHENTICATION_PASSWORD);

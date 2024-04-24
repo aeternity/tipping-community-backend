@@ -1,4 +1,4 @@
-module.exports = (sequelize, DataTypes) => sequelize.define('Claim', {
+export default (sequelize, DataTypes) => sequelize.define('Claim', {
   // attributes
   contractId: {
     type: DataTypes.STRING,

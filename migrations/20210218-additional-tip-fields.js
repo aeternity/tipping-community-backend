@@ -1,7 +1,5 @@
+import Sequelize from "sequelize";
 'use strict';
-
-var Sequelize = require('sequelize');
-
 /**
  * Actions summary:
  *
@@ -15,15 +13,13 @@ var Sequelize = require('sequelize');
  * changeColumn "type" on table "Tips"
  *
  **/
-
 var info = {
     "revision": 9,
     "name": "additional-tip-fields",
     "created": "2021-02-18T16:07:17.918Z",
     "comment": ""
 };
-
-var migrationCommands = function(transaction) {
+var migrationCommands = function (transaction) {
     return [{
             fn: "removeColumn",
             params: [
@@ -141,7 +137,7 @@ var migrationCommands = function(transaction) {
         }
     ];
 };
-var rollbackCommands = function(transaction) {
+var rollbackCommands = function (transaction) {
     return [{
             fn: "removeColumn",
             params: [
@@ -235,21 +231,23 @@ var rollbackCommands = function(transaction) {
         }
     ];
 };
-
-module.exports = {
-    pos: 0,
-    useTransaction: true,
-    execute: function(queryInterface, Sequelize, _commands)
-    {
+export const pos = 0;
+export const useTransaction = true;
+export const execute = moduleExports.execute;
+export const up = moduleExports.up;
+export const down = moduleExports.down;
+const moduleExports = {
+    pos,
+    useTransaction,
+    execute: function (queryInterface, Sequelize, _commands) {
         var index = this.pos;
         function run(transaction) {
             const commands = _commands(transaction);
-            return new Promise(function(resolve, reject) {
+            return new Promise(function (resolve, reject) {
                 function next() {
-                    if (index < commands.length)
-                    {
+                    if (index < commands.length) {
                         let command = commands[index];
-                        console.log("[#"+index+"] execute: " + command.fn);
+                        console.log("[#" + index + "] execute: " + command.fn);
                         index++;
                         queryInterface[command.fn].apply(queryInterface, command.params).then(next, reject);
                     }
@@ -261,26 +259,25 @@ module.exports = {
         }
         if (this.useTransaction) {
             return queryInterface.sequelize.transaction(run);
-        } else {
+        }
+        else {
             return run(null);
         }
     },
-    up: async function(queryInterface, Sequelize)
-    {
-      const transaction = await queryInterface.sequelize.transaction();
-      await queryInterface.sequelize.query('ALTER TYPE "enum_Tips_type" ADD VALUE \'POST_WITHOUT_TIP\';', { transaction });
-      await queryInterface.sequelize.query('TRUNCATE TABLE "Tips" CASCADE;', { transaction });
-      await transaction.commit();
-
-      return this.execute(queryInterface, Sequelize, migrationCommands);
+    up: async function (queryInterface, Sequelize) {
+        const transaction = await queryInterface.sequelize.transaction();
+        await queryInterface.sequelize.query('ALTER TYPE "enum_Tips_type" ADD VALUE \'POST_WITHOUT_TIP\';', { transaction });
+        await queryInterface.sequelize.query('TRUNCATE TABLE "Tips" CASCADE;', { transaction });
+        await transaction.commit();
+        return this.execute(queryInterface, Sequelize, migrationCommands);
     },
-    down: async function(queryInterface, Sequelize)
-    {
-      const transaction = await queryInterface.sequelize.transaction();
-      await queryInterface.sequelize.query('DROP TYPE "enum_Tips_type" CASCADE;', { transaction });
-      await transaction.commit();
-
-      return this.execute(queryInterface, Sequelize, rollbackCommands);
+    down: async function (queryInterface, Sequelize) {
+        const transaction = await queryInterface.sequelize.transaction();
+        await queryInterface.sequelize.query('DROP TYPE "enum_Tips_type" CASCADE;', { transaction });
+        await transaction.commit();
+        return this.execute(queryInterface, Sequelize, rollbackCommands);
     },
     info: info
 };
+export { info };
+export default moduleExports;

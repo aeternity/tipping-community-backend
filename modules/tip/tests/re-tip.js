@@ -1,34 +1,30 @@
-const chai = require('chai');
-const chaiHttp = require('chai-http');
-const { describe, it, beforeEach } = require('mocha');
-const sinon = require('sinon');
+import chai from 'chai';
+import chaiHttp from 'chai-http';
+import mocha from 'mocha';
+import sinon from 'sinon';
+import TipLogic from '../logic/tipLogic.js';
+import queueLogic from '../../queue/logic/queueLogic.js';
+import { MESSAGES, MESSAGE_QUEUES } from '../../queue/constants/queue.js';
+import models from '../../../models/index.js';
+import server from '../../../server.js';
+import { getDBSeedFunction } from '../../../utils/testingUtil.js';
+import sampleTips from './sampleTips.js';
+import aeternity from '../../aeternity/logic/aeternity.js';
 
-const TipLogic = require('../logic/tipLogic');
-const queueLogic = require('../../queue/logic/queueLogic');
-const { MESSAGES } = require('../../queue/constants/queue');
-const { MESSAGE_QUEUES } = require('../../queue/constants/queue');
+const { describe, it, beforeEach } = mocha;
 const {
   Retip, Notification, Claim, BlacklistEntry, Comment,
-} = require('../../../models');
-const server = require('../../../server');
-const { getDBSeedFunction } = require('../../../utils/testingUtil');
-
-const sampleTips = require('./sampleTips');
-const aeternity = require('../../aeternity/logic/aeternity');
-
+} = models;
 chai.should();
 chai.use(chaiHttp);
-
 describe('(Re)Tips', () => {
   before(() => {
     sinon.stub(queueLogic, 'sendMessage');
   });
-
   after(() => {
     sinon.restore();
   });
   const seedDB = getDBSeedFunction([Claim, Retip, Notification, BlacklistEntry]);
-
   describe('API', () => {
     it('it should respond with no tips when db is empty', async function () {
       this.timeout(5000);
@@ -42,7 +38,6 @@ describe('(Re)Tips', () => {
       res.body.should.be.an('array');
       res.body.should.have.length(0);
     });
-
     it('it should respond with tips', async function () {
       this.timeout(5000);
       await seedDB(sampleTips);
@@ -50,7 +45,6 @@ describe('(Re)Tips', () => {
       res.body.should.be.an('array');
       res.body.should.have.length(6);
     });
-
     it('it should apply pagination by default', async function () {
       this.timeout(5000);
       let id = 0;
@@ -63,23 +57,19 @@ describe('(Re)Tips', () => {
         claims: [],
       };
       await seedDB(fakeData);
-
       const res = await chai.request(server).get('/tips');
       res.body.should.be.an('array');
       res.body.should.have.length(30);
-
       const res2 = await chai.request(server).get('/tips?page=2');
       res2.body.should.be.an('array');
       res2.body.should.have.length(5);
     });
-
     it('it should apply blacklist by default', async function () {
       this.timeout(5000);
       await seedDB(sampleTips);
       await BlacklistEntry.create({
         tipId: '1_v1',
       });
-
       const res = await chai.request(server).get('/tips');
       res.body.should.be.an('array');
       res.body.should.have.length(5);
@@ -87,18 +77,15 @@ describe('(Re)Tips', () => {
       ids.should.not.contain('1_v1');
       await BlacklistEntry.truncate();
     });
-
     it('it should allow to bypass the blacklist', async () => {
       await BlacklistEntry.create({
         tipId: '1_v1',
       });
-
       const res = await chai.request(server).get('/tips?blacklist=false');
       res.body.should.be.an('array');
       res.body.should.have.length(6);
       await BlacklistEntry.truncate();
     });
-
     it('it should allow to search by address', async function () {
       this.timeout(5000);
       await seedDB(sampleTips);
@@ -106,77 +93,64 @@ describe('(Re)Tips', () => {
       res.body.should.be.an('array');
       res.body.should.have.length(2);
     });
-
     it('it should return an empty result when address has not yet tipped', async () => {
       const res = await chai.request(server).get('/tips?address=ak_sender0');
       res.body.should.be.an('array');
       res.body.should.have.length(0);
     });
-
     it('it should return an empty result when address has only re-tipped', async () => {
       const res = await chai.request(server).get('/tips?address=ak_retip_sender1');
       res.body.should.be.an('array');
       res.body.should.have.length(0);
     });
-
     it('it should allow filtering by contract version', async () => {
       const res = await chai.request(server).get('/tips?contractVersion=v1');
       res.body.should.be.an('array');
       res.body.should.have.length(2);
     });
-
     it('it should allow filtering by multiple contract versions', async () => {
       const res = await chai.request(server).get('/tips?contractVersion=v1&contractVersion=v2');
       res.body.should.be.an('array');
       res.body.should.have.length(4);
     });
-
     it('it should allow filtering by token', async () => {
       const res = await chai.request(server).get('/tips?token=ct_2bCbmU7vtsysL4JiUdUZjJJ98LLbJWG1fRtVApBvqSFEM59D6W');
       res.body.should.be.an('array');
       res.body.should.have.length(2);
     });
-
     it('it should allow searching by title', async () => {
       const res = await chai.request(server).get('/tips?search=test');
       res.body.should.be.an('array');
       res.body.should.have.length(4);
     });
-
     it('it should allow searching by topic', async () => {
       const res = await chai.request(server).get('/tips?search=%23test');
       res.body.should.be.an('array');
       res.body.should.have.length(2);
     });
-
     it('it should allow searching with spaces', async () => {
       const res = await chai.request(server).get('/tips?search=ein+deutscher+tip');
       res.body.should.be.an('array');
       res.body.should.have.length(1);
     });
-
     it('it should allow searching by url', async () => {
       const res = await chai.request(server).get('/tips?search=example.com');
       res.body.should.be.an('array');
       res.body.should.have.length(3);
     });
-
     it('it should allow searching by address', async () => {
       const res = await chai.request(server).get('/tips?search=ak_2Cvbf3NYZ5DLoaNYAU71t67DdXLHeSXhodkSNifhgd7Xsw28Xd');
       res.body.should.be.an('array');
       res.body.should.have.length(1);
     });
-
     it('it should allow filtering by language', async () => {
       const res = await chai.request(server).get('/tips?language=de');
       res.body.should.be.an('array');
       res.body.should.have.length(1);
-
       const res2 = await chai.request(server).get('/tips?language=de&language=en');
       res2.body.should.be.an('array');
       res2.body.should.have.length(3);
     });
-
     it('it should sorting by latest', async () => {
       const res = await chai.request(server).get('/tips?ordering=latest');
       res.body.should.be.an('array');
@@ -191,7 +165,6 @@ describe('(Re)Tips', () => {
         '1_v1',
       ]);
     });
-
     it('it should sorting by score', async () => {
       const res = await chai.request(server).get('/tips?ordering=hot');
       res.body.should.be.an('array');
@@ -207,7 +180,6 @@ describe('(Re)Tips', () => {
         '2_v2',
       ]);
     });
-
     it('it should sorting by total amount (default)', async () => {
       const res = await chai.request(server).get('/tips');
       res.body.should.be.an('array');
@@ -223,17 +195,14 @@ describe('(Re)Tips', () => {
         '2_v2',
       ]);
     });
-
     it('it should return 404 on invalid tipid', async () => {
       const res = await chai.request(server).get('/tips/123_v1');
       res.should.have.status(404);
     });
-
     it('it should return a single tip', async () => {
       await Comment.create({
         tipId: '1_v1', text: 'text', author: 'author', signature: 'signature', challenge: 'challenge',
       });
-
       const res = await chai.request(server).get('/tips/single/1_v1');
       res.body.should.have.property('id', '1_v1');
       res.body.aggregation.should.eql({
@@ -245,7 +214,6 @@ describe('(Re)Tips', () => {
         totalTokenUnclaimedAmount: [],
         totalTokenClaimedAmount: [],
       });
-
       // sort the result to avoid flaky tests
       res.body.urlStats.senders.sort();
       res.body.urlStats.should.eql({
@@ -262,14 +230,11 @@ describe('(Re)Tips', () => {
         senders: ['ak_retip_sender1', 'ak_retip_sender2', 'ak_sender1'],
         sendersLength: 3,
       });
-
       res.body.should.have.property('commentCount', '1');
-
       await Comment.truncate({
         cascade: true,
       });
     });
-
     it('it should get the topics', async () => {
       const res = await chai.request(server).get('/tips/topics');
       res.body.should.be.an('array');
@@ -289,7 +254,6 @@ describe('(Re)Tips', () => {
         },
       ]);
     });
-
     it('it should be able to await a newly made tip', async () => {
       const res = await chai.request(server).get('/tips/topics');
       res.body.should.be.an('array');
@@ -309,12 +273,10 @@ describe('(Re)Tips', () => {
         },
       ]);
     });
-
     it('it should resolve existing tips on await endpoint in less than 1000ms', async function () {
       this.timeout(1000);
       await chai.request(server).get('/tips/await/tip/1_v2');
     });
-
     it('it should resolve new tips when they are added for v1', async function () {
       this.timeout(5000);
       const fakeData = JSON.parse(JSON.stringify(sampleTips));
@@ -325,7 +287,6 @@ describe('(Re)Tips', () => {
       ]);
       res.should.have.status(200);
     });
-
     it('it should resolve new tips when they are added for v2', async function () {
       this.timeout(5000);
       const fakeData = JSON.parse(JSON.stringify(sampleTips));
@@ -336,7 +297,6 @@ describe('(Re)Tips', () => {
       ]);
       res.should.have.status(200);
     });
-
     it('it should resolve new tips when they are added for v3', async function () {
       this.timeout(5000);
       const fakeData = JSON.parse(JSON.stringify(sampleTips));
@@ -347,7 +307,6 @@ describe('(Re)Tips', () => {
       ]);
       res.should.have.status(200);
     });
-
     it('it should resolve new tips when they are added for v4', async function () {
       this.timeout(5000);
       const fakeData = JSON.parse(JSON.stringify(sampleTips));
@@ -358,7 +317,6 @@ describe('(Re)Tips', () => {
       ]);
       res.should.have.status(200);
     });
-
     it('it should resolve new re-tips when they are added for v1', async function () {
       this.timeout(5000);
       const fakeData = JSON.parse(JSON.stringify(sampleTips));
@@ -369,7 +327,6 @@ describe('(Re)Tips', () => {
       ]);
       res.should.have.status(200);
     });
-
     it('it should resolve new re-tips when they are added for v2', async function () {
       this.timeout(5000);
       const fakeData = JSON.parse(JSON.stringify(sampleTips));
@@ -381,7 +338,6 @@ describe('(Re)Tips', () => {
       res.should.have.status(200);
     });
   });
-
   describe('DB', () => {
     it('it should treat inserted tips without claims as unclaimed', async () => {
       await seedDB(sampleTips);
@@ -396,7 +352,6 @@ describe('(Re)Tips', () => {
         },
       ]);
     });
-
     it('it should UPDATE a tips claimed status db', async () => {
       const fakeData = JSON.parse(JSON.stringify(sampleTips));
       fakeData.claims.push({
@@ -416,13 +371,11 @@ describe('(Re)Tips', () => {
           amount: '100000000000000000',
         },
       ]);
-
       res.body.should.have.property('claim');
       res.body.claim.should.be.an('object');
       res.body.claim.should.have.property('claimGen', 1);
     });
   });
-
   describe('Internals', () => {
     before(() => {
       TipLogic.init();
@@ -430,16 +383,14 @@ describe('(Re)Tips', () => {
     beforeEach(() => {
       sinon.restore();
     });
-
     it('it should update everything on MESSAGES.SCHEDULED_EVENTS.COMMANDS.UPDATE_TIPS_RETIPS_CLAIMS', done => {
-      const updateMock = sinon.stub(TipLogic, 'updateTipsRetipsClaimsDB').callsFake(async () => {});
+      const updateMock = sinon.stub(TipLogic, 'updateTipsRetipsClaimsDB').callsFake(async () => { });
       queueLogic.sendMessage(MESSAGE_QUEUES.SCHEDULED_EVENTS, MESSAGES.SCHEDULED_EVENTS.COMMANDS.UPDATE_TIPS_RETIPS_CLAIMS);
       setTimeout(() => {
         updateMock.callCount.should.eql(1);
         done();
       }, 100);
     });
-
     it('it should insert the claim on MESSAGES.TIPS.COMMANDS.INSERT_CLAIM', done => {
       const updateMock = sinon.stub(TipLogic, 'insertClaims').callsFake(async ([payload]) => payload);
       const payload = {
@@ -452,9 +403,8 @@ describe('(Re)Tips', () => {
         done();
       }, 100);
     });
-
     it('it should insert the payload on MESSAGES.TIPS.COMMANDS.INSERT_TIP', done => {
-      const updateMock = sinon.stub(TipLogic, 'insertTips').callsFake(async () => {});
+      const updateMock = sinon.stub(TipLogic, 'insertTips').callsFake(async () => { });
       const payload = {
         test: 'test',
       };
@@ -465,9 +415,8 @@ describe('(Re)Tips', () => {
         done();
       }, 100);
     });
-
     it('it should insert the payload on MESSAGES.RETIPS.COMMANDS.INSERT_RETIP', done => {
-      const updateMock = sinon.stub(TipLogic, 'insertRetips').callsFake(async () => {});
+      const updateMock = sinon.stub(TipLogic, 'insertRetips').callsFake(async () => { });
       const payload = {
         test: 'test',
       };

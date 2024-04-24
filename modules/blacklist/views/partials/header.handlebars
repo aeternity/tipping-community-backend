@@ -2,23 +2,13 @@
   <h1><a href="/blacklist">Admin Panel</a></h1>
   <div>
     <label for="type">Type: </label>
-    <select
-      name="type"
-      id="type"
-      value="{{type}}"
-      onchange="sortAndFilter('type')"
-    >
+    <select name="type" id="type" value="{{type}}" onchange="sortAndFilter('type')">
       <option value="">All</option>
       <option value="posts" {{isSelected "posts" type}}>Posts</option>
       <option value="tips" {{isSelected "tips" type}}>Tips</option>
     </select>
     <label for="ordering">Ordering: </label>
-    <select
-      name="ordering"
-      id="ordering"
-      value="{{ordering}}"
-      onchange="sortAndFilter('ordering')"
-    >
+    <select name="ordering" id="ordering" value="{{ordering}}" onchange="sortAndFilter('ordering')">
       <option value="latest" {{isSelected "latest" ordering}}>Latest</option>
       <option value="highest" {{isSelected "highest" ordering}}>Highest rated</option>
       <option value="hot" {{isSelected "hot" ordering}}>Most popular</option>

@@ -1,6 +1,6 @@
-import CacheLogic from '../../cache/logic/cacheLogic.js';
-import models from '../../../models/index.js';
-import { BLACKLIST_STATUS } from '../constants/blacklistStates.js';
+import CacheLogic from "../../cache/logic/cacheLogic.js";
+import models from "../../../models/index.js";
+import { BLACKLIST_STATUS } from "../constants/blacklistStates.js";
 
 const { BlacklistEntry } = models;
 const BlacklistLogic = {
@@ -8,11 +8,13 @@ const BlacklistLogic = {
     const blacklist = await BlacklistEntry.findAll({
       raw: true,
     });
-    return allItems.map(item => ({
-      ...item,
-      hidden: blacklist.some(b => b.tipId === item.id && b.status === BLACKLIST_STATUS.HIDDEN),
-      flagged: blacklist.some(b => b.tipId === item.id && b.status === BLACKLIST_STATUS.FLAGGED),
-    })).sort((a, b) => b.timestamp - a.timestamp);
+    return allItems
+      .map((item) => ({
+        ...item,
+        hidden: blacklist.some((b) => b.tipId === item.id && b.status === BLACKLIST_STATUS.HIDDEN),
+        flagged: blacklist.some((b) => b.tipId === item.id && b.status === BLACKLIST_STATUS.FLAGGED),
+      }))
+      .sort((a, b) => b.timestamp - a.timestamp);
   },
   async resetCache() {
     await CacheLogic.invalidateStatsCache();
@@ -26,7 +28,11 @@ const BlacklistLogic = {
     let entry = await BlacklistEntry.findOne({ where: { tipId }, raw: true });
     if (!entry) {
       entry = await BlacklistEntry.create({
-        tipId, author, signature, challenge, status: BLACKLIST_STATUS.FLAGGED,
+        tipId,
+        author,
+        signature,
+        challenge,
+        status: BLACKLIST_STATUS.FLAGGED,
       });
       // Kill stats cache
       await BlacklistLogic.resetCache();
@@ -48,7 +54,7 @@ const BlacklistLogic = {
   },
   async getBlacklistedIds() {
     const blacklist = await BlacklistEntry.findAll({ raw: true, where: { status: BLACKLIST_STATUS.HIDDEN } });
-    return blacklist.map(b => b.tipId);
+    return blacklist.map((b) => b.tipId);
   },
 };
 export default BlacklistLogic;

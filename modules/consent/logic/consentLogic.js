@@ -1,17 +1,18 @@
-import models from '../../../models/index.js';
+import models from "../../../models/index.js";
 
 const { Consent } = models;
 export default (class ConsentLogic {
-  static async upsertItem({
-    status, author, scope, signature, challenge,
-  }) {
+  static async upsertItem({ status, author, scope, signature, challenge }) {
     const existing = await Consent.findOne({ where: { author, scope }, raw: true });
     if (existing) {
-      await Consent.update({
-        status,
-        signature,
-        challenge,
-      }, { where: { author, scope } });
+      await Consent.update(
+        {
+          status,
+          signature,
+          challenge,
+        },
+        { where: { author, scope } },
+      );
     } else {
       await Consent.create({
         scope,

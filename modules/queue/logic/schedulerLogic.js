@@ -1,5 +1,5 @@
-import queueLogic from './queueLogic.js';
-import { MESSAGES, MESSAGE_QUEUES } from '../constants/queue.js';
+import queueLogic from "./queueLogic.js";
+import { MESSAGES, MESSAGE_QUEUES } from "../constants/queue.js";
 
 const msInMin = 60 * 1000;
 const scheduledEvents = [

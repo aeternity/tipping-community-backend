@@ -1,5 +1,5 @@
-import express from 'express';
-import path from 'path';
+import express from "express";
+import path from "path";
 
 const router = new express.Router();
 /**
@@ -36,5 +36,5 @@ const router = new express.Router();
  *               type: string
  *               format: binary
  */
-router.use('/', express.static(path.resolve('./images/')));
+router.use("/", express.static(path.resolve("./images/")));
 export default router;

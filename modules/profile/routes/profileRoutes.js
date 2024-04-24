@@ -1,15 +1,15 @@
-import multer from 'multer';
-import express from 'express';
-import path from 'path';
-import ProfileLogic from '../logic/profileLogic.js';
-import authenticationLogic from '../../authentication/logic/authenticationLogic.js';
+import multer from "multer";
+import express from "express";
+import path from "path";
+import ProfileLogic from "../logic/profileLogic.js";
+import authenticationLogic from "../../authentication/logic/authenticationLogic.js";
 
 const { Router } = express;
 const { signatureAuth } = authenticationLogic;
 const router = new Router();
 const storage = multer.diskStorage({
   destination(req, file, cb) {
-    cb(null, 'images/');
+    cb(null, "images/");
   },
   filename(req, file, cb) {
     cb(null, `${req.params.author}-${Date.now()}${path.extname(file.originalname)}`); // Appending extension
@@ -43,7 +43,7 @@ const upload = multer({ storage });
  *             schema:
  *               $ref: '#/components/schemas/Profile'
  */
-router.get('/:author', async (req, res) => {
+router.get("/:author", async (req, res) => {
   const author = req.body.author ? req.body.author : req.params.author;
   const result = await ProfileLogic.getSingleItem(author);
   if (!result) return res.sendStatus(404);
@@ -84,29 +84,36 @@ router.get('/:author', async (req, res) => {
  *                 - $ref: '#/components/schemas/Profile'
  *                 - $ref: '#/components/schemas/SignatureResponse'
  */
-router.post('/:author', upload.fields([{ name: 'image', maxCount: 1 }, { name: 'coverImage', maxCount: 1 }]), signatureAuth, ProfileLogic.verifyRequest, async (req, res) => {
-  const {
-    biography, preferredChainName, referrer, location, signature, challenge,
-  } = req.body;
-  let { image, coverImage } = (req.files ? req.files : {});
-  // allow image deletion
-  if (!image && req.body.image === null) image = [{ filename: null }];
-  if (!coverImage && req.body.coverImage === null) coverImage = [{ filename: null }];
-  // get author
-  const author = req.body.author ? req.body.author : req.params.author;
-  const profile = await ProfileLogic.upsertProfile({
-    author,
-    biography,
-    preferredChainName,
-    referrer,
-    location,
-    signature,
-    challenge,
-    image,
-    coverImage,
-  });
-  return res.send(profile);
-});
+router.post(
+  "/:author",
+  upload.fields([
+    { name: "image", maxCount: 1 },
+    { name: "coverImage", maxCount: 1 },
+  ]),
+  signatureAuth,
+  ProfileLogic.verifyRequest,
+  async (req, res) => {
+    const { biography, preferredChainName, referrer, location, signature, challenge } = req.body;
+    let { image, coverImage } = req.files ? req.files : {};
+    // allow image deletion
+    if (!image && req.body.image === null) image = [{ filename: null }];
+    if (!coverImage && req.body.coverImage === null) coverImage = [{ filename: null }];
+    // get author
+    const author = req.body.author ? req.body.author : req.params.author;
+    const profile = await ProfileLogic.upsertProfile({
+      author,
+      biography,
+      preferredChainName,
+      referrer,
+      location,
+      signature,
+      challenge,
+      image,
+      coverImage,
+    });
+    return res.send(profile);
+  },
+);
 // Image routes
 /**
  * @swagger
@@ -136,7 +143,7 @@ router.post('/:author', upload.fields([{ name: 'image', maxCount: 1 }, { name: '
  *               type: string
  *               format: binary
  */
-router.get('/image/:author', async (req, res) => {
+router.get("/image/:author", async (req, res) => {
   const imagePath = await ProfileLogic.getImagePath(req.params.author);
   return imagePath ? res.sendFile(imagePath) : res.sendStatus(404);
 });

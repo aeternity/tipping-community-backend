@@ -1,4 +1,4 @@
-import express from 'express';
+import express from "express";
 
 const { Router } = express;
 const router = new Router();
@@ -32,5 +32,5 @@ const router = new Router();
  *               type: string
  *               format: binary
  */
-router.get('/image/:filename', (req, res) => res.redirect(301, `/images/${req.params.filename}`));
+router.get("/image/:filename", (req, res) => res.redirect(301, `/images/${req.params.filename}`));
 export default router;

@@ -1,5 +1,5 @@
-import CacheLogic from '../../cache/logic/cacheLogic.js';
-import cache from '../../cache/utils/cache.js';
+import CacheLogic from "../../cache/logic/cacheLogic.js";
+import cache from "../../cache/utils/cache.js";
 
 export default (class TokenCacheLogic {
   static async deliverTokenInfo(req, res) {
@@ -7,24 +7,26 @@ export default (class TokenCacheLogic {
   }
 
   static async indexTokenInfo(req, res) {
-    if (!req.body.address) return res.status(400).send('address body attribute missing');
+    if (!req.body.address) return res.status(400).send("address body attribute missing");
     try {
       await CacheLogic.getTokenMetaInfo(req.body.address);
-      await cache.del(['getTokenInfos']);
+      await cache.del(["getTokenInfos"]);
       await CacheLogic.getTokenInfos();
-      return res.send('OK');
+      return res.send("OK");
     } catch (e) {
       return res.status(500).send(e.message);
     }
   }
 
   static async tokenAccountBalance(req, res) {
-    if (!req.query.address) return res.status(400).send('address query missing');
+    if (!req.query.address) return res.status(400).send("address query missing");
     const tokenBalances = await CacheLogic.getTokenBalances(req.query.address);
-    return res.send(await tokenBalances.reduce(async (promiseAcc, address) => {
-      const acc = await promiseAcc;
-      acc[address] = await CacheLogic.getTokenMetaInfo(address);
-      return acc;
-    }, Promise.resolve({})));
+    return res.send(
+      await tokenBalances.reduce(async (promiseAcc, address) => {
+        const acc = await promiseAcc;
+        acc[address] = await CacheLogic.getTokenMetaInfo(address);
+        return acc;
+      }, Promise.resolve({})),
+    );
   }
 });

@@ -1,5 +1,5 @@
-import express from 'express';
-import StatsLogic from '../logic/statsLogic.js';
+import express from "express";
+import StatsLogic from "../logic/statsLogic.js";
 
 const { Router } = express;
 const router = new Router();
@@ -18,7 +18,7 @@ const router = new Router();
  *             schema:
  *               type: object
  */
-router.get('/', async (req, res) => {
+router.get("/", async (req, res) => {
   const stats = await StatsLogic.fetchStats();
   return stats ? res.send(stats) : res.sendStatus(404);
 });
@@ -44,7 +44,7 @@ router.get('/', async (req, res) => {
  *             schema:
  *               type: object
  */
-router.get('/sender', async (req, res) => {
+router.get("/sender", async (req, res) => {
   const stats = await StatsLogic.fetchUserStats(req.query.address);
   return stats ? res.send(stats) : res.sendStatus(404);
 });
@@ -63,5 +63,5 @@ router.get('/sender', async (req, res) => {
  *             schema:
  *               type: object
  */
-router.get('/marketing', async (req, res) => res.send(await StatsLogic.fetchMarketingStats()));
+router.get("/marketing", async (req, res) => res.send(await StatsLogic.fetchMarketingStats()));
 export default router;

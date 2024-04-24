@@ -1,13 +1,13 @@
-import express from 'express';
-import CacheLogic from '../logic/cacheLogic.js';
-import ProfileLogic from '../../profile/logic/profileLogic.js';
-import EventLogic from '../../event/logic/eventLogic.js';
+import express from "express";
+import CacheLogic from "../logic/cacheLogic.js";
+import ProfileLogic from "../../profile/logic/profileLogic.js";
+import EventLogic from "../../event/logic/eventLogic.js";
 
 const { Router } = express;
 const router = new Router();
 const wordbazaarMiddleware = (req, res, next) => {
   if (process.env.WORD_REGISTRY_CONTRACT) return next();
-  return res.status(403).send('NotImplemented');
+  return res.status(403).send("NotImplemented");
 };
 /**
  * @swagger
@@ -26,7 +26,7 @@ const wordbazaarMiddleware = (req, res, next) => {
  *               items:
  *                 type: object
  */
-router.get('/chainNames', async (req, res) => {
+router.get("/chainNames", async (req, res) => {
   const profiles = await ProfileLogic.getAllProfiles();
   return res.send(await CacheLogic.fetchChainNames(profiles));
 });
@@ -58,7 +58,7 @@ router.get('/chainNames', async (req, res) => {
  *                       type: number
  *                       format: float
  */
-router.get('/price', async (req, res) => res.send(await CacheLogic.fetchPrice()));
+router.get("/price", async (req, res) => res.send(await CacheLogic.fetchPrice()));
 /**
  * @swagger
  * /cache/events:
@@ -96,7 +96,7 @@ router.get('/price', async (req, res) => res.send(await CacheLogic.fetchPrice())
  *               items:
  *                 $ref: '#/components/schemas/Event'
  */
-router.get('/events', async (req, res) => {
+router.get("/events", async (req, res) => {
   res.send(await EventLogic.getAllEvents(req.query.address, req.query.event, req.query.limit));
 });
 /**
@@ -111,7 +111,7 @@ router.get('/events', async (req, res) => {
  *       200:
  *         description: OK
  */
-router.get('/invalidate/tips', async (req, res) => res.send({ status: 'OK' }));
+router.get("/invalidate/tips", async (req, res) => res.send({ status: "OK" }));
 /**
  * @swagger
  * /cache/invalidate/oracle:
@@ -123,9 +123,9 @@ router.get('/invalidate/tips', async (req, res) => res.send({ status: 'OK' }));
  *       200:
  *         description: OK
  */
-router.get('/invalidate/oracle', async (req, res) => {
+router.get("/invalidate/oracle", async (req, res) => {
   await CacheLogic.invalidateOracle();
-  return res.send({ status: 'OK' });
+  return res.send({ status: "OK" });
 });
 /**
  * @swagger
@@ -139,7 +139,7 @@ router.get('/invalidate/oracle', async (req, res) => {
  *       200:
  *         description: OK
  */
-router.get('/invalidate/events', async (req, res) => res.send({ status: 'OK' }));
+router.get("/invalidate/events", async (req, res) => res.send({ status: "OK" }));
 /**
  * @swagger
  * /cache/invalidate/token/{token}:
@@ -158,10 +158,10 @@ router.get('/invalidate/events', async (req, res) => res.send({ status: 'OK' }))
  *       200:
  *         description: OK
  */
-router.get('/invalidate/token/:token', async (req, res) => {
+router.get("/invalidate/token/:token", async (req, res) => {
   await CacheLogic.invalidateTokenCache(req.params.token);
   await CacheLogic.getTokenAccounts(req.params.token); // wait for cache update to let frontend know data availability
-  if (res) res.send({ status: 'OK' });
+  if (res) res.send({ status: "OK" });
 });
 /**
  * @swagger
@@ -181,9 +181,9 @@ router.get('/invalidate/token/:token', async (req, res) => {
  *       200:
  *         description: OK
  */
-router.get('/invalidate/wordSale/:wordSale', wordbazaarMiddleware, async (req, res) => {
+router.get("/invalidate/wordSale/:wordSale", wordbazaarMiddleware, async (req, res) => {
   await CacheLogic.invalidateWordSaleCache(req.params.wordSale);
-  res.send({ status: 'OK' });
+  res.send({ status: "OK" });
 });
 /**
  * @swagger
@@ -196,9 +196,9 @@ router.get('/invalidate/wordSale/:wordSale', wordbazaarMiddleware, async (req, r
  *       200:
  *         description: OK
  */
-router.get('/invalidate/wordRegistry', wordbazaarMiddleware, async (req, res) => {
+router.get("/invalidate/wordRegistry", wordbazaarMiddleware, async (req, res) => {
   await CacheLogic.invalidateWordRegistryCache();
-  res.send({ status: 'OK' });
+  res.send({ status: "OK" });
 });
 /**
  * @swagger
@@ -218,9 +218,9 @@ router.get('/invalidate/wordRegistry', wordbazaarMiddleware, async (req, res) =>
  *       200:
  *         description: OK
  */
-router.get('/invalidate/wordSaleVotes/:wordSale', wordbazaarMiddleware, async (req, res) => {
+router.get("/invalidate/wordSaleVotes/:wordSale", wordbazaarMiddleware, async (req, res) => {
   await CacheLogic.invalidateWordSaleVotesCache(req.params.wordSale);
-  res.send({ status: 'OK' });
+  res.send({ status: "OK" });
 });
 /**
  * @swagger
@@ -240,8 +240,8 @@ router.get('/invalidate/wordSaleVotes/:wordSale', wordbazaarMiddleware, async (r
  *       200:
  *         description: OK
  */
-router.get('/invalidate/wordSaleVoteState/:vote', wordbazaarMiddleware, async (req, res) => {
+router.get("/invalidate/wordSaleVoteState/:vote", wordbazaarMiddleware, async (req, res) => {
   await CacheLogic.invalidateWordSaleVoteStateCache(req.params.vote);
-  res.send({ status: 'OK' });
+  res.send({ status: "OK" });
 });
 export default router;

@@ -1,17 +1,16 @@
-import BigNumber from 'bignumber.js';
-import models from '../../../models/index.js';
-import NotificationLogic from '../../notification/logic/notificationLogic.js';
-import cache from '../../cache/utils/cache.js';
-import TipLogic from '../../tip/logic/tipLogic.js';
-import MdwLogic from '../../aeternity/logic/mdwLogic.js';
-import { NOTIFICATION_TYPES } from '../../notification/constants/notification.js';
+import BigNumber from "bignumber.js";
+import models from "../../../models/index.js";
+import NotificationLogic from "../../notification/logic/notificationLogic.js";
+import cache from "../../cache/utils/cache.js";
+import TipLogic from "../../tip/logic/tipLogic.js";
+import MdwLogic from "../../aeternity/logic/mdwLogic.js";
+import { NOTIFICATION_TYPES } from "../../notification/constants/notification.js";
 
 const { Comment, Profile } = models;
 const CommentLogic = {
   async addItem(tipId, text, author, signature, challenge, parentId) {
-    const parentComment = (typeof parentId !== 'undefined' && parentId !== '')
-      ? await Comment.findOne({ where: { id: parentId } }) : null;
-    if (parentComment === null && typeof parentId !== 'undefined' && parentId !== '') {
+    const parentComment = typeof parentId !== "undefined" && parentId !== "" ? await Comment.findOne({ where: { id: parentId } }) : null;
+    if (parentComment === null && typeof parentId !== "undefined" && parentId !== "") {
       return {
         error: `Could not find parent comment with id ${parentId}`,
       };
@@ -25,17 +24,22 @@ const CommentLogic = {
       // get balances for user on all tokens
       const userToken = await MdwLogic.fetchTokenBalancesForAddress(author).catch(() => []);
       const requiredToken = parsedTip.aggregation.totalTokenAmount.map(({ token }) => token);
-      if (!userToken.some(({ amount, contract_id: contractId }) => new BigNumber(amount).gt('0') && requiredToken.includes(contractId))) {
+      if (!userToken.some(({ amount, contract_id: contractId }) => new BigNumber(amount).gt("0") && requiredToken.includes(contractId))) {
         return {
-          error: 'The commenting user needs to own at least one token the tip has been tipped or retipped with.',
+          error: "The commenting user needs to own at least one token the tip has been tipped or retipped with.",
         };
       }
     }
     const entry = await Comment.create({
-      tipId, text, author, signature, challenge, parentId,
+      tipId,
+      text,
+      author,
+      signature,
+      challenge,
+      parentId,
     });
     // Kill stats cache
-    await cache.del(['StaticLogic.getStats']);
+    await cache.del(["StaticLogic.getStats"]);
     // Create notification
     await NotificationLogic.add[NOTIFICATION_TYPES.COMMENT_ON_TIP](relevantTip.sender, entry.author, entry.id, relevantTip.id);
     if (parentComment !== null) {
@@ -53,46 +57,58 @@ const CommentLogic = {
   async fetchCommentsForAuthor(author) {
     return Comment.findAll({
       where: { author },
-      include: [{
-        model: Comment,
-        as: 'descendents',
-        hierarchy: true,
-      }, Profile],
-    }).then(comments => comments.map(comment => comment.toJSON()));
+      include: [
+        {
+          model: Comment,
+          as: "descendents",
+          hierarchy: true,
+        },
+        Profile,
+      ],
+    }).then((comments) => comments.map((comment) => comment.toJSON()));
   },
   async fetchSingleComment(commentId) {
     return Comment.findOne({
       where: { id: commentId },
-      include: [{
-        model: Comment,
-        as: 'descendents',
-        hierarchy: true,
-      }, Profile],
-    }).then(result => (result ? result.toJSON() : null));
+      include: [
+        {
+          model: Comment,
+          as: "descendents",
+          hierarchy: true,
+        },
+        Profile,
+      ],
+    }).then((result) => (result ? result.toJSON() : null));
   },
   async fetchCommentsForTip(tipId) {
     return Comment.findAll({
       where: { tipId },
-      include: [{
-        model: Comment,
-        as: 'descendents',
-        hierarchy: true,
-      }, Profile],
-    }).then(comments => comments.map(comment => comment.toJSON()));
+      include: [
+        {
+          model: Comment,
+          as: "descendents",
+          hierarchy: true,
+        },
+        Profile,
+      ],
+    }).then((comments) => comments.map((comment) => comment.toJSON()));
   },
   async updateItem(req, res) {
     const { text, author, hidden } = req.body;
-    if (!author) return res.status(400).send({ err: 'Author required' });
-    if (!text && !hidden) return res.status(400).send({ err: 'Missing at least one updatable field' });
-    await Comment.update({
-      ...text && { text },
-      ...hidden && { hidden },
-    }, { where: { id: req.params.id }, raw: true });
+    if (!author) return res.status(400).send({ err: "Author required" });
+    if (!text && !hidden) return res.status(400).send({ err: "Missing at least one updatable field" });
+    await Comment.update(
+      {
+        ...(text && { text }),
+        ...(hidden && { hidden }),
+      },
+      { where: { id: req.params.id }, raw: true },
+    );
     const result = await Comment.findOne({ where: { id: req.params.id }, raw: true });
     return result ? res.send(result) : res.sendStatus(404);
   },
   async verifyAuthor(req, res, next) {
-    if (!req.body.author) return res.status(400).send({ err: 'Author required' });
+    if (!req.body.author) return res.status(400).send({ err: "Author required" });
     const result = await Comment.findOne({ where: { id: req.params.id, author: req.body.author }, raw: true });
     return result ? next() : res.status(404).send({ err: `Could not find comment with id ${req.params.id} and ${req.body.author} as author` });
   },

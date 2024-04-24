@@ -1,5 +1,5 @@
-import express from 'express';
-import TipTracing from '../logic/tipTracingLogic.js';
+import express from "express";
+import TipTracing from "../logic/tipTracingLogic.js";
 
 const { Router } = express;
 const router = new Router();
@@ -31,7 +31,7 @@ const router = new Router();
  *             schema:
  *              $ref: '#/components/schemas/Trace'
  */
-router.get('/backend', TipTracing.getAllTraces);
+router.get("/backend", TipTracing.getAllTraces);
 /**
  * @swagger
  * /tracing/blockchain:
@@ -54,5 +54,5 @@ router.get('/backend', TipTracing.getAllTraces);
  *             schema:
  *              $ref: '#/components/schemas/Trace'
  */
-router.get('/blockchain', TipTracing.fetchBlockchainTrace);
+router.get("/blockchain", TipTracing.fetchBlockchainTrace);
 export default router;

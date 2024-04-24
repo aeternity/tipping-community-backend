@@ -13,26 +13,30 @@ The automatically updated docker images can be found here: https://hub.docker.co
 ### Hosted setup
 
 Build the setup
+
 ```
 docker-compose up -d
 ```
 
 ### Local Setup
 
-*Note: Node v14 is recommended.*
+_Note: Node v14 is recommended._
 
 #### Install dependencies
+
 ```bash
 npm i
 ```
 
 #### Start a database & redis
+
 ```bash
 docker run --rm --name ipfs -p 5001:5001 -d ipfs/go-ipfs
 docker run --name superhero-postgres -e POSTGRES_PASSWORD=postgres -e POSTGRES_USER=postgres -e POSTGRES_DB=superhero -p5432:5432 -d postgres
 ```
 
 #### Copy Env
+
 ```bash
 cp .env.example .env
 ```
@@ -42,6 +46,7 @@ cp .env.example .env
 ```bash
 npm run db:create
 ```
+
 #### Start server
 
 ```bash

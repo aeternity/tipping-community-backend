@@ -1,5 +1,5 @@
 const PINNED_CONTENT_TYPES = {
-  TIP: 'TIP',
+  TIP: "TIP",
 };
 export { PINNED_CONTENT_TYPES };
 export default {

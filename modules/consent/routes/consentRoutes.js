@@ -1,7 +1,7 @@
-import express from 'express';
-import ConsentLogic from '../logic/consentLogic.js';
-import { CONSENT_STATES } from '../constants/consentStates.js';
-import authenticationLogic from '../../authentication/logic/authenticationLogic.js';
+import express from "express";
+import ConsentLogic from "../logic/consentLogic.js";
+import { CONSENT_STATES } from "../constants/consentStates.js";
+import authenticationLogic from "../../authentication/logic/authenticationLogic.js";
 
 const { Router } = express;
 const { signatureAuth } = authenticationLogic;
@@ -49,7 +49,7 @@ const router = new Router();
  *                  items:
  *                    $ref: '#/components/schemas/Consent'
  */
-router.get('/:author', signatureAuth, async (req, res) => {
+router.get("/:author", signatureAuth, async (req, res) => {
   const { author } = req.params;
   res.send(await ConsentLogic.getAllItemsForUser(author));
 });
@@ -93,7 +93,7 @@ router.get('/:author', signatureAuth, async (req, res) => {
  *                - $ref: '#/components/schemas/SignatureResponse'
  *                - $ref: '#/components/schemas/Consent'
  */
-router.get('/:author/:scope', signatureAuth, async (req, res) => {
+router.get("/:author/:scope", signatureAuth, async (req, res) => {
   const { author, scope } = req.params;
   const result = await ConsentLogic.getSingleItem(author, scope);
   return result ? res.send(result.toJSON()) : res.sendStatus(404);
@@ -135,7 +135,7 @@ router.get('/:author/:scope', signatureAuth, async (req, res) => {
  *                - $ref: '#/components/schemas/SignatureResponse'
  *                - $ref: '#/components/schemas/Consent'
  */
-router.post('/:author/:scope', signatureAuth, async (req, res) => {
+router.post("/:author/:scope", signatureAuth, async (req, res) => {
   const { status, signature, challenge } = req.body;
   const { author, scope } = req.params;
   if (Object.values(CONSENT_STATES).indexOf(status) === -1) {
@@ -180,7 +180,7 @@ router.post('/:author/:scope', signatureAuth, async (req, res) => {
  *                - $ref: '#/components/schemas/SignatureResponse'
  *                - $ref: '#/components/schemas/Consent'
  */
-router.delete('/:author/:scope', signatureAuth, async (req, res) => {
+router.delete("/:author/:scope", signatureAuth, async (req, res) => {
   const { author, scope } = req.params;
   const result = await ConsentLogic.removeItem(author, scope);
   return result === 1 ? res.sendStatus(204) : res.sendStatus(404);

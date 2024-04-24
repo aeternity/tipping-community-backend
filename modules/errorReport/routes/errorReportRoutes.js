@@ -1,6 +1,6 @@
-import express from 'express';
-import ErrorReportLogic from '../logic/errorReportLogic.js';
-import authenticationLogic from '../../authentication/logic/authenticationLogic.js';
+import express from "express";
+import ErrorReportLogic from "../logic/errorReportLogic.js";
+import authenticationLogic from "../../authentication/logic/authenticationLogic.js";
 
 const { Router } = express;
 const { basicAuth } = authenticationLogic;
@@ -31,7 +31,7 @@ const router = new Router();
  *               items:
  *                 $ref: '#/components/schemas/ErrorReport'
  */
-router.get('/', basicAuth, async (req, res) => {
+router.get("/", basicAuth, async (req, res) => {
   res.send(await ErrorReportLogic.getAllReports());
 });
 /**
@@ -54,12 +54,15 @@ router.get('/', basicAuth, async (req, res) => {
  *             schema:
  *               $ref: '#/components/schemas/ErrorReport'
  */
-router.post('/', async (req, res) => {
-  const {
-    appVersion, browser, error, time, platform, description,
-  } = req.body;
+router.post("/", async (req, res) => {
+  const { appVersion, browser, error, time, platform, description } = req.body;
   const result = await ErrorReportLogic.addItem({
-    appVersion, browser, error, time, platform, description,
+    appVersion,
+    browser,
+    error,
+    time,
+    platform,
+    description,
   });
   return res.send(result);
 });

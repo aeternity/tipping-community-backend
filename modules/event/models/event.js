@@ -1,54 +1,59 @@
-import { EVENT_TYPES } from '../constants/eventTypes.js';
+import { EVENT_TYPES } from "../constants/eventTypes.js";
 
-export default (sequelize, DataTypes) => sequelize.define('Event', {
-  // attributes
-  name: {
-    type: DataTypes.ENUM({
-      values: Object.values(EVENT_TYPES),
-    }),
-    allowNull: false,
-  },
-  hash: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
-  contract: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
-  height: {
-    type: DataTypes.INTEGER,
-    allowNull: false,
-  },
-  addresses: {
-    type: DataTypes.ARRAY(DataTypes.STRING),
-    allowNull: false,
-  },
-  url: {
-    type: DataTypes.TEXT,
-    allowNull: true,
-  },
-  amount: {
-    type: DataTypes.STRING,
-    allowNull: true,
-  },
-  nonce: {
-    type: DataTypes.INTEGER,
-    allowNull: true,
-  },
-  time: {
-    type: DataTypes.BIGINT,
-    allowNull: true,
-  },
-  data: {
-    type: DataTypes.JSONB,
-    allowNull: false,
-  },
-}, {
-  indexes: [
+export default (sequelize, DataTypes) =>
+  sequelize.define(
+    "Event",
     {
-      fields: ['name', 'url', 'height', 'time'],
+      // attributes
+      name: {
+        type: DataTypes.ENUM({
+          values: Object.values(EVENT_TYPES),
+        }),
+        allowNull: false,
+      },
+      hash: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
+      contract: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
+      height: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+      },
+      addresses: {
+        type: DataTypes.ARRAY(DataTypes.STRING),
+        allowNull: false,
+      },
+      url: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+      },
+      amount: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      nonce: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+      },
+      time: {
+        type: DataTypes.BIGINT,
+        allowNull: true,
+      },
+      data: {
+        type: DataTypes.JSONB,
+        allowNull: false,
+      },
     },
-  ],
-  timestamps: true,
-});
+    {
+      indexes: [
+        {
+          fields: ["name", "url", "height", "time"],
+        },
+      ],
+      timestamps: true,
+    },
+  );

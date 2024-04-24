@@ -1,5 +1,5 @@
-import express from 'express';
-import HealthLogic from '../logic/healthLogic.js';
+import express from "express";
+import HealthLogic from "../logic/healthLogic.js";
 
 const { Router } = express;
 const router = new Router();
@@ -35,14 +35,18 @@ const router = new Router();
  *                allHealthy:
  *                  type: boolean
  */
-router.get('/backend', async (req, res) => {
+router.get("/backend", async (req, res) => {
   const dbHealth = await HealthLogic.checkDBHealth();
   const ipfsHealth = await HealthLogic.checkIPFSHealth();
   const redisHealth = await HealthLogic.checkRedisHealth();
   const aeHealth = await HealthLogic.checkAEClient();
   const allHealthy = dbHealth && ipfsHealth && redisHealth && aeHealth;
   res.status(allHealthy ? 200 : 500).send({
-    dbHealth, ipfsHealth, redisHealth, aeHealth, allHealthy,
+    dbHealth,
+    ipfsHealth,
+    redisHealth,
+    aeHealth,
+    allHealthy,
   });
 });
 export default router;

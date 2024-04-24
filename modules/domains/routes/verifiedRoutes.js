@@ -1,5 +1,5 @@
-import express from 'express';
-import CacheLogic from '../../cache/logic/cacheLogic.js';
+import express from "express";
+import CacheLogic from "../../cache/logic/cacheLogic.js";
 
 const { Router } = express;
 const router = new Router();
@@ -27,7 +27,7 @@ const router = new Router();
  *                 type: string
  *                 format: url
  */
-router.get('/', async (req, res) => {
+router.get("/", async (req, res) => {
   const allClaimedDomains = await CacheLogic.getOracleAllClaimedUrls();
   return res.send(allClaimedDomains);
 });

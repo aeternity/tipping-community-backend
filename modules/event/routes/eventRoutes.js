@@ -1,5 +1,5 @@
-import express from 'express';
-import EventLogic from '../logic/eventLogic.js';
+import express from "express";
+import EventLogic from "../logic/eventLogic.js";
 
 const { Router } = express;
 const router = new Router();
@@ -39,7 +39,7 @@ const router = new Router();
  *               items:
  *                 $ref: '#/components/schemas/Event'
  */
-router.get('/', async (req, res) => {
+router.get("/", async (req, res) => {
   res.send(await EventLogic.getAllEvents(req.params.address, req.params.event, req.params.limit));
 });
 export default router;

@@ -1,9 +1,9 @@
-import { create } from 'ipfs-http-client';
+import { create } from "ipfs-http-client";
 
 let node;
 const ipfs = {
   init() {
-    if (!process.env.IPFS_URL) throw new Error('IPFS_URL is not set');
+    if (!process.env.IPFS_URL) throw new Error("IPFS_URL is not set");
     node = create(process.env.IPFS_URL);
   },
   async getCoreVitals() {
@@ -22,7 +22,7 @@ const ipfs = {
   async checkFileExists(hash) {
     const result = await Promise.race([
       node.files.stat(`/ipfs/${hash}`),
-      new Promise(resolve => {
+      new Promise((resolve) => {
         setTimeout(() => {
           resolve(null);
         }, 1000);

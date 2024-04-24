@@ -1,35 +1,40 @@
-import { CONSENT_STATES } from '../constants/consentStates.js';
+import { CONSENT_STATES } from "../constants/consentStates.js";
 
-export default (sequelize, DataTypes) => sequelize.define('Consent', {
-  // attributes
-  author: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
-  scope: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
-  status: {
-    type: DataTypes.ENUM({
-      values: Object.values(CONSENT_STATES),
-    }),
-    allowNull: false,
-  },
-  signature: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
-  challenge: {
-    type: DataTypes.TEXT,
-    allowNull: false,
-  },
-}, {
-  indexes: [
+export default (sequelize, DataTypes) =>
+  sequelize.define(
+    "Consent",
     {
-      unique: true,
-      fields: ['author', 'scope'],
+      // attributes
+      author: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
+      scope: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
+      status: {
+        type: DataTypes.ENUM({
+          values: Object.values(CONSENT_STATES),
+        }),
+        allowNull: false,
+      },
+      signature: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
+      challenge: {
+        type: DataTypes.TEXT,
+        allowNull: false,
+      },
     },
-  ],
-  timestamps: true,
-});
+    {
+      indexes: [
+        {
+          unique: true,
+          fields: ["author", "scope"],
+        },
+      ],
+      timestamps: true,
+    },
+  );

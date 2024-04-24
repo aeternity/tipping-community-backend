@@ -1,7 +1,7 @@
-import express from 'express';
-import PinLogic from '../logic/pinLogic.js';
-import { PINNED_CONTENT_TYPES } from '../constants/contentTypes.js';
-import authenticationLogic from '../../authentication/logic/authenticationLogic.js';
+import express from "express";
+import PinLogic from "../logic/pinLogic.js";
+import { PINNED_CONTENT_TYPES } from "../constants/contentTypes.js";
+import authenticationLogic from "../../authentication/logic/authenticationLogic.js";
 
 const { Router } = express;
 const { signatureAuth } = authenticationLogic;
@@ -35,7 +35,7 @@ const router = new Router();
  *               items:
  *                 $ref: '#/components/schemas/Tip'
  */
-router.get('/:author', async (req, res) => {
+router.get("/:author", async (req, res) => {
   res.send(await PinLogic.getAllItemsPerUser(req.params.author));
 });
 // Restricted api routes
@@ -77,14 +77,16 @@ router.get('/:author', async (req, res) => {
  *                - $ref: '#/components/schemas/SignatureResponse'
  *                - $ref: '#/components/schemas/Pin'
  */
-router.post('/:author', signatureAuth, async (req, res) => {
-  const {
-    entryId, type, signature, challenge,
-  } = req.body;
+router.post("/:author", signatureAuth, async (req, res) => {
+  const { entryId, type, signature, challenge } = req.body;
   const { author } = req.params;
   if (!PINNED_CONTENT_TYPES[type]) return res.status(400).send(`Send type is invalid ${type}`);
   const entry = await PinLogic.addItem({
-    entryId, type, author, signature, challenge,
+    entryId,
+    type,
+    author,
+    signature,
+    challenge,
   });
   return res.send(entry);
 });
@@ -112,7 +114,7 @@ router.post('/:author', signatureAuth, async (req, res) => {
  *               oneOf:
  *                - $ref: '#/components/schemas/SignatureResponse'
  */
-router.delete('/:author', signatureAuth, async (req, res) => {
+router.delete("/:author", signatureAuth, async (req, res) => {
   const result = await PinLogic.removeItem(req.body.entryId, req.params.author, req.body.type);
   return result === 1 ? res.sendStatus(200) : res.sendStatus(404);
 });

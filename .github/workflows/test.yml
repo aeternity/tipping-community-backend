@@ -5,10 +5,10 @@ on:
     branches:
       - main
     tags:
-      - 'v*'
+      - "v*"
   pull_request:
-    branches: [ main ]
-    types: [ opened, synchronize ]
+    branches: [main]
+    types: [opened, synchronize]
 
 jobs:
   docs:
@@ -72,7 +72,7 @@ jobs:
       redis:
         image: redis
         ports:
-        - 6379:6379
+          - 6379:6379
         options: >-
           --health-cmd "redis-cli ping"
           --health-interval 10s

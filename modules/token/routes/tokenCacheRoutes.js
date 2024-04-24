@@ -1,15 +1,15 @@
-import express from 'express';
-import BigNumber from 'bignumber.js';
-import Fuse from 'fuse.js';
-import TokenCacheLogic from '../logic/tokenCacheLogic.js';
-import CacheLogic from '../../cache/logic/cacheLogic.js';
-import searchOptions from '../../cache/constants/searchOptions.js';
+import express from "express";
+import BigNumber from "bignumber.js";
+import Fuse from "fuse.js";
+import TokenCacheLogic from "../logic/tokenCacheLogic.js";
+import CacheLogic from "../../cache/logic/cacheLogic.js";
+import searchOptions from "../../cache/constants/searchOptions.js";
 
 const { Router } = express;
 const router = new Router();
 const wordbazaarMiddleware = (req, res, next) => {
   if (process.env.WORD_REGISTRY_CONTRACT) return next();
-  return res.status(403).send('NotImplemented');
+  return res.status(403).send("NotImplemented");
 };
 /**
  * @swagger
@@ -34,7 +34,7 @@ const wordbazaarMiddleware = (req, res, next) => {
  *               items:
  *                 type: object
  */
-router.get('/tokenInfo', TokenCacheLogic.deliverTokenInfo);
+router.get("/tokenInfo", TokenCacheLogic.deliverTokenInfo);
 /**
  * @swagger
  * /tokenCache/addToken:
@@ -54,7 +54,7 @@ router.get('/tokenInfo', TokenCacheLogic.deliverTokenInfo);
  *       200:
  *         description: OK
  */
-router.post('/addToken', TokenCacheLogic.indexTokenInfo);
+router.post("/addToken", TokenCacheLogic.indexTokenInfo);
 /**
  * @swagger
  * /tokenCache/balances:
@@ -76,7 +76,7 @@ router.post('/addToken', TokenCacheLogic.indexTokenInfo);
  *             schema:
  *               type: object
  */
-router.get('/balances', TokenCacheLogic.tokenAccountBalance);
+router.get("/balances", TokenCacheLogic.tokenAccountBalance);
 /**
  * @swagger
  * /tokenCache/wordRegistry:
@@ -109,37 +109,29 @@ router.get('/balances', TokenCacheLogic.tokenAccountBalance);
  *             schema:
  *               type: object
  */
-router.get('/wordRegistry', wordbazaarMiddleware, async (req, res) => {
+router.get("/wordRegistry", wordbazaarMiddleware, async (req, res) => {
   const limit = 30;
-  const direction = req.query.direction || 'desc';
+  const direction = req.query.direction || "desc";
   let words = await CacheLogic.getWordRegistryAndSaleData();
   if (req.query.ordering) {
     switch (req.query.ordering) {
-      case 'asset':
-        words = direction === 'desc'
-          ? words.sort((a, b) => -a.word.localeCompare(b.word))
-          : words.sort((a, b) => a.word.localeCompare(b.word));
+      case "asset":
+        words = direction === "desc" ? words.sort((a, b) => -a.word.localeCompare(b.word)) : words.sort((a, b) => a.word.localeCompare(b.word));
         break;
-      case 'buyprice':
-        words = direction === 'desc'
-          ? words.sort((a, b) => new BigNumber(b.buyPrice).comparedTo(a.buyPrice))
-          : words.sort((a, b) => new BigNumber(a.buyPrice).comparedTo(b.buyPrice));
+      case "buyprice":
+        words = direction === "desc" ? words.sort((a, b) => new BigNumber(b.buyPrice).comparedTo(a.buyPrice)) : words.sort((a, b) => new BigNumber(a.buyPrice).comparedTo(b.buyPrice));
         break;
-      case 'sellprice':
-        words = direction === 'desc'
-          ? words.sort((a, b) => new BigNumber(b.sellPrice).comparedTo(a.sellPrice))
-          : words.sort((a, b) => new BigNumber(a.sellPrice).comparedTo(b.sellPrice));
+      case "sellprice":
+        words = direction === "desc" ? words.sort((a, b) => new BigNumber(b.sellPrice).comparedTo(a.sellPrice)) : words.sort((a, b) => new BigNumber(a.sellPrice).comparedTo(b.sellPrice));
         break;
-      case 'supply':
-        words = direction === 'desc'
-          ? words.sort((a, b) => new BigNumber(b.totalSupply).comparedTo(a.totalSupply))
-          : words.sort((a, b) => new BigNumber(a.totalSupply).comparedTo(b.totalSupply));
+      case "supply":
+        words = direction === "desc" ? words.sort((a, b) => new BigNumber(b.totalSupply).comparedTo(a.totalSupply)) : words.sort((a, b) => new BigNumber(a.totalSupply).comparedTo(b.totalSupply));
         break;
       default:
     }
   }
   if (req.query.search) {
-    words = new Fuse(words, searchOptions).search(req.query.search).map(result => {
+    words = new Fuse(words, searchOptions).search(req.query.search).map((result) => {
       const { item } = result;
       item.searchScore = result.score;
       return item;
@@ -171,7 +163,7 @@ router.get('/wordRegistry', wordbazaarMiddleware, async (req, res) => {
  *             schema:
  *               type: object
  */
-router.get('/wordSale/:contractAddress', wordbazaarMiddleware, async (req, res) => res.send(await CacheLogic.getWordSaleDetails(req.params.contractAddress)));
+router.get("/wordSale/:contractAddress", wordbazaarMiddleware, async (req, res) => res.send(await CacheLogic.getWordSaleDetails(req.params.contractAddress)));
 /**
  * @swagger
  * /tokenCache/priceHistory/{contractAddress}:
@@ -193,7 +185,7 @@ router.get('/wordSale/:contractAddress', wordbazaarMiddleware, async (req, res) 
  *             schema:
  *               type: object
  */
-router.get('/priceHistory/:contractAddress', wordbazaarMiddleware, async (req, res) => res.send(await CacheLogic.wordPriceHistory(req.params.contractAddress)));
+router.get("/priceHistory/:contractAddress", wordbazaarMiddleware, async (req, res) => res.send(await CacheLogic.wordPriceHistory(req.params.contractAddress)));
 /**
  * @swagger
  * /tokenCache/wordSaleByToken/{contractAddress}:
@@ -215,9 +207,9 @@ router.get('/priceHistory/:contractAddress', wordbazaarMiddleware, async (req, r
  *             schema:
  *               type: object
  */
-router.get('/wordSaleByToken/:contractAddress', wordbazaarMiddleware, async (req, res) => {
+router.get("/wordSaleByToken/:contractAddress", wordbazaarMiddleware, async (req, res) => {
   const data = await CacheLogic.wordSaleDetailsByToken(req.params.contractAddress);
-  if (!data) return res.status(404).send('no word sale information for address');
+  if (!data) return res.status(404).send("no word sale information for address");
   return res.send(data);
 });
 /**
@@ -241,5 +233,5 @@ router.get('/wordSaleByToken/:contractAddress', wordbazaarMiddleware, async (req
  *             schema:
  *               type: object
  */
-router.get('/wordSaleVotesDetails/:contractAddress', wordbazaarMiddleware, async (req, res) => res.send(await CacheLogic.wordSaleVotesDetails(req.params.contractAddress)));
+router.get("/wordSaleVotesDetails/:contractAddress", wordbazaarMiddleware, async (req, res) => res.send(await CacheLogic.wordSaleVotesDetails(req.params.contractAddress)));
 export default router;

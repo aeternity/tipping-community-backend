@@ -1,10 +1,8 @@
-import models from '../../../models/index.js';
+import models from "../../../models/index.js";
 
 const { ErrorReport } = models;
 const ErrorReportLogic = {
-  async addItem({
-    appVersion, browser, error, time, platform, description,
-  }) {
+  async addItem({ appVersion, browser, error, time, platform, description }) {
     return ErrorReport.create({
       appVersion,
       browser,

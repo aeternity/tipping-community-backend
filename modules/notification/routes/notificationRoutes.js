@@ -1,6 +1,6 @@
-import express from 'express';
-import NotificationLogic from '../logic/notificationLogic.js';
-import authenticationLogic from '../../authentication/logic/authenticationLogic.js';
+import express from "express";
+import NotificationLogic from "../logic/notificationLogic.js";
+import authenticationLogic from "../../authentication/logic/authenticationLogic.js";
 
 const { Router } = express;
 const { signatureAuth } = authenticationLogic;
@@ -48,7 +48,7 @@ const router = new Router();
  *                   items:
  *                     $ref: '#/components/schemas/Notification'
  */
-router.get('/user/:author', signatureAuth, async (req, res) => {
+router.get("/user/:author", signatureAuth, async (req, res) => {
   const { author } = req.params;
   const allEntries = await NotificationLogic.getForUser(author);
   return res.send(allEntries);
@@ -93,11 +93,11 @@ router.get('/user/:author', signatureAuth, async (req, res) => {
  *                 - $ref: '#/components/schemas/SignatureResponse'
  *                 - $ref: '#/components/schemas/Notification'
  */
-router.post('/', signatureAuth, async (req, res) => {
+router.post("/", signatureAuth, async (req, res) => {
   const { ids, status } = req.body;
-  if (!ids || !status) return res.status(400).send('Missing required field ids or status');
+  if (!ids || !status) return res.status(400).send("Missing required field ids or status");
   const result = await NotificationLogic.bulkUpdateNotificationStatus(ids, status);
-  return res.send(result.map(notification => notification.toJSON().id));
+  return res.send(result.map((notification) => notification.toJSON().id));
 });
 /**
  * @swagger
@@ -141,7 +141,7 @@ router.post('/', signatureAuth, async (req, res) => {
  *                 - $ref: '#/components/schemas/SignatureResponse'
  *                 - $ref: '#/components/schemas/Notification'
  */
-router.post('/:notificationId', signatureAuth, async (req, res) => {
+router.post("/:notificationId", signatureAuth, async (req, res) => {
   const { notificationId } = req.params;
   const { status } = req.body;
   return res.send(await NotificationLogic.updateNotificationState(notificationId, status));

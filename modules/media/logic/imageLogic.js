@@ -1,6 +1,6 @@
-import fs from 'fs';
-import path from 'path';
-import { IMAGE_DIRECTORY } from '../constants/paths.js';
+import fs from "fs";
+import path from "path";
+import { IMAGE_DIRECTORY } from "../constants/paths.js";
 
 const ImageLogic = {
   init() {

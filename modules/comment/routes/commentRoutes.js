@@ -1,6 +1,6 @@
-import express from 'express';
-import CommentLogic from '../logic/commentLogic.js';
-import authenticationLogic from '../../authentication/logic/authenticationLogic.js';
+import express from "express";
+import CommentLogic from "../logic/commentLogic.js";
+import authenticationLogic from "../../authentication/logic/authenticationLogic.js";
 
 const { Router } = express;
 const { signatureAuth } = authenticationLogic;
@@ -33,7 +33,7 @@ const router = new Router();
  *             schema:
  *              $ref: '#/components/schemas/Comment'
  */
-router.get('/api/:id', async (req, res) => {
+router.get("/api/:id", async (req, res) => {
   const result = await CommentLogic.fetchSingleComment(req.params.id);
   return result ? res.send(result) : res.sendStatus(404);
 });
@@ -60,7 +60,7 @@ router.get('/api/:id', async (req, res) => {
  *               items:
  *                 $ref: '#/components/schemas/Comment'
  */
-router.get('/api/tip/:tipId', async (req, res) => {
+router.get("/api/tip/:tipId", async (req, res) => {
   res.send(await CommentLogic.fetchCommentsForTip(req.params.tipId));
 });
 /**
@@ -86,7 +86,7 @@ router.get('/api/tip/:tipId', async (req, res) => {
  *               items:
  *                 $ref: '#/components/schemas/Comment'
  */
-router.get('/api/author/:author', async (req, res) => {
+router.get("/api/author/:author", async (req, res) => {
   res.send(await CommentLogic.fetchCommentsForAuthor(req.params.author));
 });
 // Restricted api routes
@@ -116,10 +116,8 @@ router.get('/api/author/:author', async (req, res) => {
  *                - $ref: '#/components/schemas/Comment'
  *                - $ref: '#/components/schemas/SignatureResponse'
  */
-router.post('/api', signatureAuth, async (req, res) => {
-  const {
-    tipId, text, author, signature, challenge, parentId,
-  } = req.body;
+router.post("/api", signatureAuth, async (req, res) => {
+  const { tipId, text, author, signature, challenge, parentId } = req.body;
   const result = await CommentLogic.addItem(tipId, text, author, signature, challenge, parentId);
   res.status(result.error ? 400 : 200).send(result);
 });
@@ -146,7 +144,7 @@ router.post('/api', signatureAuth, async (req, res) => {
  *             schema:
  *               $ref: '#/components/schemas/SignatureResponse'
  */
-router.delete('/api/:id', signatureAuth, CommentLogic.verifyAuthor, async (req, res) => {
+router.delete("/api/:id", signatureAuth, CommentLogic.verifyAuthor, async (req, res) => {
   const result = await CommentLogic.removeItem(req.params.id);
   res.send(result === 1 ? res.sendStatus(200) : res.sendStatus(404));
 });

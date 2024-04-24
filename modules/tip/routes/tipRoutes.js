@@ -1,6 +1,6 @@
-import express from 'express';
-import TipLogic from '../logic/tipLogic.js';
-import { getTipTopics } from '../../aeternity/utils/tipTopicUtil.js';
+import express from "express";
+import TipLogic from "../logic/tipLogic.js";
+import { getTipTopics } from "../../aeternity/utils/tipTopicUtil.js";
 
 const { Router } = express;
 const router = new Router();
@@ -84,7 +84,7 @@ const router = new Router();
  *               items:
  *                 $ref: '#/components/schemas/Tip'
  */
-router.get('/', async (req, res) => {
+router.get("/", async (req, res) => {
   const tips = await TipLogic.fetchTips(req.query);
   res.send(tips);
 });
@@ -109,7 +109,7 @@ router.get('/', async (req, res) => {
  *             schema:
  *               $ref: '#/components/schemas/Tip'
  */
-router.get('/single/:tipId', async (req, res) => {
+router.get("/single/:tipId", async (req, res) => {
   const tip = await TipLogic.fetchTip(req.params.tipId);
   return tip ? res.send(tip) : res.sendStatus(404);
 });
@@ -137,7 +137,7 @@ router.get('/single/:tipId', async (req, res) => {
  *                   count:
  *                     type: integer
  */
-router.get('/topics', async (req, res) => {
+router.get("/topics", async (req, res) => {
   const tips = await TipLogic.fetchAllLocalTipsWithAggregation();
   res.send(getTipTopics(tips));
 });
@@ -158,7 +158,7 @@ router.get('/topics', async (req, res) => {
  *       200:
  *         description: Returns ok
  */
-router.get('/await/tip/:tipId', async (req, res) => {
+router.get("/await/tip/:tipId", async (req, res) => {
   await TipLogic.awaitTipsUpdated(req.params.tipId);
   res.send({ updated: true });
 });
@@ -179,7 +179,7 @@ router.get('/await/tip/:tipId', async (req, res) => {
  *       200:
  *         description: Returns ok
  */
-router.get('/await/retip/:retipId', async (req, res) => {
+router.get("/await/retip/:retipId", async (req, res) => {
   await TipLogic.awaitTipsUpdated(req.params.retipId, true);
   res.send({ updated: true });
 });

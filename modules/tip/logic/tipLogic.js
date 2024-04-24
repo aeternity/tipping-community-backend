@@ -1,64 +1,58 @@
-import cld from 'cld';
-import AsyncLock from 'async-lock';
-import sequelize$0 from 'sequelize';
-import aeternity from '../../aeternity/logic/aeternity.js';
-import models from '../../../models/index.js';
-import NotificationLogic from '../../notification/logic/notificationLogic.js';
-import queueLogic from '../../queue/logic/queueLogic.js';
-import {
-  COUNT_COMMENTS, AGGREGATION_VIEW, TOTAL_AMOUNT_FOR_ORDER, SCORE, URL_STATS_VIEW,
-} from '../utils/tipAggregation.js';
-import { FILTER_BLACKLIST, FILTER_TOKEN, FILTER_SIMILARITY_SUM } from '../utils/tipFilter.js';
-import { MESSAGES, MESSAGE_QUEUES } from '../../queue/constants/queue.js';
-import { topicsRegex } from '../../aeternity/utils/tipTopicUtil.js';
+import cld from "cld";
+import AsyncLock from "async-lock";
+import sequelize$0 from "sequelize";
+import aeternity from "../../aeternity/logic/aeternity.js";
+import models from "../../../models/index.js";
+import NotificationLogic from "../../notification/logic/notificationLogic.js";
+import queueLogic from "../../queue/logic/queueLogic.js";
+import { COUNT_COMMENTS, AGGREGATION_VIEW, TOTAL_AMOUNT_FOR_ORDER, SCORE, URL_STATS_VIEW } from "../utils/tipAggregation.js";
+import { FILTER_BLACKLIST, FILTER_TOKEN, FILTER_SIMILARITY_SUM } from "../utils/tipFilter.js";
+import { MESSAGES, MESSAGE_QUEUES } from "../../queue/constants/queue.js";
+import { topicsRegex } from "../../aeternity/utils/tipTopicUtil.js";
 
 const { Op } = sequelize$0;
-const {
-  Tip, Retip, LinkPreview, Claim, sequelize,
-} = models;
+const { Tip, Retip, LinkPreview, Claim, sequelize } = models;
 const lock = new AsyncLock();
 const PAGE_LIMIT = 30;
 const awaitTips = { v1: 0 };
 const awaitRetips = { v1: 0 };
 const includes = [
-  { model: Retip, as: 'retips' },
-  { model: LinkPreview, as: 'linkPreview' },
-  { model: Claim, as: 'claim' },
+  { model: Retip, as: "retips" },
+  { model: LinkPreview, as: "linkPreview" },
+  { model: Claim, as: "claim" },
 ];
 const TipLogic = {
   init() {
-    queueLogic.subscribeToMessage(MESSAGE_QUEUES.SCHEDULED_EVENTS, MESSAGES.SCHEDULED_EVENTS.COMMANDS.UPDATE_TIPS_RETIPS_CLAIMS, async message => {
+    queueLogic.subscribeToMessage(MESSAGE_QUEUES.SCHEDULED_EVENTS, MESSAGES.SCHEDULED_EVENTS.COMMANDS.UPDATE_TIPS_RETIPS_CLAIMS, async (message) => {
       await TipLogic.updateTipsRetipsClaimsDB();
       await queueLogic.deleteMessage(MESSAGE_QUEUES.SCHEDULED_EVENTS, message.id);
     });
-    queueLogic.subscribeToMessage(MESSAGE_QUEUES.TIPS, MESSAGES.TIPS.COMMANDS.INSERT_TIP, async message => {
+    queueLogic.subscribeToMessage(MESSAGE_QUEUES.TIPS, MESSAGES.TIPS.COMMANDS.INSERT_TIP, async (message) => {
       if (message.payload) await TipLogic.insertTips([message.payload]);
       else await TipLogic.updateTipsRetipsClaimsDB(true);
       await queueLogic.deleteMessage(MESSAGE_QUEUES.TIPS, message.id);
     });
-    queueLogic.subscribeToMessage(MESSAGE_QUEUES.RETIPS, MESSAGES.RETIPS.COMMANDS.INSERT_RETIP, async message => {
+    queueLogic.subscribeToMessage(MESSAGE_QUEUES.RETIPS, MESSAGES.RETIPS.COMMANDS.INSERT_RETIP, async (message) => {
       if (message.payload) await TipLogic.insertRetips([message.payload]);
       else await TipLogic.updateTipsRetipsClaimsDB(true);
       await queueLogic.deleteMessage(MESSAGE_QUEUES.RETIPS, message.id);
     });
-    queueLogic.subscribeToMessage(MESSAGE_QUEUES.TIPS, MESSAGES.TIPS.COMMANDS.INSERT_CLAIM, async message => {
+    queueLogic.subscribeToMessage(MESSAGE_QUEUES.TIPS, MESSAGES.TIPS.COMMANDS.INSERT_CLAIM, async (message) => {
       await TipLogic.insertClaims([message.payload]);
       await queueLogic.deleteMessage(MESSAGE_QUEUES.TIPS, message.id);
     });
   },
   orderByColumn(ordering) {
     switch (ordering) {
-      case 'hot':
-        return 'score';
-      case 'latest':
-        return 'timestamp';
+      case "hot":
+        return "score";
+      case "latest":
+        return "timestamp";
       default:
         return '"totalAmountForOrder"';
     }
   },
-  async fetchTips({
-    page, blacklist, address, contractVersion, search, language, ordering, token,
-  }) {
+  async fetchTips({ page, blacklist, address, contractVersion, search, language, ordering, token }) {
     const attributes = Object.keys(Tip.rawAttributes).concat([COUNT_COMMENTS, AGGREGATION_VIEW, URL_STATS_VIEW, TOTAL_AMOUNT_FOR_ORDER, SCORE]);
     const whereArguments = [];
     let order = [sequelize.literal(`${TipLogic.orderByColumn(ordering)} DESC`)];
@@ -81,7 +75,7 @@ const TipLogic = {
         whereArguments.push({ topics: { [Op.overlap]: searchTopics } });
       } else {
         whereArguments.push(sequelize.where(FILTER_SIMILARITY_SUM(search), Op.gt, 0.1));
-        attributes.push([FILTER_SIMILARITY_SUM(search), 'searchScore']);
+        attributes.push([FILTER_SIMILARITY_SUM(search), "searchScore"]);
         order = [sequelize.literal('"searchScore" DESC')];
       }
     }
@@ -104,12 +98,10 @@ const TipLogic = {
     });
   },
   async checkTipExists(id) {
-    return Tip.findOne({ where: { id } })
-      .then(tip => !!tip);
+    return Tip.findOne({ where: { id } }).then((tip) => !!tip);
   },
   async checkRetipExists(id) {
-    return Retip.findOne({ where: { id } })
-      .then(retip => !!retip);
+    return Retip.findOne({ where: { id } }).then((retip) => !!retip);
   },
   async fetchAllLocalTips() {
     return Tip.findAll({ raw: true });
@@ -126,7 +118,7 @@ const TipLogic = {
   },
   async awaitTipsUpdated(id, retip) {
     const baseGen = TipLogic.getTipGen(id, retip);
-    if (id !== 'v1') {
+    if (id !== "v1") {
       const exists = retip ? await TipLogic.checkRetipExists(id) : await TipLogic.checkTipExists(id);
       if (exists) return null;
     }
@@ -151,17 +143,16 @@ const TipLogic = {
     await TipLogic.updateClaimsDB(basicState.claims);
   },
   async insertClaims(claimsToInsert) {
-    const insertedClaims = await Claim.bulkCreate(claimsToInsert, { updateOnDuplicate: ['claimGen', 'amount', 'updatedAt'] });
+    const insertedClaims = await Claim.bulkCreate(claimsToInsert, { updateOnDuplicate: ["claimGen", "amount", "updatedAt"] });
     await insertedClaims.asyncMap(NotificationLogic.handleClaim);
     return insertedClaims;
   },
   async updateClaimsDB(remoteClaims) {
-    await lock.acquire('TipLogic.updateClaimsDB', async () => {
+    await lock.acquire("TipLogic.updateClaimsDB", async () => {
       const localClaims = await Claim.findAll({ raw: true });
-      const insertOrUpdateClaims = remoteClaims.filter(r => {
-        const notIncludesRemote = !localClaims.some(l => r.url === l.url && r.contractId === l.contractId);
-        const includesRemoteUpdated = localClaims.some(l => r.url === l.url && r.contractId === l.contractId
-                    && (r.amount !== l.amount || r.claimGen !== l.claimGen));
+      const insertOrUpdateClaims = remoteClaims.filter((r) => {
+        const notIncludesRemote = !localClaims.some((l) => r.url === l.url && r.contractId === l.contractId);
+        const includesRemoteUpdated = localClaims.some((l) => r.url === l.url && r.contractId === l.contractId && (r.amount !== l.amount || r.claimGen !== l.claimGen));
         return includesRemoteUpdated || notIncludesRemote;
       });
       await TipLogic.insertClaims(insertOrUpdateClaims);
@@ -169,8 +160,8 @@ const TipLogic = {
   },
   async insertTips(tipsToInsert) {
     const inserted = await Tip.bulkCreate(tipsToInsert);
-    inserted.forEach(i => {
-      if (i.dataValues.id.includes('v1')) {
+    inserted.forEach((i) => {
+      if (i.dataValues.id.includes("v1")) {
         awaitTips.v1++;
       } else {
         awaitTips[i.dataValues.id] = 1;
@@ -180,12 +171,12 @@ const TipLogic = {
     if (inserted.length > 0) await queueLogic.sendMessage(MESSAGE_QUEUES.TIPS, MESSAGES.TIPS.EVENTS.CREATED_NEW_LOCAL_TIPS);
   },
   async updateTipsDB(remoteTips) {
-    await lock.acquire('TipLogic.updateTipsDB', async () => {
+    await lock.acquire("TipLogic.updateTipsDB", async () => {
       const localTips = await Tip.findAll({ raw: true });
-      const localTipIds = [...new Set(localTips.map(tip => tip.id))];
+      const localTipIds = [...new Set(localTips.map((tip) => tip.id))];
       const newTips = remoteTips.filter(({ id }) => !localTipIds.includes(id));
-      const result = await newTips.asyncMap(async tip => {
-        const titleToDetect = tip.title.replace(/[!0-9#.,?)-:'“@/\\]/g, '');
+      const result = await newTips.asyncMap(async (tip) => {
+        const titleToDetect = tip.title.replace(/[!0-9#.,?)-:'“@/\\]/g, "");
         const probability = await cld.detect(titleToDetect).catch(() => ({}));
         const language = probability.languages ? probability.languages[0].code : null;
         return { ...tip, language };
@@ -195,8 +186,8 @@ const TipLogic = {
   },
   async insertRetips(retipsToInsert) {
     const inserted = await Retip.bulkCreate(retipsToInsert);
-    inserted.forEach(i => {
-      if (i.dataValues.id.includes('v1')) {
+    inserted.forEach((i) => {
+      if (i.dataValues.id.includes("v1")) {
         awaitRetips.v1++;
       } else {
         awaitRetips[i.dataValues.id] = 1;
@@ -205,9 +196,9 @@ const TipLogic = {
     await inserted.asyncMap(NotificationLogic.handleNewRetip);
   },
   async updateRetipsDB(remoteRetips) {
-    await lock.acquire('RetipLogic.updateRetipsDB', async () => {
+    await lock.acquire("RetipLogic.updateRetipsDB", async () => {
       const localRetips = await Retip.findAll({ raw: true });
-      const localRetipIds = [...new Set(localRetips.map(retip => retip.id))];
+      const localRetipIds = [...new Set(localRetips.map((retip) => retip.id))];
       const newReTips = remoteRetips.filter(({ id }) => !localRetipIds.includes(id));
       await TipLogic.insertRetips(newReTips);
     });

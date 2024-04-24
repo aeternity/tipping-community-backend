@@ -1,8 +1,8 @@
-import express from 'express';
-import models from '../../../models/index.js';
-import Logic from '../logic/blacklistLogic.js';
-import TipLogic from '../../tip/logic/tipLogic.js';
-import authenticationLogic from '../../authentication/logic/authenticationLogic.js';
+import express from "express";
+import models from "../../../models/index.js";
+import Logic from "../logic/blacklistLogic.js";
+import TipLogic from "../../tip/logic/tipLogic.js";
+import authenticationLogic from "../../authentication/logic/authenticationLogic.js";
 
 const { Router } = express;
 const { BlacklistEntry } = models;
@@ -32,7 +32,7 @@ const router = new Router();
  *               items:
  *                 $ref: '#/components/schemas/BlacklistEntry'
  */
-router.get('/api', async (req, res) => {
+router.get("/api", async (req, res) => {
   res.send(await BlacklistEntry.findAll({ raw: true }));
 });
 /**
@@ -56,7 +56,7 @@ router.get('/api', async (req, res) => {
  *             schema:
  *              $ref: '#/components/schemas/BlacklistEntry'
  */
-router.get('/api/:tipId', async (req, res) => {
+router.get("/api/:tipId", async (req, res) => {
   const result = await BlacklistEntry.findOne({ where: { tipId: req.params.tipId } });
   return result ? res.send(result.toJSON()) : res.sendStatus(404);
 });
@@ -123,35 +123,35 @@ router.get('/api/:tipId', async (req, res) => {
  *             schema:
  *               type: string
  */
-router.get('/', basicAuth, async (req, res) => {
-  const ordering = req.query.ordering || 'latest';
-  const {
-    page, type, address, id, search,
-  } = req.query;
+router.get("/", basicAuth, async (req, res) => {
+  const ordering = req.query.ordering || "latest";
+  const { page, type, address, id, search } = req.query;
   let contractVersion;
   if (type) {
     switch (type) {
-      case 'posts':
-        contractVersion = 'v3';
+      case "posts":
+        contractVersion = "v3";
         break;
-      case 'tips':
-        contractVersion = ['v1', 'v2'];
+      case "tips":
+        contractVersion = ["v1", "v2"];
         break;
       default:
     }
   }
   const tips = id
     ? [await TipLogic.fetchTip(id)]
-    : await Logic.augmentAllItems(await TipLogic.fetchTips({
-      page,
-      blacklist: false,
-      address,
-      contractVersion,
-      ordering,
-      search,
-    }));
+    : await Logic.augmentAllItems(
+        await TipLogic.fetchTips({
+          page,
+          blacklist: false,
+          address,
+          contractVersion,
+          ordering,
+          search,
+        }),
+      );
   const items = tips.map(({ hidden, flagged, dataValues }) => ({ hidden, flagged, ...dataValues }));
-  return res.render('admin', {
+  return res.render("admin", {
     items,
     query: {
       page,
@@ -185,7 +185,7 @@ router.get('/', basicAuth, async (req, res) => {
  *             schema:
  *              $ref: '#/components/schemas/BlacklistEntry'
  */
-router.post('/api', basicAuth, async (req, res) => {
+router.post("/api", basicAuth, async (req, res) => {
   try {
     const { tipId } = req.body;
     if (!(await TipLogic.checkTipExists(tipId))) {
@@ -224,7 +224,7 @@ router.post('/api', basicAuth, async (req, res) => {
  *             schema:
  *              $ref: '#/components/schemas/BlacklistEntry'
  */
-router.put('/api/:tipId', basicAuth, async (req, res) => {
+router.put("/api/:tipId", basicAuth, async (req, res) => {
   try {
     const { status } = req.body;
     const { tipId } = req.params;
@@ -253,7 +253,7 @@ router.put('/api/:tipId', basicAuth, async (req, res) => {
  *       200:
  *         description: OK
  */
-router.delete('/api/:tipId', basicAuth, async (req, res) => {
+router.delete("/api/:tipId", basicAuth, async (req, res) => {
   const result = await Logic.removeItem(req.params.tipId);
   return result === 1 ? res.sendStatus(200) : res.sendStatus(404);
 });
@@ -284,11 +284,9 @@ router.delete('/api/:tipId', basicAuth, async (req, res) => {
  *                - $ref: '#/components/schemas/BlacklistEntry'
  *                - $ref: '#/components/schemas/SignatureResponse'
  */
-router.post('/api/wallet', signatureAuth, async (req, res) => {
+router.post("/api/wallet", signatureAuth, async (req, res) => {
   try {
-    const {
-      author, tipId, signature, challenge,
-    } = req.body;
+    const { author, tipId, signature, challenge } = req.body;
     const entry = await Logic.flagTip(tipId, author, signature, challenge);
     return res.send(entry);
   } catch (e) {

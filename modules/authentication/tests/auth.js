@@ -1,42 +1,47 @@
-import chai from 'chai';
-import chaiHttp from 'chai-http';
-import mocha from 'mocha';
-import server from '../../../server.js';
-import {
-  shouldBeValidChallengeResponse, signChallenge, publicKey, performSignedJSONRequest, performSignedGETRequest,
-} from '../../../utils/testingUtil.js';
+import chai from "chai";
+import chaiHttp from "chai-http";
+import mocha from "mocha";
+import server from "../../../server.js";
+import { shouldBeValidChallengeResponse, signChallenge, publicKey, performSignedJSONRequest, performSignedGETRequest } from "../../../utils/testingUtil.js";
 
 const { describe, it } = mocha;
 chai.should();
 chai.use(chaiHttp);
 // Our parent block
-describe('Authenticator', () => {
+describe("Authenticator", () => {
   const testData = {
-    biography: 'What an awesome bio',
-    preferredChainName: 'awesomename.chain',
-    referrer: 'ak_aNTSYaqHmuSfKgBPjBm95eJz82JXKznCZVdchKKKh7jtDAJcW',
-    location: 'awesome, location, country',
+    biography: "What an awesome bio",
+    preferredChainName: "awesomename.chain",
+    referrer: "ak_aNTSYaqHmuSfKgBPjBm95eJz82JXKznCZVdchKKKh7jtDAJcW",
+    location: "awesome, location, country",
   };
-  describe('Basic Authentication', () => {
-    it('it should return a request for authentication', done => {
-      chai.request(server).get('/blacklist').end((err, res) => {
-        res.should.have.status(401);
-        res.header.should.have.property('www-authenticate', 'Basic realm="Please enter user and password."');
-        done();
-      });
-    });
-    it('it should reject a wrong authentication', done => {
-      chai.request(server).get('/blacklist')
-        .auth(process.env.AUTHENTICATION_USER, `${process.env.AUTHENTICATION_PASSWORD}_invalid`)
+  describe("Basic Authentication", () => {
+    it("it should return a request for authentication", (done) => {
+      chai
+        .request(server)
+        .get("/blacklist")
         .end((err, res) => {
           res.should.have.status(401);
-          res.header.should.have.property('www-authenticate', 'Basic realm="Please enter user and password."');
+          res.header.should.have.property("www-authenticate", 'Basic realm="Please enter user and password."');
           done();
         });
     });
-    it('it should allow access with correct auth', function (done) {
+    it("it should reject a wrong authentication", (done) => {
+      chai
+        .request(server)
+        .get("/blacklist")
+        .auth(process.env.AUTHENTICATION_USER, `${process.env.AUTHENTICATION_PASSWORD}_invalid`)
+        .end((err, res) => {
+          res.should.have.status(401);
+          res.header.should.have.property("www-authenticate", 'Basic realm="Please enter user and password."');
+          done();
+        });
+    });
+    it("it should allow access with correct auth", function (done) {
       this.timeout(10000);
-      chai.request(server).get('/blacklist/api')
+      chai
+        .request(server)
+        .get("/blacklist/api")
         .auth(process.env.AUTHENTICATION_USER, process.env.AUTHENTICATION_PASSWORD)
         .end((err, res) => {
           res.should.have.status(200);
@@ -44,134 +49,184 @@ describe('Authenticator', () => {
         });
     });
   });
-  describe('Notification Authentication', () => {
-    it('it should return a signature challenge', done => {
-      chai.request(server).get(`/notification/user/${publicKey}`).end((err, res) => {
-        res.should.have.status(200);
-        shouldBeValidChallengeResponse(res.body, { author: publicKey });
-        done();
-      });
-    });
-    it('it should fail with invalid signature', done => {
-      chai.request(server).get(`/notification/user/${publicKey}`).end((err, res) => {
-        res.should.have.status(200);
-        shouldBeValidChallengeResponse(res.body, { author: publicKey });
-        const { challenge } = res.body;
-        chai.request(server).get(`/notification/user/${publicKey}`).query({ challenge, signature: 'wrong' })
-          .end((innerError, innerRes) => {
-            innerRes.should.have.status(401);
-            innerRes.body.should.be.a('object');
-            innerRes.body.should.have.property('err', 'bad signature size');
-            done();
-          });
-      });
-    });
-    it('it should fail on invalid challenge', done => {
-      chai.request(server).get(`/notification/user/${publicKey}`).end((err, res) => {
-        res.should.have.status(200);
-        shouldBeValidChallengeResponse(res.body, { author: publicKey });
-        const { challenge } = res.body;
-        const signature = signChallenge(challenge);
-        chai.request(server).get(`/notification/user/${publicKey}`).query({
-          challenge: challenge.substring(2),
-          signature,
-        }).end((innerError, innerRes) => {
-          innerRes.should.have.status(401);
-          innerRes.body.should.be.a('object');
-          innerRes.body.should.have.property('err', 'Could not find challenge (maybe it already expired?)');
+  describe("Notification Authentication", () => {
+    it("it should return a signature challenge", (done) => {
+      chai
+        .request(server)
+        .get(`/notification/user/${publicKey}`)
+        .end((err, res) => {
+          res.should.have.status(200);
+          shouldBeValidChallengeResponse(res.body, { author: publicKey });
           done();
         });
-      });
     });
-    it('it should fail at a change of paths', done => {
-      chai.request(server).get(`/notification/user/${publicKey}`).end((err, res) => {
-        res.should.have.status(200);
-        shouldBeValidChallengeResponse(res.body, { author: publicKey });
-        const { challenge } = res.body;
-        const signature = signChallenge(challenge);
-        chai.request(server).get(`/notification/user/${publicKey}a`).query({
-          challenge,
-          signature,
-        }).end((innerError, innerRes) => {
-          innerRes.should.have.status(401);
-          innerRes.body.should.be.a('object');
-          innerRes.body.should.have.property('err', 'Challenge was issued for a different path');
-          done();
+    it("it should fail with invalid signature", (done) => {
+      chai
+        .request(server)
+        .get(`/notification/user/${publicKey}`)
+        .end((err, res) => {
+          res.should.have.status(200);
+          shouldBeValidChallengeResponse(res.body, { author: publicKey });
+          const { challenge } = res.body;
+          chai
+            .request(server)
+            .get(`/notification/user/${publicKey}`)
+            .query({ challenge, signature: "wrong" })
+            .end((innerError, innerRes) => {
+              innerRes.should.have.status(401);
+              innerRes.body.should.be.a("object");
+              innerRes.body.should.have.property("err", "bad signature size");
+              done();
+            });
         });
-      });
     });
-    it('it should reject getting information for someone elses public key', done => {
-      performSignedGETRequest(server, '/notification/user/ak_fUq2NesPXcYZ1CcqBcGC3StpdnQw3iVxMA3YSeCNAwfN4myQk').then(({ res }) => {
+    it("it should fail on invalid challenge", (done) => {
+      chai
+        .request(server)
+        .get(`/notification/user/${publicKey}`)
+        .end((err, res) => {
+          res.should.have.status(200);
+          shouldBeValidChallengeResponse(res.body, { author: publicKey });
+          const { challenge } = res.body;
+          const signature = signChallenge(challenge);
+          chai
+            .request(server)
+            .get(`/notification/user/${publicKey}`)
+            .query({
+              challenge: challenge.substring(2),
+              signature,
+            })
+            .end((innerError, innerRes) => {
+              innerRes.should.have.status(401);
+              innerRes.body.should.be.a("object");
+              innerRes.body.should.have.property("err", "Could not find challenge (maybe it already expired?)");
+              done();
+            });
+        });
+    });
+    it("it should fail at a change of paths", (done) => {
+      chai
+        .request(server)
+        .get(`/notification/user/${publicKey}`)
+        .end((err, res) => {
+          res.should.have.status(200);
+          shouldBeValidChallengeResponse(res.body, { author: publicKey });
+          const { challenge } = res.body;
+          const signature = signChallenge(challenge);
+          chai
+            .request(server)
+            .get(`/notification/user/${publicKey}a`)
+            .query({
+              challenge,
+              signature,
+            })
+            .end((innerError, innerRes) => {
+              innerRes.should.have.status(401);
+              innerRes.body.should.be.a("object");
+              innerRes.body.should.have.property("err", "Challenge was issued for a different path");
+              done();
+            });
+        });
+    });
+    it("it should reject getting information for someone elses public key", (done) => {
+      performSignedGETRequest(server, "/notification/user/ak_fUq2NesPXcYZ1CcqBcGC3StpdnQw3iVxMA3YSeCNAwfN4myQk").then(({ res }) => {
         res.should.have.status(401);
-        res.body.should.be.a('object');
-        res.body.should.have.property('err', 'Invalid signature');
+        res.body.should.be.a("object");
+        res.body.should.have.property("err", "Invalid signature");
         done();
       });
     });
   });
-  describe('Profile Authentication', () => {
-    it('it should return a signature challenge', done => {
-      chai.request(server).post(`/profile/${publicKey}`).send(testData).end((err, res) => {
-        res.should.have.status(200);
-        shouldBeValidChallengeResponse(res.body, testData);
-        done();
-      });
-    });
-    it('it should fail with invalid signature', done => {
-      chai.request(server).post(`/profile/${publicKey}`).send(testData).end((err, res) => {
-        res.should.have.status(200);
-        shouldBeValidChallengeResponse(res.body, testData);
-        const { challenge } = res.body;
-        chai.request(server).post(`/profile/${publicKey}`).send({ challenge, signature: 'wrong' })
-          .end((innerError, innerRes) => {
-            innerRes.should.have.status(401);
-            innerRes.body.should.be.a('object');
-            innerRes.body.should.have.property('err', 'bad signature size');
-            done();
-          });
-      });
-    });
-    it('it should fail on invalid challenge', done => {
-      chai.request(server).post(`/profile/${publicKey}`).send(testData).end((err, res) => {
-        res.should.have.status(200);
-        shouldBeValidChallengeResponse(res.body, testData);
-        const { challenge } = res.body;
-        const signature = signChallenge(challenge);
-        chai.request(server).post(`/profile/${publicKey}`).send({
-          challenge: challenge.substring(2),
-          signature,
-        }).end((innerError, innerRes) => {
-          innerRes.should.have.status(401);
-          innerRes.body.should.be.a('object');
-          innerRes.body.should.have.property('err', 'Could not find challenge (maybe it already expired?)');
+  describe("Profile Authentication", () => {
+    it("it should return a signature challenge", (done) => {
+      chai
+        .request(server)
+        .post(`/profile/${publicKey}`)
+        .send(testData)
+        .end((err, res) => {
+          res.should.have.status(200);
+          shouldBeValidChallengeResponse(res.body, testData);
           done();
         });
-      });
     });
-    it('it should fail at a change of paths', done => {
-      chai.request(server).post(`/profile/${publicKey}`).send(testData).end((err, res) => {
-        res.should.have.status(200);
-        shouldBeValidChallengeResponse(res.body, testData);
-        const { challenge } = res.body;
-        const signature = signChallenge(challenge);
-        chai.request(server).post(`/profile/${publicKey}_2`).send({
-          challenge,
-          signature,
-        }).end((innerError, innerRes) => {
-          innerRes.should.have.status(401);
-          innerRes.body.should.be.a('object');
-          innerRes.body.should.have.property('err', 'Challenge was issued for a different path');
-          done();
+    it("it should fail with invalid signature", (done) => {
+      chai
+        .request(server)
+        .post(`/profile/${publicKey}`)
+        .send(testData)
+        .end((err, res) => {
+          res.should.have.status(200);
+          shouldBeValidChallengeResponse(res.body, testData);
+          const { challenge } = res.body;
+          chai
+            .request(server)
+            .post(`/profile/${publicKey}`)
+            .send({ challenge, signature: "wrong" })
+            .end((innerError, innerRes) => {
+              innerRes.should.have.status(401);
+              innerRes.body.should.be.a("object");
+              innerRes.body.should.have.property("err", "bad signature size");
+              done();
+            });
         });
-      });
     });
-    it('it should reject creation for someone elses public key', done => {
-      performSignedJSONRequest(server, 'post', '/profile/ak_fUq2NesPXcYZ1CcqBcGC3StpdnQw3iVxMA3YSeCNAwfN4myQk', {
-        biography: 'new bio',
+    it("it should fail on invalid challenge", (done) => {
+      chai
+        .request(server)
+        .post(`/profile/${publicKey}`)
+        .send(testData)
+        .end((err, res) => {
+          res.should.have.status(200);
+          shouldBeValidChallengeResponse(res.body, testData);
+          const { challenge } = res.body;
+          const signature = signChallenge(challenge);
+          chai
+            .request(server)
+            .post(`/profile/${publicKey}`)
+            .send({
+              challenge: challenge.substring(2),
+              signature,
+            })
+            .end((innerError, innerRes) => {
+              innerRes.should.have.status(401);
+              innerRes.body.should.be.a("object");
+              innerRes.body.should.have.property("err", "Could not find challenge (maybe it already expired?)");
+              done();
+            });
+        });
+    });
+    it("it should fail at a change of paths", (done) => {
+      chai
+        .request(server)
+        .post(`/profile/${publicKey}`)
+        .send(testData)
+        .end((err, res) => {
+          res.should.have.status(200);
+          shouldBeValidChallengeResponse(res.body, testData);
+          const { challenge } = res.body;
+          const signature = signChallenge(challenge);
+          chai
+            .request(server)
+            .post(`/profile/${publicKey}_2`)
+            .send({
+              challenge,
+              signature,
+            })
+            .end((innerError, innerRes) => {
+              innerRes.should.have.status(401);
+              innerRes.body.should.be.a("object");
+              innerRes.body.should.have.property("err", "Challenge was issued for a different path");
+              done();
+            });
+        });
+    });
+    it("it should reject creation for someone elses public key", (done) => {
+      performSignedJSONRequest(server, "post", "/profile/ak_fUq2NesPXcYZ1CcqBcGC3StpdnQw3iVxMA3YSeCNAwfN4myQk", {
+        biography: "new bio",
       }).then(({ res }) => {
         res.should.have.status(401);
-        res.body.should.be.a('object');
-        res.body.should.have.property('err', 'Invalid signature');
+        res.body.should.be.a("object");
+        res.body.should.have.property("err", "Invalid signature");
         done();
       });
     });

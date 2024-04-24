@@ -1,5 +1,5 @@
-import express from 'express';
-import StaticLogic from '../logic/staticLogic.js';
+import express from "express";
+import StaticLogic from "../logic/staticLogic.js";
 
 const { Router } = express;
 const router = new Router();
@@ -27,5 +27,5 @@ const router = new Router();
  *                 type: string
  *                 format: url
  */
-router.get('/wallet/graylist', (req, res) => res.send(StaticLogic.getGrayList()));
+router.get("/wallet/graylist", (req, res) => res.send(StaticLogic.getGrayList()));
 export default router;

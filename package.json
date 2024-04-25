@@ -35,7 +35,7 @@
     "@sentry/tracing": "^7.112.0",
     "aeternity-fungible-token": "git+https://git@github.com/aeternity/aeternity-fungible-token#v2.0.0",
     "async-lock": "^1.4.1",
-    "axios": "^0.22.0",
+    "axios": "^1.6.8",
     "bignumber.js": "^9.1.2",
     "cld": "^2.9.1",
     "cors": "^2.8.5",

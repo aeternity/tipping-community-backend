@@ -1,11 +1,11 @@
-import chai from "chai";
+import { should, use } from "chai";
 import mocha from "mocha";
 import sinon from "sinon";
 import { MESSAGE_QUEUES, MESSAGES } from "../constants/queue.js";
 import queueLogic from "../logic/queueLogic.js";
 
 const { describe, it } = mocha;
-chai.should();
+should();
 describe("Queue", () => {
   afterEach(async () => {
     await queueLogic.resetAll();

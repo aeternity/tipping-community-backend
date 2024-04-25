@@ -1,4 +1,4 @@
-import chai from "chai";
+import { should, use } from "chai";
 import sinon from "sinon";
 import EventLogic from "../logic/eventLogic.js";
 import queueLogic from "../../queue/logic/queueLogic.js";
@@ -8,7 +8,7 @@ import { MESSAGES, MESSAGE_QUEUES } from "../../queue/constants/queue.js";
 import models from "../../../models/index.js";
 
 const { Event } = models;
-chai.should();
+should();
 describe("Events", () => {
   // run init
   before(async () => {

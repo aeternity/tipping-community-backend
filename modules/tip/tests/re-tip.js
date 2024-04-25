@@ -1,4 +1,4 @@
-import chai from "chai";
+import { should, use } from "chai";
 import chaiHttp from "chai-http";
 import mocha from "mocha";
 import sinon from "sinon";
@@ -13,8 +13,8 @@ import aeternity from "../../aeternity/logic/aeternity.js";
 
 const { describe, it, beforeEach } = mocha;
 const { Retip, Notification, Claim, BlacklistEntry, Comment } = models;
-chai.should();
-chai.use(chaiHttp);
+should();
+use(chaiHttp);
 describe("(Re)Tips", () => {
   before(() => {
     sinon.stub(queueLogic, "sendMessage");

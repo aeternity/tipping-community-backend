@@ -1,12 +1,12 @@
-import chai from "chai";
+import { should, use } from "chai";
 import chaiHttp from "chai-http";
 import crypto from "crypto";
 import mocha from "mocha";
 import ipfs from "../logic/ipfsLogic.js";
 
 const { describe, it, before } = mocha;
-chai.should();
-chai.use(chaiHttp);
+should();
+use(chaiHttp);
 // Our parent block
 describe("IPFS", () => {
   describe("IPFS Util", () => {

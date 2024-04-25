@@ -1,4 +1,4 @@
-import chai from "chai";
+import { should, use } from "chai";
 import chaiHttp from "chai-http";
 import mocha from "mocha";
 import sinon from "sinon";
@@ -11,8 +11,8 @@ import { ENTITY_TYPES, NOTIFICATION_TYPES, NOTIFICATION_STATES, SOURCE_TYPES } f
 const { describe, it } = mocha;
 const { Op } = sequelize;
 const { Notification, Comment, Retip } = models;
-chai.should();
-chai.use(chaiHttp);
+should();
+use(chaiHttp);
 describe("Notifications", () => {
   const testData = {
     receiver: publicKey,

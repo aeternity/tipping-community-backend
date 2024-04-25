@@ -1,4 +1,4 @@
-import chai from "chai";
+import { should, use } from "chai";
 import chaiHttp from "chai-http";
 import mocha from "mocha";
 import sinon from "sinon";
@@ -7,8 +7,8 @@ import aeternity from "../../aeternity/logic/aeternity.js";
 import ipfs from "../../backup/logic/ipfsLogic.js";
 
 const { describe, it } = mocha;
-chai.should();
-chai.use(chaiHttp);
+should();
+use(chaiHttp);
 describe("Health Endpoint", () => {
   describe("Backend Health", () => {
     before(() => {

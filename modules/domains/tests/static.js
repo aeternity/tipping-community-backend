@@ -1,11 +1,11 @@
-import chai from "chai";
+import { should, use } from "chai";
 import chaiHttp from "chai-http";
 import mocha from "mocha";
 import server from "../../../server.js";
 
 const { describe, it } = mocha;
-chai.should();
-chai.use(chaiHttp);
+should();
+use(chaiHttp);
 // Our parent block
 describe("Static Routes", () => {
   describe("GrayList", () => {

@@ -1,4 +1,4 @@
-import chai from "chai";
+import { should, use, expect } from "chai";
 import chaiHttp from "chai-http";
 import sinon from "sinon";
 import mocha from "mocha";
@@ -17,9 +17,8 @@ import { publicKey, performSignedJSONRequest, performSignedMultipartFormRequest 
 const { describe, it, before } = mocha;
 const { generateKeyPair, hash } = aeppSdk.Crypto;
 const { Profile, IPFSEntry, Comment } = models;
-const { expect } = chai;
-chai.should();
-chai.use(chaiHttp);
+should();
+use(chaiHttp);
 // Our parent block
 describe("Profile", () => {
   const testData = {

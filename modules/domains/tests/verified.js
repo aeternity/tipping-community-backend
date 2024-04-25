@@ -1,4 +1,4 @@
-import chai from "chai";
+import { should, use } from "chai";
 import chaiHttp from "chai-http";
 import sinon from "sinon";
 import mocha from "mocha";
@@ -6,8 +6,8 @@ import server from "../../../server.js";
 import CacheLogic from "../../cache/logic/cacheLogic.js";
 
 const { describe, it } = mocha;
-chai.should();
-chai.use(chaiHttp);
+should();
+use(chaiHttp);
 // Our parent block
 describe("Verified", () => {
   describe("Verified API", () => {

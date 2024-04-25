@@ -1,4 +1,4 @@
-import chai from "chai";
+import { should, use } from "chai";
 import chaiHttp from "chai-http";
 import mocha from "mocha";
 import sinon from "sinon";
@@ -9,9 +9,9 @@ import cache from "../../cache/utils/cache.js";
 import { publicKey } from "../../../utils/testingUtil.js";
 
 const { describe, it, before } = mocha;
-chai.should();
-chai.use(chaiHttp);
-chai.use(chaiHttp);
+should();
+use(chaiHttp);
+use(chaiHttp);
 describe("Token Cache", () => {
   before(async function () {
     this.timeout(10000);

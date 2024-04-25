@@ -1,4 +1,4 @@
-import chai from "chai";
+import { should, use } from "chai";
 import chaiHttp from "chai-http";
 import fs from "fs";
 import mocha from "mocha";
@@ -12,8 +12,8 @@ import EventLogic from "../../event/logic/eventLogic.js";
 
 const { describe, it, before } = mocha;
 const { Trace } = models;
-chai.should();
-chai.use(chaiHttp);
+should();
+use(chaiHttp);
 // Our parent block
 describe("Trace", () => {
   before(async function () {

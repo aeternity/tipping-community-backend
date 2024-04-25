@@ -1,4 +1,4 @@
-import chai from "chai";
+import { should, use } from "chai";
 import chaiHttp from "chai-http";
 import mocha from "mocha";
 import sinon from "sinon";
@@ -11,8 +11,8 @@ import MdwLogic from "../../aeternity/logic/mdwLogic.js";
 
 const { describe, it, before } = mocha;
 const { Comment, sequelize, Notification, Retip } = models;
-chai.should();
-chai.use(chaiHttp);
+should();
+use(chaiHttp);
 // Our parent block
 describe("Comments", () => {
   const testData = {

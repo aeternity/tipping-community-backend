@@ -1,4 +1,4 @@
-import chai from "chai";
+import { should, use } from "chai";
 import chaiHttp from "chai-http";
 import mocha from "mocha";
 import sinon from "sinon";
@@ -6,8 +6,8 @@ import axios from "axios";
 import mdwLogic from "../logic/mdwLogic.js";
 
 const { describe, it } = mocha;
-chai.should();
-chai.use(chaiHttp);
+should();
+use(chaiHttp);
 // Our parent block
 describe("Middleware", () => {
   describe("Events", () => {

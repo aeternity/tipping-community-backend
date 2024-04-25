@@ -1,4 +1,4 @@
-import chai from "chai";
+import { should, use } from "chai";
 import mocha from "mocha";
 import sinon from "sinon";
 import chaiAsPromised from "chai-as-promised";
@@ -7,8 +7,8 @@ import ae from "../logic/aeternity.js";
 import Trace from "../../payfortx/logic/traceLogic.js";
 
 const { describe, it, afterEach } = mocha;
-chai.use(chaiAsPromised);
-const should = chai.should();
+should();
+use(chaiAsPromised);
 // Our parent block
 describe("Aeternity", () => {
   describe("Init", () => {

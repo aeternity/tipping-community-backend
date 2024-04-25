@@ -1,4 +1,4 @@
-import chai from "chai";
+import { should, use } from "chai";
 import chaiHttp from "chai-http";
 import mocha from "mocha";
 import sinon from "sinon";
@@ -12,8 +12,8 @@ import models from "../../../models/index.js";
 
 const { describe, it, before } = mocha;
 const { Event } = models;
-chai.should();
-chai.use(chaiHttp);
+should();
+use(chaiHttp);
 // Our parent block
 describe("Cache", () => {
   before(async function () {

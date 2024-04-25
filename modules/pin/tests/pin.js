@@ -1,4 +1,4 @@
-import chai from "chai";
+import { should, use } from "chai";
 import chaiHttp from "chai-http";
 import mocha from "mocha";
 import aeppSdk from "@aeternity/aepp-sdk";
@@ -9,8 +9,8 @@ import { publicKey, signChallenge, performSignedJSONRequest, getDBSeedFunction }
 const { describe, it } = mocha;
 const { generateKeyPair } = aeppSdk.Crypto;
 const { Pin } = models;
-chai.should();
-chai.use(chaiHttp);
+should();
+use(chaiHttp);
 // Our parent block
 describe("Pinning", () => {
   const seedDB = getDBSeedFunction([Pin]);

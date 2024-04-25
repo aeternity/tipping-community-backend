@@ -1,4 +1,4 @@
-import chai from "chai";
+import { should, use } from "chai";
 import chaiHttp from "chai-http";
 import mocha from "mocha";
 import server from "../../../server.js";
@@ -8,8 +8,8 @@ import { publicKey, performSignedJSONRequest, getDBSeedFunction } from "../../..
 
 const { describe, it, before } = mocha;
 const { BlacklistEntry, Tip } = models;
-chai.should();
-chai.use(chaiHttp);
+should();
+use(chaiHttp);
 // Our parent block
 describe("Blacklist", () => {
   before(async () => {

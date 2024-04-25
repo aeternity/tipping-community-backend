@@ -1,5 +1,5 @@
 import aeppSdk from "@aeternity/aepp-sdk";
-import chai from "chai";
+import { should, use } from "chai";
 import chaiHttp from "chai-http";
 import fs from "fs";
 import sinon from "sinon";
@@ -9,7 +9,7 @@ import models from "../models/index.js";
 
 const { signMessage, generateKeyPair, hash } = aeppSdk.Crypto;
 const { Tip } = models;
-chai.use(chaiHttp);
+use(chaiHttp);
 const { publicKey, secretKey } = generateKeyPair();
 const signChallenge = (challenge, privateKey = null) => {
   const signatureBuffer = signMessage(challenge, Buffer.from(privateKey || secretKey, "hex"));

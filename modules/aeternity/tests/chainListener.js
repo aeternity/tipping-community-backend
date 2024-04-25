@@ -1,4 +1,4 @@
-import chai from "chai";
+import { should, use } from "chai";
 import chaiHttp from "chai-http";
 import mocha from "mocha";
 import sinon from "sinon";
@@ -8,8 +8,8 @@ import queueLogic from "../../queue/logic/queueLogic.js";
 import { MESSAGES, MESSAGE_QUEUES } from "../../queue/constants/queue.js";
 
 const { describe, it } = mocha;
-chai.should();
-chai.use(chaiHttp);
+should();
+use(chaiHttp);
 // Our parent block
 describe("Chain Listener", () => {
   describe("Events", () => {

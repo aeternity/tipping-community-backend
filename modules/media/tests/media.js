@@ -1,12 +1,12 @@
-import chai from "chai";
+import { should, use } from "chai";
 import chaiHttp from "chai-http";
 import mocha from "mocha";
 import fs from "fs";
 import imageLogic from "../logic/imageLogic.js";
 
 const { describe, it, before } = mocha;
-chai.should();
-chai.use(chaiHttp);
+should();
+use(chaiHttp);
 // Our parent block
 describe("Media", () => {
   before((done) => {

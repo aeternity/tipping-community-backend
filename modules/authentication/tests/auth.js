@@ -1,12 +1,12 @@
-import chai from "chai";
+import { should, use } from "chai";
 import chaiHttp from "chai-http";
 import mocha from "mocha";
 import server from "../../../server.js";
 import { shouldBeValidChallengeResponse, signChallenge, publicKey, performSignedJSONRequest, performSignedGETRequest } from "../../../utils/testingUtil.js";
 
 const { describe, it } = mocha;
-chai.should();
-chai.use(chaiHttp);
+should();
+use(chaiHttp);
 // Our parent block
 describe("Authenticator", () => {
   const testData = {

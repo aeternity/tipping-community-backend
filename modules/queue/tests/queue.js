@@ -1,15 +1,12 @@
-import { should, use } from "chai";
-import mocha from "mocha";
-import sinon from "sinon";
 import { MESSAGE_QUEUES, MESSAGES } from "../constants/queue.js";
 import queueLogic from "../logic/queueLogic.js";
 
 const { describe, it } = mocha;
-should();
+chai.should();
 describe("Queue", () => {
   afterEach(async () => {
     await queueLogic.resetAll();
-    sinon.restore();
+    jest.restoreAllMocks();
   });
   describe("Queue Methods", () => {
     it("should init all queues", async () => {

@@ -1,7 +1,4 @@
-import { should, use } from "chai";
 import chaiHttp from "chai-http";
-import mocha from "mocha";
-import sinon from "sinon";
 import server from "../../../server.js";
 import models from "../../../models/index.js";
 import { ENTITY_TYPES, NOTIFICATION_TYPES } from "../../notification/constants/notification.js";
@@ -11,8 +8,8 @@ import MdwLogic from "../../aeternity/logic/mdwLogic.js";
 
 const { describe, it, before } = mocha;
 const { Comment, sequelize, Notification, Retip } = models;
-should();
-use(chaiHttp);
+chai.should();
+chai.use(chaiHttp);
 // Our parent block
 describe("Comments", () => {
   const testData = {
@@ -26,7 +23,7 @@ describe("Comments", () => {
     author: publicKey,
   };
   let commentId = null;
-  before(async function () {
+  before(async () => {
     this.timeout(10000);
     await sequelize.models.Commentancestor.destroy({
       where: {},
@@ -112,7 +109,7 @@ describe("Comments", () => {
       });
     });
     it("it should CREATE a new comment entry for a tip with tokens when user has tokens", (done) => {
-      sinon.stub(MdwLogic, "fetchTokenBalancesForAddress").callsFake(async () => [{ amount: "100000000000000", contract_id: "ct_2bCbmU7vtsysL4JiUdUZjJJ98LLbJWG1fRtVApBvqSFEM59D6W" }]);
+      jest.spyOn(MdwLogic, "fetchTokenBalancesForAddress").mockClear().mockImplementation(async () => [{ amount: "100000000000000", contract_id: "ct_2bCbmU7vtsysL4JiUdUZjJJ98LLbJWG1fRtVApBvqSFEM59D6W" }]);
       performSignedJSONRequest(server, "post", "/comment/api", testDataWithTokens).then(({ res, challenge, signature }) => {
         res.should.have.status(200);
         res.body.should.be.a("object");

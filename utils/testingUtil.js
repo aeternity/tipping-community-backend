@@ -1,14 +1,13 @@
-import { signMessage, generateKeyPair, hash } from "@aeternity/aepp-sdk";
-import { use } from "chai";
+import aeppSdk from "@aeternity/aepp-sdk";
 import chaiHttp from "chai-http";
 import fs from "fs";
-import sinon from "sinon";
 import aeternity from "../modules/aeternity/logic/aeternity.js";
 import TipLogic from "../modules/tip/logic/tipLogic.js";
 import models from "../models/index.js";
 
+const { signMessage, generateKeyPair, hash } = aeppSdk.Crypto;
 const { Tip } = models;
-use(chaiHttp);
+chai.use(chaiHttp);
 const { publicKey, secretKey } = generateKeyPair();
 const signChallenge = (challenge, privateKey = null) => {
   const signatureBuffer = signMessage(challenge, Buffer.from(privateKey || secretKey, "hex"));
@@ -100,7 +99,7 @@ const getDBSeedFunction =
         cascade: true,
       });
     }
-    sinon.restore();
+    jest.restoreAllMocks();
     // seed fake data
     const seedData = {
       ...fakeData,
@@ -125,7 +124,7 @@ const getDBSeedFunction =
       contractId: "ct_test",
       ...claim,
     }));
-    sinon.stub(aeternity, "fetchStateBasic").callsFake(async () => seedData);
+    jest.spyOn(aeternity, "fetchStateBasic").mockClear().mockImplementation(async () => seedData);
     await TipLogic.updateTipsRetipsClaimsDB();
   };
 export { publicKey };

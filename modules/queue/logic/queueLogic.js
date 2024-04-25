@@ -15,6 +15,7 @@ const rsmq = new RedisSMQ({
   ns: MQ_NAMESPACE,
   realtime: true,
 });
+console.log(process.env.REDIS_HOST);
 let queues = [];
 const QueueLogic = {
   async init() {

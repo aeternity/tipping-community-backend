@@ -1,8 +1,5 @@
-import { should, use, expect } from "chai";
 import chaiHttp from "chai-http";
-import sinon from "sinon";
-import mocha from "mocha";
-import { generateKeyPair, hash } from "@aeternity/aepp-sdk";
+import aeppSdk from "@aeternity/aepp-sdk";
 import fs from "fs";
 import models from "../../../models/index.js";
 import server from "../../../server.js";
@@ -15,9 +12,11 @@ import { MESSAGES, MESSAGE_QUEUES } from "../../queue/constants/queue.js";
 import { publicKey, performSignedJSONRequest, performSignedMultipartFormRequest } from "../../../utils/testingUtil.js";
 
 const { describe, it, before } = mocha;
+const { generateKeyPair, hash } = aeppSdk.Crypto;
 const { Profile, IPFSEntry, Comment } = models;
-should();
-use(chaiHttp);
+const { expect } = chai;
+chai.should();
+chai.use(chaiHttp);
 // Our parent block
 describe("Profile", () => {
   const testData = {
@@ -57,7 +56,7 @@ describe("Profile", () => {
         });
     });
     it("it should CREATE a new profile", (done) => {
-      const stub = sinon.stub(ae, "getAddressForChainName").callsFake(() => ({
+      const stub = jest.spyOn(ae, "getAddressForChainName").mockClear().mockImplementation(() => ({
         pointers: [{ id: publicKey, key: "account_pubkey" }],
       }));
       performSignedJSONRequest(server, "post", `/profile/${publicKey}`, testData).then(({ res, signature, challenge }) => {
@@ -75,7 +74,7 @@ describe("Profile", () => {
         res.body.should.have.property("updatedAt");
         res.body.updatedAt.should.contain("Z");
         stub.called.should.equal(true);
-        stub.restore();
+        stub.mockRestore();
         done();
       });
     });
@@ -179,45 +178,41 @@ describe("Profile", () => {
       });
     });
     it("it should not overwrite an profile image if a cover image is uploaded", (done) => {
-      performSignedMultipartFormRequest(server, "post", `/profile/${publicKey}`, "coverImage", testImagePath).then(
-        ({ res, signature, challenge }) => {
-          res.should.have.status(200);
-          res.body.should.be.a("object");
-          res.body.should.have.property("biography", testData.biography);
-          res.body.should.have.property("author", publicKey);
-          res.body.should.have.property("image");
-          res.body.coverImage.should.contain(`/images/${publicKey}`);
-          res.body.should.have.property("coverImage");
-          res.body.coverImage.should.contain(`/images/${publicKey}`);
-          res.body.should.have.property("signature", signature);
-          res.body.should.have.property("challenge", challenge);
-          res.body.should.have.property("imageSignature", null);
-          res.body.should.have.property("imageChallenge", null);
-          res.body.should.have.property("createdAt");
-          res.body.should.have.property("updatedAt");
-          done();
-        },
-      );
+      performSignedMultipartFormRequest(server, "post", `/profile/${publicKey}`, "coverImage", testImagePath).then(({ res, signature, challenge }) => {
+        res.should.have.status(200);
+        res.body.should.be.a("object");
+        res.body.should.have.property("biography", testData.biography);
+        res.body.should.have.property("author", publicKey);
+        res.body.should.have.property("image");
+        res.body.coverImage.should.contain(`/images/${publicKey}`);
+        res.body.should.have.property("coverImage");
+        res.body.coverImage.should.contain(`/images/${publicKey}`);
+        res.body.should.have.property("signature", signature);
+        res.body.should.have.property("challenge", challenge);
+        res.body.should.have.property("imageSignature", null);
+        res.body.should.have.property("imageChallenge", null);
+        res.body.should.have.property("createdAt");
+        res.body.should.have.property("updatedAt");
+        done();
+      });
     });
     it("it should allow an image upload on new profile", (done) => {
       const { publicKey: localPublicKey, secretKey } = generateKeyPair();
-      performSignedMultipartFormRequest(server, "post", `/profile/${localPublicKey}`, "image", testImagePath, secretKey).then(
-        ({ res, signature, challenge }) => {
-          res.should.have.status(200);
-          res.body.should.be.a("object");
-          res.body.should.have.property("biography", null);
-          res.body.should.have.property("author", localPublicKey);
-          res.body.should.have.property("image");
-          res.body.image.should.contain(`/images/${localPublicKey}`);
-          res.body.should.have.property("signature", signature);
-          res.body.should.have.property("challenge", challenge);
-          res.body.should.have.property("imageSignature", null);
-          res.body.should.have.property("imageChallenge", null);
-          res.body.should.have.property("createdAt");
-          res.body.should.have.property("updatedAt");
-          done();
-        },
-      );
+      performSignedMultipartFormRequest(server, "post", `/profile/${localPublicKey}`, "image", testImagePath, secretKey).then(({ res, signature, challenge }) => {
+        res.should.have.status(200);
+        res.body.should.be.a("object");
+        res.body.should.have.property("biography", null);
+        res.body.should.have.property("author", localPublicKey);
+        res.body.should.have.property("image");
+        res.body.image.should.contain(`/images/${localPublicKey}`);
+        res.body.should.have.property("signature", signature);
+        res.body.should.have.property("challenge", challenge);
+        res.body.should.have.property("imageSignature", null);
+        res.body.should.have.property("imageChallenge", null);
+        res.body.should.have.property("createdAt");
+        res.body.should.have.property("updatedAt");
+        done();
+      });
     });
     it("it should create an ipfs entry when uploading a new profile picture", async () => {
       const entry = await IPFSEntry.findOne({
@@ -274,8 +269,7 @@ describe("Profile", () => {
           res.should.have.header("content-length");
           const size = fs.statSync(testImagePath).size.toString();
           res.header["content-length"].should.be.equal(size);
-          // verify checksum
-          expect(hash(res.body).toString("hex")).to.equal("03fd3b41a8312dfe558f9e48927ba7f2bca55fbfca7f5dae4145bc7a26fed2d5");
+          expect(hash(res.body).toString("hex")).toBe("03fd3b41a8312dfe558f9e48927ba7f2bca55fbfca7f5dae4145bc7a26fed2d5");
           done();
         });
     });
@@ -371,23 +365,21 @@ describe("Profile", () => {
         });
     });
     it("it should allow an cover image upload on existing profile", (done) => {
-      performSignedMultipartFormRequest(server, "post", `/profile/${publicKey}`, "coverImage", testImagePath).then(
-        ({ res, signature, challenge }) => {
-          res.should.have.status(200);
-          res.body.should.be.a("object");
-          res.body.should.have.property("biography", testData.biography);
-          res.body.should.have.property("author", publicKey);
-          res.body.should.have.property("coverImage");
-          res.body.coverImage.should.contain(`/images/${publicKey}`);
-          res.body.should.have.property("signature", signature);
-          res.body.should.have.property("challenge", challenge);
-          res.body.should.have.property("imageSignature", null);
-          res.body.should.have.property("imageChallenge", null);
-          res.body.should.have.property("createdAt");
-          res.body.should.have.property("updatedAt");
-          done();
-        },
-      );
+      performSignedMultipartFormRequest(server, "post", `/profile/${publicKey}`, "coverImage", testImagePath).then(({ res, signature, challenge }) => {
+        res.should.have.status(200);
+        res.body.should.be.a("object");
+        res.body.should.have.property("biography", testData.biography);
+        res.body.should.have.property("author", publicKey);
+        res.body.should.have.property("coverImage");
+        res.body.coverImage.should.contain(`/images/${publicKey}`);
+        res.body.should.have.property("signature", signature);
+        res.body.should.have.property("challenge", challenge);
+        res.body.should.have.property("imageSignature", null);
+        res.body.should.have.property("imageChallenge", null);
+        res.body.should.have.property("createdAt");
+        res.body.should.have.property("updatedAt");
+        done();
+      });
     });
     it("it should not overwrite an coverImage if a profile image is uploaded", (done) => {
       performSignedMultipartFormRequest(server, "post", `/profile/${publicKey}`, "image", testImagePath).then(({ res, signature, challenge }) => {
@@ -410,23 +402,21 @@ describe("Profile", () => {
     });
     it("it should allow an cover image upload on new profile", (done) => {
       const { publicKey: localPublicKey, secretKey } = generateKeyPair();
-      performSignedMultipartFormRequest(server, "post", `/profile/${localPublicKey}`, "coverImage", testImagePath, secretKey).then(
-        ({ res, signature, challenge }) => {
-          res.should.have.status(200);
-          res.body.should.be.a("object");
-          res.body.should.have.property("biography", null);
-          res.body.should.have.property("author", localPublicKey);
-          res.body.should.have.property("coverImage");
-          res.body.coverImage.should.contain(`/images/${localPublicKey}`);
-          res.body.should.have.property("signature", signature);
-          res.body.should.have.property("challenge", challenge);
-          res.body.should.have.property("imageSignature", null);
-          res.body.should.have.property("imageChallenge", null);
-          res.body.should.have.property("createdAt");
-          res.body.should.have.property("updatedAt");
-          done();
-        },
-      );
+      performSignedMultipartFormRequest(server, "post", `/profile/${localPublicKey}`, "coverImage", testImagePath, secretKey).then(({ res, signature, challenge }) => {
+        res.should.have.status(200);
+        res.body.should.be.a("object");
+        res.body.should.have.property("biography", null);
+        res.body.should.have.property("author", localPublicKey);
+        res.body.should.have.property("coverImage");
+        res.body.coverImage.should.contain(`/images/${localPublicKey}`);
+        res.body.should.have.property("signature", signature);
+        res.body.should.have.property("challenge", challenge);
+        res.body.should.have.property("imageSignature", null);
+        res.body.should.have.property("imageChallenge", null);
+        res.body.should.have.property("createdAt");
+        res.body.should.have.property("updatedAt");
+        done();
+      });
     });
     it("it should create an ipfs entry when uploading a new cover picture", async () => {
       const entry = await IPFSEntry.findOne({
@@ -483,8 +473,7 @@ describe("Profile", () => {
           res.should.have.header("content-length");
           const size = fs.statSync(testImagePath).size.toString();
           res.header["content-length"].should.be.equal(size);
-          // verify checksum
-          expect(hash(res.body).toString("hex")).to.equal("03fd3b41a8312dfe558f9e48927ba7f2bca55fbfca7f5dae4145bc7a26fed2d5");
+          expect(hash(res.body).toString("hex")).toBe("03fd3b41a8312dfe558f9e48927ba7f2bca55fbfca7f5dae4145bc7a26fed2d5");
           done();
         });
     });
@@ -531,11 +520,11 @@ describe("Profile", () => {
   describe("Internals", () => {
     it("it should verify the chain names on message", (done) => {
       profileLogic.init();
-      const updateMock = sinon.stub(profileLogic, "verifyPreferredChainNames").callsFake(async () => {});
+      const updateMock = jest.spyOn(profileLogic, "verifyPreferredChainNames").mockClear().mockImplementation(async () => {});
       queueLogic.sendMessage(MESSAGE_QUEUES.PROFILE, MESSAGES.PROFILE.COMMANDS.UPDATE_PREFERRED_CHAIN_NAMES);
       setTimeout(() => {
         updateMock.callCount.should.eql(1);
-        updateMock.restore();
+        updateMock.mockRestore();
         done();
       }, 100);
     });

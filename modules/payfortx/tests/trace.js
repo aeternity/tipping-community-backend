@@ -1,8 +1,5 @@
-import { should, use } from "chai";
 import chaiHttp from "chai-http";
 import fs from "fs";
-import mocha from "mocha";
-import sinon from "sinon";
 import BigNumber from "bignumber.js";
 import server from "../../../server.js";
 import ae from "../../aeternity/logic/aeternity.js";
@@ -12,11 +9,11 @@ import EventLogic from "../../event/logic/eventLogic.js";
 
 const { describe, it, before } = mocha;
 const { Trace } = models;
-should();
-use(chaiHttp);
+chai.should();
+chai.use(chaiHttp);
 // Our parent block
 describe("Trace", () => {
-  before(async function () {
+  before(async () => {
     this.timeout(10000);
     await Trace.truncate();
     await ae.init();
@@ -60,7 +57,7 @@ describe("Trace", () => {
           });
         });
     });
-    it("malformed request with claimamount 0 should not leave a trace", function (done) {
+    it("malformed request with claimamount 0 should not leave a trace", done => {
       this.timeout(10000);
       chai
         .request(server)
@@ -78,7 +75,7 @@ describe("Trace", () => {
         });
     });
     it("proper request should leave a trace", (done) => {
-      const stub = sinon.stub(ae, "getTotalClaimableAmount").callsFake(async () => new BigNumber(10));
+      const stub = jest.spyOn(ae, "getTotalClaimableAmount").mockClear().mockImplementation(async () => new BigNumber(10));
       chai
         .request(server)
         .post("/claim/submit")
@@ -90,7 +87,7 @@ describe("Trace", () => {
           res.should.have.status(200);
           res.body.should.have.property("claimUUID");
           fs.existsSync(`./traces/${res.body.claimUUID}.json`).should.equal(true);
-          stub.restore();
+          stub.mockRestore();
           done();
         });
     });
@@ -111,7 +108,7 @@ describe("Trace", () => {
       res.body.should.be.a("array");
       res.body.length.should.be.eql(1);
     });
-    it("it should GET all blockchain traces for a proper tip", async function () {
+    it("it should GET all blockchain traces for a proper tip", async () => {
       this.timeout(10000);
       await seedDB(
         {
@@ -124,7 +121,7 @@ describe("Trace", () => {
         },
         false,
       );
-      sinon.stub(EventLogic, "getEventsForURL").callsFake(async () => [
+      jest.spyOn(EventLogic, "getEventsForURL").mockClear().mockImplementation(async () => [
         {
           event: "TipReceived",
           url: "example.com",
@@ -134,7 +131,7 @@ describe("Trace", () => {
           url: "example.com",
         },
       ]);
-      sinon.stub(ae, "fetchOracleClaimByUrl").callsFake(async () => null);
+      jest.spyOn(ae, "fetchOracleClaimByUrl").mockClear().mockImplementation(async () => null);
       const res = await chai.request(server).get("/tracing/blockchain?id=462_v1"); // 462_v1 == example.com
       res.should.have.status(200);
       res.body.should.be.a("object");

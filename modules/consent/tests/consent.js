@@ -1,6 +1,4 @@
-import { should, use } from "chai";
 import chaiHttp from "chai-http";
-import mocha from "mocha";
 import server from "../../../server.js";
 import { publicKey, performSignedJSONRequest, performSignedGETRequest } from "../../../utils/testingUtil.js";
 import { CONSENT_STATES } from "../constants/consentStates.js";
@@ -8,8 +6,8 @@ import models from "../../../models/index.js";
 
 const { describe, it, before } = mocha;
 const { Consent } = models;
-should();
-use(chaiHttp);
+chai.should();
+chai.use(chaiHttp);
 // Our parent block
 describe("Consent Storage", () => {
   before(async () => {

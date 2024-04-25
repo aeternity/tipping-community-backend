@@ -1,7 +1,4 @@
-import { should, use } from "chai";
 import chaiHttp from "chai-http";
-import mocha from "mocha";
-import sinon from "sinon";
 import TipLogic from "../logic/tipLogic.js";
 import queueLogic from "../../queue/logic/queueLogic.js";
 import { MESSAGES, MESSAGE_QUEUES } from "../../queue/constants/queue.js";
@@ -13,18 +10,18 @@ import aeternity from "../../aeternity/logic/aeternity.js";
 
 const { describe, it, beforeEach } = mocha;
 const { Retip, Notification, Claim, BlacklistEntry, Comment } = models;
-should();
-use(chaiHttp);
+chai.should();
+chai.use(chaiHttp);
 describe("(Re)Tips", () => {
-  before(() => {
-    sinon.stub(queueLogic, "sendMessage");
+  beforeAll(() => {
+    jest.spyOn(queueLogic, "sendMessage").mockClear().mockImplementation();
   });
-  after(() => {
-    sinon.restore();
+  afterAll(() => {
+    jest.restoreAllMocks();
   });
   const seedDB = getDBSeedFunction([Claim, Retip, Notification, BlacklistEntry]);
   describe("API", () => {
-    it("it should respond with no tips when db is empty", async function () {
+    it("it should respond with no tips when db is empty", async () => {
       this.timeout(5000);
       const fakeData = {
         tips: [],
@@ -36,14 +33,14 @@ describe("(Re)Tips", () => {
       res.body.should.be.an("array");
       res.body.should.have.length(0);
     });
-    it("it should respond with tips", async function () {
+    it("it should respond with tips", async () => {
       this.timeout(5000);
       await seedDB(sampleTips);
       const res = await chai.request(server).get("/tips");
       res.body.should.be.an("array");
       res.body.should.have.length(6);
     });
-    it("it should apply pagination by default", async function () {
+    it("it should apply pagination by default", async () => {
       this.timeout(5000);
       let id = 0;
       const fakeData = {
@@ -66,7 +63,7 @@ describe("(Re)Tips", () => {
       res2.body.should.be.an("array");
       res2.body.should.have.length(5);
     });
-    it("it should apply blacklist by default", async function () {
+    it("it should apply blacklist by default", async () => {
       this.timeout(5000);
       await seedDB(sampleTips);
       await BlacklistEntry.create({
@@ -88,7 +85,7 @@ describe("(Re)Tips", () => {
       res.body.should.have.length(6);
       await BlacklistEntry.truncate();
     });
-    it("it should allow to search by address", async function () {
+    it("it should allow to search by address", async () => {
       this.timeout(5000);
       await seedDB(sampleTips);
       const res = await chai.request(server).get("/tips?address=ak_sender1");
@@ -258,46 +255,46 @@ describe("(Re)Tips", () => {
         },
       ]);
     });
-    it("it should resolve existing tips on await endpoint in less than 1000ms", async function () {
+    it("it should resolve existing tips on await endpoint in less than 1000ms", async () => {
       this.timeout(1000);
       await chai.request(server).get("/tips/await/tip/1_v2");
     });
-    it("it should resolve new tips when they are added for v1", async function () {
+    it("it should resolve new tips when they are added for v1", async () => {
       this.timeout(5000);
       const fakeData = JSON.parse(JSON.stringify(sampleTips));
       fakeData.tips[fakeData.tips.length - 1].id = "10_v1";
       const [res] = await Promise.all([chai.request(server).get("/tips/await/tip/v1"), seedDB(fakeData)]);
       res.should.have.status(200);
     });
-    it("it should resolve new tips when they are added for v2", async function () {
+    it("it should resolve new tips when they are added for v2", async () => {
       this.timeout(5000);
       const fakeData = JSON.parse(JSON.stringify(sampleTips));
       fakeData.tips[fakeData.tips.length - 1].id = "10_v2";
       const [res] = await Promise.all([chai.request(server).get("/tips/await/tip/10_v2"), seedDB(fakeData)]);
       res.should.have.status(200);
     });
-    it("it should resolve new tips when they are added for v3", async function () {
+    it("it should resolve new tips when they are added for v3", async () => {
       this.timeout(5000);
       const fakeData = JSON.parse(JSON.stringify(sampleTips));
       fakeData.tips[fakeData.tips.length - 1].id = "10_v3";
       const [res] = await Promise.all([chai.request(server).get("/tips/await/tip/10_v3"), seedDB(fakeData)]);
       res.should.have.status(200);
     });
-    it("it should resolve new tips when they are added for v4", async function () {
+    it("it should resolve new tips when they are added for v4", async () => {
       this.timeout(5000);
       const fakeData = JSON.parse(JSON.stringify(sampleTips));
       fakeData.tips[fakeData.tips.length - 1].id = "10_v4";
       const [res] = await Promise.all([chai.request(server).get("/tips/await/tip/10_v4"), seedDB(fakeData)]);
       res.should.have.status(200);
     });
-    it("it should resolve new re-tips when they are added for v1", async function () {
+    it("it should resolve new re-tips when they are added for v1", async () => {
       this.timeout(5000);
       const fakeData = JSON.parse(JSON.stringify(sampleTips));
       fakeData.retips[fakeData.retips.length - 1].id = "10_v1";
       const [res] = await Promise.all([chai.request(server).get("/tips/await/retip/v1"), seedDB(fakeData)]);
       res.should.have.status(200);
     });
-    it("it should resolve new re-tips when they are added for v2", async function () {
+    it("it should resolve new re-tips when they are added for v2", async () => {
       this.timeout(5000);
       const fakeData = JSON.parse(JSON.stringify(sampleTips));
       fakeData.retips[fakeData.retips.length - 1].id = "10_v2";
@@ -344,14 +341,14 @@ describe("(Re)Tips", () => {
     });
   });
   describe("Internals", () => {
-    before(() => {
+    beforeAll(() => {
       TipLogic.init();
     });
     beforeEach(() => {
-      sinon.restore();
+      jest.restoreAllMocks();
     });
     it("it should update everything on MESSAGES.SCHEDULED_EVENTS.COMMANDS.UPDATE_TIPS_RETIPS_CLAIMS", (done) => {
-      const updateMock = sinon.stub(TipLogic, "updateTipsRetipsClaimsDB").callsFake(async () => {});
+      const updateMock = jest.spyOn(TipLogic, "updateTipsRetipsClaimsDB").mockClear().mockImplementation(async () => {});
       queueLogic.sendMessage(MESSAGE_QUEUES.SCHEDULED_EVENTS, MESSAGES.SCHEDULED_EVENTS.COMMANDS.UPDATE_TIPS_RETIPS_CLAIMS);
       setTimeout(() => {
         updateMock.callCount.should.eql(1);
@@ -359,38 +356,38 @@ describe("(Re)Tips", () => {
       }, 100);
     });
     it("it should insert the claim on MESSAGES.TIPS.COMMANDS.INSERT_CLAIM", (done) => {
-      const updateMock = sinon.stub(TipLogic, "insertClaims").callsFake(async ([payload]) => payload);
+      const updateMock = jest.spyOn(TipLogic, "insertClaims").mockClear().mockImplementation(async ([payload]) => payload);
       const payload = {
         test: "test",
       };
       queueLogic.sendMessage(MESSAGE_QUEUES.TIPS, MESSAGES.TIPS.COMMANDS.INSERT_CLAIM, payload);
       setTimeout(() => {
         updateMock.callCount.should.eql(1);
-        sinon.assert.calledWith(updateMock, [payload]);
+        expect(updateMock).toHaveBeenCalledWith([payload]);
         done();
       }, 100);
     });
     it("it should insert the payload on MESSAGES.TIPS.COMMANDS.INSERT_TIP", (done) => {
-      const updateMock = sinon.stub(TipLogic, "insertTips").callsFake(async () => {});
+      const updateMock = jest.spyOn(TipLogic, "insertTips").mockClear().mockImplementation(async () => {});
       const payload = {
         test: "test",
       };
       queueLogic.sendMessage(MESSAGE_QUEUES.TIPS, MESSAGES.TIPS.COMMANDS.INSERT_TIP, payload);
       setTimeout(() => {
         updateMock.callCount.should.eql(1);
-        sinon.assert.calledWith(updateMock, [payload]);
+        expect(updateMock).toHaveBeenCalledWith([payload]);
         done();
       }, 100);
     });
     it("it should insert the payload on MESSAGES.RETIPS.COMMANDS.INSERT_RETIP", (done) => {
-      const updateMock = sinon.stub(TipLogic, "insertRetips").callsFake(async () => {});
+      const updateMock = jest.spyOn(TipLogic, "insertRetips").mockClear().mockImplementation(async () => {});
       const payload = {
         test: "test",
       };
       queueLogic.sendMessage(MESSAGE_QUEUES.RETIPS, MESSAGES.RETIPS.COMMANDS.INSERT_RETIP, payload);
       setTimeout(() => {
         updateMock.callCount.should.eql(1);
-        sinon.assert.calledWith(updateMock, [payload]);
+        expect(updateMock).toHaveBeenCalledWith([payload]);
         done();
       }, 100);
     });

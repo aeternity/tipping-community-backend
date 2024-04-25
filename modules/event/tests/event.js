@@ -1,5 +1,3 @@
-import { should, use } from "chai";
-import sinon from "sinon";
 import EventLogic from "../logic/eventLogic.js";
 import queueLogic from "../../queue/logic/queueLogic.js";
 import MdwLogic from "../../aeternity/logic/mdwLogic.js";
@@ -8,10 +6,10 @@ import { MESSAGES, MESSAGE_QUEUES } from "../../queue/constants/queue.js";
 import models from "../../../models/index.js";
 
 const { Event } = models;
-should();
+chai.should();
 describe("Events", () => {
   // run init
-  before(async () => {
+  beforeAll(async () => {
     await Event.destroy({
       where: {},
       truncate: true,
@@ -96,8 +94,8 @@ describe("Events", () => {
   });
   it("should handle keephot", (done) => {
     const currentHeight = 21;
-    sinon.stub(aeternity, "getHeight").callsFake(async () => currentHeight);
-    const mdwSpy = sinon.stub(MdwLogic, "middlewareContractTransactions").callsFake(async () => [sampleChainEvent.event]);
+    jest.spyOn(aeternity, "getHeight").mockClear().mockImplementation(async () => currentHeight);
+    const mdwSpy = jest.spyOn(MdwLogic, "middlewareContractTransactions").mockClear().mockImplementation(async () => [sampleChainEvent.event]);
     Event.bulkCreate([
       {
         name: "TipTokenReceived",
@@ -121,7 +119,7 @@ describe("Events", () => {
     queueLogic.subscribeToMessage(MESSAGE_QUEUES.SCHEDULED_EVENTS, MESSAGES.SCHEDULED_EVENTS.COMMANDS.UPDATE_EVENTS, () => {
       setTimeout(async () => {
         mdwSpy.calledOnce.should.equal(true);
-        sinon.assert.calledWith(mdwSpy, currentHeight, currentHeight - 20);
+        expect(mdwSpy).toHaveBeenCalledWith(currentHeight, currentHeight - 20);
         // event 1 gone
         const event1 = await Event.findAll({
           where: {
@@ -151,6 +149,6 @@ describe("Events", () => {
     });
   });
   afterEach(() => {
-    sinon.restore();
+    jest.restoreAllMocks();
   });
 });

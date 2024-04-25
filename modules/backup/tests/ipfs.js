@@ -1,12 +1,10 @@
-import { should, use } from "chai";
 import chaiHttp from "chai-http";
 import crypto from "crypto";
-import mocha from "mocha";
 import ipfs from "../logic/ipfsLogic.js";
 
 const { describe, it, before } = mocha;
-should();
-use(chaiHttp);
+chai.should();
+chai.use(chaiHttp);
 // Our parent block
 describe("IPFS", () => {
   describe("IPFS Util", () => {
@@ -19,7 +17,7 @@ describe("IPFS", () => {
         done();
       });
     });
-    it("it should allow file upload", async function () {
+    it("it should allow file upload", async () => {
       this.timeout(100000);
       const firstResult = await ipfs.addFile(randomBuffer);
       firstResult.should.be.an("object");
@@ -29,7 +27,7 @@ describe("IPFS", () => {
       // 256 byte difference is expected for some reason
       firstResult.should.have.property("size", size + 256);
     });
-    it("it should allow file pinning", async function () {
+    it("it should allow file pinning", async () => {
       this.timeout(10000);
       await ipfs.pinFile(path);
       const pinned = await ipfs.getPinnedFiles();

@@ -1,8 +1,5 @@
-import { should, use } from "chai";
 import chaiHttp from "chai-http";
-import mocha from "mocha";
-import sinon from "sinon";
-import { hash, signMessage, verifyMessage } from "@aeternity/aepp-sdk";
+import aeppSdk from "@aeternity/aepp-sdk";
 import tippingContractUtil from "tipping-contract/util/tippingContractUtil.js";
 import BigNumber from "bignumber.js";
 import ae from "../../aeternity/logic/aeternity.js";
@@ -13,8 +10,9 @@ import { TRACE_STATES } from "../constants/traceStates.js";
 import { publicKey, secretKey } from "../../../utils/testingUtil.js";
 
 const { describe, it, before } = mocha;
-should();
-use(chaiHttp);
+const { Crypto } = aeppSdk;
+chai.should();
+chai.use(chaiHttp);
 // Our parent block
 describe("Pay for TX", () => {
   describe("Claiming", () => {
@@ -55,11 +53,11 @@ describe("Pay for TX", () => {
       });
     });
     describe("valid request", () => {
-      before(async function () {
+      before(async () => {
         this.timeout(25000);
         await ae.init();
       });
-      it("it should reject on website not in contract with zero amount", async function () {
+      it("it should reject on website not in contract with zero amount", async () => {
         this.timeout(10000);
         const res = await chai.request(server).post("/claim/submit").send({
           address: publicKey,
@@ -68,10 +66,10 @@ describe("Pay for TX", () => {
         res.should.have.status(400);
         res.body.should.have.property("error", "No zero amount claims");
       });
-      it("it should accept if pre-claim was successful", async function () {
+      it("it should accept if pre-claim was successful", async () => {
         this.timeout(10000);
-        const preClaimStub = sinon.stub(ae, "getTotalClaimableAmount").resolves(new BigNumber(100000));
-        const claimStub = sinon.stub(ae, "claimTips").resolves(true);
+        const preClaimStub = jest.spyOn(ae, "getTotalClaimableAmount").mockClear().mockImplementation().resolves(new BigNumber(100000));
+        const claimStub = jest.spyOn(ae, "claimTips").mockClear().mockImplementation().resolves(true);
         const res = await chai.request(server).post("/claim/submit").send({
           address: publicKey,
           url: "https://complicated.domain.test",
@@ -83,20 +81,20 @@ describe("Pay for TX", () => {
         const lastElement = trace.data[trace.data.length - 1];
         lastElement.should.have.property("result", "success");
         lastElement.should.have.property("state", TRACE_STATES.FINISHED);
-        claimStub.restore();
-        preClaimStub.restore();
+        claimStub.mockRestore();
+        preClaimStub.mockRestore();
       });
     });
   });
   describe("Post to V3", () => {
-    before(async function () {
+    before(async () => {
       this.timeout(25000);
       await ae.init();
     });
-    after(() => {
-      sinon.restore();
+    afterAll(() => {
+      jest.restoreAllMocks();
     });
-    it("it should post a tip", async function () {
+    it("it should post a tip", async () => {
       this.timeout(20000);
       const testData = {
         author: publicKey,
@@ -104,17 +102,17 @@ describe("Pay for TX", () => {
         media: ["https://complicated.domain.test"],
       };
       const message = tippingContractUtil.postWithoutTippingString(testData.title, testData.media);
-      const hashResult = hash(message);
-      const signature = signMessage(hashResult.toString('hex'), Buffer.from(secretKey, "hex"));
-      sinon.stub(ae, "postTipToV3").callsFake((title, media, author, passedSignature) => {
+      const hash = Crypto.hash(message);
+      const signature = Crypto.signMessage(hash, Buffer.from(secretKey, "hex"));
+      jest.spyOn(ae, "postTipToV3").mockClear().mockImplementation((title, media, author, passedSignature) => {
         title.should.equal(testData.title);
         media.should.deep.equal(testData.media);
         author.should.equal(publicKey);
-        const verified = verifyMessage(hashResult.toString('hex'), passedSignature, publicKey);
+        const verified = Crypto.verifyMessage(hash, passedSignature, Crypto.decodeBase58Check(publicKey.substr(3)));
         verified.should.equal(true);
         return { hash: "hash", decodedResult: "1" };
       });
-      const awaitStub = sinon.stub(TipLogic, "awaitTipsUpdated").callsFake(async () => {});
+      const awaitStub = jest.spyOn(TipLogic, "awaitTipsUpdated").mockClear().mockImplementation(async () => {});
       const res = await chai
         .request(server)
         .post("/payfortx/post")
@@ -126,7 +124,7 @@ describe("Pay for TX", () => {
         });
       res.should.have.status(200);
       res.body.should.deep.equal({ tx: { hash: "hash", decodedResult: "1" } });
-      sinon.assert.calledWith(awaitStub, "1_v3");
+      expect(awaitStub).toHaveBeenCalledWith("1_v3");
     });
   });
 });

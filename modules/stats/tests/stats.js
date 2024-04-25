@@ -1,13 +1,11 @@
-import { should, use } from "chai";
 import chaiHttp from "chai-http";
-import mocha from "mocha";
 import server from "../../../server.js";
 import models from "../../../models/index.js";
 
 const { describe, it, before } = mocha;
 const { BlacklistEntry, Tip, Profile } = models;
-should();
-use(chaiHttp);
+chai.should();
+chai.use(chaiHttp);
 // Our parent block
 describe("Stats Routes", () => {
   describe("Marketing", () => {
@@ -104,7 +102,7 @@ describe("Stats Routes", () => {
           done();
         });
     });
-    it("it should GET the correct stats in under 200ms", function (done) {
+    it("it should GET the correct stats in under 200ms", done => {
       this.timeout(200);
       chai
         .request(server)

@@ -1,7 +1,4 @@
-import { should, use } from "chai";
 import chaiHttp from "chai-http";
-import mocha from "mocha";
-import sinon from "sinon";
 import server from "../../../server.js";
 import cache from "../utils/cache.js";
 import CacheLogic from "../logic/cacheLogic.js";
@@ -12,11 +9,11 @@ import models from "../../../models/index.js";
 
 const { describe, it, before } = mocha;
 const { Event } = models;
-should();
-use(chaiHttp);
+chai.should();
+chai.use(chaiHttp);
 // Our parent block
 describe("Cache", () => {
-  before(async function () {
+  before(async () => {
     this.timeout(20000);
     await cache.del(["fetchPrice"]);
     await cache.del(["getChainNames"]);
@@ -39,12 +36,12 @@ describe("Cache", () => {
   };
   const minimalTimeout = 200;
   afterEach(() => {
-    sinon.restore();
+    jest.restoreAllMocks();
   });
   describe("Keep Hot", () => {
     it("should update the cache (keep hot simulation)", (done) => {
-      const keepHotStub = sinon.stub(CacheLogic, "keepHotFunction").callsFake(async () => {
-        sinon.assert.calledOnce(keepHotStub);
+      const keepHotStub = jest.spyOn(CacheLogic, "keepHotFunction").mockClear().mockImplementation(async () => {
+        expect(keepHotStub).toHaveBeenCalledTimes(1);
         done();
       });
       CacheLogic.init();
@@ -52,7 +49,7 @@ describe("Cache", () => {
     });
   });
   describe("API", () => {
-    it("it should GET all chainnames ", async function () {
+    it("it should GET all chainnames ", async () => {
       this.timeout(5000);
       await cache.del(["fetchMdwChainNames"]);
       await cache.del(["fetchChainNames"]);
@@ -64,15 +61,15 @@ describe("Cache", () => {
       addresses.every((address) => address.indexOf("ak_") === 0).should.eql(true);
       chainNames.every((chainName) => chainName.indexOf(".chain") > -1).should.eql(true);
     });
-    it(`it should GET all chainnames cache items in less than ${minimalTimeout}ms`, function (done) {
+    it(`it should GET all chainnames cache items in less than ${minimalTimeout}ms`, done => {
       this.timeout(minimalTimeout);
       checkCachedRoute("/cache/chainnames", "object", done);
     });
-    it("it should GET the cached price", function (done) {
+    it("it should GET the cached price", done => {
       this.timeout(10000);
       checkCachedRoute("/cache/price", "object", done);
     });
-    it(`it should GET the cached price in less than ${minimalTimeout}ms`, function (done) {
+    it(`it should GET the cached price in less than ${minimalTimeout}ms`, done => {
       this.timeout(minimalTimeout);
       checkCachedRoute("/cache/price", "object", done);
     });
@@ -119,7 +116,7 @@ describe("Cache", () => {
       resEventEmpty.body.should.be.an("array");
       resEventEmpty.body.should.have.length(0);
     });
-    it(`it should GET all cached events in less than ${minimalTimeout}ms`, function (done) {
+    it(`it should GET all cached events in less than ${minimalTimeout}ms`, done => {
       this.timeout(minimalTimeout);
       checkCachedRoute("/cache/events", "array", done);
     });
@@ -132,7 +129,7 @@ describe("Cache", () => {
     it("it should invalidate the events cache", (done) => {
       checkCachedRoute("/cache/invalidate/events", "object", done);
     });
-    it("it should invalidate the token cache", function (done) {
+    it("it should invalidate the token cache", done => {
       this.timeout(5000);
       // Just a random token contract, can be replaced anytime if its not working anymore
       const tokenAddress = "ct_MRgnq6YXCi4Bd6CCks1bu8rTUfFmgLEAWWXVi7hSsJA4LZejs";
@@ -140,23 +137,23 @@ describe("Cache", () => {
     });
   });
   describe("WordBazaar", () => {
-    it("it should invalidate a wordSale cache", function (done) {
+    it("it should invalidate a wordSale cache", done => {
       this.timeout(25000);
       // Just a random token contract, can be replaced anytime if its not working anymore
       const wordSaleCtAddress = "ct_RJt3nE2xwpA1Y95pkwyH7M5VthQUBd2TcdxuDZguGatQzKrWM";
       checkCachedRoute(`/cache/invalidate/wordSale/${wordSaleCtAddress}`, "object", done);
     });
-    it("it should invalidate the wordRegistry cache", function (done) {
+    it("it should invalidate the wordRegistry cache", done => {
       this.timeout(25000);
       checkCachedRoute("/cache/invalidate/wordRegistry", "object", done);
     });
-    it("it should invalidate a wordSalesVote cache", function (done) {
+    it("it should invalidate a wordSalesVote cache", done => {
       this.timeout(25000);
       // Just a random token contract, can be replaced anytime if its not working anymore
       const wordSaleCtAddress = "ct_RJt3nE2xwpA1Y95pkwyH7M5VthQUBd2TcdxuDZguGatQzKrWM";
       checkCachedRoute(`/cache/invalidate/wordSaleVotes/${wordSaleCtAddress}`, "object", done);
     });
-    it("it should invalidate a wordSaleVoteState cache", function (done) {
+    it("it should invalidate a wordSaleVoteState cache", done => {
       this.timeout(25000);
       // Just a random token contract, can be replaced anytime if its not working anymore
       const wordSaleCtAddress = "ct_RJt3nE2xwpA1Y95pkwyH7M5VthQUBd2TcdxuDZguGatQzKrWM";

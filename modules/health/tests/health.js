@@ -1,24 +1,21 @@
-import { should, use } from "chai";
 import chaiHttp from "chai-http";
-import mocha from "mocha";
-import sinon from "sinon";
 import server from "../../../server.js";
 import aeternity from "../../aeternity/logic/aeternity.js";
 import ipfs from "../../backup/logic/ipfsLogic.js";
 
 const { describe, it } = mocha;
-should();
-use(chaiHttp);
+chai.should();
+chai.use(chaiHttp);
 describe("Health Endpoint", () => {
   describe("Backend Health", () => {
-    before(() => {
+    beforeAll(() => {
       ipfs.init();
     });
     afterEach(() => {
-      sinon.restore();
+      jest.restoreAllMocks();
     });
     it("it should GET a health endpoint answer", (done) => {
-      sinon.stub(aeternity, "getBalance").resolves("10");
+      jest.spyOn(aeternity, "getBalance").mockClear().mockImplementation().resolves("10");
       chai
         .request(server)
         .get("/health/backend")

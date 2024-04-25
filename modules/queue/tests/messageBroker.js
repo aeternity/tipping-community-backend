@@ -1,16 +1,13 @@
-import { should, use } from "chai";
-import mocha from "mocha";
-import sinon from "sinon";
 import { MESSAGE_QUEUES, MESSAGES } from "../constants/queue.js";
 import queueLogic from "../logic/queueLogic.js";
 import messageBroker from "../logic/messageBrokerLogic.js";
 
 const { describe, it } = mocha;
-should();
+chai.should();
 describe("Message Broker", () => {
   afterEach(async () => {
     await queueLogic.resetAll();
-    sinon.restore();
+    jest.restoreAllMocks();
   });
   describe("Forwarding", () => {
     it("should be able to forward one message to one queue", (done) => {

@@ -1,7 +1,4 @@
-import { should, use } from "chai";
 import chaiHttp from "chai-http";
-import mocha from "mocha";
-import sinon from "sinon";
 import server from "../../../server.js";
 import aeternity from "../../aeternity/logic/aeternity.js";
 import CacheLogic from "../../cache/logic/cacheLogic.js";
@@ -9,11 +6,11 @@ import cache from "../../cache/utils/cache.js";
 import { publicKey } from "../../../utils/testingUtil.js";
 
 const { describe, it, before } = mocha;
-should();
-use(chaiHttp);
-use(chaiHttp);
+chai.should();
+chai.use(chaiHttp);
+chai.use(chaiHttp);
 describe("Token Cache", () => {
-  before(async function () {
+  before(async () => {
     this.timeout(10000);
     await aeternity.init();
   });
@@ -23,7 +20,7 @@ describe("Token Cache", () => {
       sandbox = sinon.createSandbox();
     });
     afterEach(() => {
-      sandbox.restore();
+      sandbox.mockRestore();
     });
     // TODO create a way better test coverage
     it("it should GET token info", async () => {
@@ -50,8 +47,8 @@ describe("Token Cache", () => {
         symbol: "SOF",
       });
       // Check sideffects
-      sinon.assert.calledWith(getTokenAccountsStub, contractAddress);
-      sinon.assert.calledWith(tokenMetaInfoStub, contractAddress);
+      expect(getTokenAccountsStub).toHaveBeenCalledWith(contractAddress);
+      expect(tokenMetaInfoStub).toHaveBeenCalledWith(contractAddress);
       // Flush dirty cache
       await cache.del(["getTokenInfos"]);
     });
@@ -104,9 +101,9 @@ describe("Token Cache", () => {
         },
       ]);
       // Check for balance generation
-      sinon.assert.calledWith(getTokenAccountsStub, contractAddress);
-      getTokenAccountsStub.restore();
-      fetchTokenAccountBalancesStub.restore();
+      expect(getTokenAccountsStub).toHaveBeenCalledWith(contractAddress);
+      getTokenAccountsStub.mockRestore();
+      fetchTokenAccountBalancesStub.mockRestore();
       // Enfore balance regeneration
       await cache.del(["getTokenAccounts", contractAddress]);
       // Seed cache with existing token
@@ -130,9 +127,9 @@ describe("Token Cache", () => {
       sandbox = sinon.createSandbox();
     });
     afterEach(() => {
-      sandbox.restore();
+      sandbox.mockRestore();
     });
-    it("it should get the word registry overview", async function () {
+    it("it should get the word registry overview", async () => {
       this.timeout(25000);
       await cache.del(["wordRegistryData"]);
       sandbox.stub(aeternity, "fetchWordRegistryData").callsFake(async () => ({
@@ -203,7 +200,7 @@ describe("Token Cache", () => {
       resOrderAssetReverse.body.should.have.length(2);
       resOrderAssetReverse.body[0].should.have.property("word", "bigear");
     });
-    it("it should get a word registry contract overview", async function () {
+    it("it should get a word registry contract overview", async () => {
       this.timeout(15000);
       const ctAddress = "ct_RJt3nE2xwpA1Y95pkwyH7M5VthQUBd2TcdxuDZguGatQzKrWM";
       await cache.del(["wordSaleState", ctAddress]);
@@ -220,7 +217,7 @@ describe("Token Cache", () => {
       res.body.should.have.property("spread");
       res.body.should.have.property("description", "Join the grunge community");
     });
-    it("it should get a word contract by token", async function () {
+    it("it should get a word contract by token", async () => {
       this.timeout(10000);
       const wordCtAddress = "ct_RJt3nE2xwpA1Y95pkwyH7M5VthQUBd2TcdxuDZguGatQzKrWM";
       const tokenCtAddress = "ct_2CFSj7edTECkin7Lcf7AkVjn73gb3vC5oPQw34QyRkDuvnvuSW";
@@ -240,7 +237,7 @@ describe("Token Cache", () => {
       res.body.should.have.property("spread");
       res.body.should.have.property("description", "Join the grunge community");
     });
-    it("it should get a vote details from a word contract", async function () {
+    it("it should get a vote details from a word contract", async () => {
       this.timeout(10000);
       const wordCtAddress = "ct_2tAB3fS34GphhDvUfrBETiK4A61PVMYuFoLJBsD2Br6F5jvEm9";
       const res = await chai.request(server).get(`/tokenCache/wordSaleVotesDetails/${wordCtAddress}`);
@@ -263,7 +260,7 @@ describe("Token Cache", () => {
         stakePercent: "0",
       });
     });
-    it("it should get the token price history", async function () {
+    it("it should get the token price history", async () => {
       this.timeout(10000);
       const wordCtAddress = "ct_2n3AwDgQhGWWhh2CGe15cYhpoziHFraVTLbdQJjErbjYstdQHT";
       const res = await chai.request(server).get(`/tokenCache/priceHistory/${wordCtAddress}`);
@@ -278,7 +275,7 @@ describe("Token Cache", () => {
         perToken: "1.05",
       });
     });
-    it("it should get the token price history for a token without history", async function () {
+    it("it should get the token price history for a token without history", async () => {
       this.timeout(10000);
       const wordCtAddress = "ct_2tAB3fS34GphhDvUfrBETiK4A61PVMYuFoLJBsD2Br6F5jvEm9";
       const res = await chai.request(server).get(`/tokenCache/priceHistory/${wordCtAddress}`);

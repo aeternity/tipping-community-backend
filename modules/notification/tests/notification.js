@@ -1,7 +1,4 @@
-import { should, use } from "chai";
 import chaiHttp from "chai-http";
-import mocha from "mocha";
-import sinon from "sinon";
 import sequelize from "sequelize";
 import server from "../../../server.js";
 import { publicKey, performSignedGETRequest, performSignedJSONRequest, getDBSeedFunction } from "../../../utils/testingUtil.js";
@@ -11,8 +8,8 @@ import { ENTITY_TYPES, NOTIFICATION_TYPES, NOTIFICATION_STATES, SOURCE_TYPES } f
 const { describe, it } = mocha;
 const { Op } = sequelize;
 const { Notification, Comment, Retip } = models;
-should();
-use(chaiHttp);
+chai.should();
+chai.use(chaiHttp);
 describe("Notifications", () => {
   const testData = {
     receiver: publicKey,
@@ -22,8 +19,8 @@ describe("Notifications", () => {
     type: NOTIFICATION_TYPES.COMMENT_ON_COMMENT,
   };
   const seedDB = getDBSeedFunction([Retip, Notification, Comment]);
-  after(() => {
-    sinon.restore();
+  afterAll(() => {
+    jest.restoreAllMocks();
   });
   describe("Create Notifications", () => {
     let createdComment = null;
@@ -291,7 +288,7 @@ describe("Notifications", () => {
   describe("Modify Notifications", () => {
     let createdNotification;
     let createdNotification2;
-    before(async () => {
+    beforeAll(async () => {
       await Notification.destroy({
         where: {},
         truncate: true,

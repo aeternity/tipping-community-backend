@@ -1,41 +1,32 @@
-import { should, use } from "chai";
-import mocha from "mocha";
-import sinon from "sinon";
-import chaiAsPromised from "chai-as-promised";
 import BigNumber from "bignumber.js";
 import ae from "../logic/aeternity.js";
 import Trace from "../../payfortx/logic/traceLogic.js";
 
-const { describe, it, afterEach } = mocha;
-should();
-use(chaiAsPromised);
 // Our parent block
 describe("Aeternity", () => {
   describe("Init", () => {
-    it("it should init", async function () {
-      this.timeout(20000);
+    it("it should init", async () => {
       await ae.init();
-    });
+    }, 20000);
     it("it should get the network id", async () => {
       const result = await ae.networkId();
       result.should.equal("ae_uat");
     });
   });
   describe("Oracle", () => {
-    before(async function () {
-      this.timeout(20000);
+    beforeAll(async () => {
       await ae.init();
-    });
+    }, 20000);
     afterEach(() => {
-      sinon.restore();
+      jest.restoreAllMocks();
     });
-    it("it should get all oracle claimed urls", async function () {
+    it("it should get all oracle claimed urls", async () => {
       this.timeout(30000);
       const result = await ae.getOracleAllClaimedUrls();
       result.should.be.an("array");
       result.should.include("https://github.com/mradkov");
     });
-    it("it should get the oracle claim by url", async function () {
+    it("it should get the oracle claim by url", async () => {
       this.timeout(30000);
       const result = await ae.fetchOracleClaimByUrl("https://github.com/mradkov");
       result.should.be.an("object");
@@ -43,7 +34,7 @@ describe("Aeternity", () => {
       result.should.have.property("percentage");
       result.should.have.property("account");
     });
-    it("it should get the oracle claim by address", async function () {
+    it("it should get the oracle claim by address", async () => {
       this.timeout(30000);
       const result = await ae.fetchOracleClaimedUrls("ak_YCwfWaW5ER6cRsG9Jg4KMyVU59bQkt45WvcnJJctQojCqBeG2");
       result.should.be.an("array");
@@ -51,14 +42,14 @@ describe("Aeternity", () => {
     });
   });
   describe("Claiming", () => {
-    before(async function () {
+    beforeAll(async () => {
       this.timeout(20000);
       await ae.init();
     });
     afterEach(() => {
-      sinon.restore();
+      jest.restoreAllMocks();
     });
-    it("it should get the tips, retips & claims", async function () {
+    it("it should get the tips, retips & claims", async () => {
       this.timeout(20000);
       const result = await ae.fetchStateBasic();
       result.should.be.an("object");
@@ -95,7 +86,7 @@ describe("Aeternity", () => {
       firstClaim.should.have.property("claimGen");
       firstClaim.should.have.property("amount");
     });
-    it("it should fail pre-claiming an non existing tip", async function () {
+    it("it should fail pre-claiming an non existing tip", async () => {
       this.timeout(10000);
       // CHECK V2
       const resultV2 = await ae.getTotalClaimableAmount("https://probably.not.an.existing.tip", new Trace());
@@ -104,41 +95,50 @@ describe("Aeternity", () => {
     });
     const url = "https://probably.not.an.existing.tip";
     const address = "ak_YCwfWaW5ER6cRsG9Jg4KMyVU59bQkt45WvcnJJctQojCqBeG2";
-    it("it should succeed claiming with V1 stubs", async function () {
+    it("it should succeed claiming with V1 stubs", async () => {
       this.timeout(10000);
-      const stubClaimAmount = sinon.stub(ae, "getClaimableAmount").resolves(new BigNumber("1"));
-      const stubCheckClaim = sinon.stub(ae, "checkClaimOnContract").resolves(true);
-      const stubClaim = sinon.stub(ae, "claimOnContract").resolves(true);
+      const stubClaimAmount = jest.spyOn(ae, "getClaimableAmount").mockClear().mockImplementation().resolves(new BigNumber("1"));
+      const stubCheckClaim = jest.spyOn(ae, "checkClaimOnContract").mockClear().mockImplementation().resolves(true);
+      const stubClaim = jest.spyOn(ae, "claimOnContract").mockClear().mockImplementation().resolves(true);
       const trace = new Trace();
       await ae.claimTips(address, url, trace);
       stubClaimAmount.called.should.equal(true);
-      sinon.assert.calledWith(stubClaimAmount, url, trace);
+      expect(stubClaimAmount).toHaveBeenCalledWith(url, trace);
       stubCheckClaim.called.should.equal(true);
-      sinon.assert.calledWith(stubCheckClaim, address, url, trace);
+      expect(stubCheckClaim).toHaveBeenCalledWith(address, url, trace);
       stubClaim.called.should.equal(true);
-      sinon.assert.calledWith(stubClaim, address, url, trace);
+      expect(stubClaim).toHaveBeenCalledWith(address, url, trace);
     });
-    it("it should succeed claiming with V1 + V2 stubs", async function () {
+    it("it should succeed claiming with V1 + V2 stubs", async () => {
       this.timeout(10000);
-      const stubClaimAmount = sinon.stub(ae, "getClaimableAmount").onFirstCall().returns(new BigNumber("0")).onSecondCall().returns(new BigNumber("1"));
-      const stubCheckClaim = sinon.stub(ae, "checkClaimOnContract").resolves(true);
-      const stubClaim = sinon.stub(ae, "claimOnContract").resolves(true);
+      const stubClaimAmount = jest
+        .spyOn(ae, "getClaimableAmount")
+        .mockClear()
+        .onFirstCall()
+        .mockReturnValue(new BigNumber("0"))
+        .mockImplementation(() => {
+          if (jest.spyOn(ae, "getClaimableAmount").mockClear().onFirstCall().mockReturnValue(new BigNumber("0")).mock.calls.length === 1) {
+            return new BigNumber("1");
+          }
+        });
+      const stubCheckClaim = jest.spyOn(ae, "checkClaimOnContract").mockClear().mockImplementation().resolves(true);
+      const stubClaim = jest.spyOn(ae, "claimOnContract").mockClear().mockImplementation().resolves(true);
       const trace = new Trace();
       await ae.claimTips(address, url, trace);
       stubClaimAmount.calledTwice.should.equal(true);
-      sinon.assert.calledWith(stubClaimAmount, url, trace, sinon.match.object);
+      expect(stubClaimAmount).toHaveBeenCalledWith(url, trace, expect.any(Object));
       stubCheckClaim.calledOnce.should.equal(true);
-      sinon.assert.calledWith(stubCheckClaim, address, url);
+      expect(stubCheckClaim).toHaveBeenCalledWith(address, url);
       stubClaim.calledOnce.should.equal(true);
-      sinon.assert.calledWith(stubClaim, address, url);
+      expect(stubClaim).toHaveBeenCalledWith(address, url);
     });
   });
   describe("Tokens", () => {
     let tokenContractAddress;
     afterEach(() => {
-      sinon.restore();
+      jest.restoreAllMocks();
     });
-    it("it should get the token registry state", async function () {
+    it("it should get the token registry state", async () => {
       this.timeout(10000);
       const result = await ae.fetchTokenRegistryState();
       result.should.be.an("array");
@@ -154,7 +154,7 @@ describe("Aeternity", () => {
       firstEntry[1].should.have.property("symbol");
       [tokenContractAddress] = firstEntry;
     });
-    it("it should get the token meta info from a contract", async function () {
+    it("it should get the token meta info from a contract", async () => {
       this.timeout(10000);
       const result = await ae.fetchTokenMetaInfo(tokenContractAddress);
       result.should.be.an("object");
@@ -162,7 +162,7 @@ describe("Aeternity", () => {
       result.should.have.property("name");
       result.should.have.property("symbol");
     });
-    it("it should get the account balances from a contract", async function () {
+    it("it should get the account balances from a contract", async () => {
       this.timeout(10000);
       const result = await ae.fetchTokenAccountBalances(tokenContractAddress);
       result.should.be.an("array");
@@ -181,24 +181,30 @@ describe("Aeternity", () => {
     });
   });
   describe("Resilience", () => {
-    before(async function () {
+    beforeAll(async () => {
       this.timeout(10000);
       await ae.init();
     });
-    after(async function () {
+    afterAll(async () => {
       this.timeout(15000);
       await ae.resetClient();
     });
-    it("should handle a non responding compiler during runtime", async function () {
+    it("should handle a non responding compiler during runtime", async () => {
       this.timeout(10000);
       const client = ae.getClient();
       client.selectedNode.instance.url = "https://localhost";
-      const staticStub = sinon.stub(client, "contractCallStatic").callsFake(() => {
-        throw new Error("NETWORK ERROR");
-      });
-      const callStub = sinon.stub(client, "contractCall").callsFake(() => {
-        throw new Error("NETWORK ERROR");
-      });
+      const staticStub = jest
+        .spyOn(client, "contractCallStatic")
+        .mockClear()
+        .mockImplementation(() => {
+          throw new Error("NETWORK ERROR");
+        });
+      const callStub = jest
+        .spyOn(client, "contractCall")
+        .mockClear()
+        .mockImplementation(() => {
+          throw new Error("NETWORK ERROR");
+        });
       const state = await ae.fetchStateBasic();
       state.should.be.an("object");
       state.should.have.property("tips");
@@ -215,24 +221,24 @@ describe("Aeternity", () => {
       const registryState = await ae.fetchTokenRegistryState();
       registryState.should.be.an("array");
       registryState.should.have.length(0);
-      staticStub.restore();
-      callStub.restore();
+      staticStub.mockRestore();
+      callStub.mockRestore();
     });
-    it("should crash for a non responding node on startup", async function () {
+    it("should crash for a non responding node on startup", async () => {
       this.timeout(10000);
       const originalUrl = process.env.NODE_URL;
       process.env.NODE_URL = "https://localhost";
       await chai.expect(ae.resetClient()).to.eventually.be.rejectedWith("ECONNREFUSED");
       process.env.NODE_URL = originalUrl;
     });
-    it("should crash for a non responding compiler on startup", async function () {
+    it("should crash for a non responding compiler on startup", async () => {
       this.timeout(10000);
       const originalUrl = process.env.COMPILER_URL;
       process.env.COMPILER_URL = "https://localhost";
       await chai.expect(ae.resetClient()).to.eventually.be.rejectedWith("ECONNREFUSED");
       process.env.COMPILER_URL = originalUrl;
     });
-    after(async function () {
+    afterAll(async () => {
       this.timeout(10000);
       ae.client = null;
       await ae.init();

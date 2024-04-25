@@ -1,18 +1,15 @@
-import { should, use } from "chai";
 import chaiHttp from "chai-http";
-import mocha from "mocha";
-import sinon from "sinon";
 import axios from "axios";
 import mdwLogic from "../logic/mdwLogic.js";
 
 const { describe, it } = mocha;
-should();
-use(chaiHttp);
+chai.should();
+chai.use(chaiHttp);
 // Our parent block
 describe("Middleware", () => {
   describe("Events", () => {
     it("it should get the contract events from height now", async () => {
-      const getStub = sinon.stub(axios, "get").callsFake(
+      const getStub = jest.spyOn(axios, "get").mockClear().mockImplementation(
         () =>
           new Promise((resolve) =>
             setTimeout(
@@ -43,11 +40,17 @@ describe("Middleware", () => {
           ),
       );
       const transactions = await mdwLogic.middlewareContractTransactions(20, 0);
-      sinon.assert.calledWith(getStub, `${process.env.MIDDLEWARE_URL}/v2/txs?scope=gen:20-0&contract=${process.env.CONTRACT_V1_ADDRESS}&type=contract_call&limit=100`);
-      sinon.assert.calledWith(getStub, `${process.env.MIDDLEWARE_URL}/v2/txs?scope=gen:20-0&contract=${process.env.CONTRACT_V2_ADDRESS}&type=contract_call&limit=100`);
-      sinon.assert.calledWith(getStub, `${process.env.MIDDLEWARE_URL}/v2/txs?scope=gen:20-0&contract=${process.env.CONTRACT_V3_ADDRESS}&type=contract_call&limit=100`);
+      expect(getStub).toHaveBeenCalledWith(
+        `${process.env.MIDDLEWARE_URL}/v2/txs?scope=gen:20-0&contract=${process.env.CONTRACT_V1_ADDRESS}&type=contract_call&limit=100`
+      );
+      expect(getStub).toHaveBeenCalledWith(
+        `${process.env.MIDDLEWARE_URL}/v2/txs?scope=gen:20-0&contract=${process.env.CONTRACT_V2_ADDRESS}&type=contract_call&limit=100`
+      );
+      expect(getStub).toHaveBeenCalledWith(
+        `${process.env.MIDDLEWARE_URL}/v2/txs?scope=gen:20-0&contract=${process.env.CONTRACT_V3_ADDRESS}&type=contract_call&limit=100`
+      );
       transactions.should.be.an("array");
-      getStub.restore();
+      getStub.mockRestore();
     });
     it("it should return an empty array if the middleware is down", async () => {
       const originalUrl = process.env.MIDDLEWARE_URL;

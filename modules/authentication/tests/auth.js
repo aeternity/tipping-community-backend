@@ -1,12 +1,10 @@
-import { should, use } from "chai";
 import chaiHttp from "chai-http";
-import mocha from "mocha";
 import server from "../../../server.js";
 import { shouldBeValidChallengeResponse, signChallenge, publicKey, performSignedJSONRequest, performSignedGETRequest } from "../../../utils/testingUtil.js";
 
 const { describe, it } = mocha;
-should();
-use(chaiHttp);
+chai.should();
+chai.use(chaiHttp);
 // Our parent block
 describe("Authenticator", () => {
   const testData = {
@@ -37,7 +35,7 @@ describe("Authenticator", () => {
           done();
         });
     });
-    it("it should allow access with correct auth", function (done) {
+    it("it should allow access with correct auth", done => {
       this.timeout(10000);
       chai
         .request(server)

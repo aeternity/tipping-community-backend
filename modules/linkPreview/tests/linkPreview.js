@@ -1,8 +1,5 @@
-import { should, use } from "chai";
 import chaiHttp from "chai-http";
 import fs from "fs";
-import mocha from "mocha";
-import sinon from "sinon";
 import server from "../../../server.js";
 import models from "../../../models/index.js";
 import linkPreviewLogic from "../logic/linkPreviewLogic.js";
@@ -12,13 +9,13 @@ import ImageLogic from "../../media/logic/imageLogic.js";
 
 const { describe, it, before } = mocha;
 const { LinkPreview } = models;
-should();
-use(chaiHttp);
+chai.should();
+chai.use(chaiHttp);
 // Our parent block
 describe("LinkPreview", () => {
   const requestUrl = "https://aeternity.com/";
   const superHeroUrl = "https://superhero.com/tip/0_v1";
-  before(async function () {
+  before(async () => {
     this.timeout(25000);
     await LinkPreview.destroy({
       where: {},
@@ -28,7 +25,7 @@ describe("LinkPreview", () => {
   });
   describe("LinkPreview API", () => {
     let imageUrl;
-    it("it get link preview for aeternity.com", async function () {
+    it("it get link preview for aeternity.com", async () => {
       this.timeout(10000);
       const dbResult = await linkPreviewLogic.generatePreview(requestUrl);
       const preview = dbResult.toJSON();
@@ -47,7 +44,7 @@ describe("LinkPreview", () => {
       preview.should.have.property("failReason", null);
       imageUrl = preview.image;
     });
-    it("it get link preview for superhero.com", async function () {
+    it("it get link preview for superhero.com", async () => {
       this.timeout(25000);
       const dbResult = await linkPreviewLogic.generatePreview(superHeroUrl);
       const preview = dbResult.toJSON();
@@ -67,11 +64,11 @@ describe("LinkPreview", () => {
     });
     it("it should call the update function when receiving a mq item", (done) => {
       linkPreviewLogic.init();
-      const updateMock = sinon.stub(linkPreviewLogic, "updateLinkpreviewDatabase").callsFake(async () => {});
+      const updateMock = jest.spyOn(linkPreviewLogic, "updateLinkpreviewDatabase").mockClear().mockImplementation(async () => {});
       queueLogic.sendMessage(MESSAGE_QUEUES.LINKPREVIEW, MESSAGES.LINKPREVIEW.COMMANDS.UPDATE_DB);
       setTimeout(() => {
         updateMock.callCount.should.eql(1);
-        updateMock.restore();
+        updateMock.mockRestore();
         done();
       }, 100);
     });
@@ -106,7 +103,7 @@ describe("LinkPreview", () => {
           done();
         });
     });
-    it("it should fail gracefully", async function () {
+    it("it should fail gracefully", async () => {
       this.timeout(10000);
       const dbResult = await linkPreviewLogic.generatePreview("http://httpstat.us/400");
       dbResult.should.have.property("requestUrl", "http://httpstat.us/400");
@@ -117,7 +114,7 @@ describe("LinkPreview", () => {
       dbResult.should.have.property("responseUrl", null);
       dbResult.should.have.property("lang", null);
     });
-    after(() => {
+    afterAll(() => {
       fs.readdirSync("images")
         .filter((fileName) => fileName.includes("preview-"))
         .map((file) => fs.unlinkSync(`images/${file}`));

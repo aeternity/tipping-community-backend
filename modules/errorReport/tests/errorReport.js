@@ -1,13 +1,11 @@
-import { should, use } from "chai";
 import chaiHttp from "chai-http";
-import mocha from "mocha";
 import server from "../../../server.js";
 import models from "../../../models/index.js";
 
 const { describe, it, before } = mocha;
 const { ErrorReport } = models;
-should();
-use(chaiHttp);
+chai.should();
+chai.use(chaiHttp);
 // Our parent block
 describe("Error Reports", () => {
   before((done) => {

@@ -70,7 +70,7 @@ const PayForTxLogic = {
   },
   async postForUser({ title, media, author, signature }) {
     const hashResult = hash(tippingContractUtil.postWithoutTippingString(title, media));
-    const verified = verifyMessage(hashResult.toString(), signature, author);
+    const verified = verifyMessage(hashResult.toString('hex'), signature, author);
     if (!verified) {
       return {
         error: "The signature does not match the public key or the content",

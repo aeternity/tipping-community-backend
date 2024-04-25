@@ -105,12 +105,12 @@ describe("Pay for TX", () => {
       };
       const message = tippingContractUtil.postWithoutTippingString(testData.title, testData.media);
       const hashResult = hash(message);
-      const signature = signMessage(hashResult.toString(), Buffer.from(secretKey, "hex"));
+      const signature = signMessage(hashResult.toString('hex'), Buffer.from(secretKey, "hex"));
       sinon.stub(ae, "postTipToV3").callsFake((title, media, author, passedSignature) => {
         title.should.equal(testData.title);
         media.should.deep.equal(testData.media);
         author.should.equal(publicKey);
-        const verified = verifyMessage(hashResult.toString(), passedSignature, publicKey);
+        const verified = verifyMessage(hashResult.toString('hex'), passedSignature, publicKey);
         verified.should.equal(true);
         return { hash: "hash", decodedResult: "1" };
       });

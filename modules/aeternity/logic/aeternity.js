@@ -53,12 +53,12 @@ const aeternity = {
       });
 
       contractV1 = await client.initializeContract({
-        ACI: TIPPING_V1_INTERFACE,
+        aci: TIPPING_V1_INTERFACE,
         address: process.env.CONTRACT_V1_ADDRESS,
       });
       if (process.env.CONTRACT_V1_GETTER_ADDRESS) {
         contractV1Getter = await client.initializeContract({
-          ACI: TIPPING_V1_GETTER,
+          aci: TIPPING_V1_GETTER,
           address: process.env.CONTRACT_V1_GETTER_ADDRESS,
         });
         logger.info("Starting WITH V1 GETTER contract");
@@ -67,7 +67,7 @@ const aeternity = {
       }
       if (process.env.CONTRACT_V2_ADDRESS) {
         contractV2 = await client.initializeContract({
-          ACI: TIPPING_V2_INTERFACE,
+          aci: TIPPING_V2_INTERFACE,
           address: process.env.CONTRACT_V2_ADDRESS,
         });
         logger.info("Starting WITH V2 contract");
@@ -76,7 +76,7 @@ const aeternity = {
       }
       if (process.env.CONTRACT_V3_GETTER_ADDRESS) {
         contractV3Getter = await client.initializeContract({
-          ACI: TIPPING_V3_GETTER,
+          aci: TIPPING_V3_GETTER,
           address: process.env.CONTRACT_V3_GETTER_ADDRESS,
         });
         logger.info("Starting WITH V3 GETTER contract");
@@ -85,7 +85,7 @@ const aeternity = {
       }
       if (process.env.CONTRACT_V3_ADDRESS) {
         contractV3 = await client.initializeContract({
-          ACI: TIPPING_V3_INTERFACE,
+          aci: TIPPING_V3_INTERFACE,
           address: process.env.CONTRACT_V3_ADDRESS,
         });
         logger.info("Starting WITH V3 contract");
@@ -94,7 +94,7 @@ const aeternity = {
       }
       if (process.env.CONTRACT_V4_ADDRESS) {
         contractV4 = await client.initializeContract({
-          ACI: TIPPING_V4_INTERFACE,
+          aci: TIPPING_V4_INTERFACE,
           address: process.env.CONTRACT_V4_ADDRESS,
         });
         logger.info("Starting WITH V4 contract");
@@ -102,16 +102,16 @@ const aeternity = {
         logger.info("Starting WITHOUT V4 contract");
       }
       oracleContract = await client.initializeContract({
-        ACI: ORACLE_SERVICE_INTERFACE,
+        aci: ORACLE_SERVICE_INTERFACE,
         address: process.env.ORACLE_CONTRACT_ADDRESS,
       });
       oracleGetter = await client.initializeContract({
-        ACI: ORACLE_GETTER,
+        aci: ORACLE_GETTER,
         address: process.env.ORACLE_GETTER_ADDRESS,
       });
       if (process.env.WORD_REGISTRY_CONTRACT) {
         wordRegistryContract = await client.initializeContract({
-          ACI: WORD_REGISTRY_INTERFACE,
+          aci: WORD_REGISTRY_INTERFACE,
           address: process.env.WORD_REGISTRY_CONTRACT,
         });
         logger.info("Starting WITH WORD REGISTRY contract");
@@ -119,7 +119,7 @@ const aeternity = {
         logger.info("Starting WITHOUT WORD REGISTRY contract");
       }
       tokenRegistry = await client.initializeContract({
-        ACI: TOKEN_REGISTRY,
+        aci: TOKEN_REGISTRY,
         address: process.env.TOKEN_REGISTRY_ADDRESS,
       });
     }
@@ -141,12 +141,12 @@ const aeternity = {
     const address = await client.address();
     return client.getBalance(address);
   },
-  decodeEvents(logs, ACI, contractName) {
+  decodeEvents(logs, aci, contractName) {
     return logs
       .map((log) => {
         try {
           const event = Object.entries(
-            new AciContractCallEncoder(ACI).decodeEvent(
+            new AciContractCallEncoder(aci).decodeEvent(
               contractName,
               log.data,
               log.topics.map((topic) => BigInt(topic)),
@@ -168,6 +168,7 @@ const aeternity = {
     // probably a of tx that do not have logs
     if (!log || !log.length) return [];
 
+    // TODO: replace with ACIs
     const decodedEvents = [
       ...aeternity.decodeEvents(log, FUNGIBLE_TOKEN_FULL_ACI, "FungibleTokenFull"),
       ...((process.env.CONTRACT_V1_ADDRESS && aeternity.decodeEvents(log, TIPPING_V1_INTERFACE, "Tipping_v1")) || []),

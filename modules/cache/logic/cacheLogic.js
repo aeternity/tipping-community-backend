@@ -1,7 +1,7 @@
 import BigNumber from "bignumber.js";
 import AsyncLock from "async-lock";
 import axios from "axios";
-import aeppSdk from "@aeternity/aepp-sdk";
+import { isAddressValid } from "@aeternity/aepp-sdk";
 import aeternity from "../../aeternity/logic/aeternity.js";
 import cache from "../utils/cache.js";
 import queueLogic from "../../queue/logic/queueLogic.js";
@@ -9,14 +9,8 @@ import TipLogic from "../../tip/logic/tipLogic.js";
 import MdwLogic from "../../aeternity/logic/mdwLogic.js";
 import { MESSAGES, MESSAGE_QUEUES } from "../../queue/constants/queue.js";
 import loggerFactory from "../../../utils/logger.js";
-// use to handle es6 import/export
-// import transformation from '@aeternity/aepp-sdk/es/contract/aci/transformation.js';
-// const { decodeEvents, SOPHIA_TYPES } = transformation;
-// replace with dummy code
-const decodeEvents = () => {};
-const SOPHIA_TYPES = {};
+import WORD_SALE_INTERFACE from "wordbazaar-contracts/TokenSaleInterface.aes.js";
 
-const { Crypto } = aeppSdk;
 const lock = new AsyncLock();
 const logger = loggerFactory(import.meta.url);
 const CacheLogic = {
@@ -84,7 +78,11 @@ const CacheLogic = {
   },
   async getWordSaleDetails(address) {
     const wordSaleState = await cache.getOrSet(["wordSaleState", address], () => aeternity.wordSaleState(address));
-    const totalSupply = cache.getOrSet(["fungibleTokenTotalSupply", wordSaleState.token], async () => aeternity.fungibleTokenTotalSupply(wordSaleState.token), cache.shortCacheTime);
+    const totalSupply = cache.getOrSet(
+      ["fungibleTokenTotalSupply", wordSaleState.token],
+      async () => aeternity.fungibleTokenTotalSupply(wordSaleState.token),
+      cache.shortCacheTime,
+    );
     const price = cache.getOrSet(["wordSalePrice", address], () => aeternity.wordSalePrice(address), cache.shortCacheTime);
     const [buy, sell] = await price;
     return {
@@ -100,16 +98,11 @@ const CacheLogic = {
   async wordPriceHistory(wordSale) {
     const height = await aeternity.getHeight();
     const txs = await MdwLogic.getContractTransactions(height, 0, wordSale);
-    const eventsSchema = [
-      { name: "Buy", types: [SOPHIA_TYPES.address, SOPHIA_TYPES.int, SOPHIA_TYPES.int] },
-      { name: "Sell", types: [SOPHIA_TYPES.address, SOPHIA_TYPES.int, SOPHIA_TYPES.int] },
-    ];
     return txs
       .flatMap((tx) => {
         const decodedEvent = () => {
-          const decodedEvents = decodeEvents(tx.tx.log, { schema: eventsSchema })
-            .flatMap(({ name, decoded }) => ({ name, decoded }))
-            .filter((log) => log.decoded.length);
+          const decodedEvents = aeternity.decodeEvents(tx.tx.log, WORD_SALE_INTERFACE, "TokenSale");
+          // FIXME: there could be more than one legit event per tx
           if (decodedEvents.length === 1) {
             const [event] = decodedEvents;
             switch (event.name) {
@@ -156,7 +149,10 @@ const CacheLogic = {
   },
   async wordSaleDetailsByToken(address) {
     const wordRegistryData = await CacheLogic.getWordRegistryData();
-    const wordDetails = await wordRegistryData.tokens.asyncMap(async ([, wordSale]) => ({ tokenAddress: await CacheLogic.getWordSaleTokenAddress(wordSale), sale: wordSale }));
+    const wordDetails = await wordRegistryData.tokens.asyncMap(async ([, wordSale]) => ({
+      tokenAddress: await CacheLogic.getWordSaleTokenAddress(wordSale),
+      sale: wordSale,
+    }));
     const saleDetails = wordDetails.find((sale) => sale.tokenAddress === address);
     return saleDetails ? CacheLogic.getWordSaleDetails(saleDetails.sale) : null;
   },
@@ -177,7 +173,11 @@ const CacheLogic = {
     const ifAgainstZero = votedFor === 0 ? 0 : 100;
     const votedPositive = new BigNumber(votedFor).dividedBy(new BigNumber(votedFor).plus(votedAgainst)).times(100).toFixed(0);
     const tokenAddress = CacheLogic.getWordSaleTokenAddress(sale);
-    const totalSupply = cache.getOrSet(["fungibleTokenTotalSupply", await tokenAddress], async () => aeternity.fungibleTokenTotalSupply(await tokenAddress), cache.shortCacheTime);
+    const totalSupply = cache.getOrSet(
+      ["fungibleTokenTotalSupply", await tokenAddress],
+      async () => aeternity.fungibleTokenTotalSupply(await tokenAddress),
+      cache.shortCacheTime,
+    );
     const stakePercent = (await totalSupply)
       ? new BigNumber(votedFor)
           .dividedBy(await totalSupply)
@@ -212,7 +212,7 @@ const CacheLogic = {
       async () => {
         const chainNames = await CacheLogic.fetchMdwChainNames();
         return Object.entries(chainNames).reduce((acc, [pubkey, names]) => {
-          if (Crypto.isAddressValid(pubkey)) {
+          if (isAddressValid(pubkey)) {
             const profile = profiles.find((p) => p.author === pubkey);
             const preferredChainName = profile ? profile.preferredChainName : null;
             acc[pubkey] = preferredChainName || names[0];

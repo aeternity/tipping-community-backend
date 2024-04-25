@@ -1,10 +1,9 @@
-import aeppSdk from "@aeternity/aepp-sdk";
 import { v4 as uuidv4 } from "uuid";
 import urlParser from "url";
 import imageLogic from "../../media/logic/imageLogic.js";
 import loggerFactory from "../../../utils/logger.js";
 import actions from "../constants/actions.js";
-const { verifyMessage, decodeBase58Check, hash } = aeppSdk.Crypto;
+import { verifyMessage, hash } from "@aeternity/aepp-sdk";
 const logger = loggerFactory(import.meta.url);
 const MemoryQueue = [];
 const VERSION = "2-0-0";
@@ -53,10 +52,8 @@ const authenticationLogic = {
         // we have to verify req.params.author first
         const publicKey = req.params.author ? req.params.author : body.author;
         if (!publicKey) sendError("Could not find associated public key");
-        const author = decodeBase58Check(publicKey.substring(3));
-        const authString = Buffer.from(originalChallenge);
         const signatureArray = Uint8Array.from(Buffer.from(signature, "hex"));
-        const validRequest = verifyMessage(authString, signatureArray, author);
+        const validRequest = verifyMessage(originalChallenge, signatureArray, publicKey);
         if (validRequest) {
           // Remove challenge from active queue
           const queueIndex = MemoryQueue.findIndex((item) => (item || {}).challenge === req.body.challenge);

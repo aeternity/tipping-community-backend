@@ -30,10 +30,11 @@
   },
   "homepage": "https://github.com/aeternity/tipping-community-backend#readme",
   "dependencies": {
-    "@aeternity/aepp-sdk": "^9.0.1",
+    "@aeternity/aepp-calldata": "^1.7.0",
+    "@aeternity/aepp-sdk": "^13.3.2",
     "@sentry/node": "^7.112.0",
     "@sentry/tracing": "^7.112.0",
-    "aeternity-fungible-token": "git+https://git@github.com/aeternity/aeternity-fungible-token#v2.0.0",
+    "aeternity-fungible-token": "git+https://git@github.com/aeternity/aeternity-fungible-token.git#v2.2.0",
     "async-lock": "^1.4.1",
     "axios": "^1.6.8",
     "bignumber.js": "^9.1.2",

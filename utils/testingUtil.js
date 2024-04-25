@@ -1,5 +1,5 @@
-import aeppSdk from "@aeternity/aepp-sdk";
-import { should, use } from "chai";
+import { signMessage, generateKeyPair, hash } from "@aeternity/aepp-sdk";
+import { use } from "chai";
 import chaiHttp from "chai-http";
 import fs from "fs";
 import sinon from "sinon";
@@ -7,7 +7,6 @@ import aeternity from "../modules/aeternity/logic/aeternity.js";
 import TipLogic from "../modules/tip/logic/tipLogic.js";
 import models from "../models/index.js";
 
-const { signMessage, generateKeyPair, hash } = aeppSdk.Crypto;
 const { Tip } = models;
 use(chaiHttp);
 const { publicKey, secretKey } = generateKeyPair();

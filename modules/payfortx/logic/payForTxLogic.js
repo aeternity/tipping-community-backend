@@ -1,4 +1,3 @@
-import aeppSdk from "@aeternity/aepp-sdk";
 import tippingContractUtil from "tipping-contract/util/tippingContractUtil.js";
 import loggerFactory from "../../../utils/logger.js";
 import aeternity from "../../aeternity/logic/aeternity.js";
@@ -6,7 +5,7 @@ import CacheLogic from "../../cache/logic/cacheLogic.js";
 import TipLogic from "../../tip/logic/tipLogic.js";
 import Trace from "./traceLogic.js";
 import { TRACE_STATES } from "../constants/traceStates.js";
-const { Crypto } = aeppSdk;
+import { hash, verifyMessage } from "@aeternity/aepp-sdk";
 const logger = loggerFactory(import.meta.url);
 const PayForTxLogic = {
   async claimTip(url, address) {
@@ -70,8 +69,8 @@ const PayForTxLogic = {
     }
   },
   async postForUser({ title, media, author, signature }) {
-    const hash = Crypto.hash(tippingContractUtil.postWithoutTippingString(title, media));
-    const verified = Crypto.verifyMessage(hash, signature, Crypto.decodeBase58Check(author.substr(3)));
+    const hashResult = hash(tippingContractUtil.postWithoutTippingString(title, media));
+    const verified = verifyMessage(hashResult.toString(), signature, author);
     if (!verified) {
       return {
         error: "The signature does not match the public key or the content",

@@ -2,7 +2,7 @@ import { should, use } from "chai";
 import chaiHttp from "chai-http";
 import mocha from "mocha";
 import sinon from "sinon";
-import aeppSdk from "@aeternity/aepp-sdk";
+import { hash, signMessage, verifyMessage } from "@aeternity/aepp-sdk";
 import tippingContractUtil from "tipping-contract/util/tippingContractUtil.js";
 import BigNumber from "bignumber.js";
 import ae from "../../aeternity/logic/aeternity.js";
@@ -13,7 +13,6 @@ import { TRACE_STATES } from "../constants/traceStates.js";
 import { publicKey, secretKey } from "../../../utils/testingUtil.js";
 
 const { describe, it, before } = mocha;
-const { Crypto } = aeppSdk;
 should();
 use(chaiHttp);
 // Our parent block
@@ -105,13 +104,13 @@ describe("Pay for TX", () => {
         media: ["https://complicated.domain.test"],
       };
       const message = tippingContractUtil.postWithoutTippingString(testData.title, testData.media);
-      const hash = Crypto.hash(message);
-      const signature = Crypto.signMessage(hash, Buffer.from(secretKey, "hex"));
+      const hashResult = hash(message);
+      const signature = signMessage(hashResult.toString(), Buffer.from(secretKey, "hex"));
       sinon.stub(ae, "postTipToV3").callsFake((title, media, author, passedSignature) => {
         title.should.equal(testData.title);
         media.should.deep.equal(testData.media);
         author.should.equal(publicKey);
-        const verified = Crypto.verifyMessage(hash, passedSignature, Crypto.decodeBase58Check(publicKey.substr(3)));
+        const verified = verifyMessage(hashResult.toString(), passedSignature, publicKey);
         verified.should.equal(true);
         return { hash: "hash", decodedResult: "1" };
       });

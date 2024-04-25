@@ -1,13 +1,12 @@
 import { should, use } from "chai";
 import chaiHttp from "chai-http";
 import mocha from "mocha";
-import aeppSdk from "@aeternity/aepp-sdk";
+import { generateKeyPair } from "@aeternity/aepp-sdk";
 import server from "../../../server.js";
 import models from "../../../models/index.js";
 import { publicKey, signChallenge, performSignedJSONRequest, getDBSeedFunction } from "../../../utils/testingUtil.js";
 
 const { describe, it } = mocha;
-const { generateKeyPair } = aeppSdk.Crypto;
 const { Pin } = models;
 should();
 use(chaiHttp);

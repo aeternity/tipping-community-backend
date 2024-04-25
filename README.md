@@ -31,8 +31,9 @@ npm i
 #### Start a database & redis
 
 ```bash
+docker run --rm --name redis -p 6379:6379 -d redis
 docker run --rm --name ipfs -p 5001:5001 -d ipfs/go-ipfs
-docker run --name superhero-postgres -e POSTGRES_PASSWORD=postgres -e POSTGRES_USER=postgres -e POSTGRES_DB=superhero -p5432:5432 -d postgres
+docker run --rm --name superhero-postgres -e POSTGRES_PASSWORD=postgres -e POSTGRES_USER=postgres -e POSTGRES_DB=superhero -p5432:5432 -d postgres
 ```
 
 #### Copy Env

@@ -1,57 +1,62 @@
-import Sequelize from "sequelize";
-("use strict");
+'use strict';
+
+var Sequelize = require('sequelize');
+
 /**
  * Actions summary:
  *
  **/
+
 var info = {
-  revision: 19,
-  name: "sender-aggregation-materialized-view",
-  created: "2021-03-24T17:52:44.945Z",
-  comment: "",
+    "revision": 19,
+    "name": "sender-aggregation-materialized-view",
+    "created": "2021-03-24T17:52:44.945Z",
+    "comment": ""
 };
-var migrationCommands = function (transaction) {
-  return [];
+
+var migrationCommands = function(transaction) {
+    return [];
 };
-var rollbackCommands = function (transaction) {
-  return [];
+var rollbackCommands = function(transaction) {
+    return [];
 };
-export const pos = 0;
-export const useTransaction = true;
-export const execute = moduleExports.execute;
-export const up = moduleExports.up;
-export const down = moduleExports.down;
-const moduleExports = {
-  pos,
-  useTransaction,
-  execute: function (queryInterface, Sequelize, _commands) {
-    var index = this.pos;
-    function run(transaction) {
-      const commands = _commands(transaction);
-      return new Promise(function (resolve, reject) {
-        function next() {
-          if (index < commands.length) {
-            let command = commands[index];
-            console.log("[#" + index + "] execute: " + command.fn);
-            index++;
-            queryInterface[command.fn].apply(queryInterface, command.params).then(next, reject);
-          } else resolve();
+
+module.exports = {
+    pos: 0,
+    useTransaction: true,
+    execute: function(queryInterface, Sequelize, _commands)
+    {
+        var index = this.pos;
+        function run(transaction) {
+            const commands = _commands(transaction);
+            return new Promise(function(resolve, reject) {
+                function next() {
+                    if (index < commands.length)
+                    {
+                        let command = commands[index];
+                        console.log("[#"+index+"] execute: " + command.fn);
+                        index++;
+                        queryInterface[command.fn].apply(queryInterface, command.params).then(next, reject);
+                    }
+                    else
+                        resolve();
+                }
+                next();
+            });
         }
-        next();
-      });
-    }
-    if (this.useTransaction) {
-      return queryInterface.sequelize.transaction(run);
-    } else {
-      return run(null);
-    }
-  },
-  up: async function (queryInterface, Sequelize) {
-    const transaction = await queryInterface.sequelize.transaction();
-    await queryInterface.sequelize.query('CREATE INDEX tip_sender_idx ON "Tips" ("sender");', { transaction });
-    await queryInterface.sequelize.query('CREATE INDEX retip_sender_idx ON "Retips" ("sender");', { transaction });
-    await queryInterface.sequelize.query(
-      `
+        if (this.useTransaction) {
+            return queryInterface.sequelize.transaction(run);
+        } else {
+            return run(null);
+        }
+    },
+    up: async function(queryInterface, Sequelize)
+    {
+      const transaction = await queryInterface.sequelize.transaction();
+      await queryInterface.sequelize.query('CREATE INDEX tip_sender_idx ON "Tips" ("sender");', { transaction });
+      await queryInterface.sequelize.query('CREATE INDEX retip_sender_idx ON "Retips" ("sender");', { transaction });
+
+      await queryInterface.sequelize.query(`
 CREATE MATERIALIZED VIEW SenderStats AS
 SELECT "Tip"."sender",
 
@@ -161,17 +166,14 @@ SELECT "Tip"."sender",
               GROUP BY tokenAmounts.token)))                                           AS "totalTokenClaimedAmount"
 FROM "Tips" as "Tip"
 GROUP BY "Tip"."sender";
-              `,
-      { transaction },
-    );
-    await queryInterface.sequelize.query(
-      `
+              `, { transaction });
+
+
+      await queryInterface.sequelize.query(`
 CREATE UNIQUE INDEX SenderStats_sender_idx
-    ON SenderStats (sender);`,
-      { transaction },
-    );
-    await queryInterface.sequelize.query(
-      `
+    ON SenderStats (sender);`, { transaction });
+
+      await queryInterface.sequelize.query(`
 CREATE FUNCTION refresh_senderstats_aggregation()
     RETURNS TRIGGER
     LANGUAGE plpgsql
@@ -181,51 +183,45 @@ BEGIN
     REFRESH MATERIALIZED VIEW SenderStats;
     RETURN NULL;
 END
-$$;`,
-      { transaction },
-    );
-    await queryInterface.sequelize.query(
-      `
+$$;`, { transaction });
+
+      await queryInterface.sequelize.query(`
 CREATE TRIGGER refresh_senderstats_aggregation
     AFTER INSERT OR UPDATE OR DELETE OR TRUNCATE
     ON "Tips"
     FOR EACH STATEMENT
-EXECUTE PROCEDURE refresh_senderstats_aggregation();`,
-      { transaction },
-    );
-    await queryInterface.sequelize.query(
-      `
+EXECUTE PROCEDURE refresh_senderstats_aggregation();`, { transaction });
+
+      await queryInterface.sequelize.query(`
 CREATE TRIGGER refresh_senderstats_aggregation
     AFTER INSERT OR UPDATE OR DELETE OR TRUNCATE
     ON "Retips"
     FOR EACH STATEMENT
-EXECUTE PROCEDURE refresh_senderstats_aggregation();`,
-      { transaction },
-    );
-    await queryInterface.sequelize.query(
-      `
+EXECUTE PROCEDURE refresh_senderstats_aggregation();`, { transaction });
+
+      await queryInterface.sequelize.query(`
 CREATE TRIGGER refresh_senderstats_aggregation
     AFTER INSERT OR UPDATE OR DELETE OR TRUNCATE
     ON "Claims"
     FOR EACH STATEMENT
-EXECUTE PROCEDURE refresh_senderstats_aggregation();`,
-      { transaction },
-    );
-    await transaction.commit();
-    return this.execute(queryInterface, Sequelize, migrationCommands);
-  },
-  down: async function (queryInterface, Sequelize) {
-    const transaction = await queryInterface.sequelize.transaction();
-    await queryInterface.sequelize.query("DROP MATERIALIZED VIEW SenderStats CASCADE;", { transaction });
-    await queryInterface.sequelize.query("DROP INDEX tip_sender_idx;", { transaction });
-    await queryInterface.sequelize.query("DROP INDEX retip_sender_idx;", { transaction });
-    await queryInterface.sequelize.query('DROP TRIGGER refresh_senderstats_aggregation ON "Tips" CASCADE;', { transaction });
-    await queryInterface.sequelize.query('DROP TRIGGER refresh_senderstats_aggregation ON "Retips" CASCADE;', { transaction });
-    await queryInterface.sequelize.query("DROP FUNCTION refresh_senderstats_aggregation CASCADE;", { transaction });
-    await transaction.commit();
-    return this.execute(queryInterface, Sequelize, rollbackCommands);
-  },
-  info: info,
+EXECUTE PROCEDURE refresh_senderstats_aggregation();`, { transaction });
+
+      await transaction.commit();
+      return this.execute(queryInterface, Sequelize, migrationCommands);
+    },
+    down: async function(queryInterface, Sequelize)
+    {
+      const transaction = await queryInterface.sequelize.transaction();
+      await queryInterface.sequelize.query('DROP MATERIALIZED VIEW SenderStats CASCADE;', { transaction });
+      await queryInterface.sequelize.query('DROP INDEX tip_sender_idx;', { transaction });
+      await queryInterface.sequelize.query('DROP INDEX retip_sender_idx;', { transaction });
+
+      await queryInterface.sequelize.query('DROP TRIGGER refresh_senderstats_aggregation ON "Tips" CASCADE;', { transaction });
+      await queryInterface.sequelize.query('DROP TRIGGER refresh_senderstats_aggregation ON "Retips" CASCADE;', { transaction });
+      await queryInterface.sequelize.query('DROP FUNCTION refresh_senderstats_aggregation CASCADE;', { transaction });
+      await transaction.commit();
+
+      return this.execute(queryInterface, Sequelize, rollbackCommands);
+    },
+    info: info
 };
-export { info };
-export default moduleExports;

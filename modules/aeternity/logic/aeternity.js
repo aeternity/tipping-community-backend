@@ -2,12 +2,12 @@ import { Node, MemoryAccount, AeSdk } from "@aeternity/aepp-sdk";
 import BigNumber from "bignumber.js";
 import Sentry from "@sentry/node";
 // TODO replace with ACI
-import TIPPING_V1_INTERFACE from "tipping-contract/Tipping_v1_Interface.aes.js";
-import TIPPING_V1_GETTER from "tipping-contract/Tipping_v1_Getter.aes.js";
-import TIPPING_V2_INTERFACE from "tipping-contract/Tipping_v2_Interface.aes.js";
-import TIPPING_V3_GETTER from "tipping-contract/Tipping_v3_Getter.aes.js";
-import TIPPING_V3_INTERFACE from "tipping-contract/Tipping_v3_Interface.aes.js";
-import TIPPING_V4_INTERFACE from "tipping-contract/Tipping_v4_Interface.aes.js";
+import TIPPING_V1_ACI from "tipping-contract/generated/Tipping_v1.aci.json" assert { type: "json" };
+import TIPPING_V1_GETTER_ACI from "tipping-contract/generated/Tipping_v1_Getter.aci.json" assert { type: "json" };
+import TIPPING_V2_ACI from "tipping-contract/generated/Tipping_v2.aci.json" assert { type: "json" };
+import TIPPING_V3_ACI from "tipping-contract/generated/Tipping_v3.aci.json" assert { type: "json" };
+import TIPPING_V3_GETTER_ACI from "tipping-contract/generated/Tipping_v3_Getter.aci.json" assert { type: "json" };
+import TIPPING_V4_ACI from "tipping-contract/generated/Tipping_v4.aci.json" assert { type: "json" };
 import ORACLE_SERVICE_INTERFACE from "tipping-oracle-service/OracleServiceInterface.aes.js";
 import ORACLE_GETTER from "tipping-oracle-service/OracleGetter.aes.js";
 import TOKEN_CONTRACT_INTERFACE from "aeternity-fungible-token/FungibleTokenFullInterface.aes.js";
@@ -15,7 +15,7 @@ import TOKEN_REGISTRY from "token-registry/TokenRegistryInterface.aes.js";
 import WORD_REGISTRY_INTERFACE from "wordbazaar-contracts/WordRegistryInterface.aes.js";
 import WORD_SALE_INTERFACE from "wordbazaar-contracts/TokenSaleInterface.aes.js";
 import TOKEN_VOTING_CONTRACT from "wordbazaar-contracts/TokenVotingInterface.aes.js";
-import FUNGIBLE_TOKEN_FULL_ACI from "aeternity-fungible-token/generated/FungibleTokenFull.aci.json" with { type: "json" };
+import FUNGIBLE_TOKEN_FULL_ACI from "aeternity-fungible-token/generated/FungibleTokenFull.aci.json" assert { type: "json" };
 import loggerFactory from "../../../utils/logger.js";
 import basicTippingContractUtil from "../../../utils/basicTippingContractUtil.js";
 import { TRACE_STATES } from "../../payfortx/constants/traceStates.js";
@@ -37,7 +37,7 @@ let tokenRegistry;
 const tokenContracts = {};
 const wordSaleContracts = {};
 const tokenVotingContracts = {};
-const tempCallOptions = { gas: 100000000000 };
+
 const aeternity = {
   async init() {
     if (!client) {
@@ -53,12 +53,12 @@ const aeternity = {
       });
 
       contractV1 = await client.initializeContract({
-        aci: TIPPING_V1_INTERFACE,
+        aci: TIPPING_V1_ACI,
         address: process.env.CONTRACT_V1_ADDRESS,
       });
       if (process.env.CONTRACT_V1_GETTER_ADDRESS) {
         contractV1Getter = await client.initializeContract({
-          aci: TIPPING_V1_GETTER,
+          aci: TIPPING_V1_GETTER_ACI,
           address: process.env.CONTRACT_V1_GETTER_ADDRESS,
         });
         logger.info("Starting WITH V1 GETTER contract");
@@ -67,7 +67,7 @@ const aeternity = {
       }
       if (process.env.CONTRACT_V2_ADDRESS) {
         contractV2 = await client.initializeContract({
-          aci: TIPPING_V2_INTERFACE,
+          aci: TIPPING_V2_ACI,
           address: process.env.CONTRACT_V2_ADDRESS,
         });
         logger.info("Starting WITH V2 contract");
@@ -76,7 +76,7 @@ const aeternity = {
       }
       if (process.env.CONTRACT_V3_GETTER_ADDRESS) {
         contractV3Getter = await client.initializeContract({
-          aci: TIPPING_V3_GETTER,
+          aci: TIPPING_V3_GETTER_ACI,
           address: process.env.CONTRACT_V3_GETTER_ADDRESS,
         });
         logger.info("Starting WITH V3 GETTER contract");
@@ -85,7 +85,7 @@ const aeternity = {
       }
       if (process.env.CONTRACT_V3_ADDRESS) {
         contractV3 = await client.initializeContract({
-          aci: TIPPING_V3_INTERFACE,
+          aci: TIPPING_V3_ACI,
           address: process.env.CONTRACT_V3_ADDRESS,
         });
         logger.info("Starting WITH V3 contract");
@@ -94,7 +94,7 @@ const aeternity = {
       }
       if (process.env.CONTRACT_V4_ADDRESS) {
         contractV4 = await client.initializeContract({
-          aci: TIPPING_V4_INTERFACE,
+          aci: TIPPING_V4_ACI,
           address: process.env.CONTRACT_V4_ADDRESS,
         });
         logger.info("Starting WITH V4 contract");
@@ -110,6 +110,7 @@ const aeternity = {
         address: process.env.ORACLE_GETTER_ADDRESS,
       });
       if (process.env.WORD_REGISTRY_CONTRACT) {
+        throw new Error("Word registry contract is not supported anymore");
         wordRegistryContract = await client.initializeContract({
           aci: WORD_REGISTRY_INTERFACE,
           address: process.env.WORD_REGISTRY_CONTRACT,
@@ -135,7 +136,7 @@ const aeternity = {
     return (await client.getNodeInfo()).nodeNetworkId;
   },
   async getHeight() {
-    return client.height();
+    return client.getHeight();
   },
   async getBalance() {
     const address = await client.address();
@@ -171,11 +172,11 @@ const aeternity = {
     // TODO: replace with ACIs
     const decodedEvents = [
       ...aeternity.decodeEvents(log, FUNGIBLE_TOKEN_FULL_ACI, "FungibleTokenFull"),
-      ...((process.env.CONTRACT_V1_ADDRESS && aeternity.decodeEvents(log, TIPPING_V1_INTERFACE, "Tipping_v1")) || []),
-      ...aeternity.decodeEvents(log, TIPPING_V1_INTERFACE, "Tipping_v1"),
-      ...aeternity.decodeEvents(log, TIPPING_V2_INTERFACE, "Tipping_v2"),
-      ...aeternity.decodeEvents(log, TIPPING_V3_INTERFACE, "Tipping_v3"),
-      ...aeternity.decodeEvents(log, TIPPING_V4_INTERFACE, "Tipping_v4"),
+      ...((process.env.CONTRACT_V1_ADDRESS && aeternity.decodeEvents(log, TIPPING_V1_ACI, "Tipping_v1")) || []),
+      ...aeternity.decodeEvents(log, TIPPING_V1_ACI, "Tipping_v1"),
+      ...aeternity.decodeEvents(log, TIPPING_V2_ACI, "Tipping_v2"),
+      ...aeternity.decodeEvents(log, TIPPING_V3_ACI, "Tipping_v3"),
+      ...aeternity.decodeEvents(log, TIPPING_V4_ACI, "Tipping_v4"),
       ...aeternity.decodeEvents(log, ORACLE_SERVICE_INTERFACE, "OracleServiceInterface"),
       ...aeternity.decodeEvents(log, TOKEN_REGISTRY, "TokenRegistryInterface"),
     ];
@@ -240,30 +241,30 @@ const aeternity = {
   async getTipV2(value) {
     // TODO deal with tipId here
     const tipId = await client.contractDecodeData("contract Decode =\n  entrypoint int(): int = 0", "int", value, "ok");
-    const rawTip = await contractV2.get_tip_by_id(tipId, tempCallOptions).then((res) => res.decodedResult);
-    const url = await contractV2.get_url_by_id(basicTippingContractUtil.rawTipUrlId(rawTip), tempCallOptions).then((res) => res.decodedResult);
+    const rawTip = await contractV2.get_tip_by_id(tipId).then((res) => res.decodedResult);
+    const url = await contractV2.get_url_by_id(basicTippingContractUtil.rawTipUrlId(rawTip)).then((res) => res.decodedResult);
     return basicTippingContractUtil.formatSingleTip(process.env.CONTRACT_V2_ADDRESS, "_v2", tipId, rawTip, url);
   },
   async getClaimV1V2(contract, url) {
     const contractGetter = contract === process.env.CONTRACT_V2_ADDRESS ? contractV2 : contractV1Getter;
     return contractGetter
-      .get_claim_by_url(contract, url, tempCallOptions)
+      .get_claim_by_url(contract, url)
       .then((res) => basicTippingContractUtil.formatSingleClaim(contract, url, res.decodedResult));
   },
   async getTipV3(value) {
     const tipId = await client.contractDecodeData("contract Decode =\n  entrypoint int(): int = 0", "int", value, "ok");
-    const rawTip = await contractV3Getter.get_tip_by_id(process.env.CONTRACT_V3_ADDRESS, tipId, tempCallOptions).then((res) => res.decodedResult);
+    const rawTip = await contractV3Getter.get_tip_by_id(process.env.CONTRACT_V3_ADDRESS, tipId).then((res) => res.decodedResult);
     return basicTippingContractUtil.formatSingleTip(process.env.CONTRACT_V3_ADDRESS, "_v3", tipId, rawTip);
   },
   async getTipV4(value) {
     const tipId = await client.contractDecodeData("contract Decode =\n  entrypoint int(): int = 0", "int", value, "ok");
-    const rawTip = await contractV4.get_tip_by_id(tipId, tempCallOptions).then((res) => res.decodedResult);
+    const rawTip = await contractV4.get_tip_by_id(tipId).then((res) => res.decodedResult);
     return basicTippingContractUtil.formatSingleTip(process.env.CONTRACT_V4_ADDRESS, "_v4", tipId, rawTip);
   },
   async getRetipV2(value) {
     const retipId = await client.contractDecodeData("contract Decode =\n  entrypoint int(): int = 0", "int", value, "ok");
     return contractV2
-      .get_retip_by_id(retipId, tempCallOptions)
+      .get_retip_by_id(retipId)
       .then((res) => basicTippingContractUtil.formatSingleRetip(process.env.CONTRACT_V2_ADDRESS, "_v2", retipId, res.decodedResult));
   },
   decodeTransactionEvents(data) {
@@ -286,40 +287,40 @@ const aeternity = {
   },
   async fetchWordRegistryData() {
     if (!client) throw new Error("Init sdk first");
-    return wordRegistryContract.get_state(tempCallOptions).then((res) => res.decodedResult);
+    return wordRegistryContract.get_state().then((res) => res.decodedResult);
   },
   async wordSaleTokenAddress(contractAddress) {
     await aeternity.initWordSaleContractIfUnknown(contractAddress);
-    return wordSaleContracts[contractAddress].get_token(tempCallOptions).then((res) => res.decodedResult);
+    return wordSaleContracts[contractAddress].get_token().then((res) => res.decodedResult);
   },
   async wordSaleState(contractAddress) {
     await aeternity.initWordSaleContractIfUnknown(contractAddress);
-    return wordSaleContracts[contractAddress].get_state(tempCallOptions).then((res) => res.decodedResult);
+    return wordSaleContracts[contractAddress].get_state().then((res) => res.decodedResult);
   },
   async wordSalePrice(contractAddress) {
     await aeternity.initWordSaleContractIfUnknown(contractAddress);
-    return wordSaleContracts[contractAddress].prices(tempCallOptions).then((res) => res.decodedResult);
+    return wordSaleContracts[contractAddress].prices().then((res) => res.decodedResult);
   },
   async wordSaleVotes(contractAddress) {
     await aeternity.initWordSaleContractIfUnknown(contractAddress);
-    return wordSaleContracts[contractAddress].votes(tempCallOptions).then((res) => res.decodedResult);
+    return wordSaleContracts[contractAddress].votes().then((res) => res.decodedResult);
   },
   async wordSaleVoteTimeout(contractAddress) {
     await aeternity.initWordSaleContractIfUnknown(contractAddress);
-    return wordSaleContracts[contractAddress].vote_timeout(tempCallOptions).then((res) => res.decodedResult);
+    return wordSaleContracts[contractAddress].vote_timeout().then((res) => res.decodedResult);
   },
   async wordSaleVoteState(contractAddress) {
     await aeternity.initTokenVotingContractIfUnknown(contractAddress);
-    return tokenVotingContracts[contractAddress].get_state(tempCallOptions).then((res) => res.decodedResult);
+    return tokenVotingContracts[contractAddress].get_state().then((res) => res.decodedResult);
   },
   async fungibleTokenTotalSupply(contractAddress) {
     await aeternity.initTokenContractIfUnknown(contractAddress);
-    return tokenContracts[contractAddress].total_supply(tempCallOptions).then((res) => res.decodedResult);
+    return tokenContracts[contractAddress].total_supply().then((res) => res.decodedResult);
   },
   async fetchOracleClaimByUrl(url) {
     if (!client) throw new Error("Init sdk first");
     return oracleGetter
-      .get_oracle_claim_by_url(process.env.ORACLE_CONTRACT_ADDRESS, url, tempCallOptions)
+      .get_oracle_claim_by_url(process.env.ORACLE_CONTRACT_ADDRESS, url)
       .then((res) => res.decodedResult)
       .catch((e) => {
         logger.error(e.message);
@@ -330,7 +331,7 @@ const aeternity = {
   async fetchOracleClaimedUrls(address) {
     if (!client) throw new Error("Init sdk first");
     return oracleGetter
-      .get_oracle_claimed_urls_by_account(process.env.ORACLE_CONTRACT_ADDRESS, address, tempCallOptions)
+      .get_oracle_claimed_urls_by_account(process.env.ORACLE_CONTRACT_ADDRESS, address)
       .then((res) => res.decodedResult)
       .catch((e) => {
         logger.error(e.message);
@@ -341,7 +342,7 @@ const aeternity = {
   async getOracleAllClaimedUrls() {
     if (!client) throw new Error("Init sdk first");
     return oracleGetter
-      .get_oracle_claimed_urls(process.env.ORACLE_CONTRACT_ADDRESS, tempCallOptions)
+      .get_oracle_claimed_urls(process.env.ORACLE_CONTRACT_ADDRESS)
       .then((res) => res.decodedResult)
       .catch((e) => {
         logger.error(e.message);
@@ -350,15 +351,15 @@ const aeternity = {
       });
   },
   async getUnsafeOracleAnswersForUrl(url) {
-    return oracleContract.unsafe_check_oracle_answers(url, tempCallOptions).then((x) => x.decodedResult);
+    return oracleContract.unsafe_check_oracle_answers(url).then((x) => x.decodedResult);
   },
   async fetchStateBasic(onlyV1 = false) {
     if (!client) throw new Error("Init sdk first");
     try {
-      const fetchV1State = contractV1.get_state(tempCallOptions);
-      const fetchV2State = !onlyV1 && process.env.CONTRACT_V2_ADDRESS ? contractV2.get_state(tempCallOptions) : Promise.resolve(null);
-      const fetchV3State = !onlyV1 && process.env.CONTRACT_V3_ADDRESS ? contractV3.get_state(tempCallOptions) : Promise.resolve(null);
-      const fetchV4State = !onlyV1 && process.env.CONTRACT_V4_ADDRESS ? contractV4.get_state(tempCallOptions) : Promise.resolve(null);
+      const fetchV1State = contractV1.get_state();
+      const fetchV2State = !onlyV1 && process.env.CONTRACT_V2_ADDRESS ? contractV2.get_state() : Promise.resolve(null);
+      const fetchV3State = !onlyV1 && process.env.CONTRACT_V3_ADDRESS ? contractV3.get_state() : Promise.resolve(null);
+      const fetchV4State = !onlyV1 && process.env.CONTRACT_V4_ADDRESS ? contractV4.get_state() : Promise.resolve(null);
       const states = [await fetchV1State, await fetchV2State, await fetchV3State, await fetchV4State].filter((state) => state);
       return {
         tips: basicTippingContractUtil.getTips(states),
@@ -377,7 +378,7 @@ const aeternity = {
   },
   async fetchTokenRegistryState() {
     return tokenRegistry
-      .get_state(tempCallOptions)
+      .get_state()
       .then((r) => r.decodedResult)
       .catch((e) => {
         logger.error(e.message);
@@ -403,7 +404,7 @@ const aeternity = {
   async fetchTokenMetaInfo(contractAddress) {
     await aeternity.initTokenContractIfUnknown(contractAddress);
     return tokenContracts[contractAddress]
-      .meta_info(tempCallOptions)
+      .meta_info()
       .then((r) => r.decodedResult)
       .catch((e) => {
         logger.error(e.message);
@@ -422,7 +423,7 @@ const aeternity = {
   async fetchTokenAccountBalances(contractAddress) {
     await aeternity.initTokenContractIfUnknown(contractAddress);
     return tokenContracts[contractAddress]
-      .balances(tempCallOptions)
+      .balances()
       .then((r) => r.decodedResult)
       .catch((e) => {
         logger.error(e.message);
@@ -443,7 +444,7 @@ const aeternity = {
       state: TRACE_STATES.STARTED_PRE_CLAIM,
     });
     const claimAmount = await contract
-      .unclaimed_for_url(url, tempCallOptions)
+      .unclaimed_for_url(url)
       .then((r) =>
         Array.isArray(r.decodedResult)
           ? r.decodedResult[1].reduce((acc, cur) => acc.plus(cur[1]), new BigNumber(r.decodedResult[0])) // sum token amounts
@@ -459,7 +460,7 @@ const aeternity = {
   },
   async checkClaimOnContract(address, url, trace, contract) {
     return contract
-      .check_claim(url, address, tempCallOptions)
+      .check_claim(url, address)
       .then((r) => r.decodedResult.success)
       .catch(trace.catchError(false));
   },
@@ -473,7 +474,7 @@ const aeternity = {
       claimSuccess,
     });
     if (!claimSuccess) {
-      const fee = await oracleContract.estimate_query_fee(tempCallOptions);
+      const fee = await oracleContract.estimate_query_fee();
       trace.update({
         state: TRACE_STATES.ESTIMATED_FEE,
         fee: fee.decodedResult,

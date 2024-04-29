@@ -10,8 +10,8 @@ import TIPPING_V3_GETTER_ACI from "tipping-contract/generated/Tipping_v3_Getter.
 import TIPPING_V4_ACI from "tipping-contract/generated/Tipping_v4.aci.json" assert { type: "json" };
 import ORACLE_SERVICE_INTERFACE from "tipping-oracle-service/OracleServiceInterface.aes.js";
 import ORACLE_GETTER from "tipping-oracle-service/OracleGetter.aes.js";
-import TOKEN_CONTRACT_INTERFACE from "aeternity-fungible-token/FungibleTokenFullInterface.aes.js";
-import TOKEN_REGISTRY from "token-registry/TokenRegistryInterface.aes.js";
+import TOKEN_CONTRACT_ACI from "aeternity-fungible-token/generated/FungibleTokenFull.aci.json" assert { type: "json" };
+import TOKEN_REGISTRY_ACI from "token-registry/generated/token-registry.aci.json" assert { type: "json" };
 import WORD_REGISTRY_INTERFACE from "wordbazaar-contracts/WordRegistryInterface.aes.js";
 import WORD_SALE_INTERFACE from "wordbazaar-contracts/TokenSaleInterface.aes.js";
 import TOKEN_VOTING_CONTRACT from "wordbazaar-contracts/TokenVotingInterface.aes.js";
@@ -102,17 +102,17 @@ const aeternity = {
         logger.info("Starting WITHOUT V4 contract");
       }
       oracleContract = await client.initializeContract({
-        aci: ORACLE_SERVICE_INTERFACE,
+        aci: TIPPING_V1_ACI, // TODO REPLACE WITH CORRECT ACI
         address: process.env.ORACLE_CONTRACT_ADDRESS,
       });
       oracleGetter = await client.initializeContract({
-        aci: ORACLE_GETTER,
+        aci: TIPPING_V1_ACI, // TODO REPLACE WITH CORRECT ACI
         address: process.env.ORACLE_GETTER_ADDRESS,
       });
       if (process.env.WORD_REGISTRY_CONTRACT) {
         throw new Error("Word registry contract is not supported anymore");
         wordRegistryContract = await client.initializeContract({
-          aci: WORD_REGISTRY_INTERFACE,
+          aci: WORD_REGISTRY_INTERFACE, // TODO REPLACE WITH CORRECT ACI
           address: process.env.WORD_REGISTRY_CONTRACT,
         });
         logger.info("Starting WITH WORD REGISTRY contract");
@@ -120,7 +120,7 @@ const aeternity = {
         logger.info("Starting WITHOUT WORD REGISTRY contract");
       }
       tokenRegistry = await client.initializeContract({
-        aci: TOKEN_REGISTRY,
+        aci: TOKEN_REGISTRY_ACI,
         address: process.env.TOKEN_REGISTRY_ADDRESS,
       });
     }
@@ -170,16 +170,7 @@ const aeternity = {
     if (!log || !log.length) return [];
 
     // TODO: replace with ACIs
-    const decodedEvents = [
-      ...aeternity.decodeEvents(log, FUNGIBLE_TOKEN_FULL_ACI, "FungibleTokenFull"),
-      ...((process.env.CONTRACT_V1_ADDRESS && aeternity.decodeEvents(log, TIPPING_V1_ACI, "Tipping_v1")) || []),
-      ...aeternity.decodeEvents(log, TIPPING_V1_ACI, "Tipping_v1"),
-      ...aeternity.decodeEvents(log, TIPPING_V2_ACI, "Tipping_v2"),
-      ...aeternity.decodeEvents(log, TIPPING_V3_ACI, "Tipping_v3"),
-      ...aeternity.decodeEvents(log, TIPPING_V4_ACI, "Tipping_v4"),
-      ...aeternity.decodeEvents(log, ORACLE_SERVICE_INTERFACE, "OracleServiceInterface"),
-      ...aeternity.decodeEvents(log, TOKEN_REGISTRY, "TokenRegistryInterface"),
-    ];
+    const decodedEvents = [...aeternity.decodeEvents(log, FUNGIBLE_TOKEN_FULL_ACI, "FungibleTokenFull"), ...((process.env.CONTRACT_V1_ADDRESS && aeternity.decodeEvents(log, TIPPING_V1_ACI, "Tipping_v1")) || []), ...aeternity.decodeEvents(log, TIPPING_V1_ACI, "Tipping_v1"), ...aeternity.decodeEvents(log, TIPPING_V2_ACI, "Tipping_v2"), ...aeternity.decodeEvents(log, TIPPING_V3_ACI, "Tipping_v3"), ...aeternity.decodeEvents(log, TIPPING_V4_ACI, "Tipping_v4"), ...aeternity.decodeEvents(log, ORACLE_SERVICE_INTERFACE, "OracleServiceInterface"), ...aeternity.decodeEvents(log, TOKEN_REGISTRY_ACI, "TokenRegistryInterface")];
     return decodedEvents.map((decodedEvent) => {
       const event = {};
       // Decode AEX9 events
@@ -247,9 +238,7 @@ const aeternity = {
   },
   async getClaimV1V2(contract, url) {
     const contractGetter = contract === process.env.CONTRACT_V2_ADDRESS ? contractV2 : contractV1Getter;
-    return contractGetter
-      .get_claim_by_url(contract, url)
-      .then((res) => basicTippingContractUtil.formatSingleClaim(contract, url, res.decodedResult));
+    return contractGetter.get_claim_by_url(contract, url).then((res) => basicTippingContractUtil.formatSingleClaim(contract, url, res.decodedResult));
   },
   async getTipV3(value) {
     const tipId = await client.contractDecodeData("contract Decode =\n  entrypoint int(): int = 0", "int", value, "ok");
@@ -263,9 +252,7 @@ const aeternity = {
   },
   async getRetipV2(value) {
     const retipId = await client.contractDecodeData("contract Decode =\n  entrypoint int(): int = 0", "int", value, "ok");
-    return contractV2
-      .get_retip_by_id(retipId)
-      .then((res) => basicTippingContractUtil.formatSingleRetip(process.env.CONTRACT_V2_ADDRESS, "_v2", retipId, res.decodedResult));
+    return contractV2.get_retip_by_id(retipId).then((res) => basicTippingContractUtil.formatSingleRetip(process.env.CONTRACT_V2_ADDRESS, "_v2", retipId, res.decodedResult));
   },
   decodeTransactionEvents(data) {
     const decodedEvents = aeternity.decodeTransactionEventLog(data.tx.log);
@@ -398,7 +385,7 @@ const aeternity = {
   },
   async initTokenContractIfUnknown(contractAddress) {
     if (!tokenContracts[contractAddress]) {
-      tokenContracts[contractAddress] = await client.getContractInstance(TOKEN_CONTRACT_INTERFACE, { contractAddress });
+      tokenContracts[contractAddress] = await client.initializeContract({ aci: TOKEN_CONTRACT_ACI, address: contractAddress });
     }
   },
   async fetchTokenMetaInfo(contractAddress) {

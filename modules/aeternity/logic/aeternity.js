@@ -38,6 +38,24 @@ const tokenContracts = {};
 const wordSaleContracts = {};
 const tokenVotingContracts = {};
 
+class CustomNode extends Node {
+  url;
+  constructor(url) {
+    super(url);
+    this.url = url;
+  }
+
+  sendOperationRequest(args, spec) {
+    if (spec.path === "/v3/dry-run") {
+      spec = {
+        ...spec,
+        path: this.url + "/v3/debug/transactions/dry-run",
+      };
+    }
+    return super.sendOperationRequest(args, spec);
+  }
+}
+
 const aeternity = {
   async init() {
     if (!client) {
@@ -45,7 +63,7 @@ const aeternity = {
         nodes: [
           {
             name: "mainnetNode",
-            instance: new Node(process.env.NODE_URL),
+            instance: new CustomNode(process.env.NODE_URL),
           },
         ],
         accounts: [new MemoryAccount(process.env.PRIVATE_KEY)],
@@ -343,10 +361,27 @@ const aeternity = {
   async fetchStateBasic(onlyV1 = false) {
     if (!client) throw new Error("Init sdk first");
     try {
-      const fetchV1State = contractV1.get_state();
-      const fetchV2State = !onlyV1 && process.env.CONTRACT_V2_ADDRESS ? contractV2.get_state() : Promise.resolve(null);
-      const fetchV3State = !onlyV1 && process.env.CONTRACT_V3_ADDRESS ? contractV3.get_state() : Promise.resolve(null);
-      const fetchV4State = !onlyV1 && process.env.CONTRACT_V4_ADDRESS ? contractV4.get_state() : Promise.resolve(null);
+      const fetchV1State = contractV1.get_state({
+        maxGas: 100e18,
+      });
+      const fetchV2State =
+        !onlyV1 && process.env.CONTRACT_V2_ADDRESS
+          ? contractV2.get_state({
+              maxGas: 100e18,
+            })
+          : Promise.resolve(null);
+      const fetchV3State =
+        !onlyV1 && process.env.CONTRACT_V3_ADDRESS
+          ? contractV3.get_state({
+              maxGas: 100e18,
+            })
+          : Promise.resolve(null);
+      const fetchV4State =
+        !onlyV1 && process.env.CONTRACT_V4_ADDRESS
+          ? contractV4.get_state({
+              maxGas: 100e18,
+            })
+          : Promise.resolve(null);
       const states = [await fetchV1State, await fetchV2State, await fetchV3State, await fetchV4State].filter((state) => state);
       return {
         tips: basicTippingContractUtil.getTips(states),

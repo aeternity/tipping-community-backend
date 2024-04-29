@@ -1,4 +1,4 @@
-import aeSdk from "@aeternity/aepp-sdk";
+import { generateKeyPair } from "@aeternity/aepp-sdk";
 
 export default async function () {
   process.env = {
@@ -17,7 +17,7 @@ export default async function () {
     CONTRACT_V1_ADDRESS: "ct_2Cvbf3NYZ5DLoaNYAU71t67DdXLHeSXhodkSNifhgd7Xsw28Xd",
     CONTRACT_V2_ADDRESS: "ct_2bvoxQ6cwwzoFASuddUxzsYVBZUet9KGHRAp7i25xsMXEWvSvx",
     CONTRACT_V3_ADDRESS: "ct_WscpdLQf6ZZxoVqrsEwUwmuAEdzEkJii5W5TzG84rVgHeK6BW",
-    WORD_REGISTRY_CONTRACT: "ct_2vznPSL1yzceQLnqbHC476BoHZipR3jFaK74KnPzgtkCr7beLN",
+    // WORD_REGISTRY_CONTRACT: "ct_2vznPSL1yzceQLnqbHC476BoHZipR3jFaK74KnPzgtkCr7beLN",
     WEBSOCKET_URL: "wss://testnet.aeternity.io/mdw/websocket",
     ORACLE_GETTER_ADDRESS: "ct_XabcJUxaZc1w5X4WxD2WUVTLPkZX97HFYzhuwkhQXc4ZzDqDF",
     CONTRACT_V1_GETTER_ADDRESS: "ct_2ixHY4bADzDY6ZYThGixnjYa6w5dtYoSoxtCThWvZ7SGgMGFWL",
@@ -25,7 +25,7 @@ export default async function () {
   };
 
   // GENERATE KEYPAIR
-  const { secretKey, publicKey } = aeSdk.Crypto.generateKeyPair();
+  const { secretKey, publicKey } = generateKeyPair();
 
   process.env = {
     ...process.env,

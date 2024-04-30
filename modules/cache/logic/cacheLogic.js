@@ -182,7 +182,6 @@ const CacheLogic = {
   async wordSaleVotesDetails(address) {
     const votes = await cache.getOrSet(['wordSaleVotes', address],
       () => aeternity.wordSaleVotes(address), cache.shortCacheTime);
-    console.log(votes);
     return Promise.all(votes.map(([id, vote]) => CacheLogic.wordSaleVoteInfo(id, vote[1], vote[0], address)));
   },
 

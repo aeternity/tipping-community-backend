@@ -159,7 +159,7 @@ describe('Cache', () => {
       checkCachedRoute(`/cache/invalidate/token/${tokenAddress}`, 'object', done);
     });
   });
-  describe.skip('WordBazaar', () => {
+  describe('WordBazaar', () => {
     it('it should invalidate a wordSale cache', function (done) {
       this.timeout(25000);
       // Just a random token contract, can be replaced anytime if its not working anymore

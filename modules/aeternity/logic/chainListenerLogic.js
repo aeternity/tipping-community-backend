@@ -35,7 +35,8 @@ const handleWebsocketMessage = async message => {
         ...data.payload,
         tx: {
           ...data.payload.tx,
-          log: tx.log,
+          ...tx.callInfo,
+          log: tx.callInfo.log,
         },
       });
       if (events.length > 0) {

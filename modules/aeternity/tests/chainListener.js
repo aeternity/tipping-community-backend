@@ -52,7 +52,7 @@ describe('Chain Listener', () => {
         process.env.CONTRACT_V1_ADDRESS,
         process.env.CONTRACT_V2_ADDRESS,
         process.env.CONTRACT_V3_ADDRESS,
-        process.env.WORD_REGISTRY_CONTRACT,
+        // process.env.WORD_REGISTRY_CONTRACT, // FIXME: renable wordbazaar once contracts have been upgraded
       ];
       const stub = sinon
         .stub(stubObj, 'subscribeToContract')
@@ -69,8 +69,7 @@ describe('Chain Listener', () => {
       ChainListenerLogic.startInvalidator();
     });
 
-    it('it should handle the messages', function (done) {
-      this.timeout(10000);
+    it('it should handle the messages', done => {
       const ChainListenerLogic = rewire('../logic/chainListenerLogic');
 
       const stubObj = {
@@ -84,7 +83,7 @@ describe('Chain Listener', () => {
           event.should.be.an('object');
           event.should.have.property('name', 'TipReceived');
           event.should.have.property('address', 'ak_y87WkN4C4QevzjTuEYHg6XLqiWx3rjfYDFLBmZiqiro5mkRag');
-          event.should.have.property('amount', '120000000000000000');
+          event.should.have.property('amount', 120000000000000000n);
           event.should.have.property('url', 'https://github.com/thepiwo');
           event.should.have.property('tokenContract', null);
 

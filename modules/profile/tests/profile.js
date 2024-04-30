@@ -3,7 +3,7 @@ const chai = require('chai');
 const chaiHttp = require('chai-http');
 const sinon = require('sinon');
 const { describe, it, before } = require('mocha');
-const { generateKeyPair, hash } = require('@aeternity/aepp-sdk').Crypto;
+const { generateKeyPair, hash } = require('@aeternity/aepp-sdk');
 const fs = require('fs');
 
 const { Profile, IPFSEntry, Comment } = require('../../../models');

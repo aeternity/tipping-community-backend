@@ -1,4 +1,4 @@
-const { verifyMessage, decodeBase58Check, hash } = require('@aeternity/aepp-sdk').Crypto;
+const { verifyMessage, hash } = require('@aeternity/aepp-sdk');
 const { v4: uuidv4 } = require('uuid');
 const urlParser = require('url');
 const imageLogic = require('../../media/logic/imageLogic');
@@ -64,12 +64,10 @@ const authenticationLogic = {
         // we have to verify req.params.author first
         const publicKey = req.params.author ? req.params.author : body.author;
         if (!publicKey) sendError('Could not find associated public key');
-        const author = decodeBase58Check(publicKey.substring(3));
 
-        const authString = Buffer.from(originalChallenge);
         const signatureArray = Uint8Array.from(Buffer.from(signature, 'hex'));
 
-        const validRequest = verifyMessage(authString, signatureArray, author);
+        const validRequest = verifyMessage(originalChallenge, signatureArray, publicKey);
         if (validRequest) {
           // Remove challenge from active queue
           const queueIndex = MemoryQueue.findIndex(item => (item || {}).challenge === req.body.challenge);

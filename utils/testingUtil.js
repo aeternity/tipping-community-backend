@@ -1,4 +1,4 @@
-const { signMessage, generateKeyPair, hash } = require('@aeternity/aepp-sdk').Crypto;
+const { signMessage, generateKeyPair, hash } = require('@aeternity/aepp-sdk');
 const chai = require('chai');
 const chaiHttp = require('chai-http');
 const fs = require('fs');

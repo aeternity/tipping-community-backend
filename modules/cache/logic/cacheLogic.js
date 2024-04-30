@@ -1,10 +1,8 @@
+const WORD_SALE_INTERFACE = require('wordbazaar-contracts/TokenSaleInterface.aes');
 const BigNumber = require('bignumber.js');
 const AsyncLock = require('async-lock');
 const axios = require('axios');
-const requireESM = require('esm')(module);
-// use to handle es6 import/export
-const { decodeEvents, SOPHIA_TYPES } = requireESM('@aeternity/aepp-sdk/es/contract/aci/transformation');
-const { Crypto } = require('@aeternity/aepp-sdk');
+const { isAddressValid } = require('@aeternity/aepp-sdk');
 const aeternity = require('../../aeternity/logic/aeternity');
 const cache = require('../utils/cache');
 const queueLogic = require('../../queue/logic/queueLogic');
@@ -13,6 +11,9 @@ const TipLogic = require('../../tip/logic/tipLogic');
 const lock = new AsyncLock();
 const MdwLogic = require('../../aeternity/logic/mdwLogic');
 const { MESSAGES, MESSAGE_QUEUES } = require('../../queue/constants/queue');
+
+// hack to serialize bigint
+BigInt.prototype.toJSON = function () { return this.toString(); };
 
 const logger = require('../../../utils/logger')(module);
 
@@ -113,17 +114,13 @@ const CacheLogic = {
   async wordPriceHistory(wordSale) {
     const height = await aeternity.getHeight();
     const txs = await MdwLogic.getContractTransactions(height, 0, wordSale);
-    const eventsSchema = [
-      { name: 'Buy', types: [SOPHIA_TYPES.address, SOPHIA_TYPES.int, SOPHIA_TYPES.int] },
-      { name: 'Sell', types: [SOPHIA_TYPES.address, SOPHIA_TYPES.int, SOPHIA_TYPES.int] },
-    ];
 
     return txs.flatMap(tx => {
       const decodedEvent = () => {
-        const decodedEvents = decodeEvents(tx.tx.log, { schema: eventsSchema })
-          .flatMap(({ name, decoded }) => ({ name, decoded }))
-          .filter(log => log.decoded.length);
+        // FIXME: use ACI here
+        const decodedEvents = aeternity.decodeEvents(tx.tx.log, WORD_SALE_INTERFACE, 'TokenSale');
 
+        // FIXME: there could be more than one legit event per tx
         if (decodedEvents.length === 1) {
           const [event] = decodedEvents;
           switch (event.name) {
@@ -246,7 +243,7 @@ const CacheLogic = {
       const chainNames = await CacheLogic.fetchMdwChainNames();
 
       return Object.entries(chainNames).reduce(((acc, [pubkey, names]) => {
-        if (Crypto.isAddressValid(pubkey)) {
+        if (isAddressValid(pubkey)) {
           const profile = profiles.find(p => p.author === pubkey);
           const preferredChainName = profile ? profile.preferredChainName : null;
 

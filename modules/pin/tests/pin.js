@@ -1,7 +1,7 @@
 const chai = require('chai');
 const chaiHttp = require('chai-http');
 const { describe, it } = require('mocha');
-const { generateKeyPair } = require('@aeternity/aepp-sdk').Crypto;
+const { generateKeyPair } = require('@aeternity/aepp-sdk');
 const server = require('../../../server');
 
 const { Pin } = require('../../../models');

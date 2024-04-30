@@ -1,4 +1,4 @@
-const { Crypto } = require('@aeternity/aepp-sdk');
+const { hash, verifyMessage } = require('@aeternity/aepp-sdk');
 const tippingContractUtil = require('tipping-contract/util/tippingContractUtil');
 
 const logger = require('../../../utils/logger')(module);
@@ -81,8 +81,8 @@ const PayForTxLogic = {
   async postForUser({
     title, media, author, signature,
   }) {
-    const hash = Crypto.hash(tippingContractUtil.postWithoutTippingString(title, media));
-    const verified = Crypto.verifyMessage(hash, signature, Crypto.decodeBase58Check(author.substr(3)));
+    const hashResult = hash(tippingContractUtil.postWithoutTippingString(title, media)).toString('hex');
+    const verified = verifyMessage(hashResult, signature, author);
     if (!verified) {
       return {
         error: 'The signature does not match the public key or the content',

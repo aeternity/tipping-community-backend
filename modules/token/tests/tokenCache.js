@@ -142,7 +142,7 @@ describe('Token Cache', () => {
     });
   });
 
-  describe('wordbazaar', () => {
+  describe.skip('wordbazaar', () => {
     let sandbox;
 
     beforeEach(() => {

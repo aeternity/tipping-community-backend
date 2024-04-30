@@ -3,7 +3,7 @@ const chaiHttp = require('chai-http');
 const { describe, it, before } = require('mocha');
 const sinon = require('sinon');
 
-const { Crypto } = require('@aeternity/aepp-sdk');
+const { hash, signMessage, verifyMessage } = require('@aeternity/aepp-sdk');
 const tippingContractUtil = require('tipping-contract/util/tippingContractUtil');
 const BigNumber = require('bignumber.js');
 const ae = require('../../aeternity/logic/aeternity');
@@ -101,14 +101,14 @@ describe('Pay for TX', () => {
       };
 
       const message = tippingContractUtil.postWithoutTippingString(testData.title, testData.media);
-      const hash = Crypto.hash(message);
-      const signature = Crypto.signMessage(hash, Buffer.from(secretKey, 'hex'));
+      const hashResult = hash(message).toString('hex');
+      const signature = signMessage(hashResult, Buffer.from(secretKey, 'hex'));
 
       sinon.stub(ae, 'postTipToV3').callsFake((title, media, author, passedSignature) => {
         title.should.equal(testData.title);
         media.should.deep.equal(testData.media);
         author.should.equal(publicKey);
-        const verified = Crypto.verifyMessage(hash, passedSignature, Crypto.decodeBase58Check(publicKey.substr(3)));
+        const verified = verifyMessage(hashResult, passedSignature, publicKey);
         verified.should.equal(true);
         return { hash: 'hash', decodedResult: '1' };
       });

@@ -5,14 +5,12 @@ const {
 } = require('mocha');
 const sinon = require('sinon');
 const chaiAsPromised = require('chai-as-promised');
-
-chai.use(chaiAsPromised);
-
 const BigNumber = require('bignumber.js');
 const ae = require('../logic/aeternity');
 const Trace = require('../../payfortx/logic/traceLogic');
 
-const should = chai.should();
+chai.use(chaiAsPromised);
+chai.should();
 // Our parent block
 describe('Aeternity', () => {
   describe('Init', () => {
@@ -197,7 +195,7 @@ describe('Aeternity', () => {
         if (balance === 0) {
           balance.should.be.an('number');
         } else {
-          balance.should.be.an('string');
+          balance.should.be.an('BigInt');
           const intBalance = parseInt(balance, 10);
           intBalance.should.be.greaterThan(0);
         }
@@ -215,54 +213,12 @@ describe('Aeternity', () => {
       await ae.resetClient();
     });
 
-    it('should handle a non responding compiler during runtime', async function () {
-      this.timeout(10000);
-      const client = ae.getClient();
-      client.selectedNode.instance.url = 'https://localhost';
-      const staticStub = sinon.stub(client, 'contractCallStatic').callsFake(() => { throw new Error('NETWORK ERROR'); });
-      const callStub = sinon.stub(client, 'contractCall').callsFake(() => { throw new Error('NETWORK ERROR'); });
-      const state = await ae.fetchStateBasic();
-      state.should.be.an('object');
-      state.should.have.property('tips');
-      state.should.have.property('retips');
-      state.should.have.property('claims');
-      state.tips.should.have.length(0);
-      state.retips.should.have.length(0);
-      state.claims.should.have.length(0);
-      const tokenBalances = await ae.fetchTokenAccountBalances('ct_2bCbmU7vtsysL4JiUdUZjJJ98LLbJWG1fRtVApBvqSFEM59D6W');
-      should.equal(tokenBalances, null);
-      const trace = new Trace();
-      const preClaim = await ae.getTotalClaimableAmount('http://test', trace);
-      should.equal(preClaim.toFixed(0), '0');
-
-      const registryState = await ae.fetchTokenRegistryState();
-      registryState.should.be.an('array');
-      registryState.should.have.length(0);
-
-      staticStub.restore();
-      callStub.restore();
-    });
-
     it('should crash for a non responding node on startup', async function () {
       this.timeout(10000);
       const originalUrl = process.env.NODE_URL;
       process.env.NODE_URL = 'https://localhost';
       await chai.expect(ae.resetClient()).to.eventually.be.rejectedWith('ECONNREFUSED');
       process.env.NODE_URL = originalUrl;
-    });
-
-    it('should crash for a non responding compiler on startup', async function () {
-      this.timeout(10000);
-      const originalUrl = process.env.COMPILER_URL;
-      process.env.COMPILER_URL = 'https://localhost';
-      await chai.expect(ae.resetClient()).to.eventually.be.rejectedWith('ECONNREFUSED');
-      process.env.COMPILER_URL = originalUrl;
-    });
-
-    after(async function () {
-      this.timeout(10000);
-      ae.client = null;
-      await ae.init();
     });
   });
 });

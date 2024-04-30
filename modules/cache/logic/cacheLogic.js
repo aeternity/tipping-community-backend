@@ -126,18 +126,18 @@ const CacheLogic = {
             case 'Buy':
               return {
                 event: event.name,
-                address: event.decoded[0],
-                price: event.decoded[1],
-                amount: event.decoded[2],
-                perToken: new BigNumber(event.decoded[1]).dividedBy(event.decoded[2]),
+                address: event.args[0],
+                price: event.args[1],
+                amount: event.args[2],
+                perToken: new BigNumber(event.args[1]).dividedBy(event.args[2]),
               };
             case 'Sell':
               return {
                 event: event.name,
-                address: event.decoded[0],
-                return: event.decoded[1],
-                amount: event.decoded[2],
-                perToken: new BigNumber(event.decoded[1]).dividedBy(event.decoded[2]),
+                address: event.args[0],
+                return: event.args[1],
+                amount: event.args[2],
+                perToken: new BigNumber(event.args[1]).dividedBy(event.args[2]),
               };
             default:
               return {};
@@ -182,6 +182,7 @@ const CacheLogic = {
   async wordSaleVotesDetails(address) {
     const votes = await cache.getOrSet(['wordSaleVotes', address],
       () => aeternity.wordSaleVotes(address), cache.shortCacheTime);
+    console.log(votes);
     return Promise.all(votes.map(([id, vote]) => CacheLogic.wordSaleVoteInfo(id, vote[1], vote[0], address)));
   },
 
@@ -199,10 +200,10 @@ const CacheLogic = {
 
     const height = await aeternity.getHeight();
 
-    const votedFor = (await state).vote_state.find(([s]) => s)[1];
-    const votedAgainst = (await state).vote_state.find(([s]) => !s)[1];
+    const votedFor = Array.from((await state).vote_state)?.find(([s]) => s)?.[1] || 0;
+    const votedAgainst = Array.from((await state).vote_state)?.find(([s]) => !s)?.[1] || 0;
     const ifAgainstZero = votedFor === 0 ? 0 : 100;
-    const votedPositive = new BigNumber(votedFor)
+    const votedPositive = new BigNumber(votedFor || 0)
       .dividedBy(new BigNumber(votedFor).plus(votedAgainst)).times(100).toFixed(0);
 
     const tokenAddress = CacheLogic.getWordSaleTokenAddress(sale);
@@ -210,18 +211,18 @@ const CacheLogic = {
     const totalSupply = cache.getOrSet(['fungibleTokenTotalSupply', await tokenAddress],
       async () => aeternity.fungibleTokenTotalSupply(await tokenAddress), cache.shortCacheTime);
 
-    const stakePercent = (await totalSupply) ? new BigNumber(votedFor).dividedBy(await totalSupply).times(100).toFixed(0) : '0';
-    const timeoutHeight = (await state).close_height + (await voteTimeout);
+    const stakePercent = (await totalSupply !== '0') ? new BigNumber(votedFor).dividedBy(await totalSupply).times(100).toFixed(0) : '0';
+    const timeoutHeight = Number((await state).close_height) + Number((await voteTimeout));
     return {
       id,
       alreadyApplied,
       voteAddress: vote,
       subject: (await state).metadata.subject,
-      timeouted: timeoutHeight < (await height),
+      timeouted: timeoutHeight < height,
       timeoutHeight,
-      closeHeight: (await state).close_height,
-      voteAccounts: (await state).vote_accounts,
-      isClosed: (await height) >= (await state).close_height,
+      closeHeight: Number((await state).close_height),
+      voteAccounts: Array.from((await state).vote_accounts),
+      isClosed: height >= Number((await state).close_height),
       isSuccess: new BigNumber(stakePercent).isGreaterThan(50),
       votePercent: votedAgainst !== 0 ? votedPositive : ifAgainstZero,
       stakePercent,

@@ -281,7 +281,7 @@ describe('Token Cache', () => {
       res.should.have.status(200);
       res.body.should.be.a('array');
       res.body[0].should.be.deep.equal({
-        id: 0,
+        id: '0',
         alreadyApplied: false,
         voteAddress: 'ct_2m9FMzEuxVZKjEdC44JRp8RjQgFobG3z7RCogGoBbTdUg6du5f',
         subject: {
@@ -309,7 +309,7 @@ describe('Token Cache', () => {
       res.body[res.body.length - 1].should.be.deep.equal({
         timestamp: 1612348975927,
         event: 'Buy',
-        address: 'y87WkN4C4QevzjTuEYHg6XLqiWx3rjfYDFLBmZiqiro5mkRag',
+        address: 'ak_y87WkN4C4QevzjTuEYHg6XLqiWx3rjfYDFLBmZiqiro5mkRag',
         price: '105000000000000000',
         amount: '100000000000000000',
         perToken: '1.05',

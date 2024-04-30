@@ -1,15 +1,14 @@
 import { Node, MemoryAccount, AeSdk } from "@aeternity/aepp-sdk";
 import BigNumber from "bignumber.js";
 import Sentry from "@sentry/node";
-// TODO replace with ACI
 import TIPPING_V1_ACI from "tipping-contract/generated/Tipping_v1.aci.json" assert { type: "json" };
 import TIPPING_V1_GETTER_ACI from "tipping-contract/generated/Tipping_v1_Getter.aci.json" assert { type: "json" };
 import TIPPING_V2_ACI from "tipping-contract/generated/Tipping_v2.aci.json" assert { type: "json" };
 import TIPPING_V3_ACI from "tipping-contract/generated/Tipping_v3.aci.json" assert { type: "json" };
 import TIPPING_V3_GETTER_ACI from "tipping-contract/generated/Tipping_v3_Getter.aci.json" assert { type: "json" };
 import TIPPING_V4_ACI from "tipping-contract/generated/Tipping_v4.aci.json" assert { type: "json" };
-import ORACLE_SERVICE_INTERFACE from "tipping-oracle-service/OracleServiceInterface.aes.js";
-import ORACLE_GETTER from "tipping-oracle-service/OracleGetter.aes.js";
+import ORACLE_SERVICE_ACI from "tipping-oracle-service/generated/OracleService.aci.json" assert { type: "json" };
+import ORACLE_GETTER_ACI from "tipping-oracle-service/generated/OracleGetter.aci.json" assert { type: "json" };
 import TOKEN_CONTRACT_ACI from "aeternity-fungible-token/generated/FungibleTokenFull.aci.json" assert { type: "json" };
 import TOKEN_REGISTRY_ACI from "token-registry/generated/token-registry.aci.json" assert { type: "json" };
 import WORD_REGISTRY_INTERFACE from "wordbazaar-contracts/WordRegistryInterface.aes.js";
@@ -120,11 +119,11 @@ const aeternity = {
         logger.info("Starting WITHOUT V4 contract");
       }
       oracleContract = await client.initializeContract({
-        aci: TIPPING_V1_ACI, // TODO REPLACE WITH CORRECT ACI
+        aci: ORACLE_SERVICE_ACI,
         address: process.env.ORACLE_CONTRACT_ADDRESS,
       });
       oracleGetter = await client.initializeContract({
-        aci: TIPPING_V1_ACI, // TODO REPLACE WITH CORRECT ACI
+        aci: ORACLE_GETTER_ACI,
         address: process.env.ORACLE_GETTER_ADDRESS,
       });
       if (process.env.WORD_REGISTRY_CONTRACT) {
@@ -188,7 +187,7 @@ const aeternity = {
     if (!log || !log.length) return [];
 
     // TODO: replace with ACIs
-    const decodedEvents = [...aeternity.decodeEvents(log, FUNGIBLE_TOKEN_FULL_ACI, "FungibleTokenFull"), ...((process.env.CONTRACT_V1_ADDRESS && aeternity.decodeEvents(log, TIPPING_V1_ACI, "Tipping_v1")) || []), ...aeternity.decodeEvents(log, TIPPING_V1_ACI, "Tipping_v1"), ...aeternity.decodeEvents(log, TIPPING_V2_ACI, "Tipping_v2"), ...aeternity.decodeEvents(log, TIPPING_V3_ACI, "Tipping_v3"), ...aeternity.decodeEvents(log, TIPPING_V4_ACI, "Tipping_v4"), ...aeternity.decodeEvents(log, ORACLE_SERVICE_INTERFACE, "OracleServiceInterface"), ...aeternity.decodeEvents(log, TOKEN_REGISTRY_ACI, "TokenRegistryInterface")];
+    const decodedEvents = [...aeternity.decodeEvents(log, FUNGIBLE_TOKEN_FULL_ACI, "FungibleTokenFull"), ...((process.env.CONTRACT_V1_ADDRESS && aeternity.decodeEvents(log, TIPPING_V1_ACI, "Tipping_v1")) || []), ...aeternity.decodeEvents(log, TIPPING_V1_ACI, "Tipping_v1"), ...aeternity.decodeEvents(log, TIPPING_V2_ACI, "Tipping_v2"), ...aeternity.decodeEvents(log, TIPPING_V3_ACI, "Tipping_v3"), ...aeternity.decodeEvents(log, TIPPING_V4_ACI, "Tipping_v4"), ...aeternity.decodeEvents(log, ORACLE_SERVICE_ACI, "OracleServiceInterface"), ...aeternity.decodeEvents(log, TOKEN_REGISTRY_ACI, "TokenRegistryInterface")];
     return decodedEvents.map((decodedEvent) => {
       const event = {};
       // Decode AEX9 events

@@ -68,7 +68,7 @@
     "sharp": "^0.33.3",
     "swagger-ui-express": "^5.0.0",
     "tipping-contract": "git+https://git@github.com/aeternity/tipping-contract#v5.0.0-alpha2",
-    "tipping-oracle-service": "git+https://git@github.com/aeternity/tipping-oracle-service#v0.3.6",
+    "tipping-oracle-service": "git+https://git@github.com/aeternity/tipping-oracle-service#v0.3.7",
     "token-registry": "git+https://git@github.com/aeternity/token-registry#v1.0.2",
     "uuid": "^9.0.1",
     "websocket": "^1.0.34",

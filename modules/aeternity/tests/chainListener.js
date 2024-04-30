@@ -52,7 +52,7 @@ describe('Chain Listener', () => {
         process.env.CONTRACT_V1_ADDRESS,
         process.env.CONTRACT_V2_ADDRESS,
         process.env.CONTRACT_V3_ADDRESS,
-        // process.env.WORD_REGISTRY_CONTRACT, // FIXME: renable wordbazaar once contracts have been upgraded
+        process.env.WORD_REGISTRY_CONTRACT,
       ];
       const stub = sinon
         .stub(stubObj, 'subscribeToContract')

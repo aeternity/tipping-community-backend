@@ -13,9 +13,9 @@ const ORACLE_SERVICE_ACI = require('tipping-oracle-service/generated/OracleServi
 const ORACLE_GETTER_ACI = require('tipping-oracle-service/generated/OracleGetter.aci.json');
 const FUNGIBLE_TOKEN_FULL_ACI = require('aeternity-fungible-token/generated/FungibleTokenFull.aci.json');
 const TOKEN_REGISTRY_ACI = require('token-registry/generated/token-registry.aci.json');
-const WORD_REGISTRY_INTERFACE = require('wordbazaar-contracts/WordRegistryInterface.aes');
-const WORD_SALE_INTERFACE = require('wordbazaar-contracts/TokenSaleInterface.aes');
-const TOKEN_VOTING_CONTRACT = require('wordbazaar-contracts/TokenVotingInterface.aes');
+const WORD_REGISTRY_ACI = require('wordbazaar-contracts/generated/WordRegistry.aci.json');
+const WORD_SALE_ACI = require('wordbazaar-contracts/generated/TokenSale.aci.json');
+const TOKEN_VOTING_ACI = require('wordbazaar-contracts/generated/TokenVoting.aci.json');
 
 const logger = require('../../../utils/logger')(module);
 const basicTippingContractUtil = require('../../../utils/basicTippingContractUtil');
@@ -47,6 +47,7 @@ class CustomNode extends Node {
 
   sendOperationRequest(args, spec) {
     if (spec.path === '/v3/dry-run') {
+      // eslint-disable-next-line no-param-reassign
       spec = {
         ...spec,
         path: `${this.url}/v3/debug/transactions/dry-run`,
@@ -136,9 +137,8 @@ const aeternity = {
         address: process.env.TOKEN_REGISTRY_ADDRESS,
       });
       if (process.env.WORD_REGISTRY_CONTRACT) {
-        throw new Error('Word registry contract is not supported anymore');
         wordRegistryContract = await client.initializeContract({
-          aci: WORD_REGISTRY_INTERFACE, // TODO REPLACE WITH CORRECT ACI
+          aci: WORD_REGISTRY_ACI,
           address: process.env.WORD_REGISTRY_CONTRACT,
         });
         logger.info('Starting WITH WORD REGISTRY contract');
@@ -345,7 +345,7 @@ const aeternity = {
 
   async wordSaleVotes(contractAddress) {
     await aeternity.initWordSaleContractIfUnknown(contractAddress);
-    return wordSaleContracts[contractAddress].votes().then(res => res.decodedResult);
+    return wordSaleContracts[contractAddress].votes().then(res => Array.from(res.decodedResult));
   },
 
   async wordSaleVoteTimeout(contractAddress) {
@@ -454,13 +454,13 @@ const aeternity = {
 
   async initTokenVotingContractIfUnknown(contractAddress) {
     if (!tokenVotingContracts[contractAddress]) {
-      tokenVotingContracts[contractAddress] = await client.getContractInstance(TOKEN_VOTING_CONTRACT, { contractAddress });
+      tokenVotingContracts[contractAddress] = await client.initializeContract({ aci: TOKEN_VOTING_ACI, address: contractAddress });
     }
   },
 
   async initWordSaleContractIfUnknown(contractAddress) {
     if (!wordSaleContracts[contractAddress]) {
-      wordSaleContracts[contractAddress] = await client.getContractInstance(WORD_SALE_INTERFACE, { contractAddress });
+      wordSaleContracts[contractAddress] = await client.initializeContract({ aci: WORD_SALE_ACI, address: contractAddress });
     }
   },
 

@@ -73,7 +73,7 @@
     "websocket": "^1.0.34",
     "winston": "^3.3.3",
     "winston-daily-rotate-file": "^4.5.5",
-    "wordbazaar-contracts": "git+https://git@github.com/aeternity/wordbazaar-contracts#v0.0.4-alpha2"
+    "wordbazaar-contracts": "git+https://git@github.com/aeternity/wordbazaar-contracts#v0.0.4-alpha4"
   },
   "devDependencies": {
     "@commitlint/cli": "^13.2.0",

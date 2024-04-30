@@ -1,4 +1,4 @@
-const WORD_SALE_INTERFACE = require('wordbazaar-contracts/TokenSaleInterface.aes');
+const WORD_SALE_ACI = require('wordbazaar-contracts/generated/TokenSale.aci.json');
 const BigNumber = require('bignumber.js');
 const AsyncLock = require('async-lock');
 const axios = require('axios');
@@ -117,8 +117,7 @@ const CacheLogic = {
 
     return txs.flatMap(tx => {
       const decodedEvent = () => {
-        // FIXME: use ACI here
-        const decodedEvents = aeternity.decodeEvents(tx.tx.log, WORD_SALE_INTERFACE, 'TokenSale');
+        const decodedEvents = aeternity.decodeEvents(tx.tx.log, WORD_SALE_ACI, 'TokenSale');
 
         // FIXME: there could be more than one legit event per tx
         if (decodedEvents.length === 1) {
@@ -183,7 +182,6 @@ const CacheLogic = {
   async wordSaleVotesDetails(address) {
     const votes = await cache.getOrSet(['wordSaleVotes', address],
       () => aeternity.wordSaleVotes(address), cache.shortCacheTime);
-
     return Promise.all(votes.map(([id, vote]) => CacheLogic.wordSaleVoteInfo(id, vote[1], vote[0], address)));
   },
 

@@ -71,7 +71,7 @@ const startInvalidator = () => {
   wsclient.on("connectFailed", (e) => logger.error(e));
   wsclient.on("connect", handleConnectionInit);
 };
-export { startInvalidator };
 export default {
   startInvalidator,
+  handleConnectionInit,
 };

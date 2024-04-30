@@ -6,6 +6,7 @@ import loggerFactory from "../../../utils/logger.js";
 import { MESSAGE_QUEUES, MESSAGES } from "../constants/queue.js";
 const { filter } = operators;
 const { Subject } = rxjs;
+
 const logger = loggerFactory(import.meta.url);
 const publisher = redis.createClient(`redis://${process.env.REDIS_HOST}:${process.env.REDIS_PORT || 6379}`);
 const subscriber = redis.createClient(`redis://${process.env.REDIS_HOST}:${process.env.REDIS_PORT || 6379}`);
@@ -15,7 +16,7 @@ const rsmq = new RedisSMQ({
   ns: MQ_NAMESPACE,
   realtime: true,
 });
-console.log(process.env.REDIS_HOST);
+
 let queues = [];
 const QueueLogic = {
   async init() {

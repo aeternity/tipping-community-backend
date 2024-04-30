@@ -1,6 +1,7 @@
 import BigNumber from "bignumber.js";
 import ae from "../logic/aeternity.js";
 import Trace from "../../payfortx/logic/traceLogic.js";
+import queueLogic from "../../queue/logic/queueLogic.js";
 import { afterEach, beforeAll, describe, expect, it, jest } from "@jest/globals";
 
 // Our parent block
@@ -29,15 +30,14 @@ describe("Aeternity", () => {
     }, 30000);
     it("it should get the oracle claim by url", async () => {
       const result = await ae.fetchOracleClaimByUrl("https://github.com/mradkov");
-      result.should.be.an("object");
-      result.should.have.property("success");
-      result.should.have.property("percentage");
-      result.should.have.property("account");
+      expect(result).toHaveProperty("success");
+      expect(result).toHaveProperty("percentage");
+      expect(result).toHaveProperty("account");
     }, 30000);
     it("it should get the oracle claim by address", async () => {
       const result = await ae.fetchOracleClaimedUrls("ak_YCwfWaW5ER6cRsG9Jg4KMyVU59bQkt45WvcnJJctQojCqBeG2");
-      result.should.be.an("array");
-      result.should.include("https://github.com/mradkov");
+      expect(result).toBeInstanceOf(Array);
+      expect(result).toContain("https://github.com/mradkov");
     }, 30000);
   });
   describe("Claiming", () => {
@@ -155,17 +155,19 @@ describe("Aeternity", () => {
     });
     it("it should get the token registry state", async () => {
       const result = await ae.fetchTokenRegistryState();
-      result.should.be.an("array");
+      expect(result).toBeInstanceOf(Array);
       const [firstEntry] = result;
-      firstEntry.should.be.an("array");
+      expect(firstEntry).toBeInstanceOf(Array);
       // token contract address
-      firstEntry[0].should.be.an("string");
-      firstEntry[0].should.contain("ct_");
+      expect(firstEntry[0]).toBeInstanceOf(String);
+      expect(firstEntry[0]).toContain("ct_");
       // token contract meta infos
-      firstEntry[1].should.be.an("object");
-      firstEntry[1].should.have.property("decimals");
-      firstEntry[1].should.have.property("name");
-      firstEntry[1].should.have.property("symbol");
+      expect(firstEntry[1]).toMatchObject({
+        decimals: expect.any(Number),
+        name: expect.any(String),
+        symbol: expect.any(String),
+      });
+      // TODO move this to the relevant tests
       [tokenContractAddress] = firstEntry;
     }, 10000);
     it("it should get the token meta info from a contract", async () => {

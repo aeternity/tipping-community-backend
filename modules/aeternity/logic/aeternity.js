@@ -407,21 +407,25 @@ const aeternity = {
     if (!client) throw new Error('Init sdk first');
     try {
       const fetchV1State = contractV1.get_state({
-        maxGas: 100e18,
+        gasMax: 11e18,
+        gasLimit: 10e18,
       });
       const fetchV2State = !onlyV1 && process.env.CONTRACT_V2_ADDRESS
         ? contractV2.get_state({
-          maxGas: 100e18,
+          gasMax: 11e18,
+          gasLimit: 10e18,
         })
         : Promise.resolve(null);
       const fetchV3State = !onlyV1 && process.env.CONTRACT_V3_ADDRESS
         ? contractV3.get_state({
-          maxGas: 100e18,
+          gasMax: 11e18,
+          gasLimit: 10e18,
         })
         : Promise.resolve(null);
       const fetchV4State = !onlyV1 && process.env.CONTRACT_V4_ADDRESS
         ? contractV4.get_state({
-          maxGas: 100e18,
+          gasMax: 11e18,
+          gasLimit: 10e18,
         })
         : Promise.resolve(null);
       const states = [await fetchV1State, await fetchV2State, await fetchV3State, await fetchV4State].filter(state => state);

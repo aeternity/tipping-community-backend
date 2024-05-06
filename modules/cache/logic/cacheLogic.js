@@ -75,7 +75,7 @@ const CacheLogic = {
 
   async getWordRegistryAndSaleData() {
     const wordRegistryData = await CacheLogic.getWordRegistryData();
-    return wordRegistryData.tokens.asyncMap(async ([word, sale]) => {
+    return Array.from(wordRegistryData.tokens).asyncMap(async ([word, sale]) => {
       const wordSaleDetails = await CacheLogic.getWordSaleDetails(sale);
 
       return {

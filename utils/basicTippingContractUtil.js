@@ -14,8 +14,8 @@ const formatSingleClaim = (contractId, url, [claimGen, amount]) => {
   const data = {};
   data.contractId = contractId;
   data.url = url;
-  data.claimGen = claimGen;
-  data.amount = String(amount);
+  data.claimGen = Number(claimGen);
+  data.amount = Number(amount);
   return data;
 };
 
@@ -37,11 +37,13 @@ const formatSingleRetip = (contractId, suffix, id, tipTypeData) => {
   data.contractId = contractId;
   data.claimGen = data.claim_gen === 'None' || data.claim_gen === undefined ? null : Number(data.claim_gen);
   data.token = data.token !== undefined ? data.token : null;
-  data.tokenAmount = data.token_amount ? data.token_amount : '0';
+  data.tokenAmount = data.token_amount ? Number(data.token_amount) : 0;
+  data.amount = Number(data.amount)
 
   // formatting
   delete data.claim_gen;
   delete data.tip_id;
+  delete data.token_amount;
 
   return data;
 };
@@ -136,7 +138,7 @@ const formatSingleTip = (contractId, suffix, id, tipTypeData, url) => {
   delete data.url_id;
 
   data.token = data.token !== undefined ? data.token : null;
-  data.tokenAmount = data.tokenAmount ? data.tokenAmount : '0';
+  data.tokenAmount = data.tokenAmount ? Number(data.tokenAmount) : 0;
   data.topics = [...new Set(data.title.match(topicsRegex))].map(x => x.toLowerCase());
 
   data.amount = Number(data.amount)

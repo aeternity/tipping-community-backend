@@ -15,11 +15,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@master
-      - name: Use Node.js 16.x
-        uses: actions/setup-node@v1
+        uses: actions/checkout@v4
+      - name: Use Node.js 20.x
+        uses: actions/setup-node@v4
         with:
-          node-version: 16.x
+          node-version: 20.x
       - name: Install Dependencies
         run: npm ci
       - name: Create Swagger File
@@ -31,11 +31,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@master
-      - name: Use Node.js 16.x
-        uses: actions/setup-node@v1
+        uses: actions/checkout@v4
+      - name: Use Node.js 20.x
+        uses: actions/setup-node@v4
         with:
-          node-version: 16.x
+          node-version: 20.x
       - name: Install Dependencies
         run: npm ci
       - name: Create Docs
@@ -49,7 +49,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@master
+        uses: actions/checkout@v4
       - name: Build Docker
         run: docker build .
 
@@ -79,7 +79,7 @@ jobs:
           --health-timeout 5s
           --health-retries 5
       ipfs:
-        image: ipfs/go-ipfs
+        image: ipfs/kubo
         ports:
           - 5001:5001
         options: >-
@@ -88,7 +88,7 @@ jobs:
           --health-timeout 5s
           --health-retries 5
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 100
 

@@ -210,7 +210,7 @@ const CacheLogic = {
     const totalSupply = cache.getOrSet(['fungibleTokenTotalSupply', await tokenAddress],
       async () => aeternity.fungibleTokenTotalSupply(await tokenAddress), cache.shortCacheTime);
 
-    const stakePercent = (await totalSupply !== '0') ? new BigNumber(votedFor).dividedBy(await totalSupply).times(100).toFixed(0) : '0';
+    const stakePercent = (await totalSupply !== 0n) ? new BigNumber(votedFor).dividedBy(await totalSupply).times(100).toFixed(0) : '0';
     const timeoutHeight = Number((await state).close_height) + Number((await voteTimeout));
     return {
       id,

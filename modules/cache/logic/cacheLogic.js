@@ -159,18 +159,18 @@ const CacheLogic = {
       const wordRegistryData = await CacheLogic.getWordRegistryData();
 
       return Promise.all([
-        wordRegistryData.tokens.asyncMap(async ([, wordSale]) => {
+        Array.from(wordRegistryData.tokens).asyncMap(async ([, wordSale]) => {
           const details = await CacheLogic.getWordSaleDetails(wordSale);
           return CacheLogic.getTokenMetaInfo(details.tokenAddress);
         }),
-        wordRegistryData.tokens.asyncMap(([, wordSale]) => CacheLogic.wordSaleVotesDetails(wordSale)),
+        Array.from(wordRegistryData.tokens).asyncMap(([, wordSale]) => CacheLogic.wordSaleVotesDetails(wordSale)),
       ]);
     });
   },
 
   async wordSaleDetailsByToken(address) {
     const wordRegistryData = await CacheLogic.getWordRegistryData();
-    const wordDetails = await wordRegistryData.tokens.asyncMap(
+    const wordDetails = await Array.from(wordRegistryData.tokens).asyncMap(
       async ([, wordSale]) => ({ tokenAddress: await CacheLogic.getWordSaleTokenAddress(wordSale), sale: wordSale }),
     );
 

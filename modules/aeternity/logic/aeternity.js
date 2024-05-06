@@ -217,19 +217,19 @@ const aeternity = {
         case 'Transfer':
           event.from = decodedEvent.args[0]; // eslint-disable-line prefer-destructuring
           event.to = decodedEvent.args[1]; // eslint-disable-line prefer-destructuring
-          event.amount = decodedEvent.args[2] || null;
+          event.amount = decodedEvent.args[2] ? Number(decodedEvent.args[2]) : null;
           break;
         case 'Allowance':
           event.from = decodedEvent.args[0]; // eslint-disable-line prefer-destructuring
           event.for = decodedEvent.args[1]; // eslint-disable-line prefer-destructuring
-          event.amount = decodedEvent.args[2] || null;
+          event.amount = decodedEvent.args[2] ? Number(decodedEvent.args[2]) : null;
           break;
 
           // V2
         case 'TipDirectReceived':
         case 'TipDirectTokenReceived':
           event.address = decodedEvent.args[0]; // eslint-disable-line prefer-destructuring
-          event.amount = decodedEvent.args[1] || null;
+          event.amount = decodedEvent.args[1] ? Number(decodedEvent.args[1]) : null;
           event.receiver = decodedEvent.args[2]; // eslint-disable-line prefer-destructuring
           event.tokenContract = decodedEvent.args[3] || null;
           break;
@@ -243,7 +243,7 @@ const aeternity = {
           // ORACLES
         case 'CheckPersistClaim':
           event.address = decodedEvent.args[1]; // eslint-disable-line prefer-destructuring
-          event.amount = decodedEvent.args[2] || null;
+          event.amount = decodedEvent.args[2] ? Number(decodedEvent.args[2]) : null;
           event.url = decodedEvent.args[0]; // eslint-disable-line prefer-destructuring
           break;
         case 'QueryOracle':
@@ -257,7 +257,7 @@ const aeternity = {
         case 'ReTipTokenReceived':
         case 'TipWithdrawn':
           event.address = decodedEvent.args[0]; // eslint-disable-line prefer-destructuring
-          event.amount = decodedEvent.args[1] ? decodedEvent.args[1] : null;
+          event.amount = decodedEvent.args[1] ? Number(decodedEvent.args[1]) : null;
           event.url = decodedEvent.args[2]; // eslint-disable-line prefer-destructuring
           event.tokenContract = decodedEvent.args[3] || null;
           break;

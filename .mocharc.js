@@ -2,7 +2,6 @@
 process.env = {
   ...process.env,
   NODE_URL: 'https://testnet.aeternity.io',
-  COMPILER_URL: 'https://latest.compiler.aepps.com',
   MIDDLEWARE_URL: 'https://testnet.aeternity.io',
 
   OLD_CONTRACT_ADDRESS: 'ct_2siQwATqx7TFPr6D7nj4SqAGmkurVSBvRvL8xUfRPS5VZD4y4Y',
@@ -22,7 +21,6 @@ process.env = {
 process.env = {
   ...process.env,
   NODE_URL: 'https://testnet.aeternity.io',
-  COMPILER_URL: 'https://latest.compiler.aepps.com',
   AUTHENTICATION_USER: 'admin',
   AUTHENTICATION_PASSWORD: 'pass',
   NODE_ENV: 'test',

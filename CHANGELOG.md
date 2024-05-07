@@ -2,6 +2,31 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [3.1.5](https://github.com/aeternity/tipping-community-backend/compare/v3.1.4...v3.1.5) (2024-05-07)
+
+
+### Bug Fixes
+
+* adjusts health check after sdk upgrade ([de61ccd](https://github.com/aeternity/tipping-community-backend/commit/de61ccd590379874a8f2ced5cd536055a04bf0bf))
+* allows local env to be used for dev ([a5a9370](https://github.com/aeternity/tipping-community-backend/commit/a5a937080d8188a4365d8b899caedb207e72a42b))
+* wordbazaar usage ([a903cc1](https://github.com/aeternity/tipping-community-backend/commit/a903cc11dfd4d86c29fb7a48d6d877d6ab3f00f1))
+
+
+### Refactorings
+
+* upgrades sdk ([736cfb3](https://github.com/aeternity/tipping-community-backend/commit/736cfb3d69eb00c9bff7f12026531e346591a885))
+* upgrades wordbazaar ([8ccbb74](https://github.com/aeternity/tipping-community-backend/commit/8ccbb74901f12a919bdc04f1e30ab9126380015b))
+
+
+### Miscellaneous
+
+* bigint/number conversion ([7b9c5a0](https://github.com/aeternity/tipping-community-backend/commit/7b9c5a0800238e1f50a9ebb6afe08a5996638304))
+* bumps node version ([389192b](https://github.com/aeternity/tipping-community-backend/commit/389192b3470eec47d87af1453e74e6a422dd8a9c))
+* fix bigint conversions ([6e27fbc](https://github.com/aeternity/tipping-community-backend/commit/6e27fbcd66bd485accd570b59fb00a991f16b187))
+* fix gas limit, compiler url, redis readme ([ba58815](https://github.com/aeternity/tipping-community-backend/commit/ba588151b9bba33e26cf06485572530e962b39bb))
+* fix/update pipelines ([58eb05d](https://github.com/aeternity/tipping-community-backend/commit/58eb05d26a74ac68cecb9f419dc73672e8189d9e))
+* removes useless code ([9d171da](https://github.com/aeternity/tipping-community-backend/commit/9d171da24bcbe711da4cf1a5ee4b7e1cdc82a84b))
+
 ## [3.1.4](https://github.com/aeternity/tipping-community-backend/compare/v3.1.3...v3.1.4) (2023-03-23)
 
 

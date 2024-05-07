@@ -166,7 +166,7 @@ const aeternity = {
   },
 
   async getBalance() {
-    const address = await client.address();
+    const address = await client.address;
     return client.getBalance(address);
   },
   decodeEvents(logs, aci, contractName) {

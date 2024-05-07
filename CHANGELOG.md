@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [3.1.6](https://github.com/aeternity/tipping-community-backend/compare/v3.1.5...v3.1.6) (2024-05-07)
+
+
+### CI / CD
+
+* update prod pipeline ([a6bf24c](https://github.com/aeternity/tipping-community-backend/commit/a6bf24cf456198bf42109728e8a654821860cbe1))
+
 ## [3.1.5](https://github.com/aeternity/tipping-community-backend/compare/v3.1.4...v3.1.5) (2024-05-07)
 
 

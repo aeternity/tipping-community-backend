@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [3.1.7](https://github.com/aeternity/tipping-community-backend/compare/v3.1.6...v3.1.7) (2024-05-08)
+
+
+### Bug Fixes
+
+* disables messages on startup to avoid doing everything at once ([9f5cfe6](https://github.com/aeternity/tipping-community-backend/commit/9f5cfe6138ea5e5ae9e914a26ae3a13dc4ab3300))
+
 ## [3.1.6](https://github.com/aeternity/tipping-community-backend/compare/v3.1.5...v3.1.6) (2024-05-07)
 
 

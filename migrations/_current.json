@@ -580,6 +580,26 @@
                         "indicesType": "UNIQUE",
                         "type": "UNIQUE"
                     }
+                },
+                "fe94400734466dc2b18423d6187d2e9aa5a1a396": {
+                    "unique": true,
+                    "fields": [
+                        "type",
+                        "entityId",
+                        "entityType",
+                        "receiver"
+                    ],
+                    "where": {
+                        "sourceType": null,
+                        "sourceId": null
+                    },
+                    "name": "notifications_type_entity_id_entity_type_receiver",
+                    "options": {
+                        "indexName": "notifications_type_entity_id_entity_type_receiver",
+                        "name": "notifications_type_entity_id_entity_type_receiver",
+                        "indicesType": "UNIQUE",
+                        "type": "UNIQUE"
+                    }
                 }
             }
         },
@@ -963,5 +983,5 @@
             "indexes": []
         }
     },
-    "revision": 28
+    "revision": 29
 }

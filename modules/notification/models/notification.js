@@ -51,6 +51,14 @@ module.exports = (sequelize, DataTypes) => sequelize.define('Notification', {
       unique: true,
       fields: ['type', 'entityId', 'entityType', 'receiver', 'sourceType', 'sourceId'],
     },
+    {
+      unique: true,
+      fields: ['type', 'entityId', 'entityType', 'receiver'],
+      where: { // seems not to be applied in the generated SQL query
+        sourceType: null,
+        sourceId: null,
+      },
+    },
   ],
   timestamps: true,
 });

@@ -27,6 +27,14 @@ describe('Notifications', () => {
     type: NOTIFICATION_TYPES.COMMENT_ON_COMMENT,
   };
 
+  const testData2 = {
+    receiver: publicKey,
+    entityId: 1,
+    sender: 'ak_sender',
+    entityType: ENTITY_TYPES.COMMENT,
+    type: NOTIFICATION_TYPES.COMMENT_ON_COMMENT,
+  };
+
   const seedDB = getDBSeedFunction([Retip, Notification, Comment]);
 
   after(() => {
@@ -305,7 +313,7 @@ describe('Notifications', () => {
         truncate: true,
       });
       createdNotification = await Notification.create(testData);
-      createdNotification2 = await Notification.create(testData);
+      createdNotification2 = await Notification.create(testData2);
     });
 
     it('it should MODIFY a single notification for a user', async () => {

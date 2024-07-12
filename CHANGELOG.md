@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [3.1.8](https://github.com/aeternity/tipping-community-backend/compare/v3.1.7...v3.1.8) (2024-07-12)
+
+
+### Bug Fixes
+
+* **notifications:** adds index to also deduplicate notifications without source ([3694a23](https://github.com/aeternity/tipping-community-backend/commit/3694a234593455acab4c53fe6021d3acac85be86))
+
+
+### Testing
+
+* **notifications:** adjusts testing data to not conflict in db anymore ([dc5fc6c](https://github.com/aeternity/tipping-community-backend/commit/dc5fc6c6d6c009e622d339d935ed9c5c9854eebe))
+
 ## [3.1.7](https://github.com/aeternity/tipping-community-backend/compare/v3.1.6...v3.1.7) (2024-05-08)
 
 

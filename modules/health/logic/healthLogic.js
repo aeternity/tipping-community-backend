@@ -1,7 +1,9 @@
+const Sentry = require('@sentry/node');
 const ipfs = require('../../backup/logic/ipfsLogic');
 const cache = require('../../cache/utils/cache');
 const models = require('../../../models');
 const aeternity = require('../../aeternity/logic/aeternity');
+const logger = require('../../../utils/logger')(module);
 
 const HealthLogic = {
   /**
@@ -17,6 +19,8 @@ const HealthLogic = {
         .map(async key => models[key].findOne({ raw: true })));
       return true;
     } catch (e) {
+      logger.error(`DB health failed with: ${e.message}`);
+      Sentry.captureException(e);
       return false;
     }
   },
@@ -26,6 +30,8 @@ const HealthLogic = {
       await ipfs.getCoreVitals();
       return true;
     } catch (e) {
+      logger.error(`IPFS health failed with: ${e.message}`);
+      Sentry.captureException(e);
       return false;
     }
   },
@@ -35,6 +41,8 @@ const HealthLogic = {
       await cache.getOrSet(['redisTest'], async () => 'done');
       return true;
     } catch (e) {
+      logger.error(`Redis health failed with: ${e.message}`);
+      Sentry.captureException(e);
       return false;
     }
   },
@@ -44,6 +52,8 @@ const HealthLogic = {
       const balance = await aeternity.getBalance();
       return parseInt(balance, 10) > 0;
     } catch (e) {
+      logger.error(`AE health failed with: ${e.message}`);
+      Sentry.captureException(e);
       return false;
     }
   },

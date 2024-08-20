@@ -1,7 +1,7 @@
 version: "3.6"
 services:
   superhero-backend:
-    image: aeternity/superhero-backend
+    build: .
     container_name: superhero-backend
     ports:
       - "3000:3000"
@@ -54,7 +54,7 @@ services:
       - POSTGRES_DB=superhero
 
   ipfs: # this instance will sync with other peers and act as a p2p node, check the ipfs config to avoid that
-    image: ipfs/go-ipfs
+    image: ipfs/kubo
     hostname: ipfs
     restart: unless-stopped
     container_name: superhero-ipfs

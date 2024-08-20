@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [3.1.9](https://github.com/aeternity/tipping-community-backend/compare/v3.1.8...v3.1.9) (2024-08-20)
+
+
+### Bug Fixes
+
+* **health:** logs error messages ([60bd947](https://github.com/aeternity/tipping-community-backend/commit/60bd947d116cda581cd16f11d10610d8a575212e))
+* oracle urls out of gas ([f0b4f93](https://github.com/aeternity/tipping-community-backend/commit/f0b4f93a84a559aead85e45431ee567989b3c37c))
+
 ## [3.1.8](https://github.com/aeternity/tipping-community-backend/compare/v3.1.7...v3.1.8) (2024-07-12)
 
 

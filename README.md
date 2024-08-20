@@ -28,7 +28,7 @@ npm i
 
 #### Start ipfs, database & redis
 ```bash
-docker run --rm --name ipfs -p 5001:5001 -d ipfs/go-ipfs
+docker run --rm --name ipfs -p 5001:5001 -d ipfs/kubo
 docker run --name superhero-postgres -e POSTGRES_PASSWORD=postgres -e POSTGRES_USER=postgres -e POSTGRES_DB=superhero -p5432:5432 -d postgres
 docker run --name redis -p 6379:6379 -d redis
 ```

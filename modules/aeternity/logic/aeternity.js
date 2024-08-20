@@ -390,7 +390,10 @@ const aeternity = {
   async getOracleAllClaimedUrls() {
     if (!client) throw new Error('Init sdk first');
     return oracleGetter
-      .get_oracle_claimed_urls(process.env.ORACLE_CONTRACT_ADDRESS)
+      .get_oracle_claimed_urls(process.env.ORACLE_CONTRACT_ADDRESS, {
+        gasMax: 11e18,
+        gasLimit: 10e18,
+      })
       .then(res => res.decodedResult)
       .catch(e => {
         logger.error(e.message);

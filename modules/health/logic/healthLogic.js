@@ -49,8 +49,11 @@ const HealthLogic = {
 
   async checkAEClient() {
     try {
+      if (!aeternity.getClient()) await aeternity.init();
       const balance = await aeternity.getBalance();
-      return parseInt(balance, 10) > 0;
+      const parsed = parseInt(balance, 10);
+      // Consider AE healthy if the node is reachable and returns a numeric balance (>= 0)
+      return !Number.isNaN(parsed) && parsed >= 0;
     } catch (e) {
       logger.error(`AE health failed with: ${e.message}`);
       Sentry.captureException(e);

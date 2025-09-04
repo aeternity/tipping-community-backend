@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [3.1.10](https://github.com/aeternity/tipping-community-backend/compare/v3.1.9...v3.1.10) (2025-09-04)
+
+
+### Bug Fixes
+
+* check backend health correctly ([76cab13](https://github.com/aeternity/tipping-community-backend/commit/76cab130d91669a047e87b394626e847e6891aeb))
+* do not set preffered name to null incorrectly ([3aaf3eb](https://github.com/aeternity/tipping-community-backend/commit/3aaf3eba6dd9ef1a7dc4dba938312e26aa788527))
+
 ## [3.1.9](https://github.com/aeternity/tipping-community-backend/compare/v3.1.8...v3.1.9) (2024-08-20)
 
 

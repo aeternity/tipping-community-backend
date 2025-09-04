@@ -63,10 +63,26 @@ const ProfileLogic = {
     const allProfiles = await Profile.findAll({ raw: true });
     const chainNames = await CacheLogic.fetchMdwChainNames();
     return allProfiles.asyncMap(async profile => {
-      if (profile.preferredChainName && (
-        !chainNames[profile.author] || !chainNames[profile.author].includes(profile.preferredChainName)
-      )) {
-        await Profile.update({ preferredChainName: null }, { where: { author: profile.author } });
+      try {
+        if (!profile.preferredChainName) return;
+
+        // If cache lookup says it's valid, keep it
+        const namesForAuthor = chainNames && chainNames[profile.author];
+        if (Array.isArray(namesForAuthor) && namesForAuthor.includes(profile.preferredChainName)) return;
+
+        // Avoid destructive updates on missing/errored cache responses
+        if (!chainNames) return;
+
+        // Double-check on chain that the preferred name still points to the author
+        const queryResult = await aeternity.getAddressForChainName(profile.preferredChainName);
+        let addresses = [];
+        if (queryResult) addresses = queryResult.pointers.filter(({ key }) => key === 'account_pubkey').map(({ id }) => id);
+
+        if (!addresses.includes(profile.author)) {
+          await Profile.update({ preferredChainName: null }, { where: { author: profile.author } });
+        }
+      } catch (e) {
+        // Be conservative on errors: don't mutate stored preference
       }
     });
   },

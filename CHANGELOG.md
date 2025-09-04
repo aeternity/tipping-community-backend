@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [3.1.12](https://github.com/aeternity/tipping-community-backend/compare/v3.1.11...v3.1.12) (2025-09-04)
+
+
+### CI / CD
+
+* bump GitHub Actions to latest majors ([18a6d46](https://github.com/aeternity/tipping-community-backend/commit/18a6d463a968defeda3773b06607ccffe3084db5))
+
 ## [3.1.11](https://github.com/aeternity/tipping-community-backend/compare/v3.1.10...v3.1.11) (2025-09-04)
 
 

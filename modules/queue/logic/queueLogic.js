@@ -10,7 +10,11 @@ const MQ_NAMESPACE = 'rsmq';
 
 let publisher;
 let subscriber;
-let rsmq;
+let rsmq = new RedisSMQ({
+  host: process.env.REDIS_HOST,
+  port: process.env.REDIS_PORT || 6379,
+  ns: MQ_NAMESPACE,
+});
 let queues = [];
 
 function createRedisClient() {

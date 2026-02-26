@@ -6,23 +6,86 @@ const redis = require('redis');
 const logger = require('../../../utils/logger')(module);
 const { MESSAGE_QUEUES, MESSAGES } = require('../constants/queue');
 
-const publisher = redis.createClient(`redis://${process.env.REDIS_HOST}:${process.env.REDIS_PORT || 6379}`);
-const subscriber = redis.createClient(`redis://${process.env.REDIS_HOST}:${process.env.REDIS_PORT || 6379}`);
 const MQ_NAMESPACE = 'rsmq';
-const rsmq = new RedisSMQ({
-  client: publisher,
-  ns: MQ_NAMESPACE,
-  realtime: true,
-});
+
+let publisher;
+let subscriber;
+let rsmq;
 let queues = [];
+
+function createRedisClient() {
+  const url = `redis://${process.env.REDIS_HOST}:${process.env.REDIS_PORT || 6379}`;
+  const client = redis.createClient(url);
+
+  client.on('error', err => {
+    logger.error(`Redis error: ${err.message}`);
+  });
+
+  client.on('end', () => {
+    logger.warn('Redis connection closed');
+  });
+
+  client.on('reconnecting', () => {
+    logger.warn('Redis reconnecting...');
+  });
+
+  return client;
+}
+
+async function waitForReady(client, name) {
+  return new Promise((resolve, reject) => {
+    const onReady = () => {
+      logger.info(`Redis client "${name}" ready`);
+      cleanup();
+      resolve();
+    };
+    const onError = err => {
+      logger.error(`Redis client "${name}" failed: ${err.message}`);
+      cleanup();
+      reject(err);
+    };
+    const cleanup = () => {
+      client.removeListener('ready', onReady);
+      client.removeListener('error', onError);
+    };
+
+    client.once('ready', onReady);
+    client.once('error', onError);
+  });
+}
 
 const QueueLogic = {
   async init() {
-    // Create initial subjects
+    // 1) Create clients
+    publisher = createRedisClient();
+    subscriber = createRedisClient();
+
+    // 2) Wait until both are ready
+    await Promise.all([
+      waitForReady(publisher, 'publisher'),
+      waitForReady(subscriber, 'subscriber'),
+    ]);
+
+    // 3) Now create RSMQ on a ready client
+    rsmq = new RedisSMQ({
+      client: publisher,
+      ns: MQ_NAMESPACE,
+      realtime: true,
+    });
+
+    // 4) Create initial subjects
     Object.values(MESSAGE_QUEUES).map(qname => QueueLogic.initQueueSubject(qname));
+
+    // 5) Wire subscriber
     subscriber.on('message', channel => QueueLogic.notifySubscriber(channel));
     logger.info('All MQs registered locally');
-    await Promise.all(Object.values(MESSAGE_QUEUES).map(qname => QueueLogic.createQueue(qname).catch(e => logger.error(e))));
+
+    // 6) Create queues in Redis
+    await Promise.all(
+      Object.values(MESSAGE_QUEUES).map(qname =>
+        QueueLogic.createQueue(qname).catch(e => logger.error(e))
+      )
+    );
     logger.info('All MQs registered on redis');
   },
 
@@ -35,7 +98,9 @@ const QueueLogic = {
     const allMessages = [];
     while (fetchSuccess) {
       // eslint-disable-next-line no-await-in-loop
-      const message = await QueueLogic.receiveMessage(qname).catch(e => logger.warn(`Reading queue ${qname} failed with ${e.message}`));
+      const message = await QueueLogic
+        .receiveMessage(qname)
+        .catch(e => logger.warn(`Reading queue ${qname} failed with ${e.message}`));
       fetchSuccess = message && message.id;
       if (fetchSuccess) {
         allMessages.push(message);
@@ -48,7 +113,10 @@ const QueueLogic = {
     const qname = channel.replace(`${MQ_NAMESPACE}:rt:`, '');
     const messages = await QueueLogic.getAllMessages(qname);
     const queue = queues.find(q => q.name === qname);
-    messages.filter(message => message.id).map(QueueLogic.parseMessage).map(message => queue.subject.next(message));
+    messages
+      .filter(message => message.id)
+      .map(QueueLogic.parseMessage)
+      .map(message => queue.subject.next(message));
   },
 
   initQueueSubject(qname) {
@@ -62,13 +130,17 @@ const QueueLogic = {
   },
 
   async createQueue(qname) {
-    if (!Object.values(MESSAGE_QUEUES).includes(qname)) throw new Error(`Queue name ${qname} is not a valid queue name. Update the enums.`);
+    if (!Object.values(MESSAGE_QUEUES).includes(qname)) {
+      throw new Error(`Queue name ${qname} is not a valid queue name. Update the enums.`);
+    }
     QueueLogic.initQueueSubject(qname);
+
     const openQueues = await rsmq.listQueuesAsync();
     logger.debug(`Subscribing to redis queue "${qname}"`);
     subscriber.subscribe(`${MQ_NAMESPACE}:rt:${qname}`);
+
     if (!openQueues.includes(qname)) {
-      await rsmq.createQueueAsync({ qname, vt: 60 * 10 }); // 10 Minutes message receive timeout
+      await rsmq.createQueueAsync({ qname, vt: 60 * 10 }); // 10 minutes
     }
   },
 
@@ -88,12 +160,16 @@ const QueueLogic = {
   subscribeToMessage(qname, requestedMessage, callback) {
     const selectedQueue = queues.find(queue => queue.name === qname);
     if (!selectedQueue) throw new Error(`Queue ${qname} not found. Subscription impossible.`);
-    return selectedQueue.subject.pipe(filter(({ message }) => message === requestedMessage)).subscribe({ next: callback });
+    return selectedQueue.subject
+      .pipe(filter(({ message }) => message === requestedMessage))
+      .subscribe({ next: callback });
   },
 
   registerDebugListener(qname) {
     logger.debug(`Subscribing locally to queue "${qname}"`);
-    QueueLogic.subscribe(qname, message => logger.info(`NEW MESSAGE: { message: ${message.message}, id: ${message.id} }`));
+    QueueLogic.subscribe(qname, message =>
+      logger.info(`NEW MESSAGE: { message: ${message.message}, id: ${message.id} }`)
+    );
   },
 
   async receiveMessage(qname) {
@@ -101,12 +177,9 @@ const QueueLogic = {
   },
 
   async sendMessage(qname, message, payload = {}) {
-    if (!qname) {
-      throw new Error(`Queue ${qname} is not valid`);
-    }
-    if (!message) {
-      throw new Error(`Message ${message} is not valid`);
-    }
+    if (!qname) throw new Error(`Queue ${qname} is not valid`);
+    if (!message) throw new Error(`Message ${message} is not valid`);
+
     const [messageQueueName, messageQueueType, messageQueueAction] = message.split('.');
     if (!messageQueueName || !messageQueueType || !messageQueueAction) {
       throw new Error(`Message ${message} does not follow required pattern QUEUE.TYPE.ACTION`);
@@ -118,11 +191,14 @@ const QueueLogic = {
       throw new Error(`Message type ${messageQueueType} is unknown in queue ${qname}`);
     }
     if (!MESSAGES[qname][messageQueueType][messageQueueAction]) {
-      throw new Error(`Message action ${messageQueueAction} is unknown in queue ${qname} with message type ${messageQueueType}`);
+      throw new Error(
+        `Message action ${messageQueueAction} is unknown in queue ${qname} with message type ${messageQueueType}`
+      );
     }
     if (typeof payload !== 'object') {
       throw new Error(`Payload has invalid type "${typeof payload}", expected "object"`);
     }
+
     return rsmq.sendMessageAsync({ qname, message: JSON.stringify({ message, payload }) });
   },
 

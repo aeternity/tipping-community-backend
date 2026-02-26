@@ -92,9 +92,7 @@ const QueueLogic = {
 
     // 6) Create queues in Redis
     await Promise.all(
-      Object.values(MESSAGE_QUEUES).map(qname =>
-        QueueLogic.createQueue(qname).catch(e => logger.error(e))
-      )
+      Object.values(MESSAGE_QUEUES).map(qname => QueueLogic.createQueue(qname).catch(e => logger.error(e))),
     );
     logger.info('All MQs registered on redis');
   },
@@ -177,9 +175,7 @@ const QueueLogic = {
 
   registerDebugListener(qname) {
     logger.debug(`Subscribing locally to queue "${qname}"`);
-    QueueLogic.subscribe(qname, message =>
-      logger.info(`NEW MESSAGE: { message: ${message.message}, id: ${message.id} }`)
-    );
+    QueueLogic.subscribe(qname, message => logger.info(`NEW MESSAGE: { message: ${message.message}, id: ${message.id} }`));
   },
 
   async receiveMessage(qname) {
@@ -202,7 +198,7 @@ const QueueLogic = {
     }
     if (!MESSAGES[qname][messageQueueType][messageQueueAction]) {
       throw new Error(
-        `Message action ${messageQueueAction} is unknown in queue ${qname} with message type ${messageQueueType}`
+        `Message action ${messageQueueAction} is unknown in queue ${qname} with message type ${messageQueueType}`,
       );
     }
     if (typeof payload !== 'object') {

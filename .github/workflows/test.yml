@@ -102,7 +102,9 @@ jobs:
         run: npm run swagger:create
 
       - name: Run db migration
-        run: npm run db:create
+        env:
+          DEBUG: sequelize:*
+        run: npx sequelize-cli --config config/config.js --env development db:migrate --debug
 
       - name: Run tests
         run: npm run test

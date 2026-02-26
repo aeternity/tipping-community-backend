@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [3.1.13](https://github.com/aeternity/tipping-community-backend/compare/v3.1.12...v3.1.13) (2026-02-26)
+
+
+### Bug Fixes
+
+* check client.ready in waitForReady() to avoid hanging on already-connected clients ([8752b53](https://github.com/aeternity/tipping-community-backend/commit/8752b53214c500f0639b580db7e4e8121ebed85a))
+* close existing Redis clients in init() before creating new ones to prevent connection leaks ([db9859b](https://github.com/aeternity/tipping-community-backend/commit/db9859b15590497ccb39a9e25c5fb757b3dffda1))
+* guard clearRedisQueues() against uninitialized rsmq without repetition ([b660d51](https://github.com/aeternity/tipping-community-backend/commit/b660d51cc74ed19b58333d34b6402d5aa6fb8705))
+* resolve consistent-return ESLint error in waitForReady ([08f5ab0](https://github.com/aeternity/tipping-community-backend/commit/08f5ab0215d06c08a456fa68dfa3114fe0613571))
+* resolve ESLint lint errors (implicit-arrow-linebreak, comma-dangle, function-paren-newline) ([ab8e4d9](https://github.com/aeternity/tipping-community-backend/commit/ab8e4d97dc0639fcf66557c9471a27edc774d0fd))
+
 ## [3.1.12](https://github.com/aeternity/tipping-community-backend/compare/v3.1.11...v3.1.12) (2025-09-04)
 
 

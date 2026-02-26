@@ -1,17 +1,110 @@
+name: Tests Pipeline
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - 'v*'
+  pull_request:
+    branches: [ main ]
+    types: [ opened, synchronize ]
+
 jobs:
-  test:
+  docs:
+    runs-on: ubuntu-latest
     steps:
-      - name: List migrations directory contents
-        run: |-
-          echo "Listing migrations directory contents..."
-          ls -la migrations/
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Use Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+      - name: Install Dependencies
+        run: npm ci
+      - name: Create Swagger File
+        run: npm run swagger:create
+      - name: Lint Swagger File
+        run: npm run swagger:lint
 
-      - name: Show db:migrate:status
-        run: |-
-          echo "Running migration status..."
-          DEBUG=sequelize:* npx sequelize-cli --config config/config.js --env development db:migrate:status
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Use Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+      - name: Install Dependencies
+        run: npm ci
+      - name: Create Docs
+        run: npm run swagger:create
+      - name: Lint Swagger File
+        run: npm run swagger:lint
+      - name: Lint Codebase
+        run: npm run lint-ci
 
-      - name: Run migrations
-        run: |-
-          echo "Running migrations..."
-          npx sequelize-cli --config config/config.js --env development db:migrate
+  build-docker:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Build Docker
+        run: docker build .
+
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres
+        ports:
+          - 5432:5432
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: superhero
+          POSTGRES_HOST_PORT: 5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis
+        ports:
+        - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      ipfs:
+        image: ipfs/kubo
+        ports:
+          - 5001:5001
+        options: >-
+          --health-cmd "ipfs swarm peers"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 100
+
+      - name: List running containers
+        run: docker ps
+
+      - name: Run npm install
+        run: npm ci
+
+      - name: Create Docs
+        run: npm run swagger:create
+
+      - name: Run db migration
+        env:
+          DEBUG: sequelize:*
+        run: npx sequelize-cli --config config/config.js --env development db:migrate --debug
+
+      - name: Run tests
+        run: npm run test

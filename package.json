@@ -14,8 +14,8 @@
     "lint": "eslint .",
     "lint-fix": "eslint --ext .js --fix .",
     "lint-ci": "eslint --ext .js --max-warnings=0 .",
-    "swagger:create": "npx swagger-jsdoc@5 -d .swaggerDef.js ./modules/**/*.js && node ./cli/generateDefinitionFromModels.js",
-    "swagger:lint": "npx @redocly/openapi-cli lint swagger.json --format stylish",
+    "swagger:create": "npx swagger-jsdoc@6 -d .swaggerDef.js ./modules/**/*.js && node ./cli/generateDefinitionFromModels.js",
+    "swagger:lint": "npx @redocly/openapi-cli lint swagger.json",
     "swagger": "npm run swagger:create && npm run swagger:lint"
   },
   "repository": {

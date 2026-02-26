@@ -56,6 +56,16 @@ async function waitForReady(client, name) {
 
 const QueueLogic = {
   async init() {
+    // Close any existing clients before creating new ones to prevent connection leaks
+    if (publisher) {
+      publisher.removeAllListeners();
+      await new Promise(resolve => { publisher.quit(resolve); });
+    }
+    if (subscriber) {
+      subscriber.removeAllListeners();
+      await new Promise(resolve => { subscriber.quit(resolve); });
+    }
+
     // 1) Create clients
     publisher = createRedisClient();
     subscriber = createRedisClient();

@@ -38,6 +38,15 @@ function createRedisClient() {
 
 async function waitForReady(client, name) {
   return new Promise((resolve, reject) => {
+    if (client.ready) {
+      logger.info(`Redis client "${name}" ready`);
+      return resolve();
+    }
+
+    const cleanup = () => {
+      client.removeListener('ready', onReady);
+      client.removeListener('error', onError);
+    };
     const onReady = () => {
       logger.info(`Redis client "${name}" ready`);
       cleanup();
@@ -47,10 +56,6 @@ async function waitForReady(client, name) {
       logger.error(`Redis client "${name}" failed: ${err.message}`);
       cleanup();
       reject(err);
-    };
-    const cleanup = () => {
-      client.removeListener('ready', onReady);
-      client.removeListener('error', onError);
     };
 
     client.once('ready', onReady);

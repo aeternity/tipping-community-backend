@@ -40,7 +40,8 @@ async function waitForReady(client, name) {
   return new Promise((resolve, reject) => {
     if (client.ready) {
       logger.info(`Redis client "${name}" ready`);
-      return resolve();
+      resolve();
+      return;
     }
 
     const cleanup = () => {

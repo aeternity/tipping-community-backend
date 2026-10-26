@@ -223,7 +223,7 @@ const QueueLogic = {
   },
 
   async clearRedisQueues() {
-    if (!rsmq || !rsmq.client) return;
+    if (!rsmq || !rsmq.redis) return;
     const openQueues = await rsmq.listQueuesAsync();
     await Promise.all(openQueues.map(qname => rsmq.deleteQueueAsync({ qname })));
   },

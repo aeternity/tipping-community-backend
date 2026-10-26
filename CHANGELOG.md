@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [3.1.14](https://github.com/aeternity/tipping-community-backend/compare/v3.1.13...v3.1.14) (2026-10-26)
+
+
+### Bug Fixes
+
+* check the rsmq redis client in clearRedisQueues ([c3453ce](https://github.com/aeternity/tipping-community-backend/commit/c3453ceed0514cb13c21e15a69b52ffe1a3f2e64))
+* upgrade @aeternity/aepp-sdk to 15 ([3eec777](https://github.com/aeternity/tipping-community-backend/commit/3eec7776b42b048153946e8247c43382f92c14d9))
+* wait for the running chain names fetch instead of refetching on lock timeout ([09d6dcd](https://github.com/aeternity/tipping-community-backend/commit/09d6dcd26df552c882ada23a8cba32f4c8fe4bdf))
+
 ## [3.1.13](https://github.com/aeternity/tipping-community-backend/compare/v3.1.12...v3.1.13) (2026-02-26)
 
 

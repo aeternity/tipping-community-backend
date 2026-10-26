@@ -224,9 +224,9 @@ const TipLogic = {
   async updateTipsDB(remoteTips) {
     await lock.acquire('TipLogic.updateTipsDB', async () => {
       const localTips = await Tip.findAll({ raw: true });
-      const localTipIds = [...new Set(localTips.map(tip => tip.id))];
+      const localTipIds = new Set(localTips.map(tip => tip.id));
 
-      const newTips = remoteTips.filter(({ id }) => !localTipIds.includes(id));
+      const newTips = remoteTips.filter(({ id }) => !localTipIds.has(id));
 
       const result = await newTips.asyncMap(async tip => {
         const titleToDetect = tip.title.replace(/[!0-9#.,?)-:'“@/\\]/g, '');
@@ -256,9 +256,9 @@ const TipLogic = {
   async updateRetipsDB(remoteRetips) {
     await lock.acquire('RetipLogic.updateRetipsDB', async () => {
       const localRetips = await Retip.findAll({ raw: true });
-      const localRetipIds = [...new Set(localRetips.map(retip => retip.id))];
+      const localRetipIds = new Set(localRetips.map(retip => retip.id));
 
-      const newReTips = remoteRetips.filter(({ id }) => !localRetipIds.includes(id));
+      const newReTips = remoteRetips.filter(({ id }) => !localRetipIds.has(id));
 
       await TipLogic.insertRetips(newReTips);
     });

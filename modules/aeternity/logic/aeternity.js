@@ -1,3 +1,4 @@
+const axios = require('axios');
 const { AciContractCallEncoder } = require('@aeternity/aepp-calldata');
 const {
   Node, MemoryAccount, AeSdk, Contract, encode, Encoding,
@@ -525,17 +526,28 @@ const aeternity = {
     });
   },
 
-  // TODO optimize cache generation for account balances
+  // Reads holders from the middleware index: decoding the full balances() map of a token contract
+  // is slow and blocks the event loop on large contracts. Amounts are quoted before parsing
+  // because they can exceed the safe integer range.
   async fetchTokenAccountBalances(contractAddress) {
-    await aeternity.initTokenContractIfUnknown(contractAddress);
-    return tokenContracts[contractAddress]
-      .balances()
-      .then(r => Array.from(r.decodedResult))
-      .catch(e => {
-        logger.error(e.message);
-        Sentry.captureException(e);
-        return null;
-      });
+    try {
+      const balances = [];
+      let next = `/v3/aex9/${contractAddress}/balances?limit=100`;
+      while (next) {
+        // eslint-disable-next-line no-await-in-loop
+        const page = await axios.get(`${process.env.MIDDLEWARE_URL}${next}`, {
+          timeout: 10000,
+          transformResponse: [data => JSON.parse(data.replace(/"amount":(\d+)/g, '"amount":"$1"'))],
+        }).then(res => res.data);
+        page.data.forEach(({ account_id: accountId, amount }) => balances.push([accountId, BigInt(amount)]));
+        next = page.next;
+      }
+      return balances;
+    } catch (e) {
+      logger.error(e.message);
+      Sentry.captureException(e);
+      return null;
+    }
   },
 
   async getTotalClaimableAmount(url, trace) {

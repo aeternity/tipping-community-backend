@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [3.1.15](https://github.com/aeternity/tipping-community-backend/compare/v3.1.14...v3.1.15) (2026-10-26)
+
+
+### Bug Fixes
+
+* accept 64 byte hex private keys with SDK 15 ([d16f12d](https://github.com/aeternity/tipping-community-backend/commit/d16f12d473eb6b3352a14b281e19c19de8b596f5))
+
 ## [3.1.14](https://github.com/aeternity/tipping-community-backend/compare/v3.1.13...v3.1.14) (2026-10-26)
 
 

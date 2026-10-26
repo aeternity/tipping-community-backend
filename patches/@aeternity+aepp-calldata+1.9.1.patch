@@ -1,0 +1,454 @@
+diff --git a/node_modules/@aeternity/aepp-calldata/cjs/Serializers/AddressSerializer.cjs b/node_modules/@aeternity/aepp-calldata/cjs/Serializers/AddressSerializer.cjs
+index 154bba4..c5bb9ce 100644
+--- a/node_modules/@aeternity/aepp-calldata/cjs/Serializers/AddressSerializer.cjs
++++ b/node_modules/@aeternity/aepp-calldata/cjs/Serializers/AddressSerializer.cjs
+@@ -1,4 +1,5 @@
+ "use strict";
++const { asU8, rlpDecodeStream } = require("../utils/stream.cjs");
+ 
+ Object.defineProperty(exports, "__esModule", {
+   value: true
+@@ -14,9 +15,9 @@ class AddressSerializer extends _BaseSerializer.default {
+     return [_FateTag.default.OBJECT, _FateTag.default.OTYPE_ADDRESS, ..._rlp.default.encode(data.value)];
+   }
+   deserializeStream(data) {
+-    const buffer = new Uint8Array(data);
+-    const decoded = _rlp.default.decode(buffer.slice(2), true);
+-    return [new _FateAccountAddress.default(decoded.data), new Uint8Array(decoded.remainder)];
++    const buffer = asU8(data);
++    const decoded = rlpDecodeStream(buffer.subarray(2));
++    return [new _FateAccountAddress.default(decoded.data), decoded.remainder];
+   }
+ }
+ var _default = exports.default = AddressSerializer;
+\ No newline at end of file
+diff --git a/node_modules/@aeternity/aepp-calldata/cjs/Serializers/BitsSerializer.cjs b/node_modules/@aeternity/aepp-calldata/cjs/Serializers/BitsSerializer.cjs
+index cbddce1..20de0c0 100644
+--- a/node_modules/@aeternity/aepp-calldata/cjs/Serializers/BitsSerializer.cjs
++++ b/node_modules/@aeternity/aepp-calldata/cjs/Serializers/BitsSerializer.cjs
+@@ -1,4 +1,5 @@
+ "use strict";
++const { asU8, rlpDecodeStream } = require("../utils/stream.cjs");
+ 
+ Object.defineProperty(exports, "__esModule", {
+   value: true
+@@ -18,10 +19,10 @@ class BitsSerializer extends _BaseSerializer.default {
+     return [prefix, ...RLPInt.encode((0, _abs.default)(data.value))];
+   }
+   deserializeStream(data) {
+-    const buffer = new Uint8Array(data);
++    const buffer = asU8(data);
+     const sign = buffer[0] === _FateTag.default.POS_BITS ? 1n : -1n;
+-    const [i, remainder] = RLPInt.decode(buffer.slice(1));
+-    return [new _FateBits.default(i * sign), new Uint8Array(remainder)];
++    const [i, remainder] = RLPInt.decode(buffer.subarray(1));
++    return [new _FateBits.default(i * sign), remainder];
+   }
+ }
+ var _default = exports.default = BitsSerializer;
+\ No newline at end of file
+diff --git a/node_modules/@aeternity/aepp-calldata/cjs/Serializers/BoolSerializer.cjs b/node_modules/@aeternity/aepp-calldata/cjs/Serializers/BoolSerializer.cjs
+index 701ca92..2a18f30 100644
+--- a/node_modules/@aeternity/aepp-calldata/cjs/Serializers/BoolSerializer.cjs
++++ b/node_modules/@aeternity/aepp-calldata/cjs/Serializers/BoolSerializer.cjs
+@@ -1,4 +1,5 @@
+ "use strict";
++const { asU8, rlpDecodeStream } = require("../utils/stream.cjs");
+ 
+ Object.defineProperty(exports, "__esModule", {
+   value: true
+@@ -14,9 +15,9 @@ class BoolSerializer extends _BaseSerializer.default {
+     return data.valueOf() === true ? [_FateTag.default.TRUE] : [_FateTag.default.FALSE];
+   }
+   deserializeStream(data) {
+-    const buffer = new Uint8Array(data);
++    const buffer = asU8(data);
+     const prefix = buffer[0];
+-    const rest = buffer.slice(1);
++    const rest = buffer.subarray(1);
+     if (prefix === _FateTag.default.TRUE) {
+       return [new _FateBool.default(true), rest];
+     }
+diff --git a/node_modules/@aeternity/aepp-calldata/cjs/Serializers/ByteArraySerializer.cjs b/node_modules/@aeternity/aepp-calldata/cjs/Serializers/ByteArraySerializer.cjs
+index 916a8ac..927b638 100644
+--- a/node_modules/@aeternity/aepp-calldata/cjs/Serializers/ByteArraySerializer.cjs
++++ b/node_modules/@aeternity/aepp-calldata/cjs/Serializers/ByteArraySerializer.cjs
+@@ -1,4 +1,5 @@
+ "use strict";
++const { asU8, rlpDecodeStream } = require("../utils/stream.cjs");
+ 
+ Object.defineProperty(exports, "__esModule", {
+   value: true
+@@ -22,20 +23,20 @@ class ByteArraySerializer extends _BaseSerializer.default {
+     return [_FateTag.default.LONG_STRING, ...intSerializer.serialize(data.length - 64), ...data.valueOf()];
+   }
+   deserializeStream(stream) {
+-    const data = new Uint8Array(stream);
++    const data = asU8(stream);
+     const prefix = data[0];
+     if (prefix === _FateTag.default.EMPTY_STRING) {
+-      return [new _FateByteArray.default(), data.slice(1)];
++      return [new _FateByteArray.default(), data.subarray(1)];
+     }
+     if (prefix === _FateTag.default.LONG_STRING) {
+-      const [fateLen, rest] = intSerializer.deserializeStream(data.slice(1));
++      const [fateLen, rest] = intSerializer.deserializeStream(data.subarray(1));
+       const len = Number(fateLen.valueOf()) + 64;
+       return [new _FateByteArray.default(rest.slice(0, len)), rest.slice(len)];
+     }
+ 
+     // short string
+     const offset = (prefix >> 2) + 1;
+-    return [new _FateByteArray.default(data.slice(1, offset)), data.slice(offset)];
++    return [new _FateByteArray.default(data.subarray(1, offset)), data.slice(offset)];
+   }
+ }
+ var _default = exports.default = ByteArraySerializer;
+\ No newline at end of file
+diff --git a/node_modules/@aeternity/aepp-calldata/cjs/Serializers/BytesSerializer.cjs b/node_modules/@aeternity/aepp-calldata/cjs/Serializers/BytesSerializer.cjs
+index 75875e9..1461839 100644
+--- a/node_modules/@aeternity/aepp-calldata/cjs/Serializers/BytesSerializer.cjs
++++ b/node_modules/@aeternity/aepp-calldata/cjs/Serializers/BytesSerializer.cjs
+@@ -1,4 +1,5 @@
+ "use strict";
++const { asU8, rlpDecodeStream } = require("../utils/stream.cjs");
+ 
+ Object.defineProperty(exports, "__esModule", {
+   value: true
+@@ -15,8 +16,8 @@ class BytesSerializer extends _BaseSerializer.default {
+     return [_FateTag.default.OBJECT, _FateTag.default.OTYPE_BYTES, ...byteArraySerializer.serialize(bytes.value)];
+   }
+   deserializeStream(data) {
+-    const buffer = new Uint8Array(data);
+-    const [bytes, rest] = byteArraySerializer.deserializeStream(buffer.slice(2));
++    const buffer = asU8(data);
++    const [bytes, rest] = byteArraySerializer.deserializeStream(buffer.subarray(2));
+     return [new _FateBytes.default(bytes.valueOf()), rest];
+   }
+ }
+diff --git a/node_modules/@aeternity/aepp-calldata/cjs/Serializers/ChannelSerializer.cjs b/node_modules/@aeternity/aepp-calldata/cjs/Serializers/ChannelSerializer.cjs
+index 76004b4..2e6d92d 100644
+--- a/node_modules/@aeternity/aepp-calldata/cjs/Serializers/ChannelSerializer.cjs
++++ b/node_modules/@aeternity/aepp-calldata/cjs/Serializers/ChannelSerializer.cjs
+@@ -1,4 +1,5 @@
+ "use strict";
++const { asU8, rlpDecodeStream } = require("../utils/stream.cjs");
+ 
+ Object.defineProperty(exports, "__esModule", {
+   value: true
+@@ -14,9 +15,9 @@ class ChannelSerializer extends _BaseSerializer.default {
+     return [_FateTag.default.OBJECT, _FateTag.default.OTYPE_CHANNEL, ..._rlp.default.encode(data.value)];
+   }
+   deserializeStream(data) {
+-    const buffer = new Uint8Array(data);
+-    const decoded = _rlp.default.decode(buffer.slice(2), true);
+-    return [new _FateChannelAddress.default(decoded.data), new Uint8Array(decoded.remainder)];
++    const buffer = asU8(data);
++    const decoded = rlpDecodeStream(buffer.subarray(2));
++    return [new _FateChannelAddress.default(decoded.data), decoded.remainder];
+   }
+ }
+ var _default = exports.default = ChannelSerializer;
+\ No newline at end of file
+diff --git a/node_modules/@aeternity/aepp-calldata/cjs/Serializers/ContractSerializer.cjs b/node_modules/@aeternity/aepp-calldata/cjs/Serializers/ContractSerializer.cjs
+index 677fae4..a5a52fd 100644
+--- a/node_modules/@aeternity/aepp-calldata/cjs/Serializers/ContractSerializer.cjs
++++ b/node_modules/@aeternity/aepp-calldata/cjs/Serializers/ContractSerializer.cjs
+@@ -1,4 +1,5 @@
+ "use strict";
++const { asU8, rlpDecodeStream } = require("../utils/stream.cjs");
+ 
+ Object.defineProperty(exports, "__esModule", {
+   value: true
+@@ -14,9 +15,9 @@ class ContractSerializer extends _BaseSerializer.default {
+     return [_FateTag.default.OBJECT, _FateTag.default.OTYPE_CONTRACT, ..._rlp.default.encode(data.value)];
+   }
+   deserializeStream(data) {
+-    const buffer = new Uint8Array(data);
+-    const decoded = _rlp.default.decode(buffer.slice(2), true);
+-    return [new _FateContractAddress.default(decoded.data), new Uint8Array(decoded.remainder)];
++    const buffer = asU8(data);
++    const decoded = rlpDecodeStream(buffer.subarray(2));
++    return [new _FateContractAddress.default(decoded.data), decoded.remainder];
+   }
+ }
+ var _default = exports.default = ContractSerializer;
+\ No newline at end of file
+diff --git a/node_modules/@aeternity/aepp-calldata/cjs/Serializers/IntSerializer.cjs b/node_modules/@aeternity/aepp-calldata/cjs/Serializers/IntSerializer.cjs
+index 14b502e..2fb2678 100644
+--- a/node_modules/@aeternity/aepp-calldata/cjs/Serializers/IntSerializer.cjs
++++ b/node_modules/@aeternity/aepp-calldata/cjs/Serializers/IntSerializer.cjs
+@@ -1,4 +1,5 @@
+ "use strict";
++const { asU8, rlpDecodeStream } = require("../utils/stream.cjs");
+ 
+ Object.defineProperty(exports, "__esModule", {
+   value: true
+@@ -39,24 +40,24 @@ class IntSerializer extends _BaseSerializer.default {
+     return [_FateTag.default.POS_BIG_INT, ...RLPInt.encode(absVal - 64n)];
+   }
+   deserializeStream(stream) {
+-    const data = new Uint8Array(stream);
++    const data = asU8(stream);
+     const prefix = data[0];
+ 
+     // small int
+     if ((prefix & SMALL_INT_MASK) === 0) {
+       // positive
+       if ((prefix & 0b10000000) === 0) {
+-        return [new _FateInt.default(prefix >> 1), data.slice(1)];
++        return [new _FateInt.default(prefix >> 1), data.subarray(1)];
+       }
+ 
+       // negative
+       const i = (prefix & 0b01111110) >> 1;
+-      return [new _FateInt.default(-i), data.slice(1)];
++      return [new _FateInt.default(-i), data.subarray(1)];
+     }
+     if (prefix === _FateTag.default.POS_BIG_INT || prefix === _FateTag.default.NEG_BIG_INT) {
+       const sign = prefix === _FateTag.default.POS_BIG_INT ? 1n : -1n;
+-      const [i, remainder] = RLPInt.decode(data.slice(1));
+-      return [new _FateInt.default((i + 64n) * sign), new Uint8Array(remainder)];
++      const [i, remainder] = RLPInt.decode(data.subarray(1));
++      return [new _FateInt.default((i + 64n) * sign), remainder];
+     }
+     throw new _FatePrefixError.default(prefix);
+   }
+diff --git a/node_modules/@aeternity/aepp-calldata/cjs/Serializers/ListSerializer.cjs b/node_modules/@aeternity/aepp-calldata/cjs/Serializers/ListSerializer.cjs
+index 2e93404..fa19bf5 100644
+--- a/node_modules/@aeternity/aepp-calldata/cjs/Serializers/ListSerializer.cjs
++++ b/node_modules/@aeternity/aepp-calldata/cjs/Serializers/ListSerializer.cjs
+@@ -1,4 +1,5 @@
+ "use strict";
++const { asU8, rlpDecodeStream } = require("../utils/stream.cjs");
+ 
+ Object.defineProperty(exports, "__esModule", {
+   value: true
+@@ -24,12 +25,12 @@ class ListSerializer extends _BaseSerializer.default {
+     return [_FateTag.default.LONG_LIST, ...RLPInt.encode(len - 16), ...serializedElements];
+   }
+   deserializeStream(data, typeInfo) {
+-    const buffer = new Uint8Array(data);
++    const buffer = asU8(data);
+     const prefix = buffer[0];
+     let len = 0n;
+-    let rest = buffer.slice(1);
++    let rest = buffer.subarray(1);
+     if (prefix === _FateTag.default.LONG_LIST) {
+-      [len, rest] = RLPInt.decode(buffer.slice(1));
++      [len, rest] = RLPInt.decode(buffer.subarray(1));
+       len += 16n;
+     }
+     if ((prefix & 0x0F) === _FateTag.default.SHORT_LIST) {
+diff --git a/node_modules/@aeternity/aepp-calldata/cjs/Serializers/MapSerializer.cjs b/node_modules/@aeternity/aepp-calldata/cjs/Serializers/MapSerializer.cjs
+index 1ec7df7..9e50a26 100644
+--- a/node_modules/@aeternity/aepp-calldata/cjs/Serializers/MapSerializer.cjs
++++ b/node_modules/@aeternity/aepp-calldata/cjs/Serializers/MapSerializer.cjs
+@@ -1,4 +1,5 @@
+ "use strict";
++const { asU8, rlpDecodeStream } = require("../utils/stream.cjs");
+ 
+ Object.defineProperty(exports, "__esModule", {
+   value: true
+@@ -25,12 +26,12 @@ class MapSerializer extends _BaseSerializer.default {
+     return [_FateTag.default.MAP, ...RLPInt.encode(len), ...serializedItems.flat(Infinity)];
+   }
+   deserializeStream(data, typeInfo) {
+-    const buffer = new Uint8Array(data);
++    const buffer = asU8(data);
+     const prefix = buffer[0];
+     if (prefix !== _FateTag.default.MAP) {
+       throw new _FatePrefixError.default(prefix);
+     }
+-    const [len, remainder] = RLPInt.decode(buffer.slice(1));
++    const [len, remainder] = RLPInt.decode(buffer.subarray(1));
+     let rest = remainder;
+     if (len === 0n) {
+       return [new _FateMap.default(), rest];
+diff --git a/node_modules/@aeternity/aepp-calldata/cjs/Serializers/OracleQuerySerializer.cjs b/node_modules/@aeternity/aepp-calldata/cjs/Serializers/OracleQuerySerializer.cjs
+index 936cd2b..f32ab94 100644
+--- a/node_modules/@aeternity/aepp-calldata/cjs/Serializers/OracleQuerySerializer.cjs
++++ b/node_modules/@aeternity/aepp-calldata/cjs/Serializers/OracleQuerySerializer.cjs
+@@ -1,4 +1,5 @@
+ "use strict";
++const { asU8, rlpDecodeStream } = require("../utils/stream.cjs");
+ 
+ Object.defineProperty(exports, "__esModule", {
+   value: true
+@@ -14,9 +15,9 @@ class OracleQuerySerializer extends _BaseSerializer.default {
+     return [_FateTag.default.OBJECT, _FateTag.default.OTYPE_ORACLE_QUERY, ..._rlp.default.encode(data.value)];
+   }
+   deserializeStream(data) {
+-    const buffer = new Uint8Array(data);
+-    const decoded = _rlp.default.decode(buffer.slice(2), true);
+-    return [new _FateOracleQueryAddress.default(decoded.data), new Uint8Array(decoded.remainder)];
++    const buffer = asU8(data);
++    const decoded = rlpDecodeStream(buffer.subarray(2));
++    return [new _FateOracleQueryAddress.default(decoded.data), decoded.remainder];
+   }
+ }
+ var _default = exports.default = OracleQuerySerializer;
+\ No newline at end of file
+diff --git a/node_modules/@aeternity/aepp-calldata/cjs/Serializers/OracleSerializer.cjs b/node_modules/@aeternity/aepp-calldata/cjs/Serializers/OracleSerializer.cjs
+index 2caafef..7def243 100644
+--- a/node_modules/@aeternity/aepp-calldata/cjs/Serializers/OracleSerializer.cjs
++++ b/node_modules/@aeternity/aepp-calldata/cjs/Serializers/OracleSerializer.cjs
+@@ -1,4 +1,5 @@
+ "use strict";
++const { asU8, rlpDecodeStream } = require("../utils/stream.cjs");
+ 
+ Object.defineProperty(exports, "__esModule", {
+   value: true
+@@ -14,9 +15,9 @@ class OracleSerializer extends _BaseSerializer.default {
+     return [_FateTag.default.OBJECT, _FateTag.default.OTYPE_ORACLE, ..._rlp.default.encode(data.value)];
+   }
+   deserializeStream(data) {
+-    const buffer = new Uint8Array(data);
+-    const decoded = _rlp.default.decode(buffer.slice(2), true);
+-    return [new _FateOracleAddress.default(decoded.data), new Uint8Array(decoded.remainder)];
++    const buffer = asU8(data);
++    const decoded = rlpDecodeStream(buffer.subarray(2));
++    return [new _FateOracleAddress.default(decoded.data), decoded.remainder];
+   }
+ }
+ var _default = exports.default = OracleSerializer;
+\ No newline at end of file
+diff --git a/node_modules/@aeternity/aepp-calldata/cjs/Serializers/StringSerializer.cjs b/node_modules/@aeternity/aepp-calldata/cjs/Serializers/StringSerializer.cjs
+index c97c4ea..64821f2 100644
+--- a/node_modules/@aeternity/aepp-calldata/cjs/Serializers/StringSerializer.cjs
++++ b/node_modules/@aeternity/aepp-calldata/cjs/Serializers/StringSerializer.cjs
+@@ -1,4 +1,5 @@
+ "use strict";
++const { asU8, rlpDecodeStream } = require("../utils/stream.cjs");
+ 
+ Object.defineProperty(exports, "__esModule", {
+   value: true
+@@ -21,7 +22,7 @@ class StringSerializer extends _BaseSerializer.default {
+     return byteArraySerializer.serialize(bytesOrString);
+   }
+   deserializeStream(data) {
+-    const buffer = new Uint8Array(data);
++    const buffer = asU8(data);
+     const prefix = buffer[0];
+     if ((prefix & 0b11) !== _FateTag.default.SHORT_STRING && ![_FateTag.default.EMPTY_STRING, _FateTag.default.LONG_STRING].includes(prefix)) {
+       throw new _FatePrefixError.default(prefix);
+diff --git a/node_modules/@aeternity/aepp-calldata/cjs/Serializers/TupleSerializer.cjs b/node_modules/@aeternity/aepp-calldata/cjs/Serializers/TupleSerializer.cjs
+index 43283bb..ef7ca4d 100644
+--- a/node_modules/@aeternity/aepp-calldata/cjs/Serializers/TupleSerializer.cjs
++++ b/node_modules/@aeternity/aepp-calldata/cjs/Serializers/TupleSerializer.cjs
+@@ -1,4 +1,5 @@
+ "use strict";
++const { asU8, rlpDecodeStream } = require("../utils/stream.cjs");
+ 
+ Object.defineProperty(exports, "__esModule", {
+   value: true
+@@ -25,10 +26,10 @@ class TupleSerializer extends _BaseSerializer.default {
+     return [_FateTag.default.LONG_TUPLE, ...RLPInt.encode(len - 16), ...elements];
+   }
+   deserializeStream(data, typeInfo) {
+-    const buffer = new Uint8Array(data);
++    const buffer = asU8(data);
+     const prefix = buffer[0];
+     let len = 0n;
+-    let rest = buffer.slice(1);
++    let rest = buffer.subarray(1);
+     if (prefix === _FateTag.default.EMPTY_TUPLE) {
+       return [new _FateTuple.default(), rest];
+     }
+@@ -36,7 +37,7 @@ class TupleSerializer extends _BaseSerializer.default {
+       len = (prefix & 0xF0) >> 4;
+     }
+     if (prefix === _FateTag.default.LONG_TUPLE) {
+-      [len, rest] = RLPInt.decode(buffer.slice(1));
++      [len, rest] = RLPInt.decode(buffer.subarray(1));
+       len += 16n;
+     }
+     let valueTypes = [];
+diff --git a/node_modules/@aeternity/aepp-calldata/cjs/Serializers/VariantSerializer.cjs b/node_modules/@aeternity/aepp-calldata/cjs/Serializers/VariantSerializer.cjs
+index e7aee4d..fe7e0bd 100644
+--- a/node_modules/@aeternity/aepp-calldata/cjs/Serializers/VariantSerializer.cjs
++++ b/node_modules/@aeternity/aepp-calldata/cjs/Serializers/VariantSerializer.cjs
+@@ -1,4 +1,5 @@
+ "use strict";
++const { asU8, rlpDecodeStream } = require("../utils/stream.cjs");
+ 
+ Object.defineProperty(exports, "__esModule", {
+   value: true
+@@ -17,11 +18,11 @@ class VariantSerializer extends _BaseSerializer.default {
+     return [_FateTag.default.VARIANT, ..._rlp.default.encode(new Uint8Array(variant.arities)), variant.tag, ...this.globalSerializer.serialize(valueTuple)];
+   }
+   deserializeStream(stream, typeInfo) {
+-    const buffer = new Uint8Array(stream);
+-    const decoded = _rlp.default.decode(buffer.slice(1), true);
++    const buffer = asU8(stream);
++    const decoded = rlpDecodeStream(buffer.subarray(1));
+     const arities = [...decoded.data];
+     const tag = decoded.remainder[0];
+-    const data = decoded.remainder.slice(1);
++    const data = decoded.remainder.subarray(1);
+     let variants = [];
+     let valueType;
+     if (typeof typeInfo !== 'undefined' && typeof typeInfo.variants !== 'undefined') {
+diff --git a/node_modules/@aeternity/aepp-calldata/cjs/utils/RLPInt.cjs b/node_modules/@aeternity/aepp-calldata/cjs/utils/RLPInt.cjs
+index 66e2aa7..267adb3 100644
+--- a/node_modules/@aeternity/aepp-calldata/cjs/utils/RLPInt.cjs
++++ b/node_modules/@aeternity/aepp-calldata/cjs/utils/RLPInt.cjs
+@@ -1,4 +1,5 @@
+ "use strict";
++const { rlpDecodeStream } = require("./stream.cjs");
+ 
+ Object.defineProperty(exports, "__esModule", {
+   value: true
+@@ -12,6 +13,6 @@ function encode(value) {
+   return new Uint8Array(_rlp.default.encode((0, _int2ByteArray.int2ByteArray)(value)));
+ }
+ function decode(buffer) {
+-  const decoded = _rlp.default.decode(buffer, true);
++  const decoded = rlpDecodeStream(buffer);
+   return [(0, _int2ByteArray.byteArray2Int)(decoded.data), decoded.remainder];
+ }
+\ No newline at end of file
+diff --git a/node_modules/@aeternity/aepp-calldata/cjs/utils/stream.cjs b/node_modules/@aeternity/aepp-calldata/cjs/utils/stream.cjs
+new file mode 100644
+index 0000000..209986d
+--- /dev/null
++++ b/node_modules/@aeternity/aepp-calldata/cjs/utils/stream.cjs
+@@ -0,0 +1,38 @@
++"use strict";
++
++Object.defineProperty(exports, "__esModule", {
++  value: true
++});
++exports.asU8 = asU8;
++exports.rlpDecodeStream = rlpDecodeStream;
++var _rlp = _interopRequireDefault(require("rlp"));
++function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
++function asU8(x) {
++  return x instanceof Uint8Array ? x : new Uint8Array(x);
++}
++// total byte length of the RLP item starting at buf[0]
++function rlpItemLength(buf) {
++  const b = buf[0];
++  if (b <= 0x7f) return 1;
++  if (b <= 0xb7) return 1 + (b - 0x80);
++  if (b <= 0xbf) {
++    const ll = b - 0xb7;
++    let l = 0;
++    for (let i = 1; i <= ll; i++) l = l * 256 + buf[i];
++    return 1 + ll + l;
++  }
++  if (b <= 0xf7) return 1 + (b - 0xc0);
++  const ll = b - 0xf7;
++  let l = 0;
++  for (let i = 1; i <= ll; i++) l = l * 256 + buf[i];
++  return 1 + ll + l;
++}
++// same result as RLP.decode(buf, true) but O(item) instead of O(remaining buffer)
++function rlpDecodeStream(buf) {
++  const n = Math.min(rlpItemLength(buf), buf.length);
++  const decoded = _rlp.default.decode(buf.subarray(0, n), true);
++  return {
++    data: decoded.data,
++    remainder: buf.subarray(n)
++  };
++}

@@ -8,7 +8,17 @@ const aggregateStates = (states, formatFunction) => states.reduce((acc, cur) => 
   return acc.concat(tips);
 }, []);
 
-const findUrl = (urlId, urls) => Array.from(urls).find(([_, id]) => urlId === id)[0];
+const urlIdIndex = new WeakMap();
+const findUrl = (urlId, urls) => {
+  let byId = urlIdIndex.get(urls);
+  if (!byId) {
+    byId = new Map();
+    for (const [url, id] of urls) if (!byId.has(id)) byId.set(id, url); // eslint-disable-line no-restricted-syntax
+    urlIdIndex.set(urls, byId);
+  }
+  if (!byId.has(urlId)) throw new TypeError('findUrl: unknown url id');
+  return byId.get(urlId);
+};
 
 const formatSingleClaim = (contractId, url, [claimGen, amount]) => {
   const data = {};

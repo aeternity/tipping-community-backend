@@ -253,11 +253,13 @@ const CacheLogic = {
   },
 
   async fetchMdwChainNames() {
+    // Paging through all active names takes longer than the 30s lock timeout. With a
+    // timeout every waiter would give up and fetch all names itself, so wait for the one fetch.
     return cache.getOrSet(['fetchMdwChainNames'], async () => {
       const chainNames = await MdwLogic.getChainNames();
       await queueLogic.sendMessage(MESSAGE_QUEUES.CACHE, MESSAGES.CACHE.EVENTS.RENEWED_CHAINNAMES);
       return chainNames;
-    }, cache.shortCacheTime);
+    }, cache.shortCacheTime, false);
   },
 
   async fetchTokenInfos() {

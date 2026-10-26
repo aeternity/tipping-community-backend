@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [3.1.16](https://github.com/aeternity/tipping-community-backend/compare/v3.1.15...v3.1.16) (2026-10-26)
+
+
+### Bug Fixes
+
+* remove the slow decoding and lookups that block the event loop ([757a52e](https://github.com/aeternity/tipping-community-backend/commit/757a52ed717c8235c51f9fd9549d1e05241091a2))
+
 ## [3.1.15](https://github.com/aeternity/tipping-community-backend/compare/v3.1.14...v3.1.15) (2026-10-26)
 
 

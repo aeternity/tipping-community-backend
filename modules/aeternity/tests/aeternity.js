@@ -6,6 +6,7 @@ const {
 const sinon = require('sinon');
 const chaiAsPromised = require('chai-as-promised');
 const BigNumber = require('bignumber.js');
+const { MemoryAccount, decode } = require('@aeternity/aepp-sdk');
 const ae = require('../logic/aeternity');
 const Trace = require('../../payfortx/logic/traceLogic');
 
@@ -22,6 +23,15 @@ describe('Aeternity', () => {
     it('it should get the network id', async () => {
       const result = await ae.networkId();
       result.should.equal('ae_uat');
+    });
+
+    it('it should accept raw hex private keys of 32 and 64 bytes and sk_ encoded keys', () => {
+      const account = MemoryAccount.generate();
+      const seedHex = Buffer.from(decode(account.secretKey)).toString('hex');
+      const pubHex = Buffer.from(decode(account.address)).toString('hex');
+      [seedHex, `${seedHex}${pubHex}`, account.secretKey].forEach(key => {
+        new MemoryAccount(ae.toSecretKey(key)).address.should.equal(account.address);
+      });
     });
   });
   describe('Oracle', () => {

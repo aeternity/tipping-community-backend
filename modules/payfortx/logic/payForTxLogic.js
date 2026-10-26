@@ -1,4 +1,4 @@
-const { hash, verifyMessage } = require('@aeternity/aepp-sdk');
+const { hash, verifyMessageSignature } = require('@aeternity/aepp-sdk');
 const tippingContractUtil = require('tipping-contract/util/tippingContractUtil');
 
 const logger = require('../../../utils/logger')(module);
@@ -82,7 +82,7 @@ const PayForTxLogic = {
     title, media, author, signature,
   }) {
     const hashResult = hash(tippingContractUtil.postWithoutTippingString(title, media)).toString('hex');
-    const verified = verifyMessage(hashResult, signature, author);
+    const verified = verifyMessageSignature(hashResult, signature, author);
     if (!verified) {
       return {
         error: 'The signature does not match the public key or the content',

@@ -30,7 +30,7 @@
   "homepage": "https://github.com/aeternity/tipping-community-backend#readme",
   "dependencies": {
     "@aeternity/aepp-calldata": "^1.7.0",
-    "@aeternity/aepp-sdk": "^13.3.2",
+    "@aeternity/aepp-sdk": "^15.0.0",
     "@sentry/node": "^6.13.2",
     "@sentry/tracing": "^6.13.2",
     "aeternity-fungible-token": "git+https://git@github.com/aeternity/aeternity-fungible-token#v2.2.0",

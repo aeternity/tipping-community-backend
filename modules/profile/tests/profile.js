@@ -3,7 +3,7 @@ const chai = require('chai');
 const chaiHttp = require('chai-http');
 const sinon = require('sinon');
 const { describe, it, before } = require('mocha');
-const { generateKeyPair, hash } = require('@aeternity/aepp-sdk');
+const { MemoryAccount, hash } = require('@aeternity/aepp-sdk');
 const fs = require('fs');
 
 const { Profile, IPFSEntry, Comment } = require('../../../models');
@@ -209,7 +209,7 @@ describe('Profile', () => {
     });
 
     it('it should allow an image upload on new profile', done => {
-      const { publicKey: localPublicKey, secretKey } = generateKeyPair();
+      const { address: localPublicKey, secretKey } = MemoryAccount.generate();
       performSignedMultipartFormRequest(server, 'post', `/profile/${localPublicKey}`, 'image', testImagePath, secretKey)
         .then(({ res, signature, challenge }) => {
           res.should.have.status(200);
@@ -426,7 +426,7 @@ describe('Profile', () => {
     });
 
     it('it should allow an cover image upload on new profile', done => {
-      const { publicKey: localPublicKey, secretKey } = generateKeyPair();
+      const { address: localPublicKey, secretKey } = MemoryAccount.generate();
       performSignedMultipartFormRequest(server, 'post', `/profile/${localPublicKey}`, 'coverImage', testImagePath, secretKey)
         .then(({ res, signature, challenge }) => {
           res.should.have.status(200);
@@ -553,7 +553,7 @@ describe('Profile', () => {
   describe('Internals', () => {
     it('it should verify the chain names on message', done => {
       profileLogic.init();
-      const updateMock = sinon.stub(profileLogic, 'verifyPreferredChainNames').callsFake(async () => {});
+      const updateMock = sinon.stub(profileLogic, 'verifyPreferredChainNames').callsFake(async () => { });
       queueLogic.sendMessage(MESSAGE_QUEUES.PROFILE, MESSAGES.PROFILE.COMMANDS.UPDATE_PREFERRED_CHAIN_NAMES);
       setTimeout(() => {
         updateMock.callCount.should.eql(1);

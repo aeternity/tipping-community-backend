@@ -41,8 +41,8 @@ process.env = {
 }
 
 // GENERATE KEYPAIR
-const { generateKeyPair} = require('@aeternity/aepp-sdk');
-const { secretKey, publicKey } = generateKeyPair();
+const { MemoryAccount } = require('@aeternity/aepp-sdk');
+const { secretKey, address: publicKey } = MemoryAccount.generate();
 
 process.env = {
   ...process.env,

@@ -1,7 +1,7 @@
 const chai = require('chai');
 const chaiHttp = require('chai-http');
 const { describe, it } = require('mocha');
-const { generateKeyPair } = require('@aeternity/aepp-sdk');
+const { MemoryAccount } = require('@aeternity/aepp-sdk');
 const server = require('../../../server');
 
 const { Pin } = require('../../../models');
@@ -68,14 +68,14 @@ describe('Pinning', () => {
     });
 
     it('it should reject CREATING a new pin as another user', done => {
-      const { secretKey } = generateKeyPair();
+      const { secretKey } = MemoryAccount.generate();
       chai.request(server).post(`/pin/${publicKey}`)
-        .send(testData).end((err, res) => {
+        .send(testData).end(async (err, res) => {
           res.should.have.status(200);
           res.body.should.be.a('object');
           res.body.should.have.property('challenge');
           const { challenge } = res.body;
-          const signature = signChallenge(challenge, secretKey);
+          const signature = await signChallenge(challenge, secretKey);
           chai.request(server).post(`/pin/${publicKey}`).send({ challenge, signature })
             .end((innerError, innerRes) => {
               innerRes.should.have.status(401);
@@ -85,7 +85,7 @@ describe('Pinning', () => {
     });
 
     it('it should reject REMOVING a pinned entry from another user', done => {
-      const { secretKey, publicKey: localPublicKey } = generateKeyPair();
+      const { secretKey, address: localPublicKey } = MemoryAccount.generate();
       performSignedJSONRequest(server, 'delete', `/pin/${publicKey}`, {
         ...testData,
         author: localPublicKey,

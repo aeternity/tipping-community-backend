@@ -79,11 +79,11 @@ describe('Authenticator', () => {
     });
 
     it('it should fail on invalid challenge', done => {
-      chai.request(server).get(`/notification/user/${publicKey}`).end((err, res) => {
+      chai.request(server).get(`/notification/user/${publicKey}`).end(async (err, res) => {
         res.should.have.status(200);
         shouldBeValidChallengeResponse(res.body, { author: publicKey });
         const { challenge } = res.body;
-        const signature = signChallenge(challenge);
+        const signature = await signChallenge(challenge);
         chai.request(server).get(`/notification/user/${publicKey}`).query({
           challenge: challenge.substring(2),
           signature,
@@ -97,11 +97,11 @@ describe('Authenticator', () => {
     });
 
     it('it should fail at a change of paths', done => {
-      chai.request(server).get(`/notification/user/${publicKey}`).end((err, res) => {
+      chai.request(server).get(`/notification/user/${publicKey}`).end(async (err, res) => {
         res.should.have.status(200);
         shouldBeValidChallengeResponse(res.body, { author: publicKey });
         const { challenge } = res.body;
-        const signature = signChallenge(challenge);
+        const signature = await signChallenge(challenge);
         chai.request(server).get(`/notification/user/${publicKey}a`).query({
           challenge,
           signature,
@@ -150,11 +150,11 @@ describe('Authenticator', () => {
     });
 
     it('it should fail on invalid challenge', done => {
-      chai.request(server).post(`/profile/${publicKey}`).send(testData).end((err, res) => {
+      chai.request(server).post(`/profile/${publicKey}`).send(testData).end(async (err, res) => {
         res.should.have.status(200);
         shouldBeValidChallengeResponse(res.body, testData);
         const { challenge } = res.body;
-        const signature = signChallenge(challenge);
+        const signature = await signChallenge(challenge);
         chai.request(server).post(`/profile/${publicKey}`).send({
           challenge: challenge.substring(2),
           signature,
@@ -168,11 +168,11 @@ describe('Authenticator', () => {
     });
 
     it('it should fail at a change of paths', done => {
-      chai.request(server).post(`/profile/${publicKey}`).send(testData).end((err, res) => {
+      chai.request(server).post(`/profile/${publicKey}`).send(testData).end(async (err, res) => {
         res.should.have.status(200);
         shouldBeValidChallengeResponse(res.body, testData);
         const { challenge } = res.body;
-        const signature = signChallenge(challenge);
+        const signature = await signChallenge(challenge);
         chai.request(server).post(`/profile/${publicKey}_2`).send({
           challenge,
           signature,

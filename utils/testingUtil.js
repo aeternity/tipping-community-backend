@@ -1,4 +1,4 @@
-const { signMessage, generateKeyPair, hash } = require('@aeternity/aepp-sdk');
+const { MemoryAccount, hash } = require('@aeternity/aepp-sdk');
 const chai = require('chai');
 const chaiHttp = require('chai-http');
 const fs = require('fs');
@@ -10,13 +10,11 @@ const { Tip } = require('../models');
 
 chai.use(chaiHttp);
 
-const { publicKey, secretKey } = generateKeyPair();
+const { address: publicKey, secretKey } = MemoryAccount.generate();
 
-const signChallenge = (challenge, privateKey = null) => {
-  const signatureBuffer = signMessage(
-    challenge,
-    Buffer.from(privateKey || secretKey, 'hex'),
-  );
+const signChallenge = async (challenge, privateKey = null) => {
+  const account = new MemoryAccount(privateKey || secretKey);
+  const signatureBuffer = await account.signMessage(challenge);
   return Buffer.from(signatureBuffer).toString('hex');
 };
 
@@ -31,13 +29,13 @@ const performSignedMultipartFormRequest = (server, method, url, field, path, pri
   chai.request(server)[method](url)
     .field('Content-Type', 'multipart/form-data')
     .attach(field, path)
-    .end((err, res) => {
+    .end(async (err, res) => {
       res.should.have.status(200);
       shouldBeValidChallengeResponse(res.body, {
         [field]: hash(fs.readFileSync(path)).toString('hex'),
       });
       const { challenge } = res.body;
-      const signature = signChallenge(challenge, privateKey);
+      const signature = await signChallenge(challenge, privateKey);
       chai.request(server)[method](url).send({
         challenge,
         signature,
@@ -51,11 +49,11 @@ const performSignedMultipartFormRequest = (server, method, url, field, path, pri
 const performSignedJSONRequest = (server, method, url, data = {}, privateKey = null) => new Promise((resolve, reject) => {
   chai.request(server)[method](url)
     .send(data)
-    .end((err, res) => {
+    .end(async (err, res) => {
       res.should.have.status(200);
       shouldBeValidChallengeResponse(res.body, data);
       const { challenge } = res.body;
-      const signature = signChallenge(challenge, privateKey);
+      const signature = await signChallenge(challenge, privateKey);
       chai.request(server)[method](url)
         .send({ challenge, signature })
         .end((secondErr, secondRes) => {
@@ -67,10 +65,10 @@ const performSignedJSONRequest = (server, method, url, data = {}, privateKey = n
 
 const performSignedGETRequest = (server, url, privateKey = null) => new Promise((resolve, reject) => {
   chai.request(server).get(url)
-    .end((err, res) => {
+    .end(async (err, res) => {
       res.should.have.status(200);
       const { challenge } = res.body;
-      const signature = signChallenge(challenge, privateKey);
+      const signature = await signChallenge(challenge, privateKey);
       chai.request(server).get(url)
         .query({ challenge, signature })
         .end((secondErr, secondRes) => {

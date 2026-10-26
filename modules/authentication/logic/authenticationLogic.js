@@ -1,4 +1,4 @@
-const { verifyMessage, hash } = require('@aeternity/aepp-sdk');
+const { verifyMessageSignature, hash } = require('@aeternity/aepp-sdk');
 const { v4: uuidv4 } = require('uuid');
 const urlParser = require('url');
 const imageLogic = require('../../media/logic/imageLogic');
@@ -67,7 +67,7 @@ const authenticationLogic = {
 
         const signatureArray = Uint8Array.from(Buffer.from(signature, 'hex'));
 
-        const validRequest = verifyMessage(originalChallenge, signatureArray, publicKey);
+        const validRequest = verifyMessageSignature(originalChallenge, signatureArray, publicKey);
         if (validRequest) {
           // Remove challenge from active queue
           const queueIndex = MemoryQueue.findIndex(item => (item || {}).challenge === req.body.challenge);

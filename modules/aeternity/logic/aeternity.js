@@ -1,5 +1,7 @@
 const { AciContractCallEncoder } = require('@aeternity/aepp-calldata');
-const { Node, MemoryAccount, AeSdk } = require('@aeternity/aepp-sdk');
+const {
+  Node, MemoryAccount, AeSdk, Contract, encode, Encoding,
+} = require('@aeternity/aepp-sdk');
 const BigNumber = require('bignumber.js');
 const Sentry = require('@sentry/node');
 
@@ -37,6 +39,14 @@ const tokenContracts = {};
 const wordSaleContracts = {};
 const tokenVotingContracts = {};
 
+// PRIVATE_KEY has historically been stored as a raw hex string (not `sk_`-encoded).
+// SDK v15's MemoryAccount requires the `sk_`-encoded form, so encode it if needed.
+const toSecretKey = privateKey => (
+  privateKey.startsWith(`${Encoding.AccountSecretKey}_`)
+    ? privateKey
+    : encode(Buffer.from(privateKey, 'hex'), Encoding.AccountSecretKey)
+);
+
 class CustomNode extends Node {
   url;
 
@@ -67,16 +77,18 @@ const aeternity = {
             instance: new CustomNode(process.env.NODE_URL),
           },
         ],
-        accounts: [new MemoryAccount(process.env.PRIVATE_KEY)],
+        accounts: [new MemoryAccount(toSecretKey(process.env.PRIVATE_KEY))],
         address: process.env.PUBLIC_KEY,
       });
 
-      contractV1 = await client.initializeContract({
+      contractV1 = await Contract.initialize({
+        ...client.getContext(),
         aci: TIPPING_V1_ACI,
         address: process.env.CONTRACT_V1_ADDRESS,
       });
       if (process.env.CONTRACT_V1_GETTER_ADDRESS) {
-        contractV1Getter = await client.initializeContract({
+        contractV1Getter = await Contract.initialize({
+          ...client.getContext(),
           aci: TIPPING_V1_GETTER_ACI,
           address: process.env.CONTRACT_V1_GETTER_ADDRESS,
         });
@@ -86,7 +98,8 @@ const aeternity = {
       }
 
       if (process.env.CONTRACT_V2_ADDRESS) {
-        contractV2 = await client.initializeContract({
+        contractV2 = await Contract.initialize({
+          ...client.getContext(),
           aci: TIPPING_V2_ACI,
           address: process.env.CONTRACT_V2_ADDRESS,
         });
@@ -96,7 +109,8 @@ const aeternity = {
       }
 
       if (process.env.CONTRACT_V3_GETTER_ADDRESS) {
-        contractV3Getter = await client.initializeContract({
+        contractV3Getter = await Contract.initialize({
+          ...client.getContext(),
           aci: TIPPING_V3_GETTER_ACI,
           address: process.env.CONTRACT_V3_GETTER_ADDRESS,
         });
@@ -106,7 +120,8 @@ const aeternity = {
       }
 
       if (process.env.CONTRACT_V3_ADDRESS) {
-        contractV3 = await client.initializeContract({
+        contractV3 = await Contract.initialize({
+          ...client.getContext(),
           aci: TIPPING_V3_ACI,
           address: process.env.CONTRACT_V3_ADDRESS,
         });
@@ -116,7 +131,8 @@ const aeternity = {
       }
 
       if (process.env.CONTRACT_V4_ADDRESS) {
-        contractV4 = await client.initializeContract({
+        contractV4 = await Contract.initialize({
+          ...client.getContext(),
           aci: TIPPING_V4_ACI,
           address: process.env.CONTRACT_V4_ADDRESS,
         });
@@ -124,20 +140,24 @@ const aeternity = {
       } else {
         logger.info('Starting WITHOUT V4 contract');
       }
-      oracleContract = await client.initializeContract({
+      oracleContract = await Contract.initialize({
+        ...client.getContext(),
         aci: ORACLE_SERVICE_ACI,
         address: process.env.ORACLE_CONTRACT_ADDRESS,
       });
-      oracleGetter = await client.initializeContract({
+      oracleGetter = await Contract.initialize({
+        ...client.getContext(),
         aci: ORACLE_GETTER_ACI,
         address: process.env.ORACLE_GETTER_ADDRESS,
       });
-      tokenRegistry = await client.initializeContract({
+      tokenRegistry = await Contract.initialize({
+        ...client.getContext(),
         aci: TOKEN_REGISTRY_ACI,
         address: process.env.TOKEN_REGISTRY_ADDRESS,
       });
       if (process.env.WORD_REGISTRY_CONTRACT) {
-        wordRegistryContract = await client.initializeContract({
+        wordRegistryContract = await Contract.initialize({
+          ...client.getContext(),
           aci: WORD_REGISTRY_ACI,
           address: process.env.WORD_REGISTRY_CONTRACT,
         });
@@ -225,7 +245,7 @@ const aeternity = {
           event.amount = decodedEvent.args[2] ? Number(decodedEvent.args[2]) : null;
           break;
 
-          // V2
+        // V2
         case 'TipDirectReceived':
         case 'TipDirectTokenReceived':
           event.address = decodedEvent.args[0]; // eslint-disable-line prefer-destructuring
@@ -234,13 +254,13 @@ const aeternity = {
           event.tokenContract = decodedEvent.args[3] || null;
           break;
 
-          // V3
+        // V3
         case 'PostWithoutTipReceived':
           event.address = decodedEvent.args[0]; // eslint-disable-line prefer-destructuring
           event.title = decodedEvent.args[1]; // eslint-disable-line prefer-destructuring
           break;
 
-          // ORACLES
+        // ORACLES
         case 'CheckPersistClaim':
           event.address = decodedEvent.args[1]; // eslint-disable-line prefer-destructuring
           event.amount = decodedEvent.args[2] ? Number(decodedEvent.args[2]) : null;
@@ -461,19 +481,25 @@ const aeternity = {
 
   async initTokenVotingContractIfUnknown(contractAddress) {
     if (!tokenVotingContracts[contractAddress]) {
-      tokenVotingContracts[contractAddress] = await client.initializeContract({ aci: TOKEN_VOTING_ACI, address: contractAddress });
+      tokenVotingContracts[contractAddress] = await Contract.initialize({
+        ...client.getContext(), aci: TOKEN_VOTING_ACI, address: contractAddress,
+      });
     }
   },
 
   async initWordSaleContractIfUnknown(contractAddress) {
     if (!wordSaleContracts[contractAddress]) {
-      wordSaleContracts[contractAddress] = await client.initializeContract({ aci: WORD_SALE_ACI, address: contractAddress });
+      wordSaleContracts[contractAddress] = await Contract.initialize({
+        ...client.getContext(), aci: WORD_SALE_ACI, address: contractAddress,
+      });
     }
   },
 
   async initTokenContractIfUnknown(contractAddress) {
     if (!tokenContracts[contractAddress]) {
-      tokenContracts[contractAddress] = await client.initializeContract({ aci: FUNGIBLE_TOKEN_FULL_ACI, address: contractAddress });
+      tokenContracts[contractAddress] = await Contract.initialize({
+        ...client.getContext(), aci: FUNGIBLE_TOKEN_FULL_ACI, address: contractAddress,
+      });
     }
   },
 
@@ -637,7 +663,7 @@ const aeternity = {
   },
 
   async getAddressForChainName(name) {
-    return client.aensQuery(name).catch(() => null);
+    return client.getName(name).catch(() => null);
   },
 
   async postTipToV3(title, media = [], author, signature) {

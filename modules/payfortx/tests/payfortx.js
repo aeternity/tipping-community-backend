@@ -3,7 +3,7 @@ const chaiHttp = require('chai-http');
 const { describe, it, before } = require('mocha');
 const sinon = require('sinon');
 
-const { hash, signMessage, verifyMessage } = require('@aeternity/aepp-sdk');
+const { hash, MemoryAccount, verifyMessageSignature } = require('@aeternity/aepp-sdk');
 const tippingContractUtil = require('tipping-contract/util/tippingContractUtil');
 const BigNumber = require('bignumber.js');
 const ae = require('../../aeternity/logic/aeternity');
@@ -102,17 +102,17 @@ describe('Pay for TX', () => {
 
       const message = tippingContractUtil.postWithoutTippingString(testData.title, testData.media);
       const hashResult = hash(message).toString('hex');
-      const signature = signMessage(hashResult, Buffer.from(secretKey, 'hex'));
+      const signature = await new MemoryAccount(secretKey).signMessage(hashResult);
 
       sinon.stub(ae, 'postTipToV3').callsFake((title, media, author, passedSignature) => {
         title.should.equal(testData.title);
         media.should.deep.equal(testData.media);
         author.should.equal(publicKey);
-        const verified = verifyMessage(hashResult, passedSignature, publicKey);
+        const verified = verifyMessageSignature(hashResult, passedSignature, publicKey);
         verified.should.equal(true);
         return { hash: 'hash', decodedResult: '1' };
       });
-      const awaitStub = sinon.stub(TipLogic, 'awaitTipsUpdated').callsFake(async () => {});
+      const awaitStub = sinon.stub(TipLogic, 'awaitTipsUpdated').callsFake(async () => { });
 
       const res = await chai.request(server).post('/payfortx/post').send({
         author: publicKey,

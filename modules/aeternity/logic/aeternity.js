@@ -39,12 +39,12 @@ const tokenContracts = {};
 const wordSaleContracts = {};
 const tokenVotingContracts = {};
 
-// PRIVATE_KEY has historically been stored as a raw hex string (not `sk_`-encoded).
-// SDK v15's MemoryAccount requires the `sk_`-encoded form, so encode it if needed.
+// PRIVATE_KEY has historically been stored as raw hex (not `sk_`-encoded), usually the 64 byte
+// form (32 byte seed + public key). SDK v15's MemoryAccount requires the `sk_`-encoded 32 byte seed.
 const toSecretKey = privateKey => (
   privateKey.startsWith(`${Encoding.AccountSecretKey}_`)
     ? privateKey
-    : encode(Buffer.from(privateKey, 'hex'), Encoding.AccountSecretKey)
+    : encode(Buffer.from(privateKey, 'hex').subarray(0, 32), Encoding.AccountSecretKey)
 );
 
 class CustomNode extends Node {
@@ -68,6 +68,8 @@ class CustomNode extends Node {
 }
 
 const aeternity = {
+  toSecretKey,
+
   async init() {
     if (!client) {
       client = new AeSdk({
